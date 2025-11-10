@@ -1,0 +1,13 @@
+{
+  "name": "sentry-plugin-marketplace",
+  "owner": {
+    "name": "Sentry"
+  },
+  "plugins": [
+    {
+      "name": "sentry",
+      "source": "./",
+      "description": "Sentry integration with MCP server, issue management commands, sub-agents, and PR comment resolution skills"
+    }
+  ]
+}
