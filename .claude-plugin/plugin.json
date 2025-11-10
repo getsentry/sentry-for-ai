@@ -4,5 +4,11 @@
   "version": "1.0.0",
   "author": {
     "name": "Sentry"
+  },
+  "mcpServers": {
+    "sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp"
+    }
   }
 }
