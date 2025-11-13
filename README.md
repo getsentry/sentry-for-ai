@@ -1,17 +1,18 @@
 # Sentry Claude Code Plugin
 
-Official Sentry integration plugin for Claude Code that provides intelligent issue tracking, performance monitoring, and automated PR comment resolution.
+Official Sentry integration plugin for Claude Code that provides tools for working with Sentry's MCP, the Sentry Spotlight MCP for local debugging, Code Review tools, and more.
 
 ## Overview
 
-This plugin brings Sentry's powerful error tracking and performance monitoring directly into your Claude Code workflow. Ask questions in natural language, analyze issues across projects, monitor application performance, and automatically resolve code quality issues identified by Sentry Bot in pull requests.
+This plugin enables tooling to make it easier to leverage Sentry along side agent tooling like Claude Code. Ask questions in natural language, analyze issues across projects, monitor application performance, and automatically resolve bugs detected in your pull requests.
 
 ## Features
 
-### 🔌 Sentry Integration
-- Direct access to Sentry APIs and issue data
-- Automatic configuration via bundled MCP server
-- No additional setup required after installation
+### Sentry MCP Integration
+- Automatic configuration of Sentry MCP server
+
+### Spotlight MCP Integration
+- Debug locally with Sentry and Spotlight. Learn more at [Spotlightjs](https//spotlightjs.com)
 
 ### 💬 Slash Commands
 
@@ -62,11 +63,11 @@ Analyzes multiple Sentry issues in parallel to provide comprehensive summaries.
 
 ### 🎯 Skills
 
-#### sentry-pr-resolver
-Automatically analyzes and resolves Sentry Bot comments on GitHub Pull Requests.
+#### sentry-code-review
+Automatically analyzes and fix detected bugs in GitHub Pull Requests.
 
 **Features:**
-- Parses Sentry Bot comments (ignores seer-by-sentry)
+- Parses Sentry comments
 - Validates issues still exist
 - Implements suggested fixes
 - Provides comprehensive resolution summary
@@ -82,7 +83,7 @@ Automatically analyzes and resolves Sentry Bot comments on GitHub Pull Requests.
 
 #### 1. Add the Sentry Marketplace
 ```bash
-/plugin marketplace add getsentry/claude-marketplace
+/plugin marketplace add getsentry/sentry-for-claude
 ```
 
 #### 2. Install the Plugin
@@ -105,11 +106,11 @@ If you're developing or testing locally:
 
 ```bash
 # Clone the repository
-git clone https://github.com/getsentry/claude-marketplace.git
-cd claude-marketplace
+git clone https://github.com/getsentry/sentry-for-claude.git
+cd sentry-for-claude
 
 # Add as local marketplace
-/plugin marketplace add /path/to/claude-marketplace
+/plugin marketplace add /path/to/sentry-for-claude
 
 # Install
 /plugin install sentry@local
@@ -149,9 +150,9 @@ Claude will automatically invoke the issue-summarizer agent.
 
 ### Resolve PR Comments
 ```
-Review PR #118 and fix the Sentry Bot comments
+Review PR #118 and fix the Sentry comments
 ```
-Claude will automatically use the sentry-pr-resolver skill to:
+Claude will automatically use the sentry-code-review skill to:
 1. Fetch Sentry Bot comments
 2. Analyze each issue
 3. Implement fixes
@@ -167,7 +168,7 @@ For advanced configuration options (such as custom authentication or proxy setti
 
 ### GitHub CLI (for PR resolver)
 
-The `sentry-pr-resolver` skill requires GitHub CLI to fetch PR comments. Install and authenticate:
+The `sentry-code-review` skill requires GitHub CLI to fetch PR comments. Install and authenticate:
 
 ```bash
 # Install GitHub CLI
@@ -192,8 +193,8 @@ claude-marketplace/
 ├── agents/
 │   └── issue-summarizer.md  # Parallel issue analysis agent
 ├── skills/
-│   └── sentry-pr-resolver/
-│       └── SKILL.md          # PR comment resolver skill
+│   └── sentry-code-review/
+│       └── SKILL.md          # Code reivewer skill
 ├── MCP-SETUP.md              # Advanced MCP configuration guide
 └── README.md                 # This file
 ```
@@ -210,7 +211,7 @@ claude-marketplace/
 - Use `/seer` for exploratory analysis and ad-hoc questions
 - Use `/getIssues` for quick checks of recent issues
 - Let Claude automatically invoke `issue-summarizer` agent for deep analysis of multiple issues
-- The `sentry-pr-resolver` skill activates automatically when reviewing PRs
+- The `sentry-code-reivew` skill activates automatically when reviewing PRs
 
 ### Performance Optimization
 - Queries run in parallel when analyzing multiple issues for faster results
