@@ -1,6 +1,6 @@
 # Sentry Claude Code Plugin
 
-Official Sentry integration plugin for Claude Code that provides tools for working with Sentry's MCP, the Sentry Spotlight MCP for local debugging, Code Review tools, and more.
+Official Sentry integration plugin for Claude Code that provides tools for working with Sentry's MCP, Code Review tools, and more.
 
 ## Overview
 
@@ -10,9 +10,6 @@ This plugin enables tooling to make it easier to leverage Sentry along side agen
 
 ### Sentry MCP Integration
 - Automatic configuration of Sentry MCP server
-
-### Spotlight MCP Integration
-- Debug locally with Sentry and Spotlight. Learn more at [Spotlightjs](https//spotlightjs.com)
 
 ### 💬 Slash Commands
 

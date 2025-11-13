@@ -3,11 +3,6 @@
     "sentry": {
       "type": "http",
       "url": "https://mcp.sentry.dev/mcp"
-    },
-    "spotlight": {
-      "command": "npx -y --prefer-online @spotlightjs/spotlight@latest mcp ",
-      "env": {},
-      "args": []
     }
   }
 }
