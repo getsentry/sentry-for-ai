@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "sentry@sentry-plugin-marketplace": true
+  }
+}

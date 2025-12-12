@@ -1,6 +1,6 @@
 {
   "name": "sentry",
-  "description": "Sentry integration plugin for Claude Code with issue management and PR comment resolution",
+  "description": "Sentry Plugin for Claude Code to help with debugging including MCP, commands, and skill capabilities.",
   "version": "1.0.0",
   "author": {
     "name": "Sentry"

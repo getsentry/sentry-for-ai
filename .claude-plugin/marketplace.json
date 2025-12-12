@@ -7,7 +7,7 @@
     {
       "name": "sentry",
       "source": "./",
-      "description": "Sentry integration with MCP server, issue management commands, sub-agents, and PR comment resolution skills"
+      "description": "Tools for debugging application issues using Sentry. Includes MCP functionality, skills, and commands."
     }
   ]
 }
