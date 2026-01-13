@@ -76,16 +76,16 @@ Automatically analyzes and fix detected bugs in GitHub Pull Requests.
 
 ## Installation
 
-### From GitHub
+### From Official Claude Marketplace
 
-#### 1. Add the Sentry Marketplace
+#### 1. Update the Marketplace
 ```bash
-/plugin marketplace add getsentry/sentry-for-claude
+/plugin marketplace update claude-plugins-official
 ```
 
 #### 2. Install the Plugin
 ```bash
-/plugin install sentry@getsentry
+/plugin install sentry
 ```
 
 #### 3. Restart Claude Code
