@@ -1,7 +1,7 @@
 ---
 name: issue-summarizer
 description: Analyze multiple Sentry issues in parallel to provide comprehensive summaries of user impact, root causes, and patterns. Use this when you need to understand the overall health of a project or investigate multiple related issues.
-tools: Read, Grep, Glob, Bash, WebFetch
+tools: Read, Grep, Glob, Bash, WebFetch, mcp__plugin_sentry_sentry__find_organizations, mcp__plugin_sentry_sentry__find_projects, mcp__plugin_sentry_sentry__search_issues, mcp__plugin_sentry_sentry__get_issue_details, mcp__plugin_sentry_sentry__analyze_issue_with_seer, mcp__plugin_sentry_sentry__get_issue_tag_values, mcp__plugin_sentry_sentry__search_events
 model: sonnet
 ---
 
