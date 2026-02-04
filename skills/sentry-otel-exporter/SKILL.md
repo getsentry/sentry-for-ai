@@ -246,8 +246,8 @@ The exporter respects Sentry rate limits automatically:
 | Component                 | Value                         |
 | ------------------------- | ----------------------------- |
 | Exporter                  | `sentry` (in otelcol-contrib) |
-| OTLP gRPC                 | `localhost:4317`              |
-| OTLP HTTP                 | `http://localhost:4318`       |
+| OTLP gRPC port            | `4317`                        |
+| OTLP HTTP port            | `4318`                        |
 | Default routing attribute | `service.name`                |
 | Auto-create default       | `false`                       |
 | Stability                 | Alpha (traces, logs)          |
