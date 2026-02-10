@@ -14,7 +14,7 @@ Official Sentry integration plugin for Claude Code. Query your Sentry environmen
 Restart Claude Code to activate the plugin, then verify:
 
 ```bash
-/help           # Should show /seer and /getIssues commands
+/help           # Should show /seer command
 /mcp            # Should show sentry MCP server
 ```
 
@@ -39,25 +39,6 @@ Ask questions about your Sentry environment in natural language.
 /seer Show me all critical issues in mobile-app
 /seer Which issues are affecting the most users?
 /seer What's the request latency for the api-gateway application?
-```
-
-### `/getIssues [project]`
-
-Fetch the 10 most recent issues from Sentry.
-
-```
-/getIssues                  # All projects
-/getIssues my-project       # Specific project
-```
-
-## Sub-Agents
-
-### issue-summarizer
-
-Analyzes multiple Sentry issues in parallel. Invoked automatically when you ask Claude to analyze or summarize issues across a project.
-
-```
-Can you analyze the recent issues in my-project and summarize the user impact?
 ```
 
 ## Skills
@@ -103,10 +84,7 @@ sentry-for-claude/
 ├── .mcp.json                 # MCP server configuration
 ├── AGENTS.md                 # Agent instructions
 ├── commands/
-│   ├── seer.md               # /seer command
-│   └── getIssues.md          # /getIssues command
-├── agents/
-│   └── issue-summarizer.md   # Issue analysis agent
+│   └── seer.md               # /seer command
 └── skills/
     ├── sentry-code-review/
     ├── sentry-ios-swift-setup/

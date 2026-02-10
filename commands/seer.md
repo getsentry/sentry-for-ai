@@ -216,7 +216,7 @@ If the Sentry MCP server is unavailable or returns errors:
 ⚠️ Unable to query Sentry environment
 
 **Possible issues:**
-- Sentry MCP server is not configured (see MCP-SETUP.md)
+- Sentry MCP server is not configured
 - Authentication failed - check your Sentry credentials
 - Network connectivity issues
 
@@ -233,9 +233,3 @@ If the Sentry MCP server is unavailable or returns errors:
 - Ask follow-up questions: Seer can help drill down into specific issues
 - Request different formats: Ask for tables, summaries, or detailed views
 
-## Integration with Other Tools
-
-Suggest using complementary plugin features:
-- For deeper analysis of multiple issues → use the `issue-summarizer` agent
-- For fetching recent issues → use `/getIssues` command
-- For resolving PR comments → Claude will automatically use `sentry-pr-resolver` skill
