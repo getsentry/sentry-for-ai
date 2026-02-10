@@ -74,6 +74,16 @@ Automatically analyzes and fix detected bugs in GitHub Pull Requests.
 - When asked to "fix sentry issues in PR"
 - When analyzing code quality issues
 
+#### Sentry Setup Skills
+
+| Skill | Description |
+|-------|-------------|
+| `sentry-ios-swift-setup` | Setup Sentry in iOS/Swift apps with error monitoring, tracing, session replay, logging, and profiling |
+| `sentry-setup-ai-monitoring` | Setup Sentry AI Agent Monitoring for OpenAI, Anthropic, LangChain, etc. |
+| `sentry-setup-logging` | Setup Sentry Logging for JavaScript, Python, and Ruby projects |
+| `sentry-setup-metrics` | Setup Sentry Metrics (counters, gauges, distributions) |
+| `sentry-setup-tracing` | Setup Sentry Tracing and Performance Monitoring |
+
 ## Installation
 
 ### From Official Claude Marketplace
@@ -190,8 +200,18 @@ claude-marketplace/
 ├── agents/
 │   └── issue-summarizer.md  # Parallel issue analysis agent
 ├── skills/
-│   └── sentry-code-review/
-│       └── SKILL.md          # Code reivewer skill
+│   ├── sentry-code-review/
+│   │   └── SKILL.md          # PR code review skill
+│   ├── sentry-ios-swift-setup/
+│   │   └── SKILL.md          # iOS/Swift setup skill
+│   ├── sentry-setup-ai-monitoring/
+│   │   └── SKILL.md          # AI agent monitoring skill
+│   ├── sentry-setup-logging/
+│   │   └── SKILL.md          # Structured logging skill
+│   ├── sentry-setup-metrics/
+│   │   └── SKILL.md          # Metrics skill
+│   └── sentry-setup-tracing/
+│       └── SKILL.md          # Tracing/performance skill
 ├── MCP-SETUP.md              # Advanced MCP configuration guide
 └── README.md                 # This file
 ```

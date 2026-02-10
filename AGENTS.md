@@ -24,6 +24,7 @@ Analyze and resolve Sentry bot comments on GitHub PRs. See `skills/sentry-code-r
 
 ### Sentry Setup Skills
 - **AI Monitoring** - Instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI. See `skills/sentry-setup-ai-monitoring/SKILL.md`
+- **iOS (Swift)** - Setup Sentry in iOS/Swift apps with error monitoring, tracing, session replay, logging, and profiling. See `skills/sentry-ios-swift-setup/SKILL.md`
 - **Logging** - Configure structured logging (JS/Python/Ruby). See `skills/sentry-setup-logging/SKILL.md`
 - **Metrics** - Setup counters/gauges/distributions. See `skills/sentry-setup-metrics/SKILL.md`
 - **Tracing** - Enable performance monitoring and distributed tracing. See `skills/sentry-setup-tracing/SKILL.md`
