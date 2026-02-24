@@ -144,8 +144,8 @@ TypeError: Cannot read property 'token' of undefined
 | UPDATE inventory SET... | 1,234ms | 156 | 2,800ms | [View](url) |
 
 **Recommendations**
-- 🔴 Add index on orders.created_at (2.4s avg query time)
-- 🟡 Optimize JOIN query with users table
+- [Critical] Add index on orders.created_at (2.4s avg query time)
+- [Warning] Optimize JOIN query with users table
 ```
 
 ```markdown
@@ -160,9 +160,9 @@ TypeError: Cannot read property 'token' of undefined
 **Slowest Endpoints**
 | Endpoint | Avg Latency | P95 | Count | Status | Link |
 |----------|-------------|-----|-------|--------|------|
-| POST /api/checkout | 2,345ms | 4,200ms | 234 | 🔴 Slow | [View](url) |
-| GET /api/search | 890ms | 1,560ms | 1,234 | 🟡 Warning | [View](url) |
-| GET /api/products | 234ms | 445ms | 5,678 | 🟢 Good | [View](url) |
+| POST /api/checkout | 2,345ms | 4,200ms | 234 | Slow | [View](url) |
+| GET /api/search | 890ms | 1,560ms | 1,234 | Warning | [View](url) |
+| GET /api/products | 234ms | 445ms | 5,678 | Good | [View](url) |
 
 **Performance Insights**
 - Checkout endpoint is 16x slower than baseline
@@ -192,8 +192,8 @@ After presenting the data, provide:
 Example:
 ```markdown
 ### Key Findings
-- 🔴 **Critical**: API timeout issue affecting 892 users with 3,421 events in the last hour
-- 🟡 **Warning**: Error rate in api-service is 2x higher than normal baseline
+- **Critical**: API timeout issue affecting 892 users with 3,421 events in the last hour
+- **Warning**: Error rate in api-service is 2x higher than normal baseline
 
 ### Recommendations
 1. Investigate API timeout issue (PROJ-456) immediately - high user impact
@@ -205,7 +205,7 @@ Example:
 
 1. **Always include URLs**: Link to Sentry issues, projects, or events when available
 2. **Show timestamps**: Use relative times (e.g., "2 mins ago", "1 hour ago")
-3. **Highlight severity**: Use visual indicators (🔴 Critical, 🟡 High, 🟢 Low)
+3. **Highlight severity**: Use visual indicators (Critical, High, Low)
 4. **Be concise**: Focus on actionable information
 5. **Handle no results gracefully**: If no data matches the query, suggest alternatives
 
@@ -213,7 +213,7 @@ Example:
 
 If the Sentry MCP server is unavailable or returns errors:
 ```markdown
-⚠️ Unable to query Sentry environment
+Unable to query Sentry environment
 
 **Possible issues:**
 - Sentry MCP server is not configured

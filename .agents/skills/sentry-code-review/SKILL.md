@@ -130,14 +130,14 @@ After analyzing and fixing issues, provide a report:
 - **Location:** [file:line]
 - **Problem:** [brief description]
 - **Fix Applied:** [what you did]
-- **Status:** ✅ Resolved
+- **Status:** Resolved
 
 #### 2. [Issue Title] - [SEVERITY]
 - **Confidence:** [score]
 - **Location:** [file:line]
 - **Problem:** [brief description]
 - **Fix Applied:** [what you did]
-- **Status:** ✅ Resolved
+- **Status:** Resolved
 
 ### Issues Requiring Manual Review
 
