@@ -1,32 +1,48 @@
-# Sentry Claude Code Plugin
+# Sentry Plugin for AI Coding Assistants
 
-Official Sentry integration plugin for Claude Code. Query your Sentry environment in natural language, analyze issues, monitor performance, and automatically resolve bugs detected in pull requests.
+Official Sentry integration plugin for AI coding assistants. Query your Sentry environment in natural language, analyze issues, monitor performance, and automatically resolve bugs detected in pull requests.
+
+Supports **Claude Code** and **Cursor**.
 
 ## Installation
 
-### From Claude Marketplace
+### Claude Code
+
+**From Marketplace:**
 
 ```bash
-/plugin marketplace update claude-plugins-official
-/plugin install sentry
+/install-plugin sentry
 ```
 
-Restart Claude Code to activate the plugin, then verify:
+Restart Claude Code to activate, then verify:
 
 ```bash
 /help           # Should show /seer command
 /mcp            # Should show sentry MCP server
 ```
 
-### From Local Source
+**From Local Source:**
 
 ```bash
-git clone https://github.com/getsentry/sentry-for-claude.git
-cd sentry-for-claude
+git clone https://github.com/getsentry/sentry-for-ai.git
+cd sentry-for-ai
 
-/plugin marketplace add /path/to/sentry-for-claude
-/plugin install sentry@local
+/install-plugin file:///path/to/sentry-for-ai
 ```
+
+### Cursor
+
+**From Marketplace:**
+
+Search for "Sentry" in Cursor Settings > Extensions and install.
+
+**From Local Source:**
+
+```bash
+git clone https://github.com/getsentry/sentry-for-ai.git
+```
+
+Add the plugin path in Cursor Settings > Extensions > Install from path.
 
 ## Slash Commands
 
@@ -63,7 +79,7 @@ Review PR #118 and fix the Sentry comments
 
 ## Configuration
 
-The plugin automatically configures the Sentry MCP server on install. No additional setup required beyond restarting Claude Code.
+The plugin automatically configures the Sentry MCP server on install. No additional setup required beyond restarting your editor.
 
 The `sentry-code-review` skill requires GitHub CLI:
 
@@ -75,23 +91,29 @@ gh auth login
 ## Plugin Structure
 
 ```
-sentry-for-claude/
-├── .claude-plugin/
-│   ├── plugin.json           # Plugin metadata
-│   └── marketplace.json      # Marketplace listing
-├── .claude/
-│   └── settings.json         # Claude Code settings
-├── .mcp.json                 # MCP server configuration
-├── AGENTS.md                 # Agent instructions
+sentry-for-ai/
 ├── commands/
-│   └── seer.md               # /seer command
-└── skills/
-    ├── sentry-code-review/
-    ├── sentry-ios-swift-setup/
-    ├── sentry-setup-ai-monitoring/
-    ├── sentry-setup-logging/
-    ├── sentry-setup-metrics/
-    └── sentry-setup-tracing/
+│   └── seer.md                    # /seer slash command
+├── skills/
+│   ├── sentry-code-review/
+│   ├── sentry-ios-swift-setup/
+│   ├── sentry-setup-ai-monitoring/
+│   ├── sentry-setup-logging/
+│   ├── sentry-setup-metrics/
+│   └── sentry-setup-tracing/
+├── .agents/                       # Symlinks to commands/ and skills/
+├── .claude-plugin/                # Claude Code plugin metadata
+│   ├── plugin.json
+│   └── marketplace.json
+├── .cursor-plugin/                # Cursor plugin metadata
+│   ├── plugin.json
+│   └── marketplace.json
+├── .mcp.json                      # MCP server config (Claude Code)
+├── mcp.json                       # MCP server config (Cursor)
+├── AGENTS.md                      # Agent instructions
+├── CLAUDE.md -> AGENTS.md
+└── assets/
+    └── logo.svg
 ```
 
 ## License

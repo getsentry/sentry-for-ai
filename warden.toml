@@ -6,6 +6,7 @@ reportOn = "medium"
 
 [[skills]]
 name = "skill-scanner"
+remote = "getsentry/skills"
 paths = ["**/skills/**"]
 
 [[skills.triggers]]
