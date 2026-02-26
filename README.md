@@ -92,26 +92,24 @@ gh auth login
 
 ```
 sentry-for-ai/
-├── .agents/
-│   ├── commands/
-│   │   └── seer.md               # /seer command
-│   └── skills/
-│       ├── sentry-code-review/
-│       ├── sentry-ios-swift-setup/
-│       ├── sentry-setup-ai-monitoring/
-│       ├── sentry-setup-logging/
-│       ├── sentry-setup-metrics/
-│       └── sentry-setup-tracing/
+├── commands/
+│   └── seer.md                    # /seer slash command
+├── skills/
+│   ├── sentry-code-review/
+│   ├── sentry-ios-swift-setup/
+│   ├── sentry-setup-ai-monitoring/
+│   ├── sentry-setup-logging/
+│   ├── sentry-setup-metrics/
+│   └── sentry-setup-tracing/
+├── .agents/                       # Symlinks to commands/ and skills/
 ├── .claude-plugin/                # Claude Code plugin metadata
 │   ├── plugin.json
 │   └── marketplace.json
 ├── .cursor-plugin/                # Cursor plugin metadata
 │   ├── plugin.json
-│   └── marketplace.json  -> ../.claude-plugin/marketplace.json
-├── .claude/
-│   └── settings.json              # Claude Code permissions
-├── .mcp.json                      # MCP server config (canonical)
-├── mcp.json -> .mcp.json          # MCP server config (Cursor symlink)
+│   └── marketplace.json
+├── .mcp.json                      # MCP server config (Claude Code)
+├── mcp.json                       # MCP server config (Cursor)
 ├── AGENTS.md                      # Agent instructions
 ├── CLAUDE.md -> AGENTS.md
 └── assets/
