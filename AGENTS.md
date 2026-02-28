@@ -91,7 +91,7 @@ Sentry MCP server configured at `https://mcp.sentry.dev/mcp`. Two config files e
 3. Add breadcrumb as first body line: `> [All Skills](../../SKILL_TREE.md) > [Category](../router/SKILL.md) > Skill Name`
 4. Add the skill to the parent router's routing table
 5. Run `scripts/build-skill-tree.sh` to regenerate `SKILL_TREE.md` and validate
-6. CI validates automatically on PRs touching `skills/**`
+6. CI validates automatically on every PR
 
 **Adding a new category:**
 - When a category exceeds ~10 skills, consider splitting
