@@ -2,7 +2,12 @@
 name: sentry-code-review
 description: Analyze and resolve Sentry comments on GitHub Pull Requests. Use this when asked to review or fix issues identified by Sentry in PR comments. Can review specific PRs by number or automatically find recent PRs with Sentry feedback.
 allowed-tools: Read, Edit, Write, Bash, Grep, Glob, WebFetch, AskUserQuestion
+category: workflow
+parent: sentry-workflow
+disable-model-invocation: true
 ---
+
+> [All Skills](../../SKILL_TREE.md) > [Workflow](../sentry-workflow/SKILL.md) > Code Review
 
 # Sentry Code Review
 

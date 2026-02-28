@@ -2,7 +2,11 @@
 name: sentry-sdk-skill-creator
 description: Create a complete Sentry SDK skill bundle for any platform. Use when asked to "create an SDK skill", "add a new platform skill", "write a Sentry skill for X", or build a new sentry-<platform>-sdk skill bundle with wizard flow and feature reference files.
 license: Apache-2.0
+category: internal
+disable-model-invocation: true
 ---
+
+> [All Skills](../../SKILL_TREE.md) > SDK Skill Creator
 
 # Create a Sentry SDK Skill Bundle
 
