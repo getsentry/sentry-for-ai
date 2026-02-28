@@ -10,6 +10,15 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  validate-skill-tree:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate skill tree
+        run: ./scripts/build-skill-tree.sh --check
+
   review:
     runs-on: ubuntu-latest
     env:
