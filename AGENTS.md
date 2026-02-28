@@ -22,15 +22,37 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 
 ## Skills
 
-### Sentry Code Review
-Analyze and resolve Sentry bot comments on GitHub PRs. See `skills/sentry-code-review/SKILL.md`
+### SDK Skills (Full Platform Bundles)
+| Skill | Description |
+|-------|-------------|
+| `sentry-cocoa-sdk` | Full setup wizard for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) |
+| `sentry-dotnet-sdk` | Full setup wizard for .NET (ASP.NET Core, MAUI, WPF, WinForms, Azure Functions) |
+| `sentry-go-sdk` | Full setup wizard for Go (net/http, Gin, Echo, Fiber) |
+| `sentry-nextjs-sdk` | Full setup wizard for Next.js (App Router + Pages Router) |
+| `sentry-python-sdk` | Full setup wizard for Python (Django, Flask, FastAPI, Celery) |
+| `sentry-react-native-sdk` | Full setup wizard for React Native and Expo |
+| `sentry-react-sdk` | Full setup wizard for React (Router v5-v7, TanStack, Redux) |
+| `sentry-ruby-sdk` | Full setup wizard for Ruby (Rails, Sinatra, Sidekiq) |
+| `sentry-svelte-sdk` | Full setup wizard for Svelte/SvelteKit |
 
-### Sentry Setup Skills
-- **AI Monitoring** - Instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI. See `skills/sentry-setup-ai-monitoring/SKILL.md`
-- **iOS (Swift)** - Setup Sentry in iOS/Swift apps with error monitoring, tracing, session replay, logging, and profiling. See `skills/sentry-ios-swift-setup/SKILL.md`
-- **Logging** - Configure structured logging (JS/Python/Ruby). See `skills/sentry-setup-logging/SKILL.md`
-- **Metrics** - Setup counters/gauges/distributions. See `skills/sentry-setup-metrics/SKILL.md`
-- **Tracing** - Enable performance monitoring and distributed tracing. See `skills/sentry-setup-tracing/SKILL.md`
+### Setup Skills
+| Skill | Description |
+|-------|-------------|
+| `sentry-setup-ai-monitoring` | Instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI |
+| `sentry-otel-exporter-setup` | Setup OTel Collector with Sentry Exporter |
+
+### Workflow Skills
+| Skill | Description |
+|-------|-------------|
+| `sentry-code-review` | Analyze and resolve Sentry bot comments on GitHub PRs |
+| `sentry-pr-code-review` | Review PRs for issues detected by Seer Bug Prediction |
+| `sentry-fix-issues` | Find and fix Sentry issues using MCP |
+| `sentry-create-alert` | Create Sentry alerts using the workflow engine API |
+
+### Authoring Skills
+| Skill | Description |
+|-------|-------------|
+| `sentry-sdk-skill-creator` | Create a complete SDK skill bundle for any new platform |
 
 ## Commands
 | Command | Description |

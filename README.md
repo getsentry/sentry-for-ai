@@ -59,29 +59,49 @@ Ask questions about your Sentry environment in natural language.
 
 ## Skills
 
-### sentry-code-review
+### SDK Skills (Full Platform Bundles)
 
-Analyzes and fixes bugs detected by Sentry in GitHub Pull Request comments. Requires [GitHub CLI](https://cli.github.com/) (`gh auth login`).
+Comprehensive setup wizards that scan your project, recommend features, and guide through full SDK installation.
 
-```
-Review PR #118 and fix the Sentry comments
-```
+| Skill | Platforms |
+|-------|-----------|
+| `sentry-cocoa-sdk` | iOS, macOS, tvOS, watchOS, visionOS (Swift, UIKit, SwiftUI) |
+| `sentry-dotnet-sdk` | ASP.NET Core, MAUI, WPF, WinForms, Azure Functions, Blazor, gRPC |
+| `sentry-go-sdk` | Go (net/http, Gin, Echo, Fiber) |
+| `sentry-nextjs-sdk` | Next.js App Router + Pages Router, Vercel |
+| `sentry-python-sdk` | Python (Django, Flask, FastAPI, Celery, Starlette, AIOHTTP) |
+| `sentry-react-native-sdk` | React Native, Expo managed/bare |
+| `sentry-react-sdk` | React 16+, React Router v5-v7, TanStack Router, Redux |
+| `sentry-ruby-sdk` | Ruby, Rails, Sinatra, Rack, Sidekiq |
+| `sentry-svelte-sdk` | Svelte, SvelteKit |
 
 ### Setup Skills
 
 | Skill | Description |
 |-------|-------------|
-| `sentry-ios-swift-setup` | Setup Sentry in iOS/Swift apps with error monitoring, tracing, session replay, logging, and profiling |
 | `sentry-setup-ai-monitoring` | Setup Sentry AI Agent Monitoring for OpenAI, Anthropic, LangChain, etc. |
-| `sentry-setup-logging` | Setup Sentry Logging for JavaScript, Python, and Ruby projects |
-| `sentry-setup-metrics` | Setup Sentry Metrics (counters, gauges, distributions) |
-| `sentry-setup-tracing` | Setup Sentry Tracing and Performance Monitoring |
+| `sentry-otel-exporter-setup` | Setup OTel Collector with Sentry Exporter |
+
+### Workflow Skills
+
+| Skill | Description |
+|-------|-------------|
+| `sentry-code-review` | Analyze and fix bugs detected by Sentry in GitHub PR comments |
+| `sentry-pr-code-review` | Review PRs for issues detected by Seer Bug Prediction |
+| `sentry-fix-issues` | Find and fix Sentry issues using MCP |
+| `sentry-create-alert` | Create Sentry alerts using the workflow engine API |
+
+### Authoring Skills
+
+| Skill | Description |
+|-------|-------------|
+| `sentry-sdk-skill-creator` | Create a complete SDK skill bundle for any new platform |
 
 ## Configuration
 
 The plugin automatically configures the Sentry MCP server on install. No additional setup required beyond restarting your editor.
 
-The `sentry-code-review` skill requires GitHub CLI:
+Workflow skills (`sentry-code-review`, `sentry-pr-code-review`) require GitHub CLI:
 
 ```bash
 brew install gh    # macOS, or https://cli.github.com/
@@ -93,24 +113,34 @@ gh auth login
 ```
 sentry-for-ai/
 ├── commands/
-│   └── seer.md                    # /seer slash command
+│   └── seer.md                         # /seer slash command
 ├── skills/
-│   ├── sentry-code-review/
-│   ├── sentry-ios-swift-setup/
-│   ├── sentry-setup-ai-monitoring/
-│   ├── sentry-setup-logging/
-│   ├── sentry-setup-metrics/
-│   └── sentry-setup-tracing/
-├── .agents/                       # Symlinks to commands/ and skills/
-├── .claude-plugin/                # Claude Code plugin metadata
+│   ├── sentry-code-review/             # Workflow: Sentry bot PR review
+│   ├── sentry-pr-code-review/          # Workflow: Seer Bug Prediction review
+│   ├── sentry-fix-issues/              # Workflow: Fix Sentry issues via MCP
+│   ├── sentry-create-alert/            # Workflow: Create alerts via API
+│   ├── sentry-cocoa-sdk/               # SDK: Apple platforms
+│   ├── sentry-dotnet-sdk/              # SDK: .NET
+│   ├── sentry-go-sdk/                  # SDK: Go
+│   ├── sentry-nextjs-sdk/              # SDK: Next.js
+│   ├── sentry-python-sdk/              # SDK: Python
+│   ├── sentry-react-native-sdk/        # SDK: React Native / Expo
+│   ├── sentry-react-sdk/               # SDK: React
+│   ├── sentry-ruby-sdk/                # SDK: Ruby / Rails
+│   ├── sentry-svelte-sdk/              # SDK: Svelte / SvelteKit
+│   ├── sentry-setup-ai-monitoring/     # Setup: AI agent monitoring
+│   ├── sentry-otel-exporter-setup/     # Setup: OTel Collector
+│   └── sentry-sdk-skill-creator/       # Authoring: Create new SDK skills
+├── .agents/                            # Symlinks to commands/ and skills/
+├── .claude-plugin/                     # Claude Code plugin metadata
 │   ├── plugin.json
 │   └── marketplace.json
-├── .cursor-plugin/                # Cursor plugin metadata
+├── .cursor-plugin/                     # Cursor plugin metadata
 │   ├── plugin.json
 │   └── marketplace.json
-├── .mcp.json                      # MCP server config (Claude Code)
-├── mcp.json                       # MCP server config (Cursor)
-├── AGENTS.md                      # Agent instructions
+├── .mcp.json                           # MCP server config (Claude Code)
+├── mcp.json                            # MCP server config (Cursor)
+├── AGENTS.md                           # Agent instructions
 ├── CLAUDE.md -> AGENTS.md
 └── assets/
     └── logo.svg
