@@ -2,7 +2,12 @@
 name: sentry-react-sdk
 description: Full Sentry SDK setup for React. Use when asked to "add Sentry to React", "install @sentry/react", or configure error monitoring, tracing, session replay, profiling, or logging for React applications. Supports React 16+, React Router v5-v7, TanStack Router, Redux, Vite, and webpack.
 license: Apache-2.0
+category: sdk-setup
+parent: sentry-sdk-setup
+disable-model-invocation: true
 ---
+
+> [All Skills](../../SKILL_TREE.md) > [SDK Setup](../sentry-sdk-setup/SKILL.md) > React SDK
 
 # Sentry React SDK
 

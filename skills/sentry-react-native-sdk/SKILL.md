@@ -2,7 +2,12 @@
 name: sentry-react-native-sdk
 description: Full Sentry SDK setup for React Native and Expo. Use when asked to "add Sentry to React Native", "install @sentry/react-native", "setup Sentry in Expo", or configure error monitoring, tracing, profiling, session replay, or logging for React Native applications. Supports Expo managed, Expo bare, and vanilla React Native.
 license: Apache-2.0
+category: sdk-setup
+parent: sentry-sdk-setup
+disable-model-invocation: true
 ---
+
+> [All Skills](../../SKILL_TREE.md) > [SDK Setup](../sentry-sdk-setup/SKILL.md) > React Native SDK
 
 # Sentry React Native SDK
 

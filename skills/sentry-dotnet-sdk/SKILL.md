@@ -2,7 +2,12 @@
 name: sentry-dotnet-sdk
 description: Full Sentry SDK setup for .NET. Use when asked to "add Sentry to .NET", "install Sentry for C#", or configure error monitoring, tracing, profiling, logging, or crons for ASP.NET Core, MAUI, WPF, WinForms, Blazor, Azure Functions, or any other .NET application.
 license: Apache-2.0
+category: sdk-setup
+parent: sentry-sdk-setup
+disable-model-invocation: true
 ---
+
+> [All Skills](../../SKILL_TREE.md) > [SDK Setup](../sentry-sdk-setup/SKILL.md) > .NET SDK
 
 # Sentry .NET SDK
 
