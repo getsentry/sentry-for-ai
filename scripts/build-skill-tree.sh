@@ -180,7 +180,7 @@ build_table_rows() {
   shift
   local skills=("$@")
 
-  for name in "${skills[@]}"; do
+  for name in ${skills[@]+"${skills[@]}"}; do
     local file desc col_val
     file="$(skill_get "$name" file)"
     desc="$(skill_get "$name" desc)"
@@ -215,7 +215,7 @@ HEADER
     "$sdk_router" "skills/$sdk_router/SKILL.md"
   printf "| Skill | Path | %s |\n" "$col_sdk"
   printf "|---|---|---|\n"
-  build_table_rows "sdk-setup" "${SKILLS_SDK_SETUP[@]}"
+  build_table_rows "sdk-setup" ${SKILLS_SDK_SETUP[@]+"${SKILLS_SDK_SETUP[@]}"}
 
   # Workflow
   col_wf="$(column_header workflow)"
@@ -223,7 +223,7 @@ HEADER
     "$wf_router" "skills/$wf_router/SKILL.md"
   printf "| Skill | Path | %s |\n" "$col_wf"
   printf "|---|---|---|\n"
-  build_table_rows "workflow" "${SKILLS_WORKFLOW[@]}"
+  build_table_rows "workflow" ${SKILLS_WORKFLOW[@]+"${SKILLS_WORKFLOW[@]}"}
 
   # Feature Setup
   col_fs="$(column_header feature-setup)"
@@ -231,14 +231,14 @@ HEADER
     "$fs_router" "skills/$fs_router/SKILL.md"
   printf "| Skill | Path | %s |\n" "$col_fs"
   printf "|---|---|---|\n"
-  build_table_rows "feature-setup" "${SKILLS_FEATURE_SETUP[@]}"
+  build_table_rows "feature-setup" ${SKILLS_FEATURE_SETUP[@]+"${SKILLS_FEATURE_SETUP[@]}"}
 
   # Internal (no router)
   col_int="$(column_header internal)"
   printf "\n## Internal\n\n"
   printf "| Skill | Path | %s |\n" "$col_int"
   printf "|---|---|---|\n"
-  build_table_rows "internal" "${SKILLS_INTERNAL[@]}"
+  build_table_rows "internal" ${SKILLS_INTERNAL[@]+"${SKILLS_INTERNAL[@]}"}
 
   printf "\n"
 }
@@ -371,7 +371,7 @@ echo "Summary: ${TOTAL_SKILLS} skills scanned, ${TOTAL_ROUTERS} routers, ${#ERRO
 if [[ ${#ERRORS[@]} -gt 0 ]]; then
   echo ""
   echo "Errors:"
-  for e in "${ERRORS[@]}"; do
+  for e in ${ERRORS[@]+"${ERRORS[@]}"}; do
     echo "  $e"
   done
   exit 1
