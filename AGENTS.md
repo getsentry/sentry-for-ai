@@ -69,3 +69,36 @@ Sentry MCP server configured at `https://mcp.sentry.dev/mcp`. Two config files e
 - Sentry code review skill only processes comments from `sentry[bot]`, ignores other bots
 - GitHub CLI (`gh`) required for PR-related skills
 - Avoid emojis in skill/command content — keep output platform-neutral
+
+## Skill Tree Navigation
+
+**How it works:**
+- 3 router skills (always visible in agent metadata): `sentry-sdk-setup`, `sentry-workflow`, `sentry-feature-setup`
+- All other skills are hidden with `disable-model-invocation: true` — loaded on-demand when a router points to them
+- `SKILL_TREE.md` at repo root is the flat sitemap listing every skill
+- This keeps startup metadata at ~300 tokens instead of ~1,600+ as the library grows
+- Tools that don't support `disable-model-invocation` simply see all skills (same as before)
+
+**Categories:**
+- `sdk-setup` — platform/language SDK setup wizards (router: `sentry-sdk-setup`)
+- `workflow` — debugging, code review, issue management (router: `sentry-workflow`)
+- `feature-setup` — specific feature configuration (router: `sentry-feature-setup`)
+- `internal` — contributor tools, no router
+
+**Adding a new skill:**
+1. Create `skills/<skill-name>/SKILL.md` with standard frontmatter
+2. Add `category`, `parent`, `disable-model-invocation: true` to frontmatter
+3. Add breadcrumb as first body line: `> [All Skills](../../SKILL_TREE.md) > [Category](../router/SKILL.md) > Skill Name`
+4. Add the skill to the parent router's routing table
+5. Run `scripts/build-skill-tree.sh` to regenerate `SKILL_TREE.md` and validate
+6. CI validates automatically on PRs touching `skills/**`
+
+**Adding a new category:**
+- When a category exceeds ~10 skills, consider splitting
+- Create a new router skill with `role: router` in frontmatter
+- Update existing skills' `category` and `parent` fields
+- Update this file to document the new category
+
+**Validation:**
+- `scripts/build-skill-tree.sh` — regenerates `SKILL_TREE.md`, validates all frontmatter, breadcrumbs, and router tables
+- `scripts/build-skill-tree.sh --check` — CI mode, fails if `SKILL_TREE.md` is stale or validation errors exist
