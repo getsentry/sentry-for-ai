@@ -2,7 +2,12 @@
 name: sentry-ruby-sdk
 description: Full Sentry SDK setup for Ruby. Use when asked to add Sentry to Ruby, install sentry-ruby, setup Sentry in Rails/Sinatra/Rack, or configure error monitoring, tracing, logging, metrics, profiling, or crons for Ruby applications. Also handles migration from AppSignal, Honeybadger, Bugsnag, Rollbar, or Airbrake. Supports Rails, Sinatra, Rack, Sidekiq, and Resque.
 license: Apache-2.0
+category: sdk-setup
+parent: sentry-sdk-setup
+disable-model-invocation: true
 ---
+
+> [All Skills](../../SKILL_TREE.md) > [SDK Setup](../sentry-sdk-setup/SKILL.md) > Ruby SDK
 
 # Sentry Ruby SDK
 

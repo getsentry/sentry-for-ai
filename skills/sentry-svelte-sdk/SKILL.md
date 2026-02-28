@@ -2,7 +2,12 @@
 name: sentry-svelte-sdk
 description: Full Sentry SDK setup for Svelte and SvelteKit. Use when asked to "add Sentry to Svelte", "add Sentry to SvelteKit", "install @sentry/sveltekit", or configure error monitoring, tracing, session replay, or logging for Svelte or SvelteKit applications.
 license: Apache-2.0
+category: sdk-setup
+parent: sentry-sdk-setup
+disable-model-invocation: true
 ---
+
+> [All Skills](../../SKILL_TREE.md) > [SDK Setup](../sentry-sdk-setup/SKILL.md) > Svelte SDK
 
 # Sentry Svelte SDK
 
