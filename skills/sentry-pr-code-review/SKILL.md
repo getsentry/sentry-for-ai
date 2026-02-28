@@ -2,7 +2,12 @@
 name: sentry-pr-code-review
 description: Review a project's PRs to check for issues detected in code review by Seer Bug Prediction. Use when asked to review or fix issues identified by Sentry in PR comments, or to find recent PRs with Sentry feedback.
 license: Apache-2.0
+category: workflow
+parent: sentry-workflow
+disable-model-invocation: true
 ---
+
+> [All Skills](../../SKILL_TREE.md) > [Workflow](../sentry-workflow/SKILL.md) > PR Code Review
 
 # Sentry Code Review
 
