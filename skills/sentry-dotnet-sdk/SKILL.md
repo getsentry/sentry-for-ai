@@ -113,13 +113,17 @@ Propose: *"I recommend setting up Error Monitoring + Tracing + Logging. Want me 
 
 ### Option 1: Wizard (Recommended)
 
-```bash
-npx @sentry/wizard@latest -i dotnet
-```
+> **You need to run this yourself** — the wizard opens a browser for login and requires interactive input that the agent can't handle. Copy-paste into your terminal:
+>
+> ```
+> npx @sentry/wizard@latest -i dotnet
+> ```
+>
+> It handles login, org/project selection, DSN configuration, and MSBuild symbol upload setup for readable stack traces in production.
+>
+> **Once it finishes, come back and skip to [Verification](#verification).**
 
-The wizard logs you into Sentry, selects your org and project, configures your DSN, and sets up MSBuild symbol upload for readable stack traces in production.
-
-**Skip to [Verification](#verification) after running the wizard.**
+If the user skips the wizard, proceed with Option 2 (Manual Setup) below.
 
 ---
 
