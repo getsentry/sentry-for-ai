@@ -30,3 +30,12 @@ Detect the user's platform from project files (e.g. `package.json`, `go.mod`, `G
 3. If Next.js is detected, prefer `sentry-nextjs-sdk` over `sentry-react-sdk`.
 4. If React Native is detected, prefer `sentry-react-native-sdk` over `sentry-react-sdk`.
 5. If no match is found, direct the user to https://docs.sentry.io/platforms/ to find their platform.
+
+## Dynamic Skill Fetching
+
+If the matched SDK skill is **not installed locally**, fetch it directly from the repository:
+
+1. Build the raw URL: `https://raw.githubusercontent.com/getsentry/sentry-for-ai/main/skills/<skill-name>/SKILL.md`
+2. Fetch the file contents (e.g. `curl -sL <url>`) and follow its instructions.
+
+The [Skill Tree](../../SKILL_TREE.md) lists every available skill with its path — use it as the source of truth for valid skill names and paths.

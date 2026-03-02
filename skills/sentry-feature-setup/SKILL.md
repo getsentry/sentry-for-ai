@@ -22,3 +22,12 @@ Match the user's request to the appropriate feature skill below.
 1. If the user mentions AI monitoring, LLM tracing, or instrumenting an AI SDK → load `sentry-setup-ai-monitoring`.
 2. If the user mentions OpenTelemetry, OTel Collector, or multi-service telemetry routing → load `sentry-otel-exporter-setup`.
 3. If the user mentions alerts, notifications, on-call, Slack/PagerDuty integration, or workflow rules → load `sentry-create-alert`.
+
+## Dynamic Skill Fetching
+
+If the matched skill is **not installed locally**, fetch it directly from the repository:
+
+1. Build the raw URL: `https://raw.githubusercontent.com/getsentry/sentry-for-ai/main/skills/<skill-name>/SKILL.md`
+2. Fetch the file contents (e.g. `curl -sL <url>`) and follow its instructions.
+
+The [Skill Tree](../../SKILL_TREE.md) lists every available skill with its path — use it as the source of truth for valid skill names and paths.
