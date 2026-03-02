@@ -447,15 +447,17 @@ Source maps translate minified production stack traces back to your original sou
 
 The fastest path — automatically detects your bundler, installs the plugin, and configures auth:
 
-```bash
-npx @sentry/wizard@latest -i sourcemaps
-```
+> **You need to run this yourself** — the wizard opens a browser for login and requires interactive input that the agent can't handle. Copy-paste into your terminal:
+>
+> ```
+> npx @sentry/wizard@latest -i sourcemaps
+> ```
+>
+> It detects Vite/webpack/CRA, installs the appropriate Sentry bundler plugin, adds `SENTRY_AUTH_TOKEN` to `.env.sentry-build-plugin`, and configures `sourcemap: "hidden"` with `filesToDeleteAfterUpload`.
+>
+> **Once it finishes, come back and the agent will continue.**
 
-The wizard:
-1. Detects Vite, webpack, or CRA
-2. Installs the appropriate Sentry bundler plugin
-3. Adds `SENTRY_AUTH_TOKEN` to your `.env.sentry-build-plugin`
-4. Configures `sourcemap: "hidden"` and `filesToDeleteAfterUpload`
+If the user skips the wizard, proceed with manual bundler plugin setup below.
 
 ---
 

@@ -106,7 +106,7 @@ Propose: *"I recommend Error Monitoring + Tracing + Profiling. Want me to also a
 >
 > It handles login, org/project selection, auth token setup, SDK installation, AppDelegate updates, and dSYM/debug symbol upload build phases.
 >
-> **Once it finishes, come back and the agent will continue with configuration.**
+> **Once it finishes, come back and skip to [Verification](#verification).**
 
 If the user skips the wizard, proceed with Option 2 (SPM/CocoaPods) and manual setup below.
 
