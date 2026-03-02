@@ -96,11 +96,19 @@ Propose: *"I recommend Error Monitoring + Tracing + Profiling. Want me to also a
 
 ### Install
 
-**Option 1 — Sentry Wizard (recommended):** Walks you through login, org/project selection, and auth token setup interactively. Then installs the SDK, updates AppDelegate, adds dSYM/debug symbol upload build phases, and configures everything automatically.
+**Option 1 — Sentry Wizard (recommended):**
 
-```bash
-brew install getsentry/tools/sentry-wizard && sentry-wizard -i ios
-```
+> **You need to run this yourself** — the wizard opens a browser for login and requires interactive input that the agent can't handle. Copy-paste into your terminal:
+>
+> ```
+> brew install getsentry/tools/sentry-wizard && sentry-wizard -i ios
+> ```
+>
+> It handles login, org/project selection, auth token setup, SDK installation, AppDelegate updates, and dSYM/debug symbol upload build phases.
+>
+> **Once it finishes, come back and skip to [Verification](#verification).**
+
+If the user skips the wizard, proceed with Option 2 (SPM/CocoaPods) and manual setup below.
 
 **Option 2 — Swift Package Manager:** File → Add Packages → enter:
 ```

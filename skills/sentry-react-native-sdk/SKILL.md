@@ -120,27 +120,29 @@ Propose: *"For your [Expo managed / bare RN] app, I recommend setting up Error M
 
 ### Path A: Wizard CLI (Recommended for all project types)
 
-Run the wizard — it walks you through login, org/project selection, and auth token setup interactively. It then handles installation, native config, source map upload, and initial `Sentry.init()`:
+> **You need to run this yourself** — the wizard opens a browser for login and requires interactive input that the agent can't handle. Copy-paste into your terminal:
+>
+> ```
+> npx @sentry/wizard@latest -i reactNative
+> ```
+>
+> It handles login, org/project selection, SDK installation, native config, source map upload, and `Sentry.init()`. Here's what it creates/modifies:
+>
+> | File | Action | Purpose |
+> |------|--------|---------|
+> | `package.json` | Installs `@sentry/react-native` | Core SDK |
+> | `metro.config.js` | Adds `@sentry/react-native/metro` serializer | Source map generation |
+> | `app.json` | Adds `@sentry/react-native/expo` plugin (Expo only) | Config plugin for native builds |
+> | `App.tsx` / `_layout.tsx` | Adds `Sentry.init()` and `Sentry.wrap()` | SDK initialization |
+> | `ios/sentry.properties` | Stores org/project/token | iOS source map + dSYM upload |
+> | `android/sentry.properties` | Stores org/project/token | Android source map upload |
+> | `android/app/build.gradle` | Adds Sentry Gradle plugin | Android source maps + proguard |
+> | `ios/[AppName].xcodeproj` | Wraps "Bundle RN" build phase + adds dSYM upload | iOS symbol upload |
+> | `.env.local` | `SENTRY_AUTH_TOKEN` | Auth token (add to `.gitignore`) |
+>
+> **Once it finishes, come back and skip to [Verification](#verification).**
 
-```bash
-npx @sentry/wizard@latest -i reactNative
-```
-
-**What the wizard creates/modifies:**
-
-| File | Action | Purpose |
-|------|--------|---------|
-| `package.json` | Installs `@sentry/react-native` | Core SDK |
-| `metro.config.js` | Adds `@sentry/react-native/metro` serializer | Source map generation |
-| `app.json` | Adds `@sentry/react-native/expo` plugin (Expo only) | Config plugin for native builds |
-| `App.tsx` / `_layout.tsx` | Adds `Sentry.init()` and `Sentry.wrap()` | SDK initialization |
-| `ios/sentry.properties` | Stores org/project/token | iOS source map + dSYM upload |
-| `android/sentry.properties` | Stores org/project/token | Android source map upload |
-| `android/app/build.gradle` | Adds Sentry Gradle plugin | Android source maps + proguard |
-| `ios/[AppName].xcodeproj` | Wraps "Bundle RN" build phase + adds dSYM upload | iOS symbol upload |
-| `.env.local` | `SENTRY_AUTH_TOKEN` | Auth token (add to `.gitignore`) |
-
-After the wizard runs, skip to [Verification](#verification).
+If the user skips the wizard, proceed with Path B or C (Manual Setup) below based on their project type.
 
 ---
 

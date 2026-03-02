@@ -161,7 +161,7 @@ license: Apache-2.0
 
 ## Phase 3: Guide
 ### Option 1: Wizard (Recommended)   ← if wizard exists for this framework
-[wizard command, what it creates/modifies table, skip-to-verification note]
+[blockquote telling the user to run the wizard themselves — it requires interactive browser login. Include the command in a copy-pasteable code block inside the blockquote. Tell them to come back when done. Add a line after the blockquote: "If the user skips the wizard, proceed with Option 2 (Manual Setup) below."]
 ### Option 2: Manual Setup            ← always include
 ### Install
 ### Quick Start — Recommended Init
@@ -186,7 +186,7 @@ license: Apache-2.0
 ### Key Principles for the Main SKILL.md
 
 1. **Keep it lean** — deep details go in references, not here
-2. **Wizard-first for framework SDKs** — if the Sentry wizard supports this framework, present it as "Option 1: Wizard (Recommended)" before any manual setup. The wizard handles the full auth flow (login, org/project selection, auth token creation), source map upload, build tool plugins, and framework-specific wiring — all in one interactive step. See `${SKILL_ROOT}/references/philosophy.md` for the full pattern.
+2. **Wizard-first for framework SDKs** — if the Sentry wizard supports this framework, present it as "Option 1: Wizard (Recommended)" before any manual setup. **The wizard requires interactive browser login and cannot be run by the agent** — present it in a blockquote telling the user to copy-paste the command into their own terminal, and come back when done. If the user skips the wizard, the agent proceeds with full manual setup. See `${SKILL_ROOT}/references/philosophy.md` for the full pattern.
 3. **Source maps are non-negotiable for frontend/mobile** — the manual setup path must include source map upload configuration (build tool plugin + env vars). Without source maps, production stack traces are unreadable minified code.
 4. **Detection commands must be real** — test them against actual projects
 5. **Recommendation logic must be opinionated** — "always", "when X detected", not "maybe consider"

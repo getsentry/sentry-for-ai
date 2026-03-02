@@ -101,24 +101,31 @@ Recommendation logic:
 Many Sentry SDKs ship with a CLI wizard (`npx @sentry/wizard@latest -i <integration>`) that scaffolds the entire setup in one command. **When a wizard integration exists for the target framework, the skill must present it as the primary recommended path — before any manual instructions.**
 
 Why this matters:
-- The wizard walks through **authentication interactively** — it opens the browser for login, lets the user select their Sentry org and project, and creates/downloads the auth token automatically. No manual token creation or copy-pasting from the Sentry dashboard.
 - The wizard configures **source map upload** automatically — without source maps, production stack traces show minified garbage. This is the single most common setup mistake in frontend projects.
 - The wizard handles framework-specific wiring (hook files, config plugins, build tool plugins) that's easy to get wrong manually.
 - The wizard creates a test page/component for immediate verification.
+
+**The wizard requires interactive input (browser-based login, org/project selection) and cannot be run by the agent.** The skill must tell the user to run the command themselves in their terminal. If the user skips the wizard, the agent proceeds with full manual setup.
 
 **Pattern for skills with wizard support:**
 
 ```markdown
 ### Option 1: Wizard (Recommended)
 
-\`\`\`bash
-npx @sentry/wizard@latest -i <framework>
-\`\`\`
+> **You need to run this yourself** — the wizard opens a browser for login
+> and requires interactive input that the agent can't handle.
+> Copy-paste into your terminal:
+>
+> \`\`\`
+> npx @sentry/wizard@latest -i <framework>
+> \`\`\`
+>
+> It handles login, org/project selection, SDK installation, source map
+> upload configuration, and creates a test page for verification.
+>
+> **Once it finishes, come back and skip to [Verification](#verification).**
 
-The wizard walks you through login, org/project selection, and auth token
-setup interactively. It then handles installation, SDK initialization,
-source map upload configuration, and creates a test page for verification.
-Skip to [Verification](#verification) after running it.
+If the user skips the wizard, proceed with Option 2 (Manual Setup) below.
 
 ### Option 2: Manual Setup
 
@@ -145,7 +152,7 @@ Skip to [Verification](#verification) after running it.
 | `android` | Android |
 | `dotnet` | .NET |
 
-> **Important:** Even when the wizard is available, the skill must still include full manual setup instructions. The wizard may not cover all configuration options, and some users work in environments where interactive CLIs aren't practical (CI, Docker, restricted shells). The manual path is the fallback, not an afterthought — it must be complete.
+> **Important:** Even when the wizard is available, the skill must still include full manual setup instructions. The wizard may not cover all configuration options, and some users or agents work in environments where interactive CLIs aren't practical. The manual path is the fallback, not an afterthought — it must be complete.
 
 #### Source Maps: The Non-Negotiable for Frontend
 
