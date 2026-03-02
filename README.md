@@ -42,8 +42,16 @@ Set up OTel Collector with Sentry exporter
 
 ### Claude Code
 
+Install from the command line:
+
 ```bash
-/install-plugin sentry
+claude plugins add sentry@claude-plugins-official
+```
+
+Or use the interactive plugin manager inside Claude Code:
+
+```bash
+/plugin install sentry@claude-plugins-official
 ```
 
 Restart Claude Code to activate, then verify:
@@ -62,12 +70,60 @@ Search for **Sentry** in Cursor Settings > Extensions and install.
 ```bash
 git clone https://github.com/getsentry/sentry-for-ai.git
 
-# Claude Code
-/install-plugin file:///path/to/sentry-for-ai
+# Claude Code (CLI)
+claude plugins add file:///path/to/sentry-for-ai
+
+# Claude Code (in-app)
+/plugin install file:///path/to/sentry-for-ai
 
 # Cursor
 # Add the plugin path in Cursor Settings > Extensions > Install from path
 ```
+
+## Installing Skills Without the Plugin
+
+If you want to install individual Sentry skills directly into your project without the full plugin, use [dotagents](https://dotagents.sentry.dev):
+
+### Quick Start
+
+1. **Initialize dotagents in your project:**
+
+```bash
+npx @sentry/dotagents init
+```
+
+This creates an `agents.toml` file and `.agents/skills/` directory.
+
+2. **Add Sentry skills:**
+
+```bash
+# Install all Sentry skills
+npx @sentry/dotagents add getsentry/sentry-for-ai
+
+# Or install specific skills
+npx @sentry/dotagents add getsentry/sentry-for-ai --name sentry-nextjs-sdk
+npx @sentry/dotagents add getsentry/sentry-for-ai --name sentry-python-sdk
+npx @sentry/dotagents add getsentry/sentry-for-ai --name sentry-fix-issues
+```
+
+3. **Install dependencies:**
+
+```bash
+npx @sentry/dotagents install
+```
+
+### Dotagents Commands
+
+| Command | Description |
+|---------|-------------|
+| `init` | Create `agents.toml` and `.agents/skills/` directory |
+| `add <source>` | Add a skill dependency |
+| `install` | Install all skills from `agents.toml` |
+| `update [name]` | Update skills to latest versions |
+| `list` | Show installed skills and status |
+| `remove <name>` | Remove a skill |
+
+Dotagents works with **Claude Code, Cursor, Codex, VS Code, and OpenCode** from a single `agents.toml` configuration file. Learn more at [dotagents.sentry.dev](https://dotagents.sentry.dev).
 
 ## Skills
 
