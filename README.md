@@ -42,16 +42,8 @@ Set up OTel Collector with Sentry exporter
 
 ### Claude Code
 
-Install from the command line:
-
 ```bash
-claude plugins add sentry@claude-plugins-official
-```
-
-Or use the interactive plugin manager inside Claude Code:
-
-```bash
-/plugin install sentry@claude-plugins-official
+claude plugin install sentry
 ```
 
 Restart Claude Code to activate, then verify:
@@ -70,11 +62,8 @@ Search for **Sentry** in Cursor Settings > Extensions and install.
 ```bash
 git clone https://github.com/getsentry/sentry-for-ai.git
 
-# Claude Code (CLI)
-claude plugins add file:///path/to/sentry-for-ai
-
-# Claude Code (in-app)
-/plugin install file:///path/to/sentry-for-ai
+# Claude Code
+claude plugin install file:///path/to/sentry-for-ai
 
 # Cursor
 # Add the plugin path in Cursor Settings > Extensions > Install from path
@@ -98,12 +87,12 @@ This creates an `agents.toml` file and `.agents/skills/` directory.
 
 ```bash
 # Install all Sentry skills
-npx @sentry/dotagents add getsentry/sentry-for-ai
+npx @sentry/dotagents add getsentry/sentry-for-ai --all
 
 # Or install specific skills
-npx @sentry/dotagents add getsentry/sentry-for-ai --name sentry-nextjs-sdk
-npx @sentry/dotagents add getsentry/sentry-for-ai --name sentry-python-sdk
-npx @sentry/dotagents add getsentry/sentry-for-ai --name sentry-fix-issues
+npx @sentry/dotagents add getsentry/sentry-for-ai --skill sentry-nextjs-sdk
+npx @sentry/dotagents add getsentry/sentry-for-ai --skill sentry-python-sdk
+npx @sentry/dotagents add getsentry/sentry-for-ai --skill sentry-fix-issues
 ```
 
 3. **Install dependencies:**
