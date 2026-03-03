@@ -268,7 +268,7 @@ With the Sentry Android Gradle plugin, `android.util.Log` calls are bytecode-ins
 
 ```groovy
 // android/build.gradle (module)
-sentryPlugin {
+sentry {
     autoInstallation.enabled = true
     tracingInstrumentation {
         features = [InstrumentationFeature.LOGCAT]
