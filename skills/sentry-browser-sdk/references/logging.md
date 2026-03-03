@@ -4,7 +4,7 @@
 > `consoleLoggingIntegration()`: requires ≥10.13.0+  
 > Scope-based attributes (`getGlobalScope`, `getIsolationScope`): requires ≥10.32.0+
 
-> ⚠️ **NPM install required** — Sentry logging is **not available** via the Loader Script or CDN bundles. You must install `@sentry/browser` via npm/yarn/pnpm.
+> ⚠️ **NPM or CDN logs bundle required** — Sentry logging is **not available** via the Loader Script. Use npm/yarn/pnpm (`@sentry/browser`) or a CDN bundle with `.logs.` in its name (e.g., `bundle.logs.metrics.min.js`).
 
 ---
 

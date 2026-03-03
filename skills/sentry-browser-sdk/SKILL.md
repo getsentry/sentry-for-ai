@@ -70,7 +70,7 @@ cat package.json 2>/dev/null | grep -E '"express"|"fastify"|"@nestjs/core"|"koa"
 |-------------------|-------------|
 | `next` | Load `sentry-nextjs-sdk` skill — **do not proceed here** |
 | `react` (without Next.js) | Load `sentry-react-sdk` skill — **do not proceed here** |
-| `vue` or `nuxt` | Load `sentry-python-sdk` or suggest `@sentry/vue` / `@sentry/nuxt` — see [docs.sentry.io/platforms/javascript/guides/vue/](https://docs.sentry.io/platforms/javascript/guides/vue/) |
+| `vue` | Suggest `@sentry/vue` — see [docs.sentry.io/platforms/javascript/guides/vue/](https://docs.sentry.io/platforms/javascript/guides/vue/) |
 | `@angular/core` | Suggest `@sentry/angular` — see [docs.sentry.io/platforms/javascript/guides/angular/](https://docs.sentry.io/platforms/javascript/guides/angular/) |
 | `@sveltejs/kit` | Load `sentry-svelte-sdk` skill — **do not proceed here** |
 | `svelte` (SPA, no kit) | Suggest `@sentry/svelte` — see [docs.sentry.io/platforms/javascript/guides/svelte/](https://docs.sentry.io/platforms/javascript/guides/svelte/) |
@@ -131,7 +131,7 @@ Present a recommendation based on what you found. Lead with a concrete proposal,
 
 **Optional (enhanced observability):**
 - ⚡ **User Feedback** — capture reports directly from users after errors
-- ⚡ **Logging** — structured logs via `Sentry.logger.*`; **npm only** (not available for Loader Script or CDN)
+- ⚡ **Logging** — structured logs via `Sentry.logger.*`; requires npm or CDN logs bundle (not available via Loader Script)
 - ⚡ **Profiling** — JS Self-Profiling API; beta, Chromium-only, requires `Document-Policy: js-profiling` response header
 
 **Feature recommendation logic:**
@@ -514,7 +514,7 @@ Walk through features one at a time. Load the reference file, follow its steps, 
 | Error Monitoring | `${SKILL_ROOT}/references/error-monitoring.md` | Always (baseline) |
 | Tracing | `${SKILL_ROOT}/references/tracing.md` | Page load / API call tracing |
 | Session Replay | `${SKILL_ROOT}/references/session-replay.md` | User-facing app |
-| Logging | `${SKILL_ROOT}/references/logging.md` | Structured log search; **npm only** |
+| Logging | `${SKILL_ROOT}/references/logging.md` | Structured log search; npm or CDN logs bundle (not Loader Script) |
 | Profiling | `${SKILL_ROOT}/references/profiling.md` | Performance-critical, Chromium-only |
 | User Feedback | `${SKILL_ROOT}/references/user-feedback.md` | Capture user reports after errors |
 
@@ -537,7 +537,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `tracePropagationTargets` | `(string\|RegExp)[]` | same-origin | Outgoing URLs that receive distributed tracing headers |
 | `replaysSessionSampleRate` | `number` | — | Fraction of all sessions recorded |
 | `replaysOnErrorSampleRate` | `number` | — | Fraction of error sessions recorded |
-| `enableLogs` | `boolean` | `false` | Enable `Sentry.logger.*` API (npm only) |
+| `enableLogs` | `boolean` | `false` | Enable `Sentry.logger.*` API (npm or CDN logs bundle; not Loader Script) |
 | `attachStackTrace` | `boolean` | `false` | Stack traces on `captureMessage()` calls |
 | `maxBreadcrumbs` | `number` | `100` | Breadcrumbs stored per event |
 | `debug` | `boolean` | `false` | Verbose SDK output to console |
@@ -596,7 +596,7 @@ Check the Sentry dashboard:
 - **Issues** → error appears within seconds
 - **Traces** → page load transaction visible
 - **Replays** → session recording visible after page interaction
-- **Logs** → structured log entries if logging enabled (npm only)
+- **Logs** → structured log entries if logging enabled (npm or CDN logs bundle)
 
 Set `debug: true` in `Sentry.init()` and check the browser console if nothing appears.
 
@@ -642,7 +642,7 @@ If a backend exists without Sentry configured, suggest the matching skill:
 | Loader Script not firing | Verify it's the **first** `<script>` on the page; check for CSP errors in console |
 | Tracing not working with Loader | Fetch calls before SDK loads won't be traced — wrap early calls in `Sentry.onLoad()` |
 | `sentryOnLoad` not called | Must define `window.sentryOnLoad` **before** the loader `<script>` tag |
-| Logging not available | `Sentry.logger.*` is npm only — not supported in Loader Script or CDN paths |
+| Logging not available | `Sentry.logger.*` requires npm or a CDN bundle with `.logs.` in its name — not supported via Loader Script |
 | Profiling not working | Verify `Document-Policy: js-profiling` header on document responses; Chromium-only |
 | Ad blockers dropping events | Set `tunnel: "/sentry-tunnel"` and add a server-side relay endpoint |
 | Session replay not recording | Confirm `replayIntegration()` is in init; check `replaysSessionSampleRate` > 0 |
