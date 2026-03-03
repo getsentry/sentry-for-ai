@@ -1,6 +1,6 @@
 # Crons — Sentry NestJS SDK
 
-> Minimum SDK: `@sentry/nestjs` 8.16.0+ for `@SentryCron` decorator; 7.76.0+ for `withMonitor()`
+> Minimum SDK: `@sentry/nestjs` 8.16.0+ for `@SentryCron` decorator; `@sentry/node` 7.76.0+ for `withMonitor()`
 
 ## Overview
 
@@ -44,7 +44,7 @@ export class AppModule {}
 ```typescript
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
-import { SentryCron, MonitorConfig } from "@sentry/nestjs";
+import { SentryCron } from "@sentry/nestjs";
 import type { MonitorConfig } from "@sentry/core";
 
 @Injectable()
