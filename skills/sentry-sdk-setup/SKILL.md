@@ -16,6 +16,7 @@ Detect the user's platform from project files (e.g. `package.json`, `go.mod`, `G
 | `sentry-cocoa-sdk` | iOS, macOS, tvOS, watchOS, visionOS | Swift, SwiftUI, UIKit |
 | `sentry-dotnet-sdk` | .NET, C# | ASP.NET Core, MAUI, WPF, Blazor, Azure Functions |
 | `sentry-go-sdk` | Go | net/http, Gin, Echo, Fiber |
+| `sentry-nestjs-sdk` | NestJS | Express, Fastify, GraphQL, Microservices |
 | `sentry-nextjs-sdk` | Next.js | App Router, Pages Router |
 | `sentry-python-sdk` | Python | Django, Flask, FastAPI, Celery |
 | `sentry-react-native-sdk` | React Native | Expo managed, Expo bare |
