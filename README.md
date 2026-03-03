@@ -64,6 +64,7 @@ Restart Claude Code to activate, then verify:
 ### Cursor
 
 Search for **Sentry** in Cursor Settings > Extensions and install.
+
 ## Installing Skills Without the Plugin
 
 If you want to install individual Sentry skills directly into your project without the full plugin, use [dotagents](https://dotagents.sentry.dev):
