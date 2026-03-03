@@ -32,6 +32,7 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 | `sentry-nestjs-sdk` | Full setup wizard for NestJS (Express, Fastify, GraphQL, Microservices) |
 | `sentry-node-sdk` | Full setup wizard for Node.js, Bun, and Deno (Express, Fastify, Koa, Hapi, Connect) |
 | `sentry-nextjs-sdk` | Full setup wizard for Next.js (App Router + Pages Router) |
+| `sentry-php-sdk` | Full setup wizard for PHP (Laravel, Symfony) |
 | `sentry-python-sdk` | Full setup wizard for Python (Django, Flask, FastAPI, Celery) |
 | `sentry-react-native-sdk` | Full setup wizard for React Native and Expo |
 | `sentry-react-sdk` | Full setup wizard for React (Router v5-v7, TanStack, Redux) |
