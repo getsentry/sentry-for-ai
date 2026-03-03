@@ -42,8 +42,16 @@ Set up OTel Collector with Sentry exporter
 
 ### Claude Code
 
+Add the Sentry marketplace:
+
 ```bash
-claude plugin install sentry
+claude plugin marketplace add getsentry/sentry-for-ai
+```
+
+Then install the plugin:
+
+```bash
+claude plugin install https://github.com/getsentry/sentry-for-ai
 ```
 
 Restart Claude Code to activate, then verify:
@@ -56,19 +64,6 @@ Restart Claude Code to activate, then verify:
 ### Cursor
 
 Search for **Sentry** in Cursor Settings > Extensions and install.
-
-### From Source
-
-```bash
-git clone https://github.com/getsentry/sentry-for-ai.git
-
-# Claude Code
-claude plugin install file:///path/to/sentry-for-ai
-
-# Cursor
-# Add the plugin path in Cursor Settings > Extensions > Install from path
-```
-
 ## Installing Skills Without the Plugin
 
 If you want to install individual Sentry skills directly into your project without the full plugin, use [dotagents](https://dotagents.sentry.dev):
