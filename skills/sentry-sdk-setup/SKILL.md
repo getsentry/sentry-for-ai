@@ -22,6 +22,7 @@ Detect the user's platform from project files (e.g. `package.json`, `go.mod`, `G
 | `sentry-node-sdk` | Node.js, Bun, Deno | Express, Fastify, Koa, Hapi, Connect, Bun.serve(), Deno.serve() |
 | `sentry-php-sdk` | PHP | Laravel, Symfony |
 | `sentry-python-sdk` | Python | Django, Flask, FastAPI, Celery |
+| `sentry-browser-sdk` | Browser JavaScript | Vanilla JS, jQuery, WordPress, static sites, CDN |
 | `sentry-react-native-sdk` | React Native | Expo managed, Expo bare |
 | `sentry-react-sdk` | React | React Router, TanStack, Redux |
 | `sentry-ruby-sdk` | Ruby | Rails, Sinatra, Sidekiq |
@@ -37,7 +38,8 @@ Detect the user's platform from project files (e.g. `package.json`, `go.mod`, `G
 6. If React Native is detected, prefer `sentry-react-native-sdk` over `sentry-react-sdk`.
 7. If `composer.json` with `laravel/framework` or `symfony/framework-bundle` is detected, use `sentry-php-sdk`.
 8. If Node.js, Bun, or Deno is detected without a specific framework skill above, use `sentry-node-sdk`.
-9. If no match is found, direct the user to https://docs.sentry.io/platforms/ to find their platform.
+9. If vanilla JavaScript, jQuery, WordPress, a static HTML site, or a browser project without a framework is detected, use `sentry-browser-sdk`.
+10. If no match is found, direct the user to https://docs.sentry.io/platforms/ to find their platform.
 
 ## Dynamic Skill Fetching
 

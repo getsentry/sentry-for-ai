@@ -15,6 +15,7 @@ This file maps the full skill structure for the Sentry-for-AI plugin. Read it to
 | Skill | Path | Platform |
 |---|---|---|
 | [`sentry-android-sdk`](skills/sentry-android-sdk/SKILL.md) | skills/sentry-android-sdk/SKILL.md | Android |
+| [`sentry-browser-sdk`](skills/sentry-browser-sdk/SKILL.md) | skills/sentry-browser-sdk/SKILL.md | browser JavaScript |
 | [`sentry-cocoa-sdk`](skills/sentry-cocoa-sdk/SKILL.md) | skills/sentry-cocoa-sdk/SKILL.md | Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) |
 | [`sentry-dotnet-sdk`](skills/sentry-dotnet-sdk/SKILL.md) | skills/sentry-dotnet-sdk/SKILL.md | .NET |
 | [`sentry-go-sdk`](skills/sentry-go-sdk/SKILL.md) | skills/sentry-go-sdk/SKILL.md | Go |
