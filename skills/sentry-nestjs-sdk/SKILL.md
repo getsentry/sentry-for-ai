@@ -417,7 +417,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `tracesSampler` | `function` | — | Custom per-transaction sampling (overrides rate) |
 | `tracePropagationTargets` | `Array<string\|RegExp>` | — | URLs to propagate `sentry-trace`/`baggage` headers to |
 | `profileSessionSampleRate` | `number` | — | Continuous profiling session rate (SDK ≥ 10.27.0) |
-| `profileLifecycle` | `"trace"\|"manual"` | `"manual"` | `"trace"` = auto-start profiler with spans |
+| `profileLifecycle` | `"trace"\|"manual"` | `"trace"` | `"trace"` = auto-start profiler with spans; `"manual"` = call `startProfiler()`/`stopProfiler()` |
 | `enableLogs` | `boolean` | `false` | Send structured logs to Sentry (SDK ≥ 9.41.0) |
 | `ignoreErrors` | `Array<string\|RegExp>` | `[]` | Error message patterns to suppress |
 | `ignoreTransactions` | `Array<string\|RegExp>` | `[]` | Transaction name patterns to suppress |
@@ -450,7 +450,7 @@ These integrations activate automatically when their packages are detected — n
 | `onUncaughtExceptionIntegration` | Uncaught exceptions |
 | `onUnhandledRejectionIntegration` | Unhandled promise rejections |
 | `openAIIntegration` | OpenAI SDK (when installed) |
-| `anthropicIntegration` | Anthropic SDK (when installed) |
+| `anthropicAIIntegration` | Anthropic SDK (when installed) |
 | `langchainIntegration` | LangChain (when installed) |
 | `graphqlIntegration` | GraphQL (when `graphql` package present) |
 | `postgresIntegration` | `pg` driver |

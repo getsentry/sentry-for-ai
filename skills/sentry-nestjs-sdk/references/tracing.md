@@ -451,7 +451,7 @@ Sentry.init({
 | MySQL2 | ✅ | `mysql2Integration` |
 | MongoDB | ✅ | `mongoIntegration` |
 | Mongoose | ✅ | `mongooseIntegration` |
-| Prisma | ✅ | `prismaIntegration` |
+| Prisma | ⚠️ Manual | `prismaIntegration` — add explicitly: `integrations: [Sentry.prismaIntegration()]` |
 | SQL Server (Tedious) | ✅ | `tediousIntegration` |
 | Knex | ❌ | Must add manually |
 | TypeORM | ❌ | Use `opentelemetry-instrumentation-typeorm` community package |
@@ -592,7 +592,7 @@ Sentry.init({
 | `@OnEvent` handler spans | `SentryNestEventInstrumentation` (patches `@OnEvent`) |
 | GraphQL queries/mutations/resolvers | `graphqlIntegration` |
 | AMQP/RabbitMQ + Kafka messages | `amqplibIntegration` + `kafkaIntegration` |
-| Redis, MongoDB, Mongoose, MySQL, PG, Prisma | Auto-integrations |
+| Redis, MongoDB, Mongoose, MySQL, PG | Auto-integrations |
 | Outgoing HTTP (axios, fetch, http) | `httpIntegration` + `nativeNodeFetchIntegration` |
 | Any OTel instrumentation | Auto-forwarded via OTel bridge |
 
