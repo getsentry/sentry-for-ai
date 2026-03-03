@@ -51,7 +51,7 @@ claude plugin marketplace add getsentry/sentry-for-ai
 Then install the plugin:
 
 ```bash
-claude plugin install https://github.com/getsentry/sentry-for-ai
+claude plugin install sentry@sentry-for-ai
 ```
 
 Restart Claude Code to activate, then verify:
