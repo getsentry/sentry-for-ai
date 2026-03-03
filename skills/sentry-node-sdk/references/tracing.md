@@ -597,30 +597,9 @@ await server.start();
 
 ### NestJS
 
-```typescript
-// main.ts
-import * as Sentry from "@sentry/node";
-Sentry.init({ dsn: "...", tracesSampleRate: 1.0 });
-
-// app.module.ts
-import { SentryModule } from "@sentry/nestjs/setup";
-
-@Module({
-  imports: [SentryModule.forRoot()],
-})
-export class AppModule {}
-
-// In controllers — use the @SentryTraced() decorator
-import { SentryTraced } from "@sentry/nestjs";
-
-@Injectable()
-export class OrderService {
-  @SentryTraced("processOrder")
-  async processOrder(orderId: string) {
-    return db.orders.findUnique({ where: { id: orderId } });
-  }
-}
-```
+> **NestJS has a dedicated skill: [`sentry-nestjs-sdk`](../sentry-nestjs-sdk/SKILL.md)**
+> It covers `SentryModule.forRoot()`, `@SentryTraced` decorator for custom spans,
+> `SentryTracingInterceptor`, and GraphQL resolver tracing.
 
 ---
 

@@ -19,7 +19,10 @@ Opinionated wizard that scans your project and guides you through complete Sentr
 - User wants to install or configure `@sentry/node`, `@sentry/bun`, or `@sentry/deno`
 - User wants error monitoring, tracing, logging, profiling, crons, metrics, or AI monitoring for a backend JS/TS app
 - User asks about `instrument.js`, `--import ./instrument.mjs`, `bun --preload`, or `npm:@sentry/deno`
-- User wants to monitor Express, Fastify, Koa, Hapi, Connect, NestJS, Bun.serve(), or Deno.serve()
+- User wants to monitor Express, Fastify, Koa, Hapi, Connect, Bun.serve(), or Deno.serve()
+
+> **NestJS?** Use [`sentry-nestjs-sdk`](../sentry-nestjs-sdk/SKILL.md) instead — it uses `@sentry/nestjs` with NestJS-native decorators and filters.
+> **Next.js?** Use [`sentry-nextjs-sdk`](../sentry-nextjs-sdk/SKILL.md) instead — it handles the three-runtime architecture (browser, server, edge).
 
 > **Note:** SDK versions below reflect current Sentry docs at time of writing (`@sentry/node` ≥10.42.0, `@sentry/bun` ≥10.42.0, `@sentry/deno` ≥10.42.0).
 > Always verify against [docs.sentry.io/platforms/javascript/guides/node/](https://docs.sentry.io/platforms/javascript/guides/node/) before implementing.
@@ -312,42 +315,12 @@ Sentry.setupConnectErrorHandler(app);
 require("http").createServer(app).listen(3000);
 ```
 
-**NestJS** — uses `@sentry/nestjs` (separate package):
+**NestJS** — has its own dedicated skill with full coverage:
 
-```bash
-npm install @sentry/nestjs --save
-```
-
-```typescript
-// instrument.ts
-import * as Sentry from "@sentry/nestjs";
-
-Sentry.init({
-  dsn: process.env.SENTRY_DSN ?? "___DSN___",
-  tracesSampleRate: 1.0,
-  sendDefaultPii: true,
-  enableLogs: true,
-});
-```
-
-```typescript
-// app.module.ts
-import { Module } from "@nestjs/common";
-import { APP_FILTER } from "@nestjs/core";
-import { SentryModule } from "@sentry/nestjs/setup";
-import { SentryGlobalFilter } from "@sentry/nestjs/setup";
-
-@Module({
-  imports: [SentryModule.forRoot()],
-  providers: [
-    {
-      provide: APP_FILTER,
-      useClass: SentryGlobalFilter,
-    },
-  ],
-})
-export class AppModule {}
-```
+> **Use the [`sentry-nestjs-sdk`](../sentry-nestjs-sdk/SKILL.md) skill instead.**
+> NestJS uses a separate package (`@sentry/nestjs`) with NestJS-native constructs:
+> `SentryModule.forRoot()`, `SentryGlobalFilter`, `@SentryTraced`, `@SentryCron` decorators,
+> and GraphQL/Microservices support. Load that skill for complete NestJS setup.
 
 **Vanilla Node.js `http` module** — wrap request handler manually:
 
@@ -380,7 +353,7 @@ server.listen(3000);
 | Koa | `setupKoaErrorHandler(app)` | **First** middleware | No |
 | Hapi | `setupHapiErrorHandler(server)` | Before `server.start()` | **Yes** |
 | Connect | `setupConnectErrorHandler(app)` | **Before** routes | No |
-| NestJS | `SentryGlobalFilter` + `SentryModule.forRoot()` | App module providers | No |
+| NestJS | → Use [`sentry-nestjs-sdk`](../sentry-nestjs-sdk/SKILL.md) | Dedicated skill | — |
 
 ---
 
@@ -688,16 +661,29 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 ls ../go.mod ../requirements.txt ../Gemfile 2>/dev/null
 ```
 
-If a frontend or other backend is found, suggest the matching SDK skill:
+If a frontend, framework-specific SDK, or other backend is found, suggest the matching skill:
+
+**Dedicated JavaScript framework skills (prefer these over generic node-sdk):**
+
+| Detected | Prefer skill | Why |
+|----------|-------------|-----|
+| NestJS (`@nestjs/core` in `package.json`) | [`sentry-nestjs-sdk`](../sentry-nestjs-sdk/SKILL.md) | Uses `@sentry/nestjs` with NestJS-native decorators, filters, and GraphQL support |
+| Next.js (`next` in `package.json`) | [`sentry-nextjs-sdk`](../sentry-nextjs-sdk/SKILL.md) | Three-runtime architecture (browser, server, edge), `withSentryConfig`, source map upload |
+
+**Frontend companions:**
 
 | Detected | Suggest |
 |---------|---------|
-| React app (`react` in `package.json`) | `sentry-react-sdk` |
-| Next.js (`next` in `package.json`) | `sentry-nextjs-sdk` |
-| Svelte/SvelteKit | `sentry-svelte-sdk` |
-| Go backend (`go.mod`) | `sentry-go-sdk` |
-| Python backend (`requirements.txt`, `pyproject.toml`) | `sentry-python-sdk` |
-| Ruby backend (`Gemfile`) | `sentry-ruby-sdk` |
+| React app (`react` in `package.json`) | [`sentry-react-sdk`](../sentry-react-sdk/SKILL.md) |
+| Svelte/SvelteKit | [`sentry-svelte-sdk`](../sentry-svelte-sdk/SKILL.md) |
+
+**Other backend companions:**
+
+| Detected | Suggest |
+|---------|---------|
+| Go backend (`go.mod`) | [`sentry-go-sdk`](../sentry-go-sdk/SKILL.md) |
+| Python backend (`requirements.txt`, `pyproject.toml`) | [`sentry-python-sdk`](../sentry-python-sdk/SKILL.md) |
+| Ruby backend (`Gemfile`) | [`sentry-ruby-sdk`](../sentry-ruby-sdk/SKILL.md) |
 
 Connecting frontend and backend with the same DSN or linked projects enables **distributed tracing** — stack traces that span your browser, API server, and database in a single trace view.
 
@@ -714,7 +700,7 @@ Connecting frontend and backend with the same DSN or linked projects enables **d
 | Deno: events not sent | Missing `--allow-net` permission | Run with `--allow-net=o<ORG_ID>.ingest.sentry.io` |
 | Deno: `deno.land/x/sentry` not working | Deprecated and frozen at v8.55.0 | Switch to `npm:@sentry/deno` specifier |
 | `includeLocalVariables` not showing values | Integration not activated or minified code | Ensure `includeLocalVariables: true` in init; check source maps |
-| NestJS: errors not captured | `SentryGlobalFilter` missing | Add to `APP_FILTER` providers in `AppModule` |
+| NestJS: errors not captured | Wrong SDK or missing filter | Use [`sentry-nestjs-sdk`](../sentry-nestjs-sdk/SKILL.md) — NestJS needs `@sentry/nestjs`, not `@sentry/node` |
 | Hapi: `setupHapiErrorHandler` timing issue | Not awaited | Must `await Sentry.setupHapiErrorHandler(server)` before `server.start()` |
 | Shutdown: events lost | Process exits before flush | Add `await Sentry.close(2000)` in SIGTERM/SIGINT handler |
 | Stack traces show minified code | Source maps not uploaded | Configure `@sentry/cli` source map upload in build step |
