@@ -20,6 +20,7 @@ This file maps the full skill structure for the Sentry-for-AI plugin. Read it to
 | [`sentry-go-sdk`](skills/sentry-go-sdk/SKILL.md) | skills/sentry-go-sdk/SKILL.md | Go |
 | [`sentry-nestjs-sdk`](skills/sentry-nestjs-sdk/SKILL.md) | skills/sentry-nestjs-sdk/SKILL.md | NestJS |
 | [`sentry-nextjs-sdk`](skills/sentry-nextjs-sdk/SKILL.md) | skills/sentry-nextjs-sdk/SKILL.md | Next.js |
+| [`sentry-node-sdk`](skills/sentry-node-sdk/SKILL.md) | skills/sentry-node-sdk/SKILL.md | Node.js, Bun, and Deno |
 | [`sentry-php-sdk`](skills/sentry-php-sdk/SKILL.md) | skills/sentry-php-sdk/SKILL.md | PHP |
 | [`sentry-python-sdk`](skills/sentry-python-sdk/SKILL.md) | skills/sentry-python-sdk/SKILL.md | Python |
 | [`sentry-react-native-sdk`](skills/sentry-react-native-sdk/SKILL.md) | skills/sentry-react-native-sdk/SKILL.md | React Native and Expo |

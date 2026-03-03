@@ -19,6 +19,7 @@ Detect the user's platform from project files (e.g. `package.json`, `go.mod`, `G
 | `sentry-go-sdk` | Go | net/http, Gin, Echo, Fiber |
 | `sentry-nestjs-sdk` | NestJS | Express, Fastify, GraphQL, Microservices |
 | `sentry-nextjs-sdk` | Next.js | App Router, Pages Router |
+| `sentry-node-sdk` | Node.js, Bun, Deno | Express, Fastify, Koa, Hapi, Connect, Bun.serve(), Deno.serve() |
 | `sentry-php-sdk` | PHP | Laravel, Symfony |
 | `sentry-python-sdk` | Python | Django, Flask, FastAPI, Celery |
 | `sentry-react-native-sdk` | React Native | Expo managed, Expo bare |
@@ -31,10 +32,12 @@ Detect the user's platform from project files (e.g. `package.json`, `go.mod`, `G
 1. Inspect project files to identify the platform and framework.
 2. Match to the table above and load the corresponding skill.
 3. If Android (`build.gradle` with android plugin) is detected, use `sentry-android-sdk`.
-4. If Next.js is detected, prefer `sentry-nextjs-sdk` over `sentry-react-sdk`.
-5. If React Native is detected, prefer `sentry-react-native-sdk` over `sentry-react-sdk`.
-6. If `composer.json` with `laravel/framework` or `symfony/framework-bundle` is detected, use `sentry-php-sdk`.
-7. If no match is found, direct the user to https://docs.sentry.io/platforms/ to find their platform.
+4. If NestJS is detected (`@nestjs/core`), prefer `sentry-nestjs-sdk` over `sentry-node-sdk`.
+5. If Next.js is detected, prefer `sentry-nextjs-sdk` over `sentry-react-sdk` and `sentry-node-sdk`.
+6. If React Native is detected, prefer `sentry-react-native-sdk` over `sentry-react-sdk`.
+7. If `composer.json` with `laravel/framework` or `symfony/framework-bundle` is detected, use `sentry-php-sdk`.
+8. If Node.js, Bun, or Deno is detected without a specific framework skill above, use `sentry-node-sdk`.
+9. If no match is found, direct the user to https://docs.sentry.io/platforms/ to find their platform.
 
 ## Dynamic Skill Fetching
 
