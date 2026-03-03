@@ -28,6 +28,7 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 | `sentry-cocoa-sdk` | Full setup wizard for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) |
 | `sentry-dotnet-sdk` | Full setup wizard for .NET (ASP.NET Core, MAUI, WPF, WinForms, Azure Functions) |
 | `sentry-go-sdk` | Full setup wizard for Go (net/http, Gin, Echo, Fiber) |
+| `sentry-nestjs-sdk` | Full setup wizard for NestJS (Express, Fastify, GraphQL, Microservices) |
 | `sentry-nextjs-sdk` | Full setup wizard for Next.js (App Router + Pages Router) |
 | `sentry-python-sdk` | Full setup wizard for Python (Django, Flask, FastAPI, Celery) |
 | `sentry-react-native-sdk` | Full setup wizard for React Native and Expo |
