@@ -1,6 +1,6 @@
 # Tracing — Sentry PHP SDK
 
-> Minimum SDK: `sentry/sentry-php` ^4.0 (profiling ≥ 3.15.0) · `sentry/sentry-laravel` ^4.0 (profiling ≥ 3.3.0) · `sentry/sentry-symfony` ^5.0 (profiling ≥ 4.7.0)
+> Minimum SDK: `sentry/sentry` ^4.0 · `sentry/sentry-laravel` ^4.0 · `sentry/sentry-symfony` ^5.0
 
 ## Configuration
 
@@ -289,16 +289,13 @@ Two headers carry trace context between services:
 ### Extracting incoming trace context
 
 ```php
-// Call continueTrace() BEFORE startTransaction()
 $sentryTrace = $_SERVER['HTTP_SENTRY_TRACE'] ?? '';
 $baggage     = $_SERVER['HTTP_BAGGAGE'] ?? '';
 
-\Sentry\continueTrace($sentryTrace, $baggage);
+// continueTrace() returns a TransactionContext pre-populated with parent trace data
+$ctx = \Sentry\continueTrace($sentryTrace, $baggage);
+$ctx->setName('process-payment')->setOp('task');
 
-// Then start your transaction normally — it will be linked to the upstream trace
-$ctx = \Sentry\Tracing\TransactionContext::make()
-    ->setName('process-payment')
-    ->setOp('task');
 $transaction = \Sentry\startTransaction($ctx);
 \Sentry\SentrySdk::getCurrentHub()->setSpan($transaction);
 ```

@@ -1,6 +1,6 @@
 # Error Monitoring — Sentry PHP SDK
 
-> Minimum SDK: `sentry/sentry-php` ^4.0 · `sentry/sentry-laravel` ^4.0 · `sentry/sentry-symfony` ^5.0
+> Minimum SDK: `sentry/sentry` ^4.0 · `sentry/sentry-laravel` ^4.0 · `sentry/sentry-symfony` ^5.0
 
 ## Configuration
 
@@ -17,13 +17,13 @@ Key `\Sentry\init()` options for error monitoring:
 | `max_breadcrumbs` | `int` | `100` | Max breadcrumbs per event |
 | `context_lines` | `int` | `5` | Source code lines around each stack frame |
 | `ignore_exceptions` | `array` | `[]` | Exception classes (matched by `instanceof`) to never report |
-| `error_types` | `int` | `E_ALL` | PHP error bitmask — errors to capture |
+| `error_types` | `int\|null` | `error_reporting()` | PHP error bitmask — errors to capture |
 | `capture_silenced_errors` | `bool` | `false` | Capture errors suppressed with `@` operator |
 | `before_send` | `callable` | no-op | Mutate or drop error events before sending |
 | `before_breadcrumb` | `callable` | no-op | Mutate or drop breadcrumbs |
 | `in_app_include` | `array` | `[]` | Paths to mark as in-app in stack traces |
 | `in_app_exclude` | `array` | `[]` | Paths to exclude from in-app (e.g., vendor) |
-| `max_request_body_size` | `string` | `"medium"` | `"none"` / `"never"` / `"small"` / `"medium"` / `"always"` |
+| `max_request_body_size` | `string` | `"medium"` | `"none"` / `"small"` / `"medium"` / `"always"` |
 | `default_integrations` | `bool` | `true` | Auto-install PHP error/exception/fatal handlers |
 
 ## Code Examples
@@ -185,7 +185,7 @@ Three scope types control where data persists:
 |-----------|----------|---------|
 | `configureScope()` | Current scope (persists) | Per-request user identity, session tags |
 | `withScope()` | Isolated child scope | Data for a single capture call |
-| `withContext()` | Fully isolated hub context | Long-running processes (Octane, queues) |
+| `pushScope()`/`popScope()` | Manually isolated scope | Long-running processes (Octane, queues) |
 
 ```php
 // Persistent — modifies current scope, data appears on all subsequent events
@@ -203,12 +203,16 @@ Three scope types control where data persists:
 // ← tag and extra are gone after this line
 
 // Long-running process isolation (prevents cross-request contamination)
-\Sentry\withContext(function () use ($job): void {
+$hub = \Sentry\SentrySdk::getCurrentHub();
+$hub->pushScope();
+try {
     \Sentry\configureScope(function (\Sentry\State\Scope $scope) use ($job): void {
         $scope->setTag('job.class', get_class($job));
     });
     $job->handle();
-}, timeout: 2);
+} finally {
+    $hub->popScope();
+}
 
 // Manual push/pop (lower level)
 $hub = \Sentry\SentrySdk::getCurrentHub();
@@ -527,7 +531,7 @@ $event->setMessage('Grouped event');
 
 - `default_integrations: true` (default) auto-installs `set_error_handler()`, `set_exception_handler()`, and `register_shutdown_function()` — no manual handlers needed
 - Always call `\Sentry\flush()` before process exit in CLI scripts
-- In long-running workers (e.g., RoadRunner, Swoole), use `withContext()` or manual `pushScope()`/`popScope()` per request to prevent cross-request scope contamination
+- In long-running workers (e.g., RoadRunner, Swoole), use `pushScope()`/`popScope()` per request to prevent cross-request scope contamination
 
 ### Laravel
 
@@ -591,7 +595,7 @@ sentry:
 | PII appearing in events | Ensure `send_default_pii: false` (default), add `before_send` scrubber for headers/cookies |
 | `captureException()` sends no event | Check `ignore_exceptions` — class may match by `instanceof`; verify `before_send` isn't returning `null` |
 | Duplicate events in Laravel | `Integration::handles()` (L11) already calls `captureUnhandledException()` — don't also add a manual `reportable()` |
-| Cross-request scope contamination in Octane | Enable Octane breadcrumb events (already in default config); use `withContext()` in queue workers |
+| Cross-request scope contamination in Octane | Enable Octane breadcrumb events (already in default config); use `pushScope()`/`popScope()` in queue workers |
 | `before_send` option ignored in Symfony | Must be a service ID string, not a closure — closures can't be serialized for config caching |
 | Breadcrumbs missing | Check `max_breadcrumbs` setting and `before_breadcrumb` hook; in Laravel verify `breadcrumbs.*` config flags |
 | Fatal errors not captured | Ensure `default_integrations: true` (default) or manually call `register_shutdown_function()` with `captureLastError()` + `flush()` |

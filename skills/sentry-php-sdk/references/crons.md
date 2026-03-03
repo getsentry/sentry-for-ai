@@ -1,6 +1,6 @@
 # Crons — Sentry PHP SDK
 
-> Minimum SDK versions: `sentry/sentry-php` ≥ 3.16.0 · `sentry/sentry-laravel` ≥ 3.3.1
+> Minimum SDK versions: `sentry/sentry` ≥ 3.16.0 · `sentry/sentry-laravel` ≥ 3.3.1
 
 ## Overview
 

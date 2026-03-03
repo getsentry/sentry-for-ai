@@ -1,6 +1,6 @@
 # Logging — Sentry PHP SDK
 
-> Minimum SDK versions: `sentry/sentry-php` ≥ 4.12.0 · `sentry/sentry-laravel` ≥ 4.15.0 · `sentry/sentry-symfony` ≥ 5.4.0
+> Minimum SDK versions: `sentry/sentry` ≥ 4.12.0 · `sentry/sentry-laravel` ≥ 4.15.0 · `sentry/sentry-symfony` ≥ 5.4.0
 
 ## Overview
 

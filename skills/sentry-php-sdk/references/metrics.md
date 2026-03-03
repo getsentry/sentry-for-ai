@@ -1,6 +1,6 @@
 # Metrics — Sentry PHP SDK
 
-> Minimum SDK versions: `sentry/sentry-php` ≥ 4.19.0 · `sentry/sentry-laravel` ≥ 4.20.0 · `sentry/sentry-symfony` ≥ 5.8.0
+> Minimum SDK versions: `sentry/sentry` ≥ 4.19.0 · `sentry/sentry-laravel` ≥ 4.20.0 · `sentry/sentry-symfony` ≥ 5.8.0
 > Status: ⚠️ Open beta
 
 ## Overview

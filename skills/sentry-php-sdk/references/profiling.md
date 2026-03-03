@@ -23,7 +23,7 @@ Excimer requires PHP 7.2+ and does **not** support Windows.
 
 | Framework | Min SDK Version |
 |-----------|----------------|
-| PHP (base) | `sentry/sentry-php` ≥ 3.15.0 |
+| PHP (base) | `sentry/sentry` ≥ 3.15.0 |
 | Laravel | `sentry/sentry-laravel` ≥ 3.3.0 |
 | Symfony | `sentry/sentry-symfony` ≥ 4.7.0 |
 

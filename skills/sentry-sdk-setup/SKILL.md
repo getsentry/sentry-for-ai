@@ -30,8 +30,8 @@ Detect the user's platform from project files (e.g. `package.json`, `go.mod`, `G
 2. Match to the table above and load the corresponding skill.
 3. If Next.js is detected, prefer `sentry-nextjs-sdk` over `sentry-react-sdk`.
 4. If React Native is detected, prefer `sentry-react-native-sdk` over `sentry-react-sdk`.
-6. If `composer.json` with `laravel/framework` or `symfony/framework-bundle` is detected, use `sentry-php-sdk`.
-5. If no match is found, direct the user to https://docs.sentry.io/platforms/ to find their platform.
+5. If `composer.json` with `laravel/framework` or `symfony/framework-bundle` is detected, use `sentry-php-sdk`.
+6. If no match is found, direct the user to https://docs.sentry.io/platforms/ to find their platform.
 
 ## Dynamic Skill Fetching
 
