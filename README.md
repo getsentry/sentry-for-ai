@@ -82,6 +82,7 @@ Full platform bundles that scan your project, recommend features, and guide you 
 | `sentry-go-sdk` | Go (net/http, Gin, Echo, Fiber) |
 | `sentry-nestjs-sdk` | NestJS (Express, Fastify, GraphQL, Microservices, WebSocket) |
 | `sentry-nextjs-sdk` | Next.js App Router + Pages Router, Vercel |
+| `sentry-node-sdk` | Node.js, Bun, Deno (Express, Fastify, Koa, Hapi, NestJS, Connect, Bun.serve, Deno.serve) |
 | `sentry-python-sdk` | Python (Django, Flask, FastAPI, Celery, Starlette, AIOHTTP) |
 | `sentry-react-native-sdk` | React Native, Expo managed/bare |
 | `sentry-react-sdk` | React 16+, React Router v5-v7, TanStack Router, Redux |

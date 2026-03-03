@@ -32,7 +32,7 @@ Detect the user's platform from project files (e.g. `package.json`, `go.mod`, `G
 3. If Next.js is detected, prefer `sentry-nextjs-sdk` over `sentry-react-sdk` and `sentry-node-sdk`.
 4. If React Native is detected, prefer `sentry-react-native-sdk` over `sentry-react-sdk`.
 5. If Node.js, Bun, or Deno is detected without a frontend framework, use `sentry-node-sdk`.
-5. If no match is found, direct the user to https://docs.sentry.io/platforms/ to find their platform.
+6. If no match is found, direct the user to https://docs.sentry.io/platforms/ to find their platform.
 
 ## Dynamic Skill Fetching
 
