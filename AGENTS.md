@@ -25,6 +25,7 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 ### SDK Skills (Full Platform Bundles)
 | Skill | Description |
 |-------|-------------|
+| `sentry-android-sdk` | Full setup wizard for Android (Jetpack Compose, Views, OkHttp, Room, Fragment, Timber) |
 | `sentry-cocoa-sdk` | Full setup wizard for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) |
 | `sentry-dotnet-sdk` | Full setup wizard for .NET (ASP.NET Core, MAUI, WPF, WinForms, Azure Functions) |
 | `sentry-go-sdk` | Full setup wizard for Go (net/http, Gin, Echo, Fiber) |
