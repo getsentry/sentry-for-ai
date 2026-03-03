@@ -1,7 +1,7 @@
 # Tracing & Performance Monitoring — Sentry Android SDK
 
 > **Minimum SDK:** `io.sentry:sentry-android` ≥ 7.0.0 (≥ 8.0.0 recommended)
-> **Gradle Plugin:** `io.sentry:sentry-android-gradle-plugin` ≥ 4.0.0 for zero-source-change instrumentation
+> **Gradle Plugin:** `io.sentry:sentry-android-gradle-plugin` ≥ 6.1.0 for zero-source-change instrumentation
 > **Languages:** Kotlin and Java — all examples in Kotlin with Java equivalents where they differ
 > **Mobile-first note:** Android has unique capabilities web SDKs lack — Activity TTID/TTFD, slow/frozen frame counts, app start tracking (cold/warm), and user interaction tracing. These are first-class citizens in `sentry-android`.
 
@@ -316,7 +316,7 @@ Button(
 
 Dependency:
 ```kotlin
-implementation("io.sentry:sentry-compose:8.33.0")
+implementation("io.sentry:sentry-compose-android:8.33.0")
 ```
 
 ---
@@ -402,7 +402,7 @@ The Gradle plugin instruments bytecode at build time, enabling all tracing featu
 ```kotlin
 // build.gradle.kts (app module)
 plugins {
-    id("io.sentry.android.gradle") version "5.1.0"
+    id("io.sentry.android.gradle") version "6.1.0"
 }
 
 sentry {

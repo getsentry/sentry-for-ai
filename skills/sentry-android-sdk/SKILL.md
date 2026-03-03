@@ -131,11 +131,28 @@ Propose: *"For your [Kotlin / Java] Android app (minSdk X), I recommend setting 
 | Existing project, no Sentry | Gradle plugin or manual init | Medium — add dependency + Application class |
 | Manual full control | `SentryAndroid.init()` in Application | Medium — explicit config, most flexible |
 
-> ⚠️ **No wizard CLI for Android.** Unlike React Native, there is no `@sentry/wizard` for Android. Setup is always Gradle-based. The Gradle plugin is strongly recommended — it handles ProGuard/R8 mapping upload, source context injection, and bytecode auto-instrumentation with zero source code changes.
+### Option 1: Wizard (Recommended)
+
+> **You need to run this yourself** — the wizard opens a browser for login
+> and requires interactive input that the agent can't handle.
+> Copy-paste into your terminal:
+>
+> ```
+> npx @sentry/wizard@latest -i android
+> ```
+>
+> It handles login, org/project selection, Gradle plugin setup, dependency
+> installation, DSN configuration, and ProGuard/R8 mapping upload.
+>
+> **Once it finishes, come back and skip to [Verification](#verification).**
+
+If the user skips the wizard, proceed with Option 2 (Manual Setup) below.
 
 ---
 
-### Path A: Gradle Plugin (Recommended)
+### Option 2: Manual Setup
+
+#### Path A: Gradle Plugin (Recommended)
 
 The Sentry Gradle plugin is the easiest setup path. It:
 - Uploads ProGuard/R8 mapping files automatically on release builds
@@ -317,7 +334,7 @@ public class MyApplication extends Application {
 
 ---
 
-### Path B: Manual Setup (No Gradle Plugin)
+#### Path B: Manual Setup (No Gradle Plugin)
 
 Use this if you can't use the Gradle plugin (e.g., non-standard build setups).
 
@@ -377,13 +394,13 @@ SentryAndroid.init(this) { options ->
     options.isAnrEnabled = true
 
     // NDK native crash handling (enabled by default)
-    options.enableNdk = true
+    options.isEnableNdk = true
 
     // Send PII: IP address, user data
     options.sendDefaultPii = true
 
     // Trace propagation (backend distributed tracing)
-    options.tracePropagationTargets = listOf("api.yourapp.com", Regex("https://.*\\.yourapp\\.com"))
+    options.tracePropagationTargets = listOf("api.yourapp.com", ".*\\.yourapp\\.com")
 
     // Verbose logging — disable in production
     options.isDebug = BuildConfig.DEBUG
@@ -405,7 +422,6 @@ Walk through features one at a time. Load the reference file for each, follow it
 | Logging | `${SKILL_ROOT}/references/logging.md` | Structured logging / log-to-trace correlation |
 | Metrics | `${SKILL_ROOT}/references/metrics.md` | Custom metric tracking (Beta, SDK ≥ 8.30.0) |
 | Crons | `${SKILL_ROOT}/references/crons.md` | Scheduled jobs, WorkManager check-ins |
-| User Feedback | `${SKILL_ROOT}/references/user-feedback.md` | Collecting user-submitted reports |
 
 For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exactly, verify it works.
 
@@ -476,7 +492,7 @@ The plugin can inject instrumentation automatically (no source changes):
 | `sampleRate` | `Double` | `1.0` | Error event sampling (0.0–1.0) |
 | `maxBreadcrumbs` | `Int` | `100` | Max breadcrumbs per event |
 | `isAttachStacktrace` | `Boolean` | `true` | Auto-attach stack traces to message events |
-| `isAttachScreenshot` | `Boolean` | `false` | Capture screenshot on error (requires `sentry-android-replay`) |
+| `isAttachScreenshot` | `Boolean` | `false` | Capture screenshot on error |
 | `isAttachViewHierarchy` | `Boolean` | `false` | Attach JSON view hierarchy as attachment |
 | `isDebug` | `Boolean` | `false` | Verbose SDK output. **Never use in production** |
 | `isEnabled` | `Boolean` | `true` | Disable SDK entirely (e.g., for testing) |
@@ -514,7 +530,7 @@ The plugin can inject instrumentation automatically (no source changes):
 
 | Option | Type | Default | Purpose |
 |--------|------|---------|---------|
-| `enableNdk` | `Boolean` | `true` | Enable native crash capture via sentry-native |
+| `isEnableNdk` | `Boolean` | `true` | Enable native crash capture via sentry-native |
 | `isEnableScopeSync` | `Boolean` | `true` | Sync Java scope (user, tags) to NDK layer |
 | `isEnableTombstoneFetchJob` | `Boolean` | `true` | Fetch NDK tombstone files for enrichment |
 
@@ -604,7 +620,7 @@ If nothing appears:
 2. Verify DSN is correct and matches your Sentry project
 3. Check that your `Application` class is registered in `AndroidManifest.xml` as `android:name`
 4. Confirm the device/emulator has internet connectivity
-5. For NDK crashes, ensure `enableNdk = true` (default) and build with NDK support
+5. For NDK crashes, ensure `isEnableNdk = true` (default) and build with NDK support
 
 ---
 
@@ -642,7 +658,7 @@ If a backend or related platform exists without Sentry, suggest the matching ski
 ```kotlin
 options.tracePropagationTargets = listOf(
     "api.yourapp.com",
-    Regex("https://.*\\.yourapp\\.com").toString()
+    ".*\\.yourapp\\.com"
 )
 ```
 
@@ -658,7 +674,7 @@ This links mobile transactions to backend traces in the Sentry waterfall view.
 | `SentryAndroid.init()` not called | Confirm `android:name=".MyApplication"` is set in `AndroidManifest.xml`; Application class not abstract |
 | Gradle plugin not found | Add the plugin to project-level `build.gradle.kts` first, then `apply false`; verify version `6.1.0` |
 | ProGuard mapping not uploading | Set `SENTRY_AUTH_TOKEN` env var; ensure `autoUploadProguardMapping = true` in `sentry {}` block |
-| NDK crashes not captured | Verify `enableNdk = true` (default); ensure project has NDK configured in `android.ndkVersion` |
+| NDK crashes not captured | Verify `isEnableNdk = true` (default); ensure project has NDK configured in `android.ndkVersion` |
 | ANR reported in debugger | Set `isAnrReportInDebug = false` (default); ANR watchdog fires when debugger pauses threads |
 | Session replay not recording | Requires API 26+; verify `sessionSampleRate > 0` or `onErrorSampleRate > 0`; check Logcat for replay errors |
 | Session replay shows blank screen | PixelCopy (default) requires hardware acceleration; try `SentryReplayOptions.screenshotQuality = CANVAS` |
