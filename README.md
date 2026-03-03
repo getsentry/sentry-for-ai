@@ -81,6 +81,7 @@ Full platform bundles that scan your project, recommend features, and guide you 
 | `sentry-dotnet-sdk` | ASP.NET Core, MAUI, WPF, WinForms, Azure Functions, Blazor, gRPC |
 | `sentry-go-sdk` | Go (net/http, Gin, Echo, Fiber) |
 | `sentry-nextjs-sdk` | Next.js App Router + Pages Router, Vercel |
+| `sentry-php-sdk` | PHP (Laravel, Symfony) |
 | `sentry-python-sdk` | Python (Django, Flask, FastAPI, Celery, Starlette, AIOHTTP) |
 | `sentry-react-native-sdk` | React Native, Expo managed/bare |
 | `sentry-react-sdk` | React 16+, React Router v5-v7, TanStack Router, Redux |
