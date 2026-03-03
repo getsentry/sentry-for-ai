@@ -47,6 +47,7 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 | `sentry-code-review` | Analyze and resolve Sentry bot comments on GitHub PRs |
 | `sentry-pr-code-review` | Review PRs for issues detected by Seer Bug Prediction |
 | `sentry-fix-issues` | Find and fix Sentry issues using MCP |
+| `sentry-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
 | `sentry-create-alert` | Create Sentry alerts using the workflow engine API |
 
 ### Authoring Skills

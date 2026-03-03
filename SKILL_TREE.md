@@ -31,6 +31,7 @@ This file maps the full skill structure for the Sentry-for-AI plugin. Read it to
 | [`sentry-code-review`](skills/sentry-code-review/SKILL.md) | skills/sentry-code-review/SKILL.md | Analyze and resolve Sentry comments on GitHub Pull Requests |
 | [`sentry-fix-issues`](skills/sentry-fix-issues/SKILL.md) | skills/sentry-fix-issues/SKILL.md | Find and fix issues from Sentry using MCP |
 | [`sentry-pr-code-review`](skills/sentry-pr-code-review/SKILL.md) | skills/sentry-pr-code-review/SKILL.md | Review a project's PRs to check for issues detected in code review by Seer Bug Prediction |
+| [`sentry-sdk-upgrade`](skills/sentry-sdk-upgrade/SKILL.md) | skills/sentry-sdk-upgrade/SKILL.md | Upgrade the Sentry JavaScript SDK across major versions |
 
 ## Feature Setup ([`sentry-feature-setup`](skills/sentry-feature-setup/SKILL.md))
 
