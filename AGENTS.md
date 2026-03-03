@@ -35,6 +35,7 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 | `sentry-php-sdk` | Full setup wizard for PHP (Laravel, Symfony) |
 | `sentry-python-sdk` | Full setup wizard for Python (Django, Flask, FastAPI, Celery) |
 | `sentry-react-native-sdk` | Full setup wizard for React Native and Expo |
+| `sentry-browser-sdk` | Full setup wizard for Browser JavaScript (vanilla JS, jQuery, WordPress, static sites, Loader Script, CDN) |
 | `sentry-react-sdk` | Full setup wizard for React (Router v5-v7, TanStack, Redux) |
 | `sentry-ruby-sdk` | Full setup wizard for Ruby (Rails, Sinatra, Sidekiq) |
 | `sentry-svelte-sdk` | Full setup wizard for Svelte/SvelteKit |
