@@ -25,9 +25,11 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 ### SDK Skills (Full Platform Bundles)
 | Skill | Description |
 |-------|-------------|
+| `sentry-android-sdk` | Full setup wizard for Android (Jetpack Compose, Views, OkHttp, Room, Fragment, Timber) |
 | `sentry-cocoa-sdk` | Full setup wizard for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) |
 | `sentry-dotnet-sdk` | Full setup wizard for .NET (ASP.NET Core, MAUI, WPF, WinForms, Azure Functions) |
 | `sentry-go-sdk` | Full setup wizard for Go (net/http, Gin, Echo, Fiber) |
+| `sentry-nestjs-sdk` | Full setup wizard for NestJS (Express, Fastify, GraphQL, Microservices) |
 | `sentry-nextjs-sdk` | Full setup wizard for Next.js (App Router + Pages Router) |
 | `sentry-php-sdk` | Full setup wizard for PHP (Laravel, Symfony) |
 | `sentry-python-sdk` | Full setup wizard for Python (Django, Flask, FastAPI, Celery) |
@@ -48,6 +50,7 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 | `sentry-code-review` | Analyze and resolve Sentry bot comments on GitHub PRs |
 | `sentry-pr-code-review` | Review PRs for issues detected by Seer Bug Prediction |
 | `sentry-fix-issues` | Find and fix Sentry issues using MCP |
+| `sentry-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
 | `sentry-create-alert` | Create Sentry alerts using the workflow engine API |
 
 ### Authoring Skills

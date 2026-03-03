@@ -14,9 +14,11 @@ This file maps the full skill structure for the Sentry-for-AI plugin. Read it to
 
 | Skill | Path | Platform |
 |---|---|---|
+| [`sentry-android-sdk`](skills/sentry-android-sdk/SKILL.md) | skills/sentry-android-sdk/SKILL.md | Android |
 | [`sentry-cocoa-sdk`](skills/sentry-cocoa-sdk/SKILL.md) | skills/sentry-cocoa-sdk/SKILL.md | Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) |
 | [`sentry-dotnet-sdk`](skills/sentry-dotnet-sdk/SKILL.md) | skills/sentry-dotnet-sdk/SKILL.md | .NET |
 | [`sentry-go-sdk`](skills/sentry-go-sdk/SKILL.md) | skills/sentry-go-sdk/SKILL.md | Go |
+| [`sentry-nestjs-sdk`](skills/sentry-nestjs-sdk/SKILL.md) | skills/sentry-nestjs-sdk/SKILL.md | NestJS |
 | [`sentry-nextjs-sdk`](skills/sentry-nextjs-sdk/SKILL.md) | skills/sentry-nextjs-sdk/SKILL.md | Next.js |
 | [`sentry-php-sdk`](skills/sentry-php-sdk/SKILL.md) | skills/sentry-php-sdk/SKILL.md | PHP |
 | [`sentry-python-sdk`](skills/sentry-python-sdk/SKILL.md) | skills/sentry-python-sdk/SKILL.md | Python |
@@ -32,6 +34,7 @@ This file maps the full skill structure for the Sentry-for-AI plugin. Read it to
 | [`sentry-code-review`](skills/sentry-code-review/SKILL.md) | skills/sentry-code-review/SKILL.md | Analyze and resolve Sentry comments on GitHub Pull Requests |
 | [`sentry-fix-issues`](skills/sentry-fix-issues/SKILL.md) | skills/sentry-fix-issues/SKILL.md | Find and fix issues from Sentry using MCP |
 | [`sentry-pr-code-review`](skills/sentry-pr-code-review/SKILL.md) | skills/sentry-pr-code-review/SKILL.md | Review a project's PRs to check for issues detected in code review by Seer Bug Prediction |
+| [`sentry-sdk-upgrade`](skills/sentry-sdk-upgrade/SKILL.md) | skills/sentry-sdk-upgrade/SKILL.md | Upgrade the Sentry JavaScript SDK across major versions |
 
 ## Feature Setup ([`sentry-feature-setup`](skills/sentry-feature-setup/SKILL.md))
 

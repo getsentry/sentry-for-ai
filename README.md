@@ -77,9 +77,11 @@ Full platform bundles that scan your project, recommend features, and guide you 
 
 | Skill | Platforms |
 |-------|-----------|
+| `sentry-android-sdk` | Android (Jetpack Compose, Views, OkHttp, Room, Fragment, Timber) |
 | `sentry-cocoa-sdk` | iOS, macOS, tvOS, watchOS, visionOS (Swift, UIKit, SwiftUI) |
 | `sentry-dotnet-sdk` | ASP.NET Core, MAUI, WPF, WinForms, Azure Functions, Blazor, gRPC |
 | `sentry-go-sdk` | Go (net/http, Gin, Echo, Fiber) |
+| `sentry-nestjs-sdk` | NestJS (Express, Fastify, GraphQL, Microservices, WebSocket) |
 | `sentry-nextjs-sdk` | Next.js App Router + Pages Router, Vercel |
 | `sentry-php-sdk` | PHP (Laravel, Symfony) |
 | `sentry-python-sdk` | Python (Django, Flask, FastAPI, Celery, Starlette, AIOHTTP) |
