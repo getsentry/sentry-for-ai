@@ -1210,3 +1210,21 @@ Sentry.setupConnectErrorHandler(app);          // Connect: BEFORE routes
 // Shutdown
 await Sentry.flush(2000);
 ```
+
+---
+
+## Troubleshooting
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Errors not appearing in Sentry | `instrument.js` loaded too late | Ensure it's the first `require()` or loaded via `--import` / `--preload` before app code |
+| Express errors not captured | `setupExpressErrorHandler` placed before routes | Move it **after** all route definitions |
+| Fastify errors not captured | `setupFastifyErrorHandler` placed after routes | Move it **before** route definitions (opposite of Express) |
+| Hapi error handler silently fails | `setupHapiErrorHandler` not awaited | Must `await Sentry.setupHapiErrorHandler(server)` — it's the only async handler |
+| NestJS `HttpException` not captured | Intentional — `SentryGlobalFilter` skips control flow exceptions | Create a custom filter extending `SentryGlobalFilter` and override `catch()` to capture `HttpException` if desired |
+| `setUser()` leaks between requests | Using global scope for user data | Use `Sentry.setUser()` (isolation scope) — it's auto-forked per request by framework integrations |
+| `withScope` changes persisting | Wrong scope layer | `withScope` creates a temporary current scope — changes don't survive the callback. Use `setTag()` for request-lifetime data |
+| `beforeSend` returning wrong type | Not returning `event` or `null` | `beforeSend` must return the event object or `null` to drop — `undefined` causes silent failures |
+| Breadcrumbs not showing | `maxBreadcrumbs: 0` | Check init config — default is 100; set to desired max |
+| Duplicate error events | Multiple capture paths | Ensure only one handler captures each error — e.g., don't both re-throw and call `captureException` |
+| Stack traces show minified code | Source maps not uploaded | Configure `@sentry/cli` sourcemap upload in your build pipeline |

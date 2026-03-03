@@ -350,6 +350,38 @@ For AWS Lambda, prefer `@sentry/aws-serverless` — it handles flushing automati
 
 ---
 
+## Deno: Native Cron Integration
+
+Deno provides a built-in `Deno.cron()` API. Use `denoCronIntegration` to automatically monitor all native Deno crons:
+
+```typescript
+import * as Sentry from "@sentry/deno";
+
+Sentry.init({
+  dsn: Deno.env.get("SENTRY_DSN"),
+  integrations: [
+    Sentry.denoCronIntegration(),
+  ],
+});
+
+// Automatically monitored — no manual check-ins needed
+Deno.cron("daily-cleanup", "0 0 * * *", async () => {
+  await cleanupOldRecords();
+});
+
+Deno.cron("hourly-sync", "0 * * * *", async () => {
+  await syncExternalData();
+});
+```
+
+The integration intercepts `Deno.cron()` calls and wraps them with automatic `in_progress` → `ok`/`error` check-ins. The monitor slug is the first argument to `Deno.cron()`.
+
+> **Deno Deploy:** `Deno.cron()` runs natively on Deno Deploy. The integration works in both local Deno and Deno Deploy environments.
+
+> **Node.js and Bun:** `denoCronIntegration` is only available in `@sentry/deno`. For Node.js, use the `node-cron`, `cron`, or `node-schedule` library helpers above.
+
+---
+
 ## Rate Limits
 
 - Maximum **6 check-ins per minute** per monitor + environment combination

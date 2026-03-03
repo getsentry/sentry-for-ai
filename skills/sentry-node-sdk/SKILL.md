@@ -256,10 +256,10 @@ const Sentry = require("@sentry/node");
 
 const fastify = Fastify();
 
-// ... your routes
-
-// Add AFTER all routes
+// Add BEFORE routes (unlike Express!)
 Sentry.setupFastifyErrorHandler(fastify);
+
+// ... your routes
 
 await fastify.listen({ port: 3000 });
 ```
@@ -304,9 +304,10 @@ const Sentry = require("@sentry/node");
 
 const app = connect();
 
-// ... your middleware
-
+// Add BEFORE routes (like Fastify and Koa)
 Sentry.setupConnectErrorHandler(app);
+
+// ... your middleware and routes
 
 require("http").createServer(app).listen(3000);
 ```
@@ -334,7 +335,7 @@ Sentry.init({
 import { Module } from "@nestjs/common";
 import { APP_FILTER } from "@nestjs/core";
 import { SentryModule } from "@sentry/nestjs/setup";
-import { SentryGlobalFilter } from "@sentry/nestjs";
+import { SentryGlobalFilter } from "@sentry/nestjs/setup";
 
 @Module({
   imports: [SentryModule.forRoot()],
@@ -374,11 +375,11 @@ server.listen(3000);
 
 | Framework | Function | Placement | Async? |
 |-----------|----------|-----------|--------|
-| Express | `setupExpressErrorHandler(app)` | After all routes | No |
-| Fastify | `setupFastifyErrorHandler(fastify)` | After all routes | No |
-| Koa | `setupKoaErrorHandler(app)` | First middleware | No |
-| Hapi | `setupHapiErrorHandler(server)` | After routes, before `server.start()` | **Yes** |
-| Connect | `setupConnectErrorHandler(app)` | After all middleware | No |
+| Express | `setupExpressErrorHandler(app)` | **After** all routes | No |
+| Fastify | `setupFastifyErrorHandler(fastify)` | **Before** routes | No |
+| Koa | `setupKoaErrorHandler(app)` | **First** middleware | No |
+| Hapi | `setupHapiErrorHandler(server)` | Before `server.start()` | **Yes** |
+| Connect | `setupConnectErrorHandler(app)` | **Before** routes | No |
 | NestJS | `SentryGlobalFilter` + `SentryModule.forRoot()` | App module providers | No |
 
 ---

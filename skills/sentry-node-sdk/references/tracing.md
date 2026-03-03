@@ -547,8 +547,8 @@ Sentry.init({ dsn: "...", tracesSampleRate: 1.0 });
 
 const fastify = Fastify();
 
-// Error handler BEFORE routes (Fastify-specific)
-await Sentry.setupFastifyErrorHandler(fastify);
+// Error handler BEFORE routes (Fastify-specific — not async, unlike Hapi)
+Sentry.setupFastifyErrorHandler(fastify);
 
 fastify.get("/api/data", async (request, reply) => {
   return fetchData();
