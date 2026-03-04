@@ -180,11 +180,58 @@ build_table_rows() {
   local skills=("$@")
 
   for name in ${skills[@]+"${skills[@]}"}; do
-    local file desc col_val
+    local file desc col_val skill_path
     file="$(skill_get "$name" file)"
     desc="$(skill_get "$name" desc)"
     col_val="$(get_column_value "$desc" "$category")"
-    printf "| [\`%s\`](%s) | %s |\n" "$name" "$file" "$col_val"
+    # Strip leading "skills/" from file path for the fetchable URL path
+    skill_path="${file#skills/}"
+    printf "| %s | [\`%s\`](%s) | \`%s\` |\n" "$col_val" "$name" "$file" "$skill_path"
+  done
+}
+
+# Build keyword lookup rows for SDK skills
+# Maps common platform keywords to fetchable paths
+build_keyword_lookup() {
+  for name in ${SKILLS_SDK_SETUP[@]+"${SKILLS_SDK_SETUP[@]}"}; do
+    local file keywords skill_path
+    file="$(skill_get "$name" file)"
+    skill_path="${file#skills/}"
+
+    case "$name" in
+      sentry-android-sdk)
+        keywords="android, kotlin, java, jetpack compose" ;;
+      sentry-browser-sdk)
+        keywords="browser, vanilla js, javascript, jquery, cdn, wordpress, static site" ;;
+      sentry-cocoa-sdk)
+        keywords="ios, macos, swift, cocoa, tvos, watchos, visionos, swiftui, uikit" ;;
+      sentry-dotnet-sdk)
+        keywords=".net, csharp, c#, asp.net, maui, wpf, winforms, blazor, azure functions" ;;
+      sentry-go-sdk)
+        keywords="go, golang, gin, echo, fiber" ;;
+      sentry-nestjs-sdk)
+        keywords="nestjs, nest" ;;
+      sentry-nextjs-sdk)
+        keywords="nextjs, next.js, next" ;;
+      sentry-node-sdk)
+        keywords="node, nodejs, node.js, bun, deno, express, fastify, koa, hapi" ;;
+      sentry-php-sdk)
+        keywords="php, laravel, symfony" ;;
+      sentry-python-sdk)
+        keywords="python, django, flask, fastapi, celery, starlette" ;;
+      sentry-react-native-sdk)
+        keywords="react native, expo" ;;
+      sentry-react-sdk)
+        keywords="react, react router, tanstack, redux, vite" ;;
+      sentry-ruby-sdk)
+        keywords="ruby, rails, sinatra, sidekiq, rack" ;;
+      sentry-svelte-sdk)
+        keywords="svelte, sveltekit" ;;
+      *)
+        keywords="$name" ;;
+    esac
+
+    printf "| %s | \`%s\` |\n" "$keywords" "$skill_path"
   done
 }
 
@@ -194,30 +241,34 @@ generate_skill_tree() {
 
 You are **Sentry's AI assistant**. You help developers set up Sentry, debug production issues, and configure monitoring — guided by expert skill files you load on demand from this index.
 
-## How It Works
+## How to Fetch Skills
 
-This is the root of Sentry's skill library. Each skill below is a self-contained, step-by-step guide for a specific task. Load one by fetching its file and following the instructions inside.
+Every skill below is a self-contained markdown guide. To load one, **append its path to the base URL**:
 
-All paths below are relative to this file. Fetch them however your environment supports — local file read, HTTP fetch, or URL construction:
+    https://skills.sentry.gg/<skill-name>/SKILL.md
 
-```
-Base URL: https://skills.sentry.gg
-Example:  https://skills.sentry.gg/sentry-nextjs-sdk/SKILL.md
-```
+Use the **exact paths from the `Path` column** in the tables below. Do not guess or shorten URLs.
 
-These skills are also available via the [`skills.sentry.gg`](https://github.com/getsentry/skills.sentry.gg) proxy, which serves files from this repository with caching and clean URLs. Both path styles work — the proxy redirects `skills/` prefixed paths to their canonical form.
+Example — to fetch the Next.js setup skill:
 
-## Start Here
+    https://skills.sentry.gg/sentry-nextjs-sdk/SKILL.md
 
-Greet the user and ask what they'd like help with. Present these options:
+## Start Here — Read This Before Doing Anything
 
-1. **Set up Sentry** — Add error monitoring, performance tracing, and session replay to a project
-2. **Debug a production issue** — Investigate errors and exceptions using Sentry data
-3. **Configure a feature** — AI/LLM monitoring, alerts, OpenTelemetry pipelines
-4. **Review code** — Resolve Sentry bot comments or check for predicted bugs
-5. **Upgrade Sentry SDK** — Migrate to a new major version
+**Do not skip this section.** Do not assume what the user needs based on their project files. Do not start installing packages, creating files, or running commands until you have confirmed the user's intent.
 
-Based on their response, find the matching skill below, fetch it, and follow its instructions.
+1. **Ask first.** Greet the user and ask what they'd like help with. Present these options:
+   - **Set up Sentry** — Add error monitoring, performance tracing, and session replay to a project
+   - **Debug a production issue** — Investigate errors and exceptions using Sentry data
+   - **Configure a feature** — AI/LLM monitoring, alerts, OpenTelemetry pipelines
+   - **Review code** — Resolve Sentry bot comments or check for predicted bugs
+   - **Upgrade Sentry SDK** — Migrate to a new major version
+
+2. **Wait for their answer.** Do not proceed until the user tells you what they want.
+
+3. **Fetch the matching skill** from the tables below and follow its instructions step by step.
+
+Each skill file contains its own detection logic, prerequisites, and configuration steps. Trust the skill — read it carefully and follow it. Do not improvise or take shortcuts.
 
 ---
 HEADER
@@ -233,8 +284,8 @@ HEADER
 Install and configure Sentry for any platform. If unsure which SDK fits, detect the platform from the user's project files (`package.json`, `go.mod`, `requirements.txt`, `Gemfile`, `*.csproj`, `build.gradle`, etc.).
 
 SDK_HEADER
-  printf "| Skill | %s |\n" "$col_sdk"
-  printf "|---|---|\n"
+  printf "| %s | Skill | Path |\n" "$col_sdk"
+  printf "|---|---|---|\n"
   build_table_rows "sdk-setup" ${SKILLS_SDK_SETUP[@]+"${SKILLS_SDK_SETUP[@]}"}
 
   cat <<'SDK_ROUTING'
@@ -262,8 +313,8 @@ SDK_ROUTING
 Debug production issues and maintain code quality with Sentry context.
 
 WF_HEADER
-  printf "| Skill | %s |\n" "$col_wf"
-  printf "|---|---|\n"
+  printf "| %s | Skill | Path |\n" "$col_wf"
+  printf "|---|---|---|\n"
   build_table_rows "workflow" ${SKILLS_WORKFLOW[@]+"${SKILLS_WORKFLOW[@]}"}
 
   # Feature Setup
@@ -275,9 +326,21 @@ WF_HEADER
 Configure specific Sentry capabilities beyond basic SDK setup.
 
 FS_HEADER
-  printf "| Skill | %s |\n" "$col_fs"
-  printf "|---|---|\n"
+  printf "| %s | Skill | Path |\n" "$col_fs"
+  printf "|---|---|---|\n"
   build_table_rows "feature-setup" ${SKILLS_FEATURE_SETUP[@]+"${SKILLS_FEATURE_SETUP[@]}"}
+
+  # Quick Lookup section
+  cat <<'LOOKUP_HEADER'
+
+## Quick Lookup
+
+Match your project to a skill by keywords. Append the path to `https://skills.sentry.gg/` to fetch.
+
+| Keywords | Path |
+|---|---|
+LOOKUP_HEADER
+  build_keyword_lookup
 
   printf "\n"
 }
