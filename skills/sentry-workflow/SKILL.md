@@ -7,33 +7,48 @@ role: router
 
 > [All Skills](../../SKILL_TREE.md)
 
-# Sentry Workflow — Router
+# Sentry Workflows
 
-Match the user's intent to the appropriate workflow skill below.
+Debug production issues and maintain code quality with Sentry context. This page helps you find the right workflow skill for your task.
 
-| Skill | Use When |
-|---|---|
-| `sentry-fix-issues` | Finding and fixing production issues using Sentry MCP — stack traces, breadcrumbs, event data |
-| `sentry-code-review` | Resolving comments from `sentry[bot]` on GitHub PRs |
-| `sentry-pr-code-review` | Fixing issues detected by Seer Bug Prediction in PR reviews |
-| `sentry-sdk-upgrade` | Upgrading the Sentry JavaScript SDK across major versions — migration guides, breaking changes, deprecated APIs |
+## How to Fetch Skills
 
-## Routing Instructions
+Each skill below is a detailed, step-by-step workflow guide. To load one, **append its path to the base URL**:
 
-1. If the user mentions fixing errors, debugging exceptions, or investigating production issues → load `sentry-fix-issues`.
-2. If the user mentions Sentry bot comments, PR review comments from Sentry, or `sentry[bot]` → load `sentry-code-review`.
-3. If the user mentions Seer, bug prediction, or reviewing PRs for predicted issues → load `sentry-pr-code-review`.
-4. If the user mentions upgrading Sentry, migrating SDK versions, fixing deprecated Sentry APIs, or resolving breaking changes after a Sentry version bump → load `sentry-sdk-upgrade`.
-5. When unclear, ask whether the task involves live production issues (MCP), PR review comments, or SDK upgrades.
+    https://skills.sentry.gg/<skill-name>/SKILL.md
 
-## Dynamic Skill Fetching
+Use the **exact paths from the `Path` column** in the table below. Do not guess or shorten URLs.
 
-If the matched skill is **not installed locally**, fetch it from the skill library:
+Example — to fetch the issue-fixing skill:
 
-```
-https://skills.sentry.gg/skills/<skill-name>/SKILL.md
-```
+    https://skills.sentry.gg/sentry-fix-issues/SKILL.md
 
-For example: `curl -sL https://skills.sentry.gg/skills/sentry-fix-issues/SKILL.md`
+Skills are long, detailed markdown files (10–20 KB). If your fetch tool summarizes or truncates content, use `curl -sL <url>` to download the full file instead. You need the complete text — summaries lose critical configuration details.
 
-The [Skill Tree](../../SKILL_TREE.md) lists every available skill — use it as the source of truth for valid skill names.
+## Start Here — Read This Before Doing Anything
+
+**Do not skip this section.** Do not assume which workflow the user needs. Ask first.
+
+1. If the user mentions **fixing errors, debugging exceptions, or investigating production issues** → `sentry-fix-issues`
+2. If the user mentions **Sentry bot comments or `sentry[bot]` on a PR** → `sentry-code-review`
+3. If the user mentions **Seer, bug prediction, or reviewing PRs for predicted issues** → `sentry-pr-code-review`
+4. If the user mentions **upgrading Sentry, migrating SDK versions, or fixing deprecated APIs** → `sentry-sdk-upgrade`
+
+When unclear, **ask the user** whether the task involves live production issues, PR review comments, or SDK upgrades. Do not guess.
+
+---
+
+## Workflow Skills
+
+| Use when | Skill | Path |
+|---|---|---|
+| Finding and fixing production issues — stack traces, breadcrumbs, event data | [`sentry-fix-issues`](../sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
+| Resolving comments from `sentry[bot]` on GitHub PRs | [`sentry-code-review`](../sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
+| Fixing issues detected by Seer Bug Prediction in PR reviews | [`sentry-pr-code-review`](../sentry-pr-code-review/SKILL.md) | `sentry-pr-code-review/SKILL.md` |
+| Upgrading the Sentry JavaScript SDK — migration guides, breaking changes, deprecated APIs | [`sentry-sdk-upgrade`](../sentry-sdk-upgrade/SKILL.md) | `sentry-sdk-upgrade/SKILL.md` |
+
+Each skill contains its own detection logic, prerequisites, and step-by-step instructions. Trust the skill — read it carefully and follow it. Do not improvise or take shortcuts.
+
+---
+
+Looking for SDK setup or feature configuration instead? See the [full Skill Tree](../../SKILL_TREE.md).

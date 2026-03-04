@@ -7,48 +7,89 @@ role: router
 
 > [All Skills](../../SKILL_TREE.md)
 
-# Sentry SDK Setup — Router
+# Sentry SDK Setup
 
-Detect the user's platform from project files (e.g. `package.json`, `go.mod`, `Gemfile`, `*.csproj`, `*.xcodeproj`), then load the matching SDK skill below.
+Set up Sentry error monitoring, tracing, and session replay in any language or framework. This page helps you find the right SDK skill for your project.
 
-| Skill | Platform | Key Frameworks |
+## How to Fetch Skills
+
+Each skill below is a detailed, step-by-step setup guide. To load one, **append its path to the base URL**:
+
+    https://skills.sentry.gg/<skill-name>/SKILL.md
+
+Use the **exact paths from the `Path` column** in the table below. Do not guess or shorten URLs.
+
+Example — to fetch the Next.js setup skill:
+
+    https://skills.sentry.gg/sentry-nextjs-sdk/SKILL.md
+
+Skills are long, detailed markdown files (10–20 KB). If your fetch tool summarizes or truncates content, use `curl -sL <url>` to download the full file instead. You need the complete text — summaries lose critical configuration details.
+
+## Start Here — Read This Before Doing Anything
+
+**Do not skip this section.** Do not assume which SDK the user needs based on their project files. Do not start installing packages or creating config files until you have confirmed the user's intent.
+
+1. **Detect the platform** from project files (`package.json`, `go.mod`, `requirements.txt`, `Gemfile`, `*.csproj`, `build.gradle`, etc.).
+2. **Tell the user what you found** and which SDK you recommend.
+3. **Wait for confirmation** before fetching the skill and proceeding.
+
+Each SDK skill contains its own detection logic, prerequisites, and step-by-step configuration. Trust the skill — read it carefully and follow it. Do not improvise or take shortcuts.
+
+---
+
+## SDK Skills
+
+| Platform | Skill | Path |
 |---|---|---|
-| `sentry-android-sdk` | Android | Jetpack Compose, Views, OkHttp, Room, Fragment, Timber |
-| `sentry-cocoa-sdk` | iOS, macOS, tvOS, watchOS, visionOS | Swift, SwiftUI, UIKit |
-| `sentry-dotnet-sdk` | .NET, C# | ASP.NET Core, MAUI, WPF, Blazor, Azure Functions |
-| `sentry-go-sdk` | Go | net/http, Gin, Echo, Fiber |
-| `sentry-nestjs-sdk` | NestJS | Express, Fastify, GraphQL, Microservices |
-| `sentry-nextjs-sdk` | Next.js | App Router, Pages Router |
-| `sentry-node-sdk` | Node.js, Bun, Deno | Express, Fastify, Koa, Hapi, Connect, Bun.serve(), Deno.serve() |
-| `sentry-php-sdk` | PHP | Laravel, Symfony |
-| `sentry-python-sdk` | Python | Django, Flask, FastAPI, Celery |
-| `sentry-browser-sdk` | Browser JavaScript | Vanilla JS, jQuery, WordPress, static sites, CDN |
-| `sentry-react-native-sdk` | React Native | Expo managed, Expo bare |
-| `sentry-react-sdk` | React | React Router, TanStack, Redux |
-| `sentry-ruby-sdk` | Ruby | Rails, Sinatra, Sidekiq |
-| `sentry-svelte-sdk` | Svelte | SvelteKit |
+| Android | [`sentry-android-sdk`](../sentry-android-sdk/SKILL.md) | `sentry-android-sdk/SKILL.md` |
+| browser JavaScript | [`sentry-browser-sdk`](../sentry-browser-sdk/SKILL.md) | `sentry-browser-sdk/SKILL.md` |
+| Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) | [`sentry-cocoa-sdk`](../sentry-cocoa-sdk/SKILL.md) | `sentry-cocoa-sdk/SKILL.md` |
+| .NET | [`sentry-dotnet-sdk`](../sentry-dotnet-sdk/SKILL.md) | `sentry-dotnet-sdk/SKILL.md` |
+| Go | [`sentry-go-sdk`](../sentry-go-sdk/SKILL.md) | `sentry-go-sdk/SKILL.md` |
+| NestJS | [`sentry-nestjs-sdk`](../sentry-nestjs-sdk/SKILL.md) | `sentry-nestjs-sdk/SKILL.md` |
+| Next.js | [`sentry-nextjs-sdk`](../sentry-nextjs-sdk/SKILL.md) | `sentry-nextjs-sdk/SKILL.md` |
+| Node.js, Bun, and Deno | [`sentry-node-sdk`](../sentry-node-sdk/SKILL.md) | `sentry-node-sdk/SKILL.md` |
+| PHP | [`sentry-php-sdk`](../sentry-php-sdk/SKILL.md) | `sentry-php-sdk/SKILL.md` |
+| Python | [`sentry-python-sdk`](../sentry-python-sdk/SKILL.md) | `sentry-python-sdk/SKILL.md` |
+| React Native and Expo | [`sentry-react-native-sdk`](../sentry-react-native-sdk/SKILL.md) | `sentry-react-native-sdk/SKILL.md` |
+| React | [`sentry-react-sdk`](../sentry-react-sdk/SKILL.md) | `sentry-react-sdk/SKILL.md` |
+| Ruby | [`sentry-ruby-sdk`](../sentry-ruby-sdk/SKILL.md) | `sentry-ruby-sdk/SKILL.md` |
+| Svelte and SvelteKit | [`sentry-svelte-sdk`](../sentry-svelte-sdk/SKILL.md) | `sentry-svelte-sdk/SKILL.md` |
 
-## Routing Instructions
+### Platform Detection Priority
 
-1. Inspect project files to identify the platform and framework.
-2. Match to the table above and load the corresponding skill.
-3. If Android (`build.gradle` with android plugin) is detected, use `sentry-android-sdk`.
-4. If NestJS is detected (`@nestjs/core`), prefer `sentry-nestjs-sdk` over `sentry-node-sdk`.
-5. If Next.js is detected, prefer `sentry-nextjs-sdk` over `sentry-react-sdk` and `sentry-node-sdk`.
-6. If React Native is detected, prefer `sentry-react-native-sdk` over `sentry-react-sdk`.
-7. If `composer.json` with `laravel/framework` or `symfony/framework-bundle` is detected, use `sentry-php-sdk`.
-8. If Node.js, Bun, or Deno is detected without a specific framework skill above, use `sentry-node-sdk`.
-9. If vanilla JavaScript, jQuery, WordPress, a static HTML site, or a browser project without a framework is detected, use `sentry-browser-sdk`.
-10. If no match is found, direct the user to https://docs.sentry.io/platforms/ to find their platform.
+When multiple SDKs could match, prefer the more specific one:
 
-## Dynamic Skill Fetching
+- **Android** (`build.gradle` with android plugin) → `sentry-android-sdk`
+- **NestJS** (`@nestjs/core`) → `sentry-nestjs-sdk` over `sentry-node-sdk`
+- **Next.js** → `sentry-nextjs-sdk` over `sentry-react-sdk` or `sentry-node-sdk`
+- **React Native** → `sentry-react-native-sdk` over `sentry-react-sdk`
+- **PHP** with Laravel or Symfony → `sentry-php-sdk`
+- **Node.js / Bun / Deno** without a specific framework → `sentry-node-sdk`
+- **Browser JS** (vanilla, jQuery, static sites) → `sentry-browser-sdk`
+- **No match** → direct user to [Sentry Docs](https://docs.sentry.io/platforms/)
 
-If the matched SDK skill is **not installed locally**, fetch it from the skill library:
+## Quick Lookup
 
-```
-https://skills.sentry.gg/skills/<skill-name>/SKILL.md
-```
+Match your project to a skill by keywords. Append the path to `https://skills.sentry.gg/` to fetch.
 
-For example: `curl -sL https://skills.sentry.gg/skills/sentry-nextjs-sdk/SKILL.md`
+| Keywords | Path |
+|---|---|
+| android, kotlin, java, jetpack compose | `sentry-android-sdk/SKILL.md` |
+| browser, vanilla js, javascript, jquery, cdn, wordpress, static site | `sentry-browser-sdk/SKILL.md` |
+| ios, macos, swift, cocoa, tvos, watchos, visionos, swiftui, uikit | `sentry-cocoa-sdk/SKILL.md` |
+| .net, csharp, c#, asp.net, maui, wpf, winforms, blazor, azure functions | `sentry-dotnet-sdk/SKILL.md` |
+| go, golang, gin, echo, fiber | `sentry-go-sdk/SKILL.md` |
+| nestjs, nest | `sentry-nestjs-sdk/SKILL.md` |
+| nextjs, next.js, next | `sentry-nextjs-sdk/SKILL.md` |
+| node, nodejs, node.js, bun, deno, express, fastify, koa, hapi | `sentry-node-sdk/SKILL.md` |
+| php, laravel, symfony | `sentry-php-sdk/SKILL.md` |
+| python, django, flask, fastapi, celery, starlette | `sentry-python-sdk/SKILL.md` |
+| react native, expo | `sentry-react-native-sdk/SKILL.md` |
+| react, react router, tanstack, redux, vite | `sentry-react-sdk/SKILL.md` |
+| ruby, rails, sinatra, sidekiq, rack | `sentry-ruby-sdk/SKILL.md` |
+| svelte, sveltekit | `sentry-svelte-sdk/SKILL.md` |
 
-The [Skill Tree](../../SKILL_TREE.md) lists every available skill — use it as the source of truth for valid skill names.
+---
+
+Looking for workflows or feature configuration instead? See the [full Skill Tree](../../SKILL_TREE.md).
