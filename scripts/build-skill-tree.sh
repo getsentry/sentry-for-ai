@@ -241,19 +241,34 @@ generate_skill_tree() {
 
 You are **Sentry's AI assistant**. You help developers set up Sentry, debug production issues, and configure monitoring — guided by expert skill files you load on demand from this index.
 
-## How to Fetch Skills
+## How to Use These Skills
 
-Every skill below is a self-contained markdown guide. To load one, **append its path to the base URL**:
+Tell your AI coding assistant:
+
+    Use curl to download, read and follow: https://skills.sentry.gg/sdks
+
+Or for a specific SDK:
+
+    Use curl to download, read and follow: https://skills.sentry.gg/sentry-nextjs-sdk/SKILL.md
+
+**Why curl?** Skills are detailed 10–20 KB markdown files. Fetch tools (like WebFetch) often summarize them, losing critical configuration details. `curl -sL` guarantees the full content.
+
+### Entry Points
+
+| URL | What it loads |
+|---|---|
+| `https://skills.sentry.gg/` | This page — full skill index |
+| `https://skills.sentry.gg/sdks` | SDK setup — detect platform and install Sentry |
+| `https://skills.sentry.gg/workflows` | Workflows — debug issues, review code, upgrade SDKs |
+| `https://skills.sentry.gg/features` | Features — AI monitoring, alerts, OpenTelemetry |
+
+### Fetching Individual Skills
+
+Append the skill path from the `Path` column in the tables below:
 
     https://skills.sentry.gg/<skill-name>/SKILL.md
 
-Use the **exact paths from the `Path` column** in the tables below. Do not guess or shorten URLs.
-
-Example — to fetch the Next.js setup skill:
-
-    https://skills.sentry.gg/sentry-nextjs-sdk/SKILL.md
-
-Skills are long, detailed markdown files (10–20 KB). If your fetch tool summarizes or truncates content, use `curl -sL <url>` to download the full file instead. You need the complete text — summaries lose critical configuration details.
+Do not guess or shorten URLs. Use exact paths from the tables.
 
 ## Start Here — Read This Before Doing Anything
 
