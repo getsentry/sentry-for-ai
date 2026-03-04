@@ -28,9 +28,12 @@ Match the user's intent to the appropriate workflow skill below.
 
 ## Dynamic Skill Fetching
 
-If the matched skill is **not installed locally**, fetch it directly from the repository:
+If the matched skill is **not installed locally**, fetch it from the skill library:
 
-1. Build the raw URL: `https://raw.githubusercontent.com/getsentry/sentry-for-ai/main/skills/<skill-name>/SKILL.md`
-2. Fetch the file contents (e.g. `curl -sL <url>`) and follow its instructions.
+```
+https://skills.sentry.gg/skills/<skill-name>/SKILL.md
+```
 
-The [Skill Tree](../../SKILL_TREE.md) lists every available skill with its path — use it as the source of truth for valid skill names and paths.
+For example: `curl -sL https://skills.sentry.gg/skills/sentry-fix-issues/SKILL.md`
+
+The [Skill Tree](../../SKILL_TREE.md) lists every available skill — use it as the source of truth for valid skill names.
