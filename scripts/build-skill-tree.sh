@@ -185,60 +185,98 @@ build_table_rows() {
     file="$(skill_get "$name" file)"
     desc="$(skill_get "$name" desc)"
     col_val="$(get_column_value "$desc" "$category")"
-    printf "| [\`%s\`](%s) | %s | %s |\n" "$name" "$file" "$file" "$col_val"
+    printf "| [\`%s\`](%s) | %s |\n" "$name" "$file" "$col_val"
   done
 }
 
 generate_skill_tree() {
-  local sdk_router="sentry-sdk-setup"
-  local wf_router="sentry-workflow"
-  local fs_router="sentry-feature-setup"
-
   cat <<'HEADER'
-# Sentry Skill Tree
+# Sentry Skills
 
-This file maps the full skill structure for the Sentry-for-AI plugin. Read it to find the right skill for any task, then follow the path to load it.
+You are **Sentry's AI assistant**. You help developers set up Sentry, debug production issues, and configure monitoring — guided by expert skill files you load on demand from this index.
 
-## Quick Navigation
+## How It Works
 
-| If the user wants to... | Start here |
-|---|---|
-| Set up Sentry in a project | [`sentry-sdk-setup`](skills/sentry-sdk-setup/SKILL.md) |
-| Fix issues, review code, debug production | [`sentry-workflow`](skills/sentry-workflow/SKILL.md) |
-| Configure a specific Sentry feature | [`sentry-feature-setup`](skills/sentry-feature-setup/SKILL.md) |
+This is the root of Sentry's skill library. Each skill below is a self-contained, step-by-step guide for a specific task. Load one by fetching its file and following the instructions inside.
+
+All paths below are relative to this file. Fetch them however your environment supports — local file read, HTTP fetch, or URL construction:
+
+```
+Base URL: https://skills.sentry.gg
+Example:  https://skills.sentry.gg/skills/sentry-nextjs-sdk/SKILL.md
+```
+
+## Start Here
+
+Greet the user and ask what they'd like help with. Present these options:
+
+1. **Set up Sentry** — Add error monitoring, performance tracing, and session replay to a project
+2. **Debug a production issue** — Investigate errors and exceptions using Sentry data
+3. **Configure a feature** — AI/LLM monitoring, alerts, OpenTelemetry pipelines
+4. **Review code** — Resolve Sentry bot comments or check for predicted bugs
+5. **Upgrade Sentry SDK** — Migrate to a new major version
+
+Based on their response, find the matching skill below, fetch it, and follow its instructions.
+
+---
 HEADER
 
   # SDK Setup
-  local col_sdk col_wf col_fs col_int
+  local col_sdk col_wf col_fs
   col_sdk="$(column_header sdk-setup)"
-  printf "\n## SDK Setup ([\`%s\`](%s))\n\n" \
-    "$sdk_router" "skills/$sdk_router/SKILL.md"
-  printf "| Skill | Path | %s |\n" "$col_sdk"
-  printf "|---|---|---|\n"
+
+  cat <<'SDK_HEADER'
+
+## SDK Setup
+
+Install and configure Sentry for any platform. If unsure which SDK fits, detect the platform from the user's project files (`package.json`, `go.mod`, `requirements.txt`, `Gemfile`, `*.csproj`, `build.gradle`, etc.).
+
+SDK_HEADER
+  printf "| Skill | %s |\n" "$col_sdk"
+  printf "|---|---|\n"
   build_table_rows "sdk-setup" ${SKILLS_SDK_SETUP[@]+"${SKILLS_SDK_SETUP[@]}"}
 
-  # Workflow
+  cat <<'SDK_ROUTING'
+
+### Platform Detection Priority
+
+When multiple SDKs could match, prefer the more specific one:
+
+- **Android** (`build.gradle` with android plugin) → `sentry-android-sdk`
+- **NestJS** (`@nestjs/core`) → `sentry-nestjs-sdk` over `sentry-node-sdk`
+- **Next.js** → `sentry-nextjs-sdk` over `sentry-react-sdk` or `sentry-node-sdk`
+- **React Native** → `sentry-react-native-sdk` over `sentry-react-sdk`
+- **PHP** with Laravel or Symfony → `sentry-php-sdk`
+- **Node.js / Bun / Deno** without a specific framework → `sentry-node-sdk`
+- **Browser JS** (vanilla, jQuery, static sites) → `sentry-browser-sdk`
+- **No match** → direct user to [Sentry Docs](https://docs.sentry.io/platforms/)
+SDK_ROUTING
+
+  # Workflows
   col_wf="$(column_header workflow)"
-  printf "\n## Workflow ([\`%s\`](%s))\n\n" \
-    "$wf_router" "skills/$wf_router/SKILL.md"
-  printf "| Skill | Path | %s |\n" "$col_wf"
-  printf "|---|---|---|\n"
+  cat <<'WF_HEADER'
+
+## Workflows
+
+Debug production issues and maintain code quality with Sentry context.
+
+WF_HEADER
+  printf "| Skill | %s |\n" "$col_wf"
+  printf "|---|---|\n"
   build_table_rows "workflow" ${SKILLS_WORKFLOW[@]+"${SKILLS_WORKFLOW[@]}"}
 
   # Feature Setup
   col_fs="$(column_header feature-setup)"
-  printf "\n## Feature Setup ([\`%s\`](%s))\n\n" \
-    "$fs_router" "skills/$fs_router/SKILL.md"
-  printf "| Skill | Path | %s |\n" "$col_fs"
-  printf "|---|---|---|\n"
-  build_table_rows "feature-setup" ${SKILLS_FEATURE_SETUP[@]+"${SKILLS_FEATURE_SETUP[@]}"}
+  cat <<'FS_HEADER'
 
-  # Internal (no router)
-  col_int="$(column_header internal)"
-  printf "\n## Internal\n\n"
-  printf "| Skill | Path | %s |\n" "$col_int"
-  printf "|---|---|---|\n"
-  build_table_rows "internal" ${SKILLS_INTERNAL[@]+"${SKILLS_INTERNAL[@]}"}
+## Feature Setup
+
+Configure specific Sentry capabilities beyond basic SDK setup.
+
+FS_HEADER
+  printf "| Skill | %s |\n" "$col_fs"
+  printf "|---|---|\n"
+  build_table_rows "feature-setup" ${SKILLS_FEATURE_SETUP[@]+"${SKILLS_FEATURE_SETUP[@]}"}
 
   printf "\n"
 }

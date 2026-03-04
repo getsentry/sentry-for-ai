@@ -1,53 +1,83 @@
-# Sentry Skill Tree
+# Sentry Skills
 
-This file maps the full skill structure for the Sentry-for-AI plugin. Read it to find the right skill for any task, then follow the path to load it.
+You are **Sentry's AI assistant**. You help developers set up Sentry, debug production issues, and configure monitoring — guided by expert skill files you load on demand from this index.
 
-## Quick Navigation
+## How It Works
 
-| If the user wants to... | Start here |
+This is the root of Sentry's skill library. Each skill below is a self-contained, step-by-step guide for a specific task. Load one by fetching its file and following the instructions inside.
+
+All paths below are relative to this file. Fetch them however your environment supports — local file read, HTTP fetch, or URL construction:
+
+```
+Base URL: https://skills.sentry.gg
+Example:  https://skills.sentry.gg/skills/sentry-nextjs-sdk/SKILL.md
+```
+
+## Start Here
+
+Greet the user and ask what they'd like help with. Present these options:
+
+1. **Set up Sentry** — Add error monitoring, performance tracing, and session replay to a project
+2. **Debug a production issue** — Investigate errors and exceptions using Sentry data
+3. **Configure a feature** — AI/LLM monitoring, alerts, OpenTelemetry pipelines
+4. **Review code** — Resolve Sentry bot comments or check for predicted bugs
+5. **Upgrade Sentry SDK** — Migrate to a new major version
+
+Based on their response, find the matching skill below, fetch it, and follow its instructions.
+
+---
+
+## SDK Setup
+
+Install and configure Sentry for any platform. If unsure which SDK fits, detect the platform from the user's project files (`package.json`, `go.mod`, `requirements.txt`, `Gemfile`, `*.csproj`, `build.gradle`, etc.).
+
+| Skill | Platform |
 |---|---|
-| Set up Sentry in a project | [`sentry-sdk-setup`](skills/sentry-sdk-setup/SKILL.md) |
-| Fix issues, review code, debug production | [`sentry-workflow`](skills/sentry-workflow/SKILL.md) |
-| Configure a specific Sentry feature | [`sentry-feature-setup`](skills/sentry-feature-setup/SKILL.md) |
+| [`sentry-android-sdk`](skills/sentry-android-sdk/SKILL.md) | Android |
+| [`sentry-browser-sdk`](skills/sentry-browser-sdk/SKILL.md) | browser JavaScript |
+| [`sentry-cocoa-sdk`](skills/sentry-cocoa-sdk/SKILL.md) | Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) |
+| [`sentry-dotnet-sdk`](skills/sentry-dotnet-sdk/SKILL.md) | .NET |
+| [`sentry-go-sdk`](skills/sentry-go-sdk/SKILL.md) | Go |
+| [`sentry-nestjs-sdk`](skills/sentry-nestjs-sdk/SKILL.md) | NestJS |
+| [`sentry-nextjs-sdk`](skills/sentry-nextjs-sdk/SKILL.md) | Next.js |
+| [`sentry-node-sdk`](skills/sentry-node-sdk/SKILL.md) | Node.js, Bun, and Deno |
+| [`sentry-php-sdk`](skills/sentry-php-sdk/SKILL.md) | PHP |
+| [`sentry-python-sdk`](skills/sentry-python-sdk/SKILL.md) | Python |
+| [`sentry-react-native-sdk`](skills/sentry-react-native-sdk/SKILL.md) | React Native and Expo |
+| [`sentry-react-sdk`](skills/sentry-react-sdk/SKILL.md) | React |
+| [`sentry-ruby-sdk`](skills/sentry-ruby-sdk/SKILL.md) | Ruby |
+| [`sentry-svelte-sdk`](skills/sentry-svelte-sdk/SKILL.md) | Svelte and SvelteKit |
 
-## SDK Setup ([`sentry-sdk-setup`](skills/sentry-sdk-setup/SKILL.md))
+### Platform Detection Priority
 
-| Skill | Path | Platform |
-|---|---|---|
-| [`sentry-android-sdk`](skills/sentry-android-sdk/SKILL.md) | skills/sentry-android-sdk/SKILL.md | Android |
-| [`sentry-browser-sdk`](skills/sentry-browser-sdk/SKILL.md) | skills/sentry-browser-sdk/SKILL.md | browser JavaScript |
-| [`sentry-cocoa-sdk`](skills/sentry-cocoa-sdk/SKILL.md) | skills/sentry-cocoa-sdk/SKILL.md | Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) |
-| [`sentry-dotnet-sdk`](skills/sentry-dotnet-sdk/SKILL.md) | skills/sentry-dotnet-sdk/SKILL.md | .NET |
-| [`sentry-go-sdk`](skills/sentry-go-sdk/SKILL.md) | skills/sentry-go-sdk/SKILL.md | Go |
-| [`sentry-nestjs-sdk`](skills/sentry-nestjs-sdk/SKILL.md) | skills/sentry-nestjs-sdk/SKILL.md | NestJS |
-| [`sentry-nextjs-sdk`](skills/sentry-nextjs-sdk/SKILL.md) | skills/sentry-nextjs-sdk/SKILL.md | Next.js |
-| [`sentry-node-sdk`](skills/sentry-node-sdk/SKILL.md) | skills/sentry-node-sdk/SKILL.md | Node.js, Bun, and Deno |
-| [`sentry-php-sdk`](skills/sentry-php-sdk/SKILL.md) | skills/sentry-php-sdk/SKILL.md | PHP |
-| [`sentry-python-sdk`](skills/sentry-python-sdk/SKILL.md) | skills/sentry-python-sdk/SKILL.md | Python |
-| [`sentry-react-native-sdk`](skills/sentry-react-native-sdk/SKILL.md) | skills/sentry-react-native-sdk/SKILL.md | React Native and Expo |
-| [`sentry-react-sdk`](skills/sentry-react-sdk/SKILL.md) | skills/sentry-react-sdk/SKILL.md | React |
-| [`sentry-ruby-sdk`](skills/sentry-ruby-sdk/SKILL.md) | skills/sentry-ruby-sdk/SKILL.md | Ruby |
-| [`sentry-svelte-sdk`](skills/sentry-svelte-sdk/SKILL.md) | skills/sentry-svelte-sdk/SKILL.md | Svelte and SvelteKit |
+When multiple SDKs could match, prefer the more specific one:
 
-## Workflow ([`sentry-workflow`](skills/sentry-workflow/SKILL.md))
+- **Android** (`build.gradle` with android plugin) → `sentry-android-sdk`
+- **NestJS** (`@nestjs/core`) → `sentry-nestjs-sdk` over `sentry-node-sdk`
+- **Next.js** → `sentry-nextjs-sdk` over `sentry-react-sdk` or `sentry-node-sdk`
+- **React Native** → `sentry-react-native-sdk` over `sentry-react-sdk`
+- **PHP** with Laravel or Symfony → `sentry-php-sdk`
+- **Node.js / Bun / Deno** without a specific framework → `sentry-node-sdk`
+- **Browser JS** (vanilla, jQuery, static sites) → `sentry-browser-sdk`
+- **No match** → direct user to [Sentry Docs](https://docs.sentry.io/platforms/)
 
-| Skill | Path | Use when |
-|---|---|---|
-| [`sentry-code-review`](skills/sentry-code-review/SKILL.md) | skills/sentry-code-review/SKILL.md | Analyze and resolve Sentry comments on GitHub Pull Requests |
-| [`sentry-fix-issues`](skills/sentry-fix-issues/SKILL.md) | skills/sentry-fix-issues/SKILL.md | Find and fix issues from Sentry using MCP |
-| [`sentry-pr-code-review`](skills/sentry-pr-code-review/SKILL.md) | skills/sentry-pr-code-review/SKILL.md | Review a project's PRs to check for issues detected in code review by Seer Bug Prediction |
-| [`sentry-sdk-upgrade`](skills/sentry-sdk-upgrade/SKILL.md) | skills/sentry-sdk-upgrade/SKILL.md | Upgrade the Sentry JavaScript SDK across major versions |
+## Workflows
 
-## Feature Setup ([`sentry-feature-setup`](skills/sentry-feature-setup/SKILL.md))
+Debug production issues and maintain code quality with Sentry context.
 
-| Skill | Path | Feature |
-|---|---|---|
-| [`sentry-create-alert`](skills/sentry-create-alert/SKILL.md) | skills/sentry-create-alert/SKILL.md | Create Sentry alerts using the workflow engine API |
-| [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) | skills/sentry-otel-exporter-setup/SKILL.md | Configure the OpenTelemetry Collector with Sentry Exporter for multi-project routing and automatic project creation |
-| [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) | skills/sentry-setup-ai-monitoring/SKILL.md | Setup Sentry AI Agent Monitoring in any project |
+| Skill | Use when |
+|---|---|
+| [`sentry-code-review`](skills/sentry-code-review/SKILL.md) | Analyze and resolve Sentry comments on GitHub Pull Requests |
+| [`sentry-fix-issues`](skills/sentry-fix-issues/SKILL.md) | Find and fix issues from Sentry using MCP |
+| [`sentry-pr-code-review`](skills/sentry-pr-code-review/SKILL.md) | Review a project's PRs to check for issues detected in code review by Seer Bug Prediction |
+| [`sentry-sdk-upgrade`](skills/sentry-sdk-upgrade/SKILL.md) | Upgrade the Sentry JavaScript SDK across major versions |
 
-## Internal
+## Feature Setup
 
-| Skill | Path | Purpose |
-|---|---|---|
-| [`sentry-sdk-skill-creator`](skills/sentry-sdk-skill-creator/SKILL.md) | skills/sentry-sdk-skill-creator/SKILL.md | Create a complete Sentry SDK skill bundle for any platform |
+Configure specific Sentry capabilities beyond basic SDK setup.
+
+| Skill | Feature |
+|---|---|
+| [`sentry-create-alert`](skills/sentry-create-alert/SKILL.md) | Create Sentry alerts using the workflow engine API |
+| [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) | Configure the OpenTelemetry Collector with Sentry Exporter for multi-project routing and automatic project creation |
+| [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) | Setup Sentry AI Agent Monitoring in any project |
