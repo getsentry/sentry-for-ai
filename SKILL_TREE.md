@@ -10,8 +10,10 @@ All paths below are relative to this file. Fetch them however your environment s
 
 ```
 Base URL: https://skills.sentry.gg
-Example:  https://skills.sentry.gg/skills/sentry-nextjs-sdk/SKILL.md
+Example:  https://skills.sentry.gg/sentry-nextjs-sdk/SKILL.md
 ```
+
+These skills are also available via the [`skills.sentry.gg`](https://github.com/getsentry/skills.sentry.gg) proxy, which serves files from this repository with caching and clean URLs. Both path styles work — the proxy redirects `skills/` prefixed paths to their canonical form.
 
 ## Start Here
 
