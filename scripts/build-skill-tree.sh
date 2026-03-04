@@ -118,7 +118,6 @@ ROUTERS=()
 SKILLS_SDK_SETUP=()
 SKILLS_WORKFLOW=()
 SKILLS_FEATURE_SETUP=()
-SKILLS_INTERNAL=()
 
 for name in "${ALL_SKILLS[@]}"; do
   role="$(skill_get "$name" role)"
@@ -131,7 +130,7 @@ for name in "${ALL_SKILLS[@]}"; do
       sdk-setup)     SKILLS_SDK_SETUP+=("$name") ;;
       workflow)      SKILLS_WORKFLOW+=("$name") ;;
       feature-setup) SKILLS_FEATURE_SETUP+=("$name") ;;
-      internal)      SKILLS_INTERNAL+=("$name") ;;
+      internal)      ;; # validated but not shown in public skill tree
     esac
   fi
 done
