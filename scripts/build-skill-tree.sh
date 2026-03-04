@@ -253,6 +253,8 @@ Example — to fetch the Next.js setup skill:
 
     https://skills.sentry.gg/sentry-nextjs-sdk/SKILL.md
 
+Skills are long, detailed markdown files (10–20 KB). If your fetch tool summarizes or truncates content, use `curl -sL <url>` to download the full file instead. You need the complete text — summaries lose critical configuration details.
+
 ## Start Here — Read This Before Doing Anything
 
 **Do not skip this section.** Do not assume what the user needs based on their project files. Do not start installing packages, creating files, or running commands until you have confirmed the user's intent.
