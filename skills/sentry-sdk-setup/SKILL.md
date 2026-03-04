@@ -13,17 +13,11 @@ Set up Sentry error monitoring, tracing, and session replay in any language or f
 
 ## How to Fetch Skills
 
-Each skill below is a detailed, step-by-step setup guide. To load one, **append its path to the base URL**:
+Use `curl` to download skills — they are 10–20 KB files that fetch tools often summarize, losing critical details.
 
-    https://skills.sentry.gg/<skill-name>/SKILL.md
+    curl -sL https://skills.sentry.gg/sentry-nextjs-sdk/SKILL.md
 
-Use the **exact paths from the `Path` column** in the table below. Do not guess or shorten URLs.
-
-Example — to fetch the Next.js setup skill:
-
-    https://skills.sentry.gg/sentry-nextjs-sdk/SKILL.md
-
-Skills are long, detailed markdown files (10–20 KB). If your fetch tool summarizes or truncates content, use `curl -sL <url>` to download the full file instead. You need the complete text — summaries lose critical configuration details.
+Append the path from the `Path` column in the table below to `https://skills.sentry.gg/`. Do not guess or shorten URLs.
 
 ## Start Here — Read This Before Doing Anything
 
