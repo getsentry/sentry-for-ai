@@ -223,8 +223,6 @@ Sentry.metrics.increment(
 );
 ```
 
-> **Tag value constraints:** Tag values must be strings. The metric key + all tags must fit within the **2 KB per-metric key limit** (key name + aggregated tag combinations).
-
 ### Trace correlation
 
 As of `sentry_flutter` 9.11.0, metrics are **automatically linked to the active trace** when emitted inside a span. This allows you to view metric data alongside transaction performance in the Sentry UI:
@@ -280,7 +278,7 @@ No special configuration is required for metrics beyond initializing the SDK wit
 | Limitation | Details |
 |------------|---------|
 | No `set` type | `Sentry.metrics.set()` is **not supported** in the Flutter/Dart SDK. Use counters or external tracking for unique-value counting. |
-| 2 KB per-metric key limit | Key name + all tag combinations per metric must not exceed 2 KB total. Exceeding this may cause metrics to be silently dropped server-side. |
+| 2 KB per-metric key limit | The metric key name + all tag key-value pairs must fit within 2 KB total. |
 | Open Beta status | The metrics API is stable but under active development. Some edge cases may change in future minor versions. |
 | Aggregation window | Metrics are aggregated locally before being flushed. Individual data points are not preserved — you see aggregations (sum, count, min, max). |
 | No sampling for metrics | Unlike errors and transactions, there is no sample rate for metrics — all emitted metrics are sent. Use tags and filtering instead of emitting fewer data points. |
@@ -298,4 +296,3 @@ No special configuration is required for metrics beyond initializing the SDK wit
 | `set` metric type not available | Expected — not supported in Flutter SDK. Use `increment` with a counter instead. |
 | Metrics appear intermittently | Expected — metrics are batched and flushed on a schedule. Low-volume metrics may appear in Sentry with a delay. |
 | Tags not showing up correctly | Verify all tag values are strings; check total metric key + tags size is under 2 KB |
-| High metric cardinality warning in Sentry | Avoid using high-cardinality values (user IDs, timestamps, request IDs) as tag values. Use categorical values instead. |
