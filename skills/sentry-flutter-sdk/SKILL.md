@@ -190,7 +190,7 @@ Future<void> main() async {
       options.replay.sessionSampleRate = 0.1;
       options.replay.onErrorSampleRate = 1.0;
 
-      // Structured Logging (SDK ≥9.0.0)
+      // Structured Logging (SDK ≥9.5.0)
       options.enableLogs = true;
 
       options.environment = const bool.fromEnvironment('dart.vm.product')

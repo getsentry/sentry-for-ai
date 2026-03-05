@@ -207,6 +207,8 @@ build_keyword_lookup() {
         keywords="ios, macos, swift, cocoa, tvos, watchos, visionos, swiftui, uikit" ;;
       sentry-dotnet-sdk)
         keywords=".net, csharp, c#, asp.net, maui, wpf, winforms, blazor, azure functions" ;;
+      sentry-flutter-sdk)
+        keywords="flutter, dart, sentry_flutter, pubspec, dio" ;;
       sentry-go-sdk)
         keywords="go, golang, gin, echo, fiber" ;;
       sentry-nestjs-sdk)

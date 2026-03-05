@@ -116,7 +116,7 @@ Match your project to a skill by keywords. Append the path to `https://skills.se
 | browser, vanilla js, javascript, jquery, cdn, wordpress, static site | `sentry-browser-sdk/SKILL.md` |
 | ios, macos, swift, cocoa, tvos, watchos, visionos, swiftui, uikit | `sentry-cocoa-sdk/SKILL.md` |
 | .net, csharp, c#, asp.net, maui, wpf, winforms, blazor, azure functions | `sentry-dotnet-sdk/SKILL.md` |
-| sentry-flutter-sdk | `sentry-flutter-sdk/SKILL.md` |
+| flutter, dart, sentry_flutter, pubspec, dio | `sentry-flutter-sdk/SKILL.md` |
 | go, golang, gin, echo, fiber | `sentry-go-sdk/SKILL.md` |
 | nestjs, nest | `sentry-nestjs-sdk/SKILL.md` |
 | nextjs, next.js, next | `sentry-nextjs-sdk/SKILL.md` |

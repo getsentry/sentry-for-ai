@@ -230,26 +230,28 @@ Sentry.metrics.increment(
 As of `sentry_flutter` 9.11.0, metrics are **automatically linked to the active trace** when emitted inside a span. This allows you to view metric data alongside transaction performance in the Sentry UI:
 
 ```dart
-await Sentry.startSpan(
-  'checkout',
-  operation: 'ui.action',
-  fn: () async {
-    // This increment is linked to the checkout span
-    Sentry.metrics.increment('checkout.started');
+final transaction = Sentry.startTransaction('checkout', 'ui.action');
+try {
+  // This increment is linked to the checkout transaction
+  Sentry.metrics.increment('checkout.started');
 
-    final start = DateTime.now();
-    await processCheckout();
-    final elapsed = DateTime.now().difference(start);
+  final start = DateTime.now();
+  await processCheckout();
+  final elapsed = DateTime.now().difference(start);
 
-    Sentry.metrics.distribution(
-      'checkout.duration',
-      value: elapsed.inMilliseconds.toDouble(),
-      unit: SentryMeasurementUnit.duration(DurationSentryMeasurementUnit.milliSecond),
-    );
+  Sentry.metrics.distribution(
+    'checkout.duration',
+    value: elapsed.inMilliseconds.toDouble(),
+    unit: SentryMeasurementUnit.duration(DurationSentryMeasurementUnit.milliSecond),
+  );
 
-    Sentry.metrics.increment('checkout.completed');
-  },
-);
+  Sentry.metrics.increment('checkout.completed');
+
+  transaction.finish(status: const SpanStatus.ok());
+} catch (e) {
+  transaction.finish(status: const SpanStatus.internalError());
+  rethrow;
+}
 ```
 
 ---
@@ -292,7 +294,7 @@ No special configuration is required for metrics beyond initializing the SDK wit
 |-------|----------|
 | Metrics not appearing in Sentry | Verify DSN is correct and the SDK is initialized. Check Sentry → Metrics to ensure the feature is enabled for your organization. |
 | SDK version doesn't have `Sentry.metrics` | Upgrade `sentry_flutter` to ≥ 9.0.0 |
-| Metrics not linked to traces | Upgrade to `sentry_flutter` ≥ 9.11.0 and emit metrics inside a `Sentry.startSpan()` callback |
+| Metrics not linked to traces | Upgrade to `sentry_flutter` ≥ 9.11.0 and emit metrics inside an active transaction (`Sentry.startTransaction()`) |
 | `set` metric type not available | Expected — not supported in Flutter SDK. Use `increment` with a counter instead. |
 | Metrics appear intermittently | Expected — metrics are batched and flushed on a schedule. Low-volume metrics may appear in Sentry with a delay. |
 | Tags not showing up correctly | Verify all tag values are strings; check total metric key + tags size is under 2 KB |

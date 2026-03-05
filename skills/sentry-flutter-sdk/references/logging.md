@@ -220,14 +220,15 @@ Sentry.configureScope((scope) {
   });
 });
 
-// Per-operation scope using withScope
-await Sentry.withScope((scope) async {
+// Per-operation scope — configure the current scope before logging
+Sentry.configureScope((scope) {
   scope.setTag('orderId', 'ord_789');
   scope.setTag('paymentMethod', 'stripe');
+});
 
-  Sentry.logger.info('Validating cart', {'cartId': cart.id});
-  await processPayment();
-  Sentry.logger.info('Payment complete');
+Sentry.logger.info('Validating cart', {'cartId': cart.id});
+await processPayment();
+Sentry.logger.info('Payment complete');
   // Both logs above carry orderId and paymentMethod tags
 });
 ```
@@ -288,21 +289,22 @@ When tracing is enabled, logs emitted inside an active span are **automatically 
 import 'package:sentry/sentry.dart';
 
 Future<void> processOrder(String orderId) async {
-  await Sentry.startSpan(
-    'process-order',
-    operation: 'task',
-    description: 'Processing order $orderId',
-    fn: () async {
-      Sentry.logger.info('Validating cart', {'orderId': orderId});
-      await validateCart(orderId);
+  final transaction = Sentry.startTransaction('process-order', 'task');
+  try {
+    Sentry.logger.info('Validating cart', {'orderId': orderId});
+    await validateCart(orderId);
 
-      Sentry.logger.info('Charging payment', {'orderId': orderId});
-      await chargePayment(orderId);
+    Sentry.logger.info('Charging payment', {'orderId': orderId});
+    await chargePayment(orderId);
 
-      Sentry.logger.info('Confirming order', {'orderId': orderId});
-      await confirmOrder(orderId);
-    },
-  );
+    Sentry.logger.info('Confirming order', {'orderId': orderId});
+    await confirmOrder(orderId);
+
+    transaction.finish(status: const SpanStatus.ok());
+  } catch (e) {
+    transaction.finish(status: const SpanStatus.internalError());
+    rethrow;
+  }
   // All three logs are linked to the process-order span in the trace view
 }
 ```
@@ -364,7 +366,7 @@ options.enableLogs = true;
 | `LoggingIntegration` type not found | Add `sentry_logging` to `pubspec.yaml` and import `package:sentry_logging/sentry_logging.dart` |
 | Logs appear but no stack traces on errors | Set `Logger.root.recordStackTraceAtLevel = Level.SEVERE` or pass `stackTrace` manually |
 | Attribute values showing `[Filtered]` | Server-side PII scrubbing rule matched — adjust **Data Scrubbing** settings in your Sentry project |
-| Logs not linked to traces | Enable tracing (`tracesSampleRate > 0`) and emit logs inside a `Sentry.startSpan()` callback |
+| Logs not linked to traces | Enable tracing (`tracesSampleRate > 0`) and emit logs inside an active transaction (`Sentry.startTransaction()`) |
 | Too many logs in production | Use `beforeSendLog` to drop `trace`/`debug` levels |
 | `sentry_logging` logs not forwarded as structured logs | Check that `minSentryLogLevel` is set to the expected level and `enableLogs: true` |
 | Logs disappearing silently | Check your Sentry org stats for rate limiting; verify log payload < 1 MB |
