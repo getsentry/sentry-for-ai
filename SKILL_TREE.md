@@ -60,6 +60,7 @@ Install and configure Sentry for any platform. If unsure which SDK fits, detect 
 | browser JavaScript | [`sentry-browser-sdk`](skills/sentry-browser-sdk/SKILL.md) | `sentry-browser-sdk/SKILL.md` |
 | Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) | [`sentry-cocoa-sdk`](skills/sentry-cocoa-sdk/SKILL.md) | `sentry-cocoa-sdk/SKILL.md` |
 | .NET | [`sentry-dotnet-sdk`](skills/sentry-dotnet-sdk/SKILL.md) | `sentry-dotnet-sdk/SKILL.md` |
+| Flutter and Dart | [`sentry-flutter-sdk`](skills/sentry-flutter-sdk/SKILL.md) | `sentry-flutter-sdk/SKILL.md` |
 | Go | [`sentry-go-sdk`](skills/sentry-go-sdk/SKILL.md) | `sentry-go-sdk/SKILL.md` |
 | NestJS | [`sentry-nestjs-sdk`](skills/sentry-nestjs-sdk/SKILL.md) | `sentry-nestjs-sdk/SKILL.md` |
 | Next.js | [`sentry-nextjs-sdk`](skills/sentry-nextjs-sdk/SKILL.md) | `sentry-nextjs-sdk/SKILL.md` |
@@ -115,6 +116,7 @@ Match your project to a skill by keywords. Append the path to `https://skills.se
 | browser, vanilla js, javascript, jquery, cdn, wordpress, static site | `sentry-browser-sdk/SKILL.md` |
 | ios, macos, swift, cocoa, tvos, watchos, visionos, swiftui, uikit | `sentry-cocoa-sdk/SKILL.md` |
 | .net, csharp, c#, asp.net, maui, wpf, winforms, blazor, azure functions | `sentry-dotnet-sdk/SKILL.md` |
+| sentry-flutter-sdk | `sentry-flutter-sdk/SKILL.md` |
 | go, golang, gin, echo, fiber | `sentry-go-sdk/SKILL.md` |
 | nestjs, nest | `sentry-nestjs-sdk/SKILL.md` |
 | nextjs, next.js, next | `sentry-nextjs-sdk/SKILL.md` |
