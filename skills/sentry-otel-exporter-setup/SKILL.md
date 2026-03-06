@@ -224,7 +224,7 @@ set -a && source "<env_file>" && set +a && "<collector_path>" validate --config 
 
 ```bash
 docker run --rm \
-  -v "<absolute_config_path>":/etc/otelcol-contrib/config.yaml \
+  -v "<config_file>":/etc/otelcol-contrib/config.yaml \
   --env-file "<env_file>" \
   otel/opentelemetry-collector-contrib:<numeric_version> \
   validate --config /etc/otelcol-contrib/config.yaml
@@ -280,7 +280,7 @@ docker run -d \
   -p 4317:4317 \
   -p 4318:4318 \
   -p 13133:13133 \
-  -v "<absolute_config_path>":/etc/otelcol-contrib/config.yaml \
+  -v "<config_file>":/etc/otelcol-contrib/config.yaml \
   --env-file "<env_file>" \
   otel/opentelemetry-collector-contrib:<numeric_version>
 ```
