@@ -362,7 +362,7 @@ Future<void> main() async {
       options.privacy.maskAllText = true;
       options.privacy.maskAllImages = true;
 
-      // Structured logging (SDK ≥9.0.0)
+      // Structured logging (SDK ≥9.5.0)
       options.enableLogs = true;
 
       // Attachments
