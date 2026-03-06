@@ -45,6 +45,7 @@ Each SDK skill contains its own detection logic, prerequisites, and step-by-step
 | Node.js, Bun, and Deno | [`sentry-node-sdk`](../sentry-node-sdk/SKILL.md) | `sentry-node-sdk/SKILL.md` |
 | PHP | [`sentry-php-sdk`](../sentry-php-sdk/SKILL.md) | `sentry-php-sdk/SKILL.md` |
 | Python | [`sentry-python-sdk`](../sentry-python-sdk/SKILL.md) | `sentry-python-sdk/SKILL.md` |
+| Flutter and Dart | [`sentry-flutter-sdk`](../sentry-flutter-sdk/SKILL.md) | `sentry-flutter-sdk/SKILL.md` |
 | React Native and Expo | [`sentry-react-native-sdk`](../sentry-react-native-sdk/SKILL.md) | `sentry-react-native-sdk/SKILL.md` |
 | React | [`sentry-react-sdk`](../sentry-react-sdk/SKILL.md) | `sentry-react-sdk/SKILL.md` |
 | Ruby | [`sentry-ruby-sdk`](../sentry-ruby-sdk/SKILL.md) | `sentry-ruby-sdk/SKILL.md` |
@@ -57,6 +58,7 @@ When multiple SDKs could match, prefer the more specific one:
 - **Android** (`build.gradle` with android plugin) → `sentry-android-sdk`
 - **NestJS** (`@nestjs/core`) → `sentry-nestjs-sdk` over `sentry-node-sdk`
 - **Next.js** → `sentry-nextjs-sdk` over `sentry-react-sdk` or `sentry-node-sdk`
+- **Flutter** (`pubspec.yaml` with `flutter:` dependency or `sentry_flutter`) → `sentry-flutter-sdk`
 - **React Native** → `sentry-react-native-sdk` over `sentry-react-sdk`
 - **PHP** with Laravel or Symfony → `sentry-php-sdk`
 - **Node.js / Bun / Deno** without a specific framework → `sentry-node-sdk`
@@ -79,6 +81,7 @@ Match your project to a skill by keywords. Append the path to `https://skills.se
 | node, nodejs, node.js, bun, deno, express, fastify, koa, hapi | `sentry-node-sdk/SKILL.md` |
 | php, laravel, symfony | `sentry-php-sdk/SKILL.md` |
 | python, django, flask, fastapi, celery, starlette | `sentry-python-sdk/SKILL.md` |
+| flutter, dart, pubspec | `sentry-flutter-sdk/SKILL.md` |
 | react native, expo | `sentry-react-native-sdk/SKILL.md` |
 | react, react router, tanstack, redux, vite | `sentry-react-sdk/SKILL.md` |
 | ruby, rails, sinatra, sidekiq, rack | `sentry-ruby-sdk/SKILL.md` |
