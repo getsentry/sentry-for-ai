@@ -109,3 +109,13 @@ Sentry MCP server configured at `https://mcp.sentry.dev/mcp`. Two config files e
 **Validation:**
 - `scripts/build-skill-tree.sh` — regenerates `SKILL_TREE.md`, validates all frontmatter, breadcrumbs, and router tables
 - `scripts/build-skill-tree.sh --check` — CI mode, fails if `SKILL_TREE.md` is stale or validation errors exist
+
+## Cursor Cloud specific instructions
+
+This is a content-only repository (Markdown skills, JSON metadata, one Bash script). There are no package managers, no build tools, and no application servers to start.
+
+**Lint / Validate:** `scripts/build-skill-tree.sh --check` — the only automated check. Runs in CI on every PR. Use this to verify changes to skills or the skill tree before committing.
+
+**Regenerate skill tree:** `scripts/build-skill-tree.sh` (without `--check`) — rewrites `SKILL_TREE.md` and validates. Run after adding/editing any `skills/*/SKILL.md`.
+
+**No services to run.** The MCP server is remote (`https://mcp.sentry.dev/mcp`); nothing runs locally. Symlinks in `.agents/` and `CLAUDE.md → AGENTS.md` must stay intact.
