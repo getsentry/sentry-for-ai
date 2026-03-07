@@ -196,6 +196,38 @@ try {
 }
 ```
 
+### Native SDK Log Forwarding
+
+The SDK can forward native SDK internal log messages (from iOS and Android native layers) to the JavaScript console. This is a **debugging tool** — it surfaces native SDK diagnostics in Metro without requiring Xcode or Logcat.
+
+**Requirements:** `debug: true` must be enabled in `Sentry.init`.
+
+```typescript
+import * as Sentry from "@sentry/react-native";
+
+Sentry.init({
+  dsn: "YOUR_DSN",
+  debug: true, // required — native logs are only forwarded when debug is enabled
+
+  onNativeLog: ({ level, component, message }) => {
+    // Use consoleSandbox to avoid feedback loops with Sentry's console integration
+    Sentry.consoleSandbox(() => {
+      console.log(`[Sentry Native] [${level.toUpperCase()}] [${component}] ${message}`);
+    });
+  },
+});
+```
+
+| Parameter | Type | Values |
+|-----------|------|--------|
+| `level` | `string` | `"debug"`, `"info"`, `"warning"`, `"error"`, `"fatal"` |
+| `component` | `string` | Native module name (e.g., `"Sentry"`) |
+| `message` | `string` | The log message from the native SDK |
+
+> **Always use `Sentry.consoleSandbox()`** inside the callback. Without it, your `console.log` call may be intercepted by the Sentry `Breadcrumbs` integration, which creates a breadcrumb that triggers another log event — an infinite loop.
+
+> **Never enable `debug: true` in production.** Native log forwarding is for local development and CI debugging only.
+
 ---
 
 ## 3. ANR / App Hang Detection
@@ -1055,8 +1087,32 @@ The SDK automatically attaches rich device context to every event — no configu
 | **OS** | Name (`iOS`/`Android`), version, build number, kernel version | Native SDK |
 | **App** | App ID, version name, version code, build type | Native SDK |
 | **React Native** | RN version, JS engine (Hermes/JSC), architecture | JS SDK |
+| **Expo Constants** | Execution environment, app name/slug/version, Expo SDK version, EAS project ID, session ID, debug mode | `expoConstantsIntegration` (Expo only) |
 
-These appear in Sentry under the **"Device"**, **"Operating System"**, and **"App"** sections of any event.
+These appear in Sentry under the **"Device"**, **"Operating System"**, **"App"**, and (for Expo apps) **"expo_constants"** sections of any event.
+
+### Expo Constants Context
+
+When running in an Expo app, the `expoConstantsIntegration` is enabled automatically and attaches an `expo_constants` context to every event. No configuration is required.
+
+The context includes the following fields (only non-empty values are set):
+
+| Field | Type | Source |
+|-------|------|--------|
+| `execution_environment` | `string` | `'bare'`, `'standalone'`, or `'storeClient'` |
+| `app_ownership` | `string` | `'expo'` in Expo Go, otherwise absent |
+| `debug_mode` | `boolean` | Whether the app is in debug mode |
+| `expo_version` | `string` | Expo Go client version |
+| `expo_runtime_version` | `string` | EAS Update runtime version |
+| `session_id` | `string` | Unique per app session |
+| `status_bar_height` | `number` | Device status bar height in points |
+| `app_name` | `string` | `expoConfig.name` from `app.json` |
+| `app_slug` | `string` | `expoConfig.slug` from `app.json` |
+| `app_version` | `string` | `expoConfig.version` from `app.json` |
+| `expo_sdk_version` | `string` | Expo SDK version from `app.json` |
+| `eas_project_id` | `string` | EAS project ID from `easConfig.projectId` |
+
+To view the context in Sentry, open any event from an Expo app and look for the `expo_constants` section in the event detail page.
 
 ### Overriding or Extending Device Context
 
@@ -1145,6 +1201,7 @@ The following integrations are enabled automatically:
 | **HttpContext** | Attaches URL, user-agent, referrer to events |
 | **Dedupe** | Prevents duplicate consecutive events from being reported |
 | **UnhandledRejection** | Auto-captures unhandled promise rejections |
+| **ExpoConstants** | Attaches `expo_constants` context (execution environment, app name, EAS project ID, etc.) to every event. Active only when running in an Expo app |
 
 ### Customizing Default Integrations
 
@@ -1277,6 +1334,10 @@ Sentry.init({
 
   // ── Callbacks ─────────────────────────────────────────────────────
   onReady: () => console.log("Sentry native SDKs initialized"),
+  onNativeLog: ({ level, component, message }) => {
+    // Forward native SDK logs to JS console (debug: true required)
+    // Use consoleSandbox to prevent breadcrumb feedback loops
+  },
 
   // ── Integrations ──────────────────────────────────────────────────
   integrations: [
