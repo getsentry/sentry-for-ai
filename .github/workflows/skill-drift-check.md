@@ -16,6 +16,7 @@ permissions:
 network:
   allowed:
     - defaults
+    - mcp.sentry.dev
 
 safe-outputs:
   create-issue:
