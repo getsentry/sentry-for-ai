@@ -62,7 +62,7 @@ cat ../go.mod ../requirements.txt ../Gemfile 2>/dev/null | head -3
 
 | Question | Impact |
 |----------|--------|
-| Next.js version? | 13+ required; 15+ needed for Turbopack support |
+| Next.js version? | 13+ required; 15+ needed for Turbopack support; 16+ needed for `turbopackReactComponentAnnotation` |
 | App Router or Pages Router? | Determines error boundary files needed (`global-error.tsx` vs `_error.tsx`) |
 | `@sentry/nextjs` already present? | Skip install, go to feature config |
 | Existing `instrumentation.ts`? | Merge Sentry into it rather than replace |
@@ -436,6 +436,7 @@ Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the err
 | `tunnelRoute` | `string` | API route path for ad-blocker bypass (e.g. `"/monitoring"`) |
 | `silent` | `boolean` | Suppress build output (`!process.env.CI` recommended) |
 | `webpack.treeshake.*` | `object` | Tree-shake SDK features (webpack only, not Turbopack) |
+| `_experimental.turbopackReactComponentAnnotation` | `{ enabled?: boolean; ignoredComponents?: string[] }` | ⚠️ **Experimental.** Annotates JSX elements with `data-sentry-component`, `data-sentry-element`, and `data-sentry-source-file` attributes at build time (Turbopack only). Enables Replay component-name search, component names in breadcrumbs, and component-level performance monitoring. **Requires Next.js 16+.** |
 
 ### Environment Variables
 

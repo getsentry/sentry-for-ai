@@ -288,6 +288,34 @@ function paint() {
 
 ---
 
+## React Component Name Search (Turbopack, Next.js 16+)
+
+> ⚠️ **Experimental.** Requires Turbopack and Next.js 16+. Not available with webpack builds.
+
+Enable `_experimental.turbopackReactComponentAnnotation` in `withSentryConfig()` to annotate JSX elements at build time with `data-sentry-component`, `data-sentry-element`, and `data-sentry-source-file` attributes. This unlocks:
+
+- **Search Replays by React component name** in the Sentry Replays UI
+- **Component names in click/interaction breadcrumbs** (e.g. `ui.component_name: "CheckoutButton"`)
+- **Component-level performance attribution** in traces
+
+```typescript
+// next.config.ts
+import { withSentryConfig } from "@sentry/nextjs";
+
+export default withSentryConfig(nextConfig, {
+  _experimental: {
+    turbopackReactComponentAnnotation: {
+      enabled: true,
+      ignoredComponents: ["Header", "Footer"], // optional — skip annotation for these
+    },
+  },
+});
+```
+
+No changes to `instrumentation-client.ts` are needed — annotation is applied at build time by the Turbopack loader. The `replayIntegration()` in your client init automatically picks up the attributes.
+
+---
+
 ## Lazy Loading Replay
 
 To reduce initial bundle size, add `replayIntegration()` dynamically after the page loads:
