@@ -192,7 +192,17 @@ Only create reference files for features the SDK actually supports.
 If profiling was removed or never existed, either skip it or create a short
 file that honestly says it's not available.
 
-## Step 6: Final Verification
+## Step 6: Register in Skill Tree
+
+Do this BEFORE running the skill tree validator — the validator checks that every
+skill with a `parent` field is listed in its parent router, so registration must
+come first.
+
+1. Add the skill to the router table in `skills/sentry-sdk-setup/SKILL.md`
+2. Run `./scripts/build-skill-tree.sh` to regenerate `SKILL_TREE.md` and validate
+3. Update `AGENTS.md` SDK skills table if needed
+
+## Step 7: Final Verification
 
 Run the full quality checklist from `quality-checklist.md`. Specifically:
 
@@ -213,8 +223,8 @@ grep -oP 'sentry-[\w-]+-sdk' skills/sentry-<platform>-sdk/SKILL.md | sort -u
 # 5. API names verified against cloned source (re-check 5 critical ones)
 # Search for each in /tmp/sentry-sdk-verify/
 
-# 6. Skill tree validates
-./scripts/build-skill-tree.sh
+# 6. Skill tree validates (must pass after Step 6 registration)
+./scripts/build-skill-tree.sh --check
 ```
 
 ### Cross-Consistency Check
@@ -225,12 +235,6 @@ Re-read every file you wrote and verify:
 - Same minimum version claims across files
 - No deprecated APIs used anywhere
 - Code examples use real import paths from the SDK
-
-## Step 7: Register in Skill Tree
-
-1. Add the skill to the router table in `skills/sentry-sdk-setup/SKILL.md`
-2. Run `./scripts/build-skill-tree.sh` to regenerate `SKILL_TREE.md` and validate
-3. Update `AGENTS.md` SDK skills table if needed
 
 ## Step 8: Commit and Open PR
 
