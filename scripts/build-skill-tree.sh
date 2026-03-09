@@ -211,6 +211,8 @@ build_keyword_lookup() {
         keywords="flutter, dart, sentry_flutter, pubspec, dio" ;;
       sentry-go-sdk)
         keywords="go, golang, gin, echo, fiber" ;;
+      sentry-elixir-sdk)
+        keywords="elixir, phoenix, plug, liveview, oban, quantum, mix" ;;
       sentry-nestjs-sdk)
         keywords="nestjs, nest" ;;
       sentry-nextjs-sdk)
