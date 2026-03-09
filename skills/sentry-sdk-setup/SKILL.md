@@ -89,4 +89,24 @@ Match your project to a skill by keywords. Append the path to `https://skills.se
 
 ---
 
+## Finding the DSN
+
+If the user doesn't have their DSN, guide them to find it:
+
+1. Open the Sentry project settings page: `https://sentry.io/settings/projects/`
+2. Select the project
+3. Click **"Client Keys (DSN)"** in the left sidebar
+4. Copy the DSN
+
+You can help the user open the page directly:
+```bash
+open https://sentry.io/settings/projects/        # macOS
+xdg-open https://sentry.io/settings/projects/    # Linux
+start https://sentry.io/settings/projects/        # Windows
+```
+
+> **Note:** The DSN is public and safe to include in source code. It is not a secret — it only identifies where to send events.
+
+---
+
 Looking for workflows or feature configuration instead? See the [full Skill Tree](../../SKILL_TREE.md).
