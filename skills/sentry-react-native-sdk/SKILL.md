@@ -601,6 +601,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `beforeSend` | `(event, hint) => event \| null` | Modify/drop JS error events. ⚠️ Does NOT apply to native crashes |
 | `beforeSendTransaction` | `(event) => event \| null` | Modify/drop transaction events |
 | `beforeBreadcrumb` | `(breadcrumb, hint) => breadcrumb \| null` | Process breadcrumbs before storage |
+| `onNativeLog` | `(log: { level, component, message }) => void` | Intercept native SDK log messages and forward to JS console. Only fires when `debug: true` |
 
 ---
 
@@ -616,6 +617,8 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `SENTRY_ENVIRONMENT` | Environment name | Falls back from `environment` option |
 | `SENTRY_DISABLE_AUTO_UPLOAD` | Skip source map upload | Set `true` during local builds |
 | `EXPO_PUBLIC_SENTRY_DSN` | Expo public env var for DSN | Safe to embed in client bundle |
+| `SENTRY_EAS_BUILD_CAPTURE_SUCCESS` | EAS build hook: capture successful builds | Set `true` in EAS secrets |
+| `SENTRY_EAS_BUILD_TAGS` | EAS build hook: additional tags JSON | e.g., `{"team":"mobile"}` |
 
 ---
 
@@ -722,6 +725,43 @@ export default {
   },
 };
 ```
+
+---
+
+## EAS Build Hooks
+
+Monitor your Expo Application Services (EAS) builds in Sentry. The SDK ships three binary hooks — `sentry-eas-build-on-complete`, `sentry-eas-build-on-error`, and `sentry-eas-build-on-success` — that capture build events as Sentry errors or messages.
+
+**Step 1 — Register the hook in `package.json`**
+
+```json
+{
+  "scripts": {
+    "eas-build-on-complete": "sentry-eas-build-on-complete"
+  }
+}
+```
+
+Use `eas-build-on-complete` to capture both failures and (optionally) successes in one hook. Alternatively use `eas-build-on-error` or `eas-build-on-success` separately if you want independent control.
+
+**Step 2 — Set `SENTRY_DSN` in your EAS secrets**
+
+```bash
+eas secret:create --name SENTRY_DSN --value "https://...@sentry.io/..."
+```
+
+The hook reads `SENTRY_DSN` from the build environment — it does not share the same `.env` as your app.
+
+**Optional environment variables:**
+
+| Variable | Purpose |
+|----------|---------|
+| `SENTRY_EAS_BUILD_CAPTURE_SUCCESS` | Set `true` to also capture successful builds (default: errors only) |
+| `SENTRY_EAS_BUILD_TAGS` | JSON object of additional tags, e.g., `{"team":"mobile","channel":"production"}` |
+| `SENTRY_EAS_BUILD_ERROR_MESSAGE` | Custom error message for failed builds |
+| `SENTRY_EAS_BUILD_SUCCESS_MESSAGE` | Custom message for successful builds |
+
+> **How it works:** The hook script is an EAS [npm lifecycle hook](https://docs.expo.dev/build-reference/npm-hooks/). EAS calls `package.json` scripts matching `eas-build-on-*` at the end of the build process. The script loads env from `@expo/env`, `.env`, or `.env.sentry-build-plugin` — without overwriting EAS secrets already in the environment.
 
 ---
 

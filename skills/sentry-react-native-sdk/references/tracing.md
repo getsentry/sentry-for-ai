@@ -230,6 +230,49 @@ Sentry.reactNativeTracingIntegration({
 
 Tab navigators preload screens, so auto-instrumentation only creates a transaction for the **initial** tab visit. For subsequent tab switches, use the `TimeToInitialDisplay` and `TimeToFullDisplay` components explicitly (see §5).
 
+### 4c. Expo Router Dynamic Route Params as Span Attributes
+
+When using Expo Router with dynamic route segments (e.g., `profile/[id]`, `posts/[...slug]`), the SDK automatically captures the dynamic parameter values as span attributes on navigation transactions.
+
+**Requirements:**
+- `sendDefaultPii: true` must be set in `Sentry.init` — these values are user-identifiable
+- Route names must use Expo Router bracket notation: `[param]` or `[...param]`
+
+```typescript
+Sentry.init({
+  dsn: "YOUR_DSN",
+  tracesSampleRate: 1.0,
+  sendDefaultPii: true, // required — route param values may identify users
+
+  integrations: [navigationIntegration],
+});
+```
+
+When navigating to a route like `profile/[id]` with params `{ id: '123' }`, the navigation span receives:
+
+```
+route.name         → "profile/[id]"
+route.params.id    → "123"
+```
+
+For catch-all segments (`[...slug]`), array values are joined with `/`:
+
+```
+route.name           → "posts/[...slug]"
+route.params.slug    → "tech/react-native"
+```
+
+**Only structural params are captured** — query params and extra props that don't match a dynamic segment in the route name are intentionally excluded. This prevents non-structural data (referrers, UTM parameters, etc.) from being captured as trace attributes.
+
+| Scenario | Captured? |
+|----------|-----------|
+| `profile/[id]` with `{ id: '123' }` | ✅ `route.params.id = "123"` |
+| `posts/[...slug]` with `{ slug: ['tech', 'rn'] }` | ✅ `route.params.slug = "tech/rn"` |
+| `StaticScreen` with `{ utm_source: 'email' }` | ❌ No dynamic segment — nothing captured |
+| Any route with `sendDefaultPii: false` | ❌ Opted out — nothing captured |
+
+> **Privacy note:** Dynamic route param values (e.g., the `123` in `profile/[id]`) are user-identifiable. They are only captured when `sendDefaultPii: true` is explicitly set. Review your routes to ensure no sensitive values (tokens, PII) appear in path segments before enabling this option.
+
 ---
 
 ## 5. Screen Rendering: Time to Display
