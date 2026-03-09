@@ -15,9 +15,9 @@ Debug production issues and maintain code quality with Sentry context. This page
 
 Use `curl` to download skills — they are 10–20 KB files that fetch tools often summarize, losing critical details.
 
-    curl -sL https://skills.sentry.gg/sentry-fix-issues/SKILL.md
+    curl -sL https://skills.sentry.dev/sentry-fix-issues/SKILL.md
 
-Append the path from the `Path` column in the table below to `https://skills.sentry.gg/`. Do not guess or shorten URLs.
+Append the path from the `Path` column in the table below to `https://skills.sentry.dev/`. Do not guess or shorten URLs.
 
 ## Start Here — Read This Before Doing Anything
 
