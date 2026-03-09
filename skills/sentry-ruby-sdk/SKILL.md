@@ -21,7 +21,7 @@ Opinionated wizard that scans the project and guides through complete Sentry set
 - User is migrating from AppSignal, Honeybadger, Bugsnag, Rollbar, or Airbrake to Sentry
 - User wants to monitor exceptions, HTTP requests, or background jobs in Rails/Sinatra
 
-> **Note:** SDK APIs below reflect sentry-ruby v6.4.0.
+> **Note:** SDK APIs below reflect sentry-ruby v6.4.1.
 > Always verify against [docs.sentry.io/platforms/ruby/](https://docs.sentry.io/platforms/ruby/) before implementing.
 
 ---
@@ -223,8 +223,10 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `breadcrumbs_logger` | Array | `[]` | Loggers for automatic breadcrumbs (see logging reference) |
 | `max_breadcrumbs` | Integer | `100` | Max breadcrumbs per event |
 | `debug` | Boolean | `false` | Verbose SDK output to stdout |
-| `capture_queue_time` | Boolean | `true` | Record request queue time from `X-Request-Start` header (v6.4.0+) |
+| `capture_queue_time` | Boolean | `true` | Record request queue time from `X-Request-Start` header (v6.4.0+, Rails fixed in v6.4.1) |
 | `otlp.enabled` | Boolean | `false` | Route OTel spans to Sentry via OTLP; **do not combine with** `traces_sample_rate` |
+| `org_id` | String | `nil` | Explicit org ID; overrides DSN-extracted value; useful for self-hosted/Relay setups (v6.5.0+) |
+| `strict_trace_continuation` | Boolean | `false` | Only continue incoming traces when `sentry-org_id` baggage matches SDK's org ID; prevents trace stitching from third-party services (v6.5.0+) |
 | `before_send` | Lambda | `nil` | Mutate or drop error events before sending |
 | `before_send_transaction` | Lambda | `nil` | Mutate or drop transaction events before sending |
 | `before_send_log` | Lambda | `nil` | Mutate or drop log events before sending |

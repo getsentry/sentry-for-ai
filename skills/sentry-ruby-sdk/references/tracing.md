@@ -23,7 +23,9 @@
 | `traces_sampler` | Lambda | `nil` | Custom per-transaction sampling; overrides `traces_sample_rate` |
 | `trace_propagation_targets` | Array | `[/.*/]` | URLs to inject `sentry-trace` + `baggage` headers into |
 | `propagate_traces` | Boolean | `true` | Propagate trace headers on outbound Net::HTTP requests |
-| `capture_queue_time` | Boolean | `true` | Record request queue time from `X-Request-Start` header (v6.4.0+) |
+| `capture_queue_time` | Boolean | `true` | Record request queue time from `X-Request-Start` header (v6.4.0+, Rails fixed in v6.4.1) |
+| `org_id` | String | `nil` | Explicit organization ID; overrides the value auto-extracted from the DSN. Set this for self-hosted or Relay setups where DSN-based parsing may not work (v6.5.0+) |
+| `strict_trace_continuation` | Boolean | `false` | When `true`, only continue an incoming trace if the `sentry-org_id` baggage matches the SDK's effective org ID; if either is missing the trace is **not** continued. Prevents inadvertent trace stitching from unknown third-party services (v6.5.0+) |
 
 ```ruby
 Sentry.init do |config|
@@ -160,6 +162,38 @@ This renders two `<meta>` tags that `@sentry/browser` (and framework SDKs like `
 ### Inbound trace propagation (accepting from upstream)
 
 Rails and Rack middleware automatically read incoming `sentry-trace` and `baggage` headers and continue the trace — no configuration required.
+
+### Strict trace continuation (v6.5.0+)
+
+By default the SDK continues any incoming trace regardless of which organization sent it. Enable `strict_trace_continuation` to reject traces from services outside your Sentry organization:
+
+```ruby
+Sentry.init do |config|
+  config.dsn = ENV["SENTRY_DSN"]
+  # Reject traces where the incoming sentry-org_id baggage doesn't match this SDK's org.
+  # The org ID is normally extracted from the DSN automatically.
+  # For self-hosted or Relay setups where the DSN host doesn't embed an org ID, set it explicitly:
+  # config.org_id = "123456"
+  config.strict_trace_continuation = true
+end
+```
+
+**Decision matrix:**
+
+| Incoming `sentry-org_id` | SDK org ID | `strict_trace_continuation` | Result |
+|--------------------------|------------|-----------------------------|--------|
+| matches | matches | `false` | Continue trace |
+| missing | present | `false` | Continue trace |
+| present | missing | `false` | Continue trace |
+| missing | missing | `false` | Continue trace |
+| **mismatch** | **mismatch** | **`false`** | **Start new trace** |
+| matches | matches | `true` | Continue trace |
+| missing | present | `true` | **Start new trace** |
+| present | missing | `true` | **Start new trace** |
+| missing | missing | `true` | Continue trace |
+| mismatch | mismatch | `true` | Start new trace |
+
+Use `strict_trace_continuation` when your service receives requests from third-party systems that also use Sentry — without it, their trace IDs can accidentally appear in your dashboards.
 
 ## `before_send_transaction` hook
 
