@@ -22,6 +22,7 @@ safe-outputs:
   create-issue:
     title-prefix: "[skill-drift] "
     labels: [skill-drift, automated]
+    assignees: [copilot]
     max: 15
     expires: "14d"
     close-older-issues: true
@@ -48,23 +49,23 @@ in this repository have fallen behind changes in the actual Sentry SDK repositor
 Each skill in `skills/sentry-*-sdk/` corresponds to one or more Sentry SDK GitHub repos.
 Some repos are monorepos — use the path filters to determine which skills are affected.
 
-| Skill | Repo | Path Filter (monorepo only) |
-|-------|------|---------------------------|
-| `sentry-android-sdk` | `getsentry/sentry-android` | — |
-| `sentry-browser-sdk` | `getsentry/sentry-javascript` | `packages/browser/`, `packages/core/` |
-| `sentry-cocoa-sdk` | `getsentry/sentry-cocoa` | — |
-| `sentry-dotnet-sdk` | `getsentry/sentry-dotnet` | — |
-| `sentry-flutter-sdk` | `getsentry/sentry-dart` | — |
-| `sentry-go-sdk` | `getsentry/sentry-go` | — |
-| `sentry-nestjs-sdk` | `getsentry/sentry-javascript` | `packages/nestjs/`, `packages/node/`, `packages/core/` |
-| `sentry-nextjs-sdk` | `getsentry/sentry-javascript` | `packages/nextjs/`, `packages/node/`, `packages/react/`, `packages/core/` |
-| `sentry-node-sdk` | `getsentry/sentry-javascript` | `packages/node/`, `packages/bun/`, `packages/deno/`, `packages/core/` |
-| `sentry-php-sdk` | `getsentry/sentry-php` | — |
-| `sentry-python-sdk` | `getsentry/sentry-python` | — |
-| `sentry-react-native-sdk` | `getsentry/sentry-react-native` | — |
-| `sentry-react-sdk` | `getsentry/sentry-javascript` | `packages/react/`, `packages/browser/`, `packages/core/` |
-| `sentry-ruby-sdk` | `getsentry/sentry-ruby` | — |
-| `sentry-svelte-sdk` | `getsentry/sentry-javascript` | `packages/svelte/`, `packages/sveltekit/`, `packages/browser/`, `packages/core/` |
+| Skill | Repo | Path Filter (monorepo only) | Team Owner |
+|-------|------|---------------------------|------------|
+| `sentry-android-sdk` | `getsentry/sentry-android` | — | `@getsentry/team-mobile` |
+| `sentry-browser-sdk` | `getsentry/sentry-javascript` | `packages/browser/`, `packages/core/` | `@getsentry/team-javascript-sdks` |
+| `sentry-cocoa-sdk` | `getsentry/sentry-cocoa` | — | `@getsentry/team-mobile` |
+| `sentry-dotnet-sdk` | `getsentry/sentry-dotnet` | — | `@getsentry/team-web-sdk-backend` |
+| `sentry-flutter-sdk` | `getsentry/sentry-dart` | — | `@getsentry/team-mobile-cross-platform` |
+| `sentry-go-sdk` | `getsentry/sentry-go` | — | `@getsentry/team-web-sdk-backend` |
+| `sentry-nestjs-sdk` | `getsentry/sentry-javascript` | `packages/nestjs/`, `packages/node/`, `packages/core/` | `@getsentry/team-javascript-sdks` |
+| `sentry-nextjs-sdk` | `getsentry/sentry-javascript` | `packages/nextjs/`, `packages/node/`, `packages/react/`, `packages/core/` | `@getsentry/team-javascript-sdks` |
+| `sentry-node-sdk` | `getsentry/sentry-javascript` | `packages/node/`, `packages/bun/`, `packages/deno/`, `packages/core/` | `@getsentry/team-javascript-sdks` |
+| `sentry-php-sdk` | `getsentry/sentry-php` | — | `@getsentry/team-web-sdk-backend` |
+| `sentry-python-sdk` | `getsentry/sentry-python` | — | `@getsentry/owners-python-sdk` |
+| `sentry-react-native-sdk` | `getsentry/sentry-react-native` | — | `@getsentry/team-mobile-cross-platform` |
+| `sentry-react-sdk` | `getsentry/sentry-javascript` | `packages/react/`, `packages/browser/`, `packages/core/` | `@getsentry/team-javascript-sdks` |
+| `sentry-ruby-sdk` | `getsentry/sentry-ruby` | — | `@getsentry/team-web-sdk-backend` |
+| `sentry-svelte-sdk` | `getsentry/sentry-javascript` | `packages/svelte/`, `packages/sveltekit/`, `packages/browser/`, `packages/core/` | `@getsentry/team-javascript-sdks` |
 
 ## Step 1: Gather Recent Merged PRs
 
@@ -145,6 +146,8 @@ Title: `[skill-drift] <skill-name> may need updates`
 
 Body:
 ```
+cc <team-owner from the mapping table above>
+
 ## SDK Changes Detected
 
 The following PRs were merged to `<repo>` in the last 7 days that may affect
@@ -167,6 +170,9 @@ the `<skill-name>` skill:
 
 <HIGH if breaking changes or removed features, MEDIUM if new APIs/options, LOW if minor additions>
 ```
+
+The `cc` line must use the exact team handle from the "Team Owner" column in the mapping table.
+This notifies the SDK team that owns the upstream repo so they can review the Copilot-generated fix.
 
 ## Step 5: Summary
 
