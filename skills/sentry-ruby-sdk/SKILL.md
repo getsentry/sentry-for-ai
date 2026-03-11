@@ -52,10 +52,6 @@ grep -rn "Sidekiq::Cron\|Clockwork\|every.*do" config/ lib/ --include="*.rb" 2>/
 grep -iE '\bopentelemetry-sdk\b|\bopentelemetry-instrumentation\b' Gemfile 2>/dev/null
 grep -rn "OpenTelemetry::SDK\.configure\|\.use_all\|\.in_span" config/ lib/ app/ --include="*.rb" 2>/dev/null | head -5
 
-# OpenTelemetry logging — check for logs SDK (much less common in Ruby)
-grep -iE '\bopentelemetry-logs-sdk\b|\bopentelemetry-logs-api\b' Gemfile 2>/dev/null
-grep -rn "OpenTelemetry::Logs" config/ lib/ app/ --include="*.rb" 2>/dev/null | head -5
-
 # Existing metric patterns (StatsD, Datadog, Prometheus)
 grep -rE "(statsd|dogstatsd|prometheus|\.gauge|\.histogram|\.increment|\.timing)" \
   app/ lib/ --include="*.rb" 2>/dev/null | grep -v "_spec\|_test" | head -20
@@ -72,8 +68,6 @@ cat package.json frontend/package.json web/package.json 2>/dev/null | grep -E '"
 - **Sidekiq** → add `sentry-sidekiq`; recommend Metrics if existing metric patterns found
 - **Puma detected** → queue time capture is automatic (v6.4.0+), but the reverse proxy must set `X-Request-Start` header; see `${SKILL_ROOT}/references/tracing.md` → "Request Queue Time"
 - **OTel tracing detected** (`opentelemetry-sdk` + instrumentations in Gemfile, or `OpenTelemetry::SDK.configure` in source) → use OTLP path: `config.otlp.enabled = true`; do **not** set `traces_sample_rate`; Sentry links errors to OTel traces automatically
-- **OTel logging detected** (`opentelemetry-logs-sdk` in Gemfile, or `OpenTelemetry::Logs` in source) → skip `enable_logs`; OTel handles log export
-- **OTel tracing present but NOT logging** (the common case) → use OTLP for tracing **and** Sentry native `enable_logs: true` for logging
 
 ---
 
@@ -86,14 +80,12 @@ Lead with a concrete proposal — don't ask open-ended questions:
 | Error Monitoring | **Always** |
 | OTLP Integration | OTel tracing detected — **replaces** native Tracing |
 | Tracing | Rails / Sinatra / Rack / any HTTP framework; **skip if OTel tracing detected** |
-| Logging | **Always** — `enable_logs: true` costs nothing; **skip only if OTel logging detected** |
+| Logging | **Always** — `enable_logs: true` costs nothing |
 | Metrics | Sidekiq present; existing metric lib (StatsD, Prometheus) detected |
-| Profiling | ⚠️ Beta — performance profiling requested; requires `stackprof` or `vernier` gem |
+| Profiling | ⚠️ Beta — performance profiling requested; requires `stackprof` or `vernier` gem; **skip if OTel tracing detected** (requires `traces_sample_rate`, incompatible with OTLP) |
 | Crons | Scheduled jobs detected (ActiveJob, Sidekiq-Cron, Clockwork, Whenever) |
 
-**OTel tracing + no OTel logging** (the common case): *"I see OpenTelemetry tracing in the project. I recommend Sentry's OTLP integration for tracing (via your existing OTel setup) + Error Monitoring + Sentry Logging [+ Metrics/Crons if applicable]. Shall I proceed?"*
-
-**OTel tracing + OTel logging:** *"I see OpenTelemetry handling both tracing and logging. I recommend Sentry's OTLP integration + Error Monitoring [+ Metrics/Crons if applicable]. Shall I proceed?"*
+**OTel tracing detected:** *"I see OpenTelemetry tracing in the project. I recommend Sentry's OTLP integration for tracing (via your existing OTel setup) + Error Monitoring + Sentry Logging [+ Metrics/Crons if applicable]. Shall I proceed?"*
 
 **No OTel:** *"I recommend Error Monitoring + Tracing + Logging [+ Metrics if applicable]. Shall I proceed?"*
 
@@ -225,6 +217,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `debug` | Boolean | `false` | Verbose SDK output to stdout |
 | `capture_queue_time` | Boolean | `true` | Record request queue time from `X-Request-Start` header (v6.4.0+, Rails fixed in v6.4.1) |
 | `otlp.enabled` | Boolean | `false` | Route OTel spans to Sentry via OTLP; **do not combine with** `traces_sample_rate` |
+| `otlp.collector_url` | String | `nil` | OTLP HTTP endpoint of an OTel Collector (e.g., `http://localhost:4318/v1/traces`); when set, spans are sent to the collector instead of directly to Sentry |
 | `org_id` | String | `nil` | Explicit org ID; overrides DSN-extracted value; useful for self-hosted/Relay setups (v6.5.0+) |
 | `strict_trace_continuation` | Boolean | `false` | Only continue incoming traces when `sentry-org_id` baggage matches SDK's org ID; prevents trace stitching from third-party services (v6.5.0+) |
 | `before_send` | Lambda | `nil` | Mutate or drop error events before sending |

@@ -224,7 +224,79 @@ sentry_sdk.init(
 )
 ```
 
-### OpenTelemetry bridge
+### OpenTelemetry — OTLP Integration (recommended)
+
+> Minimum SDK: `sentry-sdk` 2.x with `sentry-sdk[opentelemetry-otlp]`
+
+If the project already uses OpenTelemetry for tracing, **use the OTLP integration instead of Sentry's native tracing**. Sentry ingests OTel spans directly via its OTLP endpoint — no span conversion, no dual instrumentation.
+
+**When to use this path:** OTel packages (`opentelemetry-sdk`, `opentelemetry-distro`, `opentelemetry-instrumentation-*`) detected in requirements, or `TracerProvider` / `start_as_current_span` found in source.
+
+**When NOT to use this path:** No OpenTelemetry in the project — use Sentry's native `traces_sample_rate` instead.
+
+#### Setup
+
+```bash
+pip install "sentry-sdk[opentelemetry-otlp]"
+```
+
+```python
+import sentry_sdk
+from sentry_sdk.integrations.otlp import OTLPIntegration
+
+sentry_sdk.init(
+    dsn=os.environ["SENTRY_DSN"],
+    send_default_pii=True,
+    enable_logs=True,
+    integrations=[
+        OTLPIntegration(),
+        # OTLPIntegration(collector_url="http://localhost:4318/v1/traces"),  # set if sending spans to an OTel Collector
+    ],
+    # Do NOT set traces_sample_rate — tracing is handled by OTel
+    # Errors, Logs, Crons, and Metrics are still captured natively by Sentry
+    # and automatically linked to the active OTel trace
+)
+```
+
+Configure your OTel instrumentations separately (keep your existing OTel setup):
+
+```python
+from opentelemetry.instrumentation.auto_instrumentation import sitecustomize
+# or configure manually:
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+
+provider = TracerProvider()
+trace.set_tracer_provider(provider)
+# Sentry auto-adds its OTLP exporter and propagator —
+# no manual SpanProcessor or Propagator wiring needed
+```
+
+#### How it works
+
+- Sentry derives an OTLP endpoint from your DSN and registers a `SpanExporter` with the existing `TracerProvider` — your other exporters (Jaeger, Zipkin, Collector) continue working
+- A propagator injects `sentry-trace` + `baggage` headers for distributed tracing with other Sentry-instrumented services
+- Errors captured via `sentry_sdk.capture_exception()` are automatically linked to the active OTel trace/span via shared `trace_id`
+
+#### OTLP configuration options
+
+| Option | Default | Purpose |
+|--------|---------|---------|
+| `setup_otlp_traces_exporter` | `True` | Auto-configure exporter; set `False` if you send to your own Collector |
+| `collector_url` | `None` | OTLP HTTP endpoint of an OTel Collector (e.g., `http://localhost:4318/v1/traces`); when set, spans are sent to the collector instead of directly to Sentry |
+| `setup_propagator` | `True` | Auto-configure propagator; set `False` if you manage propagation yourself |
+| `capture_exceptions` | `False` | Intercept exceptions recorded via OTel `Span.record_exception` |
+
+#### Important
+
+**Do not combine OTLP with native Sentry tracing.** When using `OTLPIntegration`:
+- Do **not** set `traces_sample_rate` or `traces_sampler`
+- Do **not** set `instrumenter="otel"` (that is the legacy SpanProcessor approach)
+- Do **not** use `sentry_sdk.start_transaction()` or `sentry_sdk.start_span()` — use OTel's `tracer.start_as_current_span()` instead
+
+### OpenTelemetry bridge (legacy)
+
+> **Deprecated:** Prefer the OTLP integration above. The SpanProcessor bridge below is the older approach.
 
 ```python
 # pip install "sentry-sdk[opentelemetry]"
@@ -267,5 +339,6 @@ with tracer.start_as_current_span("my-operation"):
 | Spans not linked to transaction | Ensure spans are created inside an active `start_transaction()` context |
 | Distributed traces broken | Check that `sentry-trace` and `baggage` headers pass through proxies/gateways |
 | `description=` deprecation warning | Replace `description=` with `name=` in `start_span()` calls |
-| OTel spans not appearing | Ensure `SentrySpanProcessor` is added to `TracerProvider` before creating spans |
+| OTel spans not appearing (OTLP) | Verify `sentry-sdk[opentelemetry-otlp]` is installed; do **not** set `traces_sample_rate` when using `OTLPIntegration` |
+| OTel spans not appearing (legacy bridge) | Ensure `SentrySpanProcessor` is added to `TracerProvider` before creating spans |
 | `@sentry_sdk.trace` on static method fails | Put `@sentry_sdk.trace` AFTER `@staticmethod` / `@classmethod` |
