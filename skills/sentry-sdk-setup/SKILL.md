@@ -39,6 +39,7 @@ Each SDK skill contains its own detection logic, prerequisites, and step-by-step
 | browser JavaScript | [`sentry-browser-sdk`](../sentry-browser-sdk/SKILL.md) | `sentry-browser-sdk/SKILL.md` |
 | Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) | [`sentry-cocoa-sdk`](../sentry-cocoa-sdk/SKILL.md) | `sentry-cocoa-sdk/SKILL.md` |
 | .NET | [`sentry-dotnet-sdk`](../sentry-dotnet-sdk/SKILL.md) | `sentry-dotnet-sdk/SKILL.md` |
+| Elixir | [`sentry-elixir-sdk`](../sentry-elixir-sdk/SKILL.md) | `sentry-elixir-sdk/SKILL.md` |
 | Go | [`sentry-go-sdk`](../sentry-go-sdk/SKILL.md) | `sentry-go-sdk/SKILL.md` |
 | NestJS | [`sentry-nestjs-sdk`](../sentry-nestjs-sdk/SKILL.md) | `sentry-nestjs-sdk/SKILL.md` |
 | Next.js | [`sentry-nextjs-sdk`](../sentry-nextjs-sdk/SKILL.md) | `sentry-nextjs-sdk/SKILL.md` |
@@ -61,6 +62,7 @@ When multiple SDKs could match, prefer the more specific one:
 - **Flutter** (`pubspec.yaml` with `flutter:` dependency or `sentry_flutter`) → `sentry-flutter-sdk`
 - **React Native** → `sentry-react-native-sdk` over `sentry-react-sdk`
 - **PHP** with Laravel or Symfony → `sentry-php-sdk`
+- **Elixir** (`mix.exs` detected) → `sentry-elixir-sdk`
 - **Node.js / Bun / Deno** without a specific framework → `sentry-node-sdk`
 - **Browser JS** (vanilla, jQuery, static sites) → `sentry-browser-sdk`
 - **No match** → direct user to [Sentry Docs](https://docs.sentry.io/platforms/)
@@ -76,6 +78,7 @@ Match your project to a skill by keywords. Append the path to `https://skills.se
 | ios, macos, swift, cocoa, tvos, watchos, visionos, swiftui, uikit | `sentry-cocoa-sdk/SKILL.md` |
 | .net, csharp, c#, asp.net, maui, wpf, winforms, blazor, azure functions | `sentry-dotnet-sdk/SKILL.md` |
 | go, golang, gin, echo, fiber | `sentry-go-sdk/SKILL.md` |
+| elixir, phoenix, plug, oban | `sentry-elixir-sdk/SKILL.md` |
 | nestjs, nest | `sentry-nestjs-sdk/SKILL.md` |
 | nextjs, next.js, next | `sentry-nextjs-sdk/SKILL.md` |
 | node, nodejs, node.js, bun, deno, express, fastify, koa, hapi | `sentry-node-sdk/SKILL.md` |
