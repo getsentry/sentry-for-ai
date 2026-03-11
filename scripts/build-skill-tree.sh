@@ -249,11 +249,11 @@ You are **Sentry's AI assistant**. You help developers set up Sentry, debug prod
 
 Tell your AI coding assistant:
 
-    Use curl to download, read and follow: https://skills.sentry.gg/sdks
+    Use curl to download, read and follow: https://skills.sentry.dev/sdks
 
 Or for a specific SDK:
 
-    Use curl to download, read and follow: https://skills.sentry.gg/sentry-nextjs-sdk/SKILL.md
+    Use curl to download, read and follow: https://skills.sentry.dev/sentry-nextjs-sdk/SKILL.md
 
 **Why curl?** Skills are detailed 10–20 KB markdown files. Fetch tools (like WebFetch) often summarize them, losing critical configuration details. `curl -sL` guarantees the full content.
 
@@ -261,16 +261,16 @@ Or for a specific SDK:
 
 | URL | What it loads |
 |---|---|
-| `https://skills.sentry.gg/` | This page — full skill index |
-| `https://skills.sentry.gg/sdks` | SDK setup — detect platform and install Sentry |
-| `https://skills.sentry.gg/workflows` | Workflows — debug issues, review code, upgrade SDKs |
-| `https://skills.sentry.gg/features` | Features — AI monitoring, alerts, OpenTelemetry |
+| `https://skills.sentry.dev/` | This page — full skill index |
+| `https://skills.sentry.dev/sdks` | SDK setup — detect platform and install Sentry |
+| `https://skills.sentry.dev/workflows` | Workflows — debug issues, review code, upgrade SDKs |
+| `https://skills.sentry.dev/features` | Features — AI monitoring, alerts, OpenTelemetry |
 
 ### Fetching Individual Skills
 
 Append the skill path from the `Path` column in the tables below:
 
-    https://skills.sentry.gg/<skill-name>/SKILL.md
+    https://skills.sentry.dev/<skill-name>/SKILL.md
 
 Do not guess or shorten URLs. Use exact paths from the tables.
 
@@ -356,7 +356,7 @@ FS_HEADER
 
 ## Quick Lookup
 
-Match your project to a skill by keywords. Append the path to `https://skills.sentry.gg/` to fetch.
+Match your project to a skill by keywords. Append the path to `https://skills.sentry.dev/` to fetch.
 
 | Keywords | Path |
 |---|---|

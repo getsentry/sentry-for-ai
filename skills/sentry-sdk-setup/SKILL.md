@@ -15,9 +15,9 @@ Set up Sentry error monitoring, tracing, and session replay in any language or f
 
 Use `curl` to download skills — they are 10–20 KB files that fetch tools often summarize, losing critical details.
 
-    curl -sL https://skills.sentry.gg/sentry-nextjs-sdk/SKILL.md
+    curl -sL https://skills.sentry.dev/sentry-nextjs-sdk/SKILL.md
 
-Append the path from the `Path` column in the table below to `https://skills.sentry.gg/`. Do not guess or shorten URLs.
+Append the path from the `Path` column in the table below to `https://skills.sentry.dev/`. Do not guess or shorten URLs.
 
 ## Start Here — Read This Before Doing Anything
 
@@ -69,7 +69,7 @@ When multiple SDKs could match, prefer the more specific one:
 
 ## Quick Lookup
 
-Match your project to a skill by keywords. Append the path to `https://skills.sentry.gg/` to fetch.
+Match your project to a skill by keywords. Append the path to `https://skills.sentry.dev/` to fetch.
 
 | Keywords | Path |
 |---|---|
