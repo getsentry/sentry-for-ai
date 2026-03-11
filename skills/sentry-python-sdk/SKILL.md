@@ -50,6 +50,12 @@ grep -rE "openai|anthropic|langchain|huggingface|google-genai|pydantic-ai|litell
 # Detect schedulers / crons
 grep -rE "celery|apscheduler|schedule|crontab" requirements.txt pyproject.toml 2>/dev/null
 
+# OpenTelemetry tracing — check for SDK + instrumentations
+grep -rE "opentelemetry-sdk|opentelemetry-instrumentation|opentelemetry-distro" \
+  requirements.txt pyproject.toml 2>/dev/null
+grep -rn "TracerProvider\|trace\.get_tracer\|start_as_current_span" \
+  --include="*.py" 2>/dev/null | head -5
+
 # Check for companion frontend
 ls frontend/ web/ client/ ui/ static/ templates/ 2>/dev/null
 ```
@@ -59,6 +65,7 @@ ls frontend/ web/ client/ ui/ static/ templates/ 2>/dev/null
 - Which framework? (Determines where to place `sentry_sdk.init()`.)
 - Which task queue? (Celery needs dual-process init; RQ needs a settings file.)
 - AI libraries? (OpenAI, Anthropic, LangChain are auto-instrumented.)
+- OpenTelemetry tracing? (Use OTLP path instead of native tracing.)
 - Companion frontend? (Triggers Phase 4 cross-link.)
 
 ---
@@ -67,6 +74,9 @@ ls frontend/ web/ client/ ui/ static/ templates/ 2>/dev/null
 
 Based on what you found, present a concrete proposal. Don't ask open-ended questions — lead with a recommendation:
 
+**Route from OTel detection:**
+- **OTel tracing detected** (`opentelemetry-sdk` / `opentelemetry-distro` in requirements, or `TracerProvider` in source) → use OTLP path: `OTLPIntegration()`; do **not** set `traces_sample_rate`; Sentry links errors to OTel traces automatically
+
 **Always recommended (core coverage):**
 - ✅ **Error Monitoring** — captures unhandled exceptions, supports `ExceptionGroup` (Python 3.11+)
 - ✅ **Logging** — Python `logging` stdlib auto-captured; enhanced if Loguru detected
@@ -74,7 +84,7 @@ Based on what you found, present a concrete proposal. Don't ask open-ended quest
 **Recommend when detected:**
 - ✅ **Tracing** — HTTP framework detected (Django/Flask/FastAPI/etc.)
 - ✅ **AI Monitoring** — OpenAI/Anthropic/LangChain/etc. detected (auto-instrumented, zero config)
-- ⚡ **Profiling** — production apps where performance matters
+- ⚡ **Profiling** — production apps where performance matters; **not available with OTLP path**
 - ⚡ **Crons** — Celery Beat, APScheduler, or cron patterns detected
 - ⚡ **Metrics** — business KPIs, SLO tracking
 
@@ -83,14 +93,17 @@ Based on what you found, present a concrete proposal. Don't ask open-ended quest
 | Feature | Recommend when... | Reference |
 |---------|------------------|-----------|
 | Error Monitoring | **Always** — non-negotiable baseline | `${SKILL_ROOT}/references/error-monitoring.md` |
-| Tracing | Django/Flask/FastAPI/AIOHTTP/etc. detected | `${SKILL_ROOT}/references/tracing.md` |
-| Profiling | Production + performance-sensitive workload | `${SKILL_ROOT}/references/profiling.md` |
+| OTLP Integration | OTel tracing detected — **replaces** native Tracing | `${SKILL_ROOT}/references/tracing.md` |
+| Tracing | Django/Flask/FastAPI/AIOHTTP/etc. detected; **skip if OTel tracing detected** | `${SKILL_ROOT}/references/tracing.md` |
+| Profiling | Production + performance-sensitive workload; **skip if OTel tracing detected** (requires `traces_sample_rate`, incompatible with OTLP) | `${SKILL_ROOT}/references/profiling.md` |
 | Logging | Always (stdlib); enhanced for Loguru | `${SKILL_ROOT}/references/logging.md` |
 | Metrics | Business events or SLO tracking needed | `${SKILL_ROOT}/references/metrics.md` |
 | Crons | Celery Beat, APScheduler, or cron patterns | `${SKILL_ROOT}/references/crons.md` |
 | AI Monitoring | OpenAI/Anthropic/LangChain/etc. detected | `${SKILL_ROOT}/references/ai-monitoring.md` |
 
-Propose: *"I recommend Error Monitoring + Tracing [+ Logging if applicable]. Want Profiling, Crons, or AI Monitoring too?"*
+**OTel tracing detected:** *"I see OpenTelemetry tracing in the project. I recommend Sentry's OTLP integration for tracing (via your existing OTel setup) + Error Monitoring + Sentry Logging [+ Metrics/Crons/AI Monitoring if applicable]. Shall I proceed?"*
+
+**No OTel:** *"I recommend Error Monitoring + Tracing [+ Logging if applicable]. Want Profiling, Crons, or AI Monitoring too?"*
 
 ---
 
@@ -248,6 +261,15 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `ignore_errors` | `list` | `[]` | Exception types or regex patterns to suppress |
 | `auto_enabling_integrations` | `bool` | `True` | Set `False` to disable all auto-detection |
 
+#### `OTLPIntegration` Options (pass to constructor)
+
+| Option | Type | Default | Purpose |
+|--------|------|---------|---------|
+| `setup_otlp_traces_exporter` | `bool` | `True` | Auto-configure OTLP exporter; set `False` if you send to your own Collector |
+| `collector_url` | `str` | `None` | OTLP HTTP endpoint of an OTel Collector (e.g., `http://localhost:4318/v1/traces`); when set, spans are sent to the collector instead of directly to Sentry |
+| `setup_propagator` | `bool` | `True` | Auto-configure Sentry propagator for distributed tracing |
+| `capture_exceptions` | `bool` | `False` | Intercept exceptions recorded via OTel `Span.record_exception` |
+
 ### Environment Variables
 
 | Variable | Maps to | Notes |
@@ -314,8 +336,9 @@ If a frontend exists without Sentry, suggest the matching skill:
 | Celery task errors not captured | Must call `sentry_sdk.init()` in the **worker process** via `celeryd_init` signal |
 | Sanic init not working | Init must be inside `@app.listener("before_server_start")`, not module level |
 | uWSGI not capturing | Add `--enable-threads --py-call-uwsgi-fork-hooks` to uWSGI command |
-| No traces appearing | Verify `traces_sample_rate` is set (not `None`); check that the integration is auto-enabled |
-| Profiling not starting | Requires `traces_sample_rate > 0` + either `profile_session_sample_rate` or `profiles_sample_rate` |
+| No traces appearing (native) | Verify `traces_sample_rate` is set (not `None`); check that the integration is auto-enabled |
+| No traces appearing (OTLP) | Verify `sentry-sdk[opentelemetry-otlp]` is installed; do **not** set `traces_sample_rate` when using `OTLPIntegration` |
+| Profiling not starting | Requires `traces_sample_rate > 0` + either `profile_session_sample_rate` or `profiles_sample_rate`; **not compatible with OTLP path** |
 | `enable_logs` not working | Requires SDK ≥ 2.35.0; for direct structured logs use `sentry_sdk.logger`; for stdlib bridging use `LoggingIntegration(sentry_logs_level=...)` |
 | Too many transactions | Lower `traces_sample_rate` or use `traces_sampler` to drop health checks |
 | Cross-request data leaking | Don't use `get_global_scope()` for per-request data — use `get_isolation_scope()` |

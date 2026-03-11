@@ -219,13 +219,11 @@ end
 
 > Minimum SDK: `sentry-ruby` v6.4.0+ with `sentry-opentelemetry` v6.4.0+
 
-If the project already uses OpenTelemetry for tracing or logging, **use the OTLP integration instead of Sentry's native tracing**. Sentry ingests OTel spans directly via its OTLP endpoint — no span conversion, no dual instrumentation.
+If the project already uses OpenTelemetry for tracing, **use the OTLP integration instead of Sentry's native tracing**. Sentry ingests OTel spans directly via its OTLP endpoint — no span conversion, no dual instrumentation.
 
 **When to use this path:** OTel tracing gems (`opentelemetry-sdk`, `opentelemetry-instrumentation-*`) detected in the Gemfile, or `OpenTelemetry::SDK.configure` found in source.
 
 **When NOT to use this path:** No OpenTelemetry in the project — use Sentry's native `traces_sample_rate` instead.
-
-**Logging:** OTLP replaces Sentry native *tracing* only. If the project does not use OTel for logging (`opentelemetry-logs-sdk` not in Gemfile), still set `config.enable_logs = true` for Sentry structured logging — this is the common case.
 
 ### Setup
 
@@ -241,7 +239,8 @@ Sentry.init do |config|
   config.dsn = ENV["SENTRY_DSN"]
   config.send_default_pii = true
   config.otlp.enabled = true
-  config.enable_logs = true  # keep Sentry native logging unless OTel logs SDK is also present
+  # config.otlp.collector_url = "http://localhost:4318/v1/traces"  # set if sending spans to an OTel Collector
+  config.enable_logs = true
 
   # Do NOT set traces_sample_rate — tracing is handled by OTel
   # Errors, Logs, Crons, and Metrics are still captured natively by Sentry
@@ -269,6 +268,7 @@ end
 | Option | Default | Purpose |
 |--------|---------|---------|
 | `config.otlp.enabled` | `false` | Master switch |
+| `config.otlp.collector_url` | `nil` | OTLP HTTP endpoint of an OTel Collector (e.g., `http://localhost:4318/v1/traces`); when set, spans are sent to the collector instead of directly to Sentry |
 | `config.otlp.setup_otlp_traces_exporter` | `true` | Auto-configure exporter; set `false` if you send to your own Collector |
 | `config.otlp.setup_propagator` | `true` | Auto-configure propagator; set `false` if you manage propagation yourself |
 
