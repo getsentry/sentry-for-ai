@@ -28,6 +28,7 @@ OTel Exporter Setup:
 - [ ] Step 5: Add environment variable placeholders
 - [ ] Step 6: Run the collector
 - [ ] Step 7: Verify setup
+- [ ] Step 8: Enable trace connectedness with OTLPIntegration (Python/Ruby)
 ```
 
 ## Step 1: Check for Existing Configuration
@@ -300,6 +301,73 @@ After providing the command, tell the user to run it when they're ready, then pr
 - Traces and/or logs appear in Sentry within 60 seconds of sending
 
 If using Docker, check logs with `docker logs otel-collector`.
+
+## Step 8: Enable Trace Connectedness with OTLPIntegration
+
+If the user's application uses a Sentry SDK (Python or Ruby), recommend enabling the OTLPIntegration. This ensures **trace connectedness** — linking OTel traces to Sentry errors, logs, crons, and metrics — and sets up distributed tracing propagation automatically.
+
+Without this step, traces sent through the collector appear in Sentry but are not connected to other Sentry events (errors, logs) from the same service.
+
+Ask the user: **Does your application use the Sentry Python SDK or Sentry Ruby SDK?**
+
+- **Python**: Follow the Python setup below
+- **Ruby**: Follow the Ruby setup below
+- **Neither / Other SDK**: Skip this step. Trace connectedness via OTLPIntegration is currently available for Python and Ruby.
+
+### Python OTLPIntegration
+
+Docs: https://docs.sentry.io/platforms/python/integrations/otlp/
+
+1. Install the extra:
+```bash
+pip install "sentry-sdk[opentelemetry-otlp]"
+```
+
+2. Add the `OTLPIntegration` to the existing `sentry_sdk.init()` call, setting `collector_url` to the collector's OTLP traces endpoint:
+```python
+from sentry_sdk.integrations.otlp import OTLPIntegration
+
+sentry_sdk.init(
+    dsn="___PUBLIC_DSN___",
+    integrations=[
+        OTLPIntegration(collector_url="http://localhost:4318/v1/traces"),
+    ],
+)
+```
+
+Use the collector's actual OTLP HTTP endpoint. The default is `http://localhost:4318/v1/traces` if running locally.
+
+### Ruby OTLPIntegration
+
+Docs: https://docs.sentry.io/platforms/ruby/integrations/otlp/
+
+1. Add gems to the Gemfile:
+```ruby
+gem "sentry-opentelemetry"
+gem "opentelemetry-sdk"
+gem "opentelemetry-exporter-otlp"
+gem "opentelemetry-instrumentation-all"
+```
+
+2. Run `bundle install`
+
+3. Configure OpenTelemetry instrumentation:
+```ruby
+OpenTelemetry::SDK.configure do |c|
+  c.use_all
+end
+```
+
+4. Enable OTLP in the existing `Sentry.init` block, setting `collector_url` to the collector's OTLP traces endpoint:
+```ruby
+Sentry.init do |config|
+  config.dsn = "___PUBLIC_DSN___"
+  config.otlp.enabled = true
+  config.otlp.collector_url = "http://localhost:4318/v1/traces"
+end
+```
+
+Use the collector's actual OTLP HTTP endpoint. The default is `http://localhost:4318/v1/traces` if running locally.
 
 ## Troubleshooting
 
