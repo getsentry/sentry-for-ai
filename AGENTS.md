@@ -26,6 +26,7 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 | Skill | Description |
 |-------|-------------|
 | `sentry-android-sdk` | Full setup wizard for Android (Jetpack Compose, Views, OkHttp, Room, Fragment, Timber) |
+| `sentry-cloudflare-sdk` | Full setup wizard for Cloudflare Workers and Pages (Durable Objects, D1, Queues, Workflows, Hono) |
 | `sentry-cocoa-sdk` | Full setup wizard for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) |
 | `sentry-dotnet-sdk` | Full setup wizard for .NET (ASP.NET Core, MAUI, WPF, WinForms, Azure Functions) |
 | `sentry-elixir-sdk` | Full setup wizard for Elixir (Phoenix, Plug, LiveView, Oban, Quantum) |
