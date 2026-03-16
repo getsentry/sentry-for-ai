@@ -37,6 +37,7 @@ Each SDK skill contains its own detection logic, prerequisites, and step-by-step
 |---|---|---|
 | Android | [`sentry-android-sdk`](../sentry-android-sdk/SKILL.md) | `sentry-android-sdk/SKILL.md` |
 | browser JavaScript | [`sentry-browser-sdk`](../sentry-browser-sdk/SKILL.md) | `sentry-browser-sdk/SKILL.md` |
+| Cloudflare Workers and Pages | [`sentry-cloudflare-sdk`](../sentry-cloudflare-sdk/SKILL.md) | `sentry-cloudflare-sdk/SKILL.md` |
 | Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) | [`sentry-cocoa-sdk`](../sentry-cocoa-sdk/SKILL.md) | `sentry-cocoa-sdk/SKILL.md` |
 | .NET | [`sentry-dotnet-sdk`](../sentry-dotnet-sdk/SKILL.md) | `sentry-dotnet-sdk/SKILL.md` |
 | Elixir | [`sentry-elixir-sdk`](../sentry-elixir-sdk/SKILL.md) | `sentry-elixir-sdk/SKILL.md` |
@@ -57,6 +58,7 @@ Each SDK skill contains its own detection logic, prerequisites, and step-by-step
 When multiple SDKs could match, prefer the more specific one:
 
 - **Android** (`build.gradle` with android plugin) → `sentry-android-sdk`
+- **Cloudflare** (`wrangler.toml` or `wrangler.jsonc`) → `sentry-cloudflare-sdk` over `sentry-node-sdk`
 - **NestJS** (`@nestjs/core`) → `sentry-nestjs-sdk` over `sentry-node-sdk`
 - **Next.js** → `sentry-nextjs-sdk` over `sentry-react-sdk` or `sentry-node-sdk`
 - **Flutter** (`pubspec.yaml` with `flutter:` dependency or `sentry_flutter`) → `sentry-flutter-sdk`
@@ -75,6 +77,7 @@ Match your project to a skill by keywords. Append the path to `https://skills.se
 |---|---|
 | android, kotlin, java, jetpack compose | `sentry-android-sdk/SKILL.md` |
 | browser, vanilla js, javascript, jquery, cdn, wordpress, static site | `sentry-browser-sdk/SKILL.md` |
+| cloudflare, cloudflare workers, cloudflare pages, wrangler, durable objects, d1 | `sentry-cloudflare-sdk/SKILL.md` |
 | ios, macos, swift, cocoa, tvos, watchos, visionos, swiftui, uikit | `sentry-cocoa-sdk/SKILL.md` |
 | .net, csharp, c#, asp.net, maui, wpf, winforms, blazor, azure functions | `sentry-dotnet-sdk/SKILL.md` |
 | go, golang, gin, echo, fiber | `sentry-go-sdk/SKILL.md` |

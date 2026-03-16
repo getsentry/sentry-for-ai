@@ -58,6 +58,7 @@ Install and configure Sentry for any platform. If unsure which SDK fits, detect 
 |---|---|---|
 | Android | [`sentry-android-sdk`](skills/sentry-android-sdk/SKILL.md) | `sentry-android-sdk/SKILL.md` |
 | browser JavaScript | [`sentry-browser-sdk`](skills/sentry-browser-sdk/SKILL.md) | `sentry-browser-sdk/SKILL.md` |
+| Cloudflare Workers and Pages | [`sentry-cloudflare-sdk`](skills/sentry-cloudflare-sdk/SKILL.md) | `sentry-cloudflare-sdk/SKILL.md` |
 | Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) | [`sentry-cocoa-sdk`](skills/sentry-cocoa-sdk/SKILL.md) | `sentry-cocoa-sdk/SKILL.md` |
 | .NET | [`sentry-dotnet-sdk`](skills/sentry-dotnet-sdk/SKILL.md) | `sentry-dotnet-sdk/SKILL.md` |
 | Elixir | [`sentry-elixir-sdk`](skills/sentry-elixir-sdk/SKILL.md) | `sentry-elixir-sdk/SKILL.md` |
@@ -115,6 +116,7 @@ Match your project to a skill by keywords. Append the path to `https://skills.se
 |---|---|
 | android, kotlin, java, jetpack compose | `sentry-android-sdk/SKILL.md` |
 | browser, vanilla js, javascript, jquery, cdn, wordpress, static site | `sentry-browser-sdk/SKILL.md` |
+| cloudflare, cloudflare workers, cloudflare pages, wrangler, durable objects, d1, hono | `sentry-cloudflare-sdk/SKILL.md` |
 | ios, macos, swift, cocoa, tvos, watchos, visionos, swiftui, uikit | `sentry-cocoa-sdk/SKILL.md` |
 | .net, csharp, c#, asp.net, maui, wpf, winforms, blazor, azure functions | `sentry-dotnet-sdk/SKILL.md` |
 | elixir, phoenix, plug, liveview, oban, quantum, mix | `sentry-elixir-sdk/SKILL.md` |

@@ -203,6 +203,8 @@ build_keyword_lookup() {
         keywords="android, kotlin, java, jetpack compose" ;;
       sentry-browser-sdk)
         keywords="browser, vanilla js, javascript, jquery, cdn, wordpress, static site" ;;
+      sentry-cloudflare-sdk)
+        keywords="cloudflare, cloudflare workers, cloudflare pages, wrangler, durable objects, d1, hono" ;;
       sentry-cocoa-sdk)
         keywords="ios, macos, swift, cocoa, tvos, watchos, visionos, swiftui, uikit" ;;
       sentry-dotnet-sdk)
