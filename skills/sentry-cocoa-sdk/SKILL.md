@@ -144,6 +144,8 @@ Or in `Package.swift`:
 
 This is the preferred opt-out path for macOS command-line tools and app extensions on Swift 6.1+. For Swift < 6.1 continue using `Sentry-WithoutUIKitOrAppKit`.
 
+> **Note:** Package traits are visible in the Xcode UI starting with **Xcode 26.4+** (currently in beta). On older Xcode versions, traits still work when declared in `Package.swift` but won't appear in the GUI.
+
 **Option 3 — CocoaPods:**
 ```ruby
 platform :ios, '11.0'

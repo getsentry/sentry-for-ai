@@ -168,7 +168,7 @@ MetricKit delivers hang diagnostic payloads on iOS 15+ and macOS 12+. Starting w
 
 - **No configuration required** — the improvement is automatic for all apps with MetricKit-compatible OS versions
 - In the Sentry UI, MetricKit hang issues now display a flamegraph showing all samples collected during the hang, improving both diagnosis and issue grouping accuracy
-- MetricKit reports are delivered by the OS after the hang ends (typically on next launch); they complement — but do not replace — the real-time `enableAppHangTrackingV2` hang detection
+- MetricKit reports are delivered by the OS after the hang ends (typically on next launch); they complement — but do not replace — real-time app hang detection (automatic in SDK v9+)
 
 | Platform | MetricKit Availability |
 |----------|----------------------|
