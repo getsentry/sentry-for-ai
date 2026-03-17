@@ -67,6 +67,6 @@ else
 
   # On SessionEnd, process the collected events
   if [ "$EVENT_NAME" = "SessionEnd" ]; then
-    node "$SCRIPT_DIR/sentry-collector.mjs" --batch "$LOGFILE" 2>>/tmp/claude-sentry-debug.log || true
+    node "$SCRIPT_DIR/sentry-collector.mjs" --batch "$LOGFILE" 2>/dev/null || true
   fi
 fi

@@ -63,8 +63,6 @@ async function processBatch(filePath) {
   const firstTs = events[0]._ts || Date.now() / 1000;
   const lastTs = events[events.length - 1]._ts || Date.now() / 1000;
 
-  console.error(`[sentry-collector] events=${events.length} tools=${toolCalls.length} dur=${(lastTs - firstTs).toFixed(1)}s tokens=${tokenData?.inputTokens || 0}in/${tokenData?.outputTokens || 0}out`);
-
   // Create all spans as inactive with explicit timestamps (avoids startSpan
   // callback pattern which overrides end time for historical spans).
   const rootSpan = Sentry.startInactiveSpan({
@@ -116,11 +114,11 @@ async function processBatch(filePath) {
         startTime: tool.startTime,
         attributes: attrs,
       });
-      childSpan.end(tool.endTime * 1000);
+      childSpan.end(tool.endTime);
     }
   });
 
-  rootSpan.end(lastTs * 1000);
+  rootSpan.end(lastTs);
 
   await Sentry.flush(10_000);
 
@@ -152,7 +150,7 @@ function startServer() {
         });
         sessions.set(session_id, {
           rootSpan,
-          pendingTools: [],
+          pendingTools: new Map(),
           toolCount: 0,
         });
         break;
@@ -177,7 +175,9 @@ function startServer() {
             },
           })
         );
-        session.pendingTools.push(toolSpan);
+        if (event.tool_use_id) {
+          session.pendingTools.set(event.tool_use_id, toolSpan);
+        }
         session.toolCount++;
         break;
       }
@@ -185,15 +185,20 @@ function startServer() {
       case "PostToolUse": {
         const session = sessions.get(session_id);
         if (!session) break;
-        const toolSpan = session.pendingTools.pop();
-        if (toolSpan) toolSpan.end();
+        const toolSpan = event.tool_use_id
+          ? session.pendingTools.get(event.tool_use_id)
+          : undefined;
+        if (toolSpan) {
+          toolSpan.end();
+          session.pendingTools.delete(event.tool_use_id);
+        }
         break;
       }
 
       case "SessionEnd": {
         const session = sessions.get(session_id);
         if (!session) break;
-        for (const span of session.pendingTools) {
+        for (const span of session.pendingTools.values()) {
           span.end();
         }
         session.rootSpan.setAttribute("gen_ai.tool.call_count", session.toolCount);
@@ -300,19 +305,31 @@ function extractTokensFromTranscript(transcriptPath) {
 // ── Helpers ──────────────────────────────────────────────────
 
 function pairToolEvents(events) {
-  // Use tool_use_id for precise pairing (handles parallel tool calls)
+  // Use tool_use_id for precise pairing (handles parallel tool calls).
+  // Fallback: match PostToolUse to most recent unmatched PreToolUse with same tool_name.
   const preByUseId = new Map();
+  const preByToolName = new Map(); // tool_name → [event, ...] (stack)
   const completed = [];
 
   for (const event of events) {
     if (event.hook_event_name === "PreToolUse") {
-      const id = event.tool_use_id || `fallback-${event._ts}-${event.tool_name}`;
-      preByUseId.set(id, event);
+      if (event.tool_use_id) {
+        preByUseId.set(event.tool_use_id, event);
+      } else {
+        const stack = preByToolName.get(event.tool_name) || [];
+        stack.push(event);
+        preByToolName.set(event.tool_name, stack);
+      }
     } else if (event.hook_event_name === "PostToolUse") {
-      const id = event.tool_use_id || `fallback-${event._ts}-${event.tool_name}`;
-      const pre = preByUseId.get(id);
+      let pre;
+      if (event.tool_use_id) {
+        pre = preByUseId.get(event.tool_use_id);
+        if (pre) preByUseId.delete(event.tool_use_id);
+      } else {
+        const stack = preByToolName.get(event.tool_name);
+        if (stack?.length) pre = stack.pop();
+      }
       if (pre) {
-        preByUseId.delete(id);
         completed.push({
           tool_name: event.tool_name,
           startTime: pre._ts,
