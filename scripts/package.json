@@ -1,0 +1,10 @@
+{
+  "name": "sentry-claude-code-collector",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sentry AI monitoring collector for Claude Code",
+  "dependencies": {
+    "@sentry/node": "^9.0.0"
+  }
+}

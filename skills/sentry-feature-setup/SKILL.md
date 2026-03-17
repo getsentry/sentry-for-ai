@@ -26,6 +26,7 @@ Append the path from the `Path` column in the table below to `https://skills.sen
 1. If the user mentions **AI monitoring, LLM tracing, or instrumenting an AI SDK** (OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI, Pydantic AI) → `sentry-setup-ai-monitoring`
 2. If the user mentions **OpenTelemetry, OTel Collector, or multi-service telemetry routing** → `sentry-otel-exporter-setup`
 3. If the user mentions **alerts, notifications, on-call, Slack/PagerDuty/Discord integration, or workflow rules** → `sentry-create-alert`
+4. If the user mentions **Claude Code monitoring, tracking Claude Code usage, or Claude Code observability** → `sentry-setup-claude-code-monitoring`
 
 When unclear, **ask the user** which feature they want to configure. Do not guess.
 
@@ -38,6 +39,7 @@ When unclear, **ask the user** which feature they want to configure. Do not gues
 | AI/LLM monitoring — instrument OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI, Pydantic AI | [`sentry-setup-ai-monitoring`](../sentry-setup-ai-monitoring/SKILL.md) | `sentry-setup-ai-monitoring/SKILL.md` |
 | OpenTelemetry Collector with Sentry Exporter — multi-project routing, automatic project creation | [`sentry-otel-exporter-setup`](../sentry-otel-exporter-setup/SKILL.md) | `sentry-otel-exporter-setup/SKILL.md` |
 | Alerts via workflow engine API — email, Slack, PagerDuty, Discord | [`sentry-create-alert`](../sentry-create-alert/SKILL.md) | `sentry-create-alert/SKILL.md` |
+| Monitor Claude Code sessions — tool calls, tokens, cost in AI Agents dashboard | [`sentry-setup-claude-code-monitoring`](../sentry-setup-claude-code-monitoring/SKILL.md) | `sentry-setup-claude-code-monitoring/SKILL.md` |
 
 Each skill contains its own detection logic, prerequisites, and step-by-step instructions. Trust the skill — read it carefully and follow it. Do not improvise or take shortcuts.
 
