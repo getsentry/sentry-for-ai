@@ -127,9 +127,24 @@ Or in `Package.swift`:
 | `Sentry` | **Recommended** — static framework, fast app start |
 | `Sentry-Dynamic` | Dynamic framework alternative |
 | `SentrySwiftUI` | SwiftUI view performance tracking (`SentryTracedView`) |
-| `Sentry-WithoutUIKitOrAppKit` | watchOS, app extensions, CLI tools |
+| `Sentry-WithoutUIKitOrAppKit` | watchOS, app extensions, CLI tools (Swift < 6.1) |
+| `SentrySPM` + `NoUIFramework` trait | watchOS, app extensions, macOS CLI tools (**Swift 6.1+ / Xcode 16.3+** only) |
 
 > ⚠️ Xcode allows selecting multiple products — choose only one.
+
+**Swift 6.1+ trait-based opt-out of UIKit/AppKit** (requires `Package@swift-6.1.swift` manifest):
+
+```swift
+// Package.swift (Swift 6.1+)
+.package(url: "https://github.com/getsentry/sentry-cocoa", from: "9.5.1"),
+
+// In your target's dependencies:
+.product(name: "SentrySPM", package: "sentry-cocoa", condition: .when(traits: ["NoUIFramework"]))
+```
+
+This is the preferred opt-out path for macOS command-line tools and app extensions on Swift 6.1+. For Swift < 6.1 continue using `Sentry-WithoutUIKitOrAppKit`.
+
+> **Note:** Package traits are visible in the Xcode UI starting with **Xcode 26.4+** (currently in beta). On older Xcode versions, traits still work when declared in `Package.swift` but won't appear in the GUI.
 
 **Option 3 — CocoaPods:**
 ```ruby
@@ -386,7 +401,7 @@ If a backend is found, configure `tracePropagationTargets` to enable distributed
 | Tracing data missing | Confirm `tracesSampleRate > 0`; check `enableAutoPerformanceTracing = true` |
 | Profiling data missing | Verify `sessionSampleRate > 0` in `configureProfiling`; for `.trace` lifecycle, tracing must be enabled |
 | `rsync.samba` build error (CocoaPods) | Target Settings → "Enable User Script Sandbox" → `NO` |
-| Multiple SPM products selected | Choose **only one** of `Sentry`, `Sentry-Dynamic`, `SentrySwiftUI`, `Sentry-WithoutUIKitOrAppKit` |
+| Multiple SPM products selected | Choose **only one** of `Sentry`, `Sentry-Dynamic`, `SentrySwiftUI`, `Sentry-WithoutUIKitOrAppKit`, or `SentrySPM` (with `NoUIFramework` trait on Swift 6.1+) |
 | `inAppExclude` compile error | Removed in SDK 9.0.0 — use `inAppInclude` only |
 | Watchdog termination not tracked | Requires `enableCrashHandler = true` (it is by default) |
 | Network breadcrumbs missing | Requires `enableSwizzling = true` (it is by default) |

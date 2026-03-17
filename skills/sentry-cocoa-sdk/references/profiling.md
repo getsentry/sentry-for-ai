@@ -162,6 +162,22 @@ SentrySDK.start { options in
 }
 ```
 
+## MetricKit App Hang Reports
+
+MetricKit delivers hang diagnostic payloads on iOS 15+ and macOS 12+. Starting with **sentry-cocoa v9.x** (merged via PR #7185), the SDK captures the **full call-tree flamegraph** from a MetricKit hang report instead of a single stack sample.
+
+- **No configuration required** — the improvement is automatic for all apps with MetricKit-compatible OS versions
+- In the Sentry UI, MetricKit hang issues now display a flamegraph showing all samples collected during the hang, improving both diagnosis and issue grouping accuracy
+- MetricKit reports are delivered by the OS after the hang ends (typically on next launch); they complement — but do not replace — real-time app hang detection (automatic in SDK v9+)
+
+| Platform | MetricKit Availability |
+|----------|----------------------|
+| iOS | 15+ |
+| macOS | 12+ |
+| tvOS | ❌ |
+| watchOS | ❌ |
+| visionOS | ❌ |
+
 ## Best Practices
 
 - Always set `sessionSampleRate > 0` — it defaults to `0`, so no profiling data is collected unless you explicitly set it
