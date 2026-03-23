@@ -260,6 +260,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `before_send` | `callable` | identity | `fn(Event $event, ?EventHint $hint): ?Event` — return `null` to drop |
 | `before_breadcrumb` | `callable` | identity | `fn(Breadcrumb $b): ?Breadcrumb` — return `null` to discard |
 | `trace_propagation_targets` | `string[]\|null` | `null` | Downstream hosts to inject `sentry-trace` headers into; `null` = all, `[]` = none |
+| `strict_trace_continuation` | `bool` | `false` | Only continue an incoming distributed trace if the `sentry-org_id` baggage matches the SDK's org ID; prevents trace contamination from third-party Sentry-instrumented services (>=4.21.0) |
 | `debug` | `bool` | `false` | Verbose SDK output (use a PSR-3 `logger` option instead for structured output) |
 
 ### Environment Variables
@@ -346,3 +347,4 @@ If a frontend exists without Sentry, suggest the matching skill:
 | PII not captured | Set `send_default_pii: true`; for Laravel set `send_default_pii: true` in `config/sentry.php` |
 | `@`-suppressed errors missing | Set `capture_silenced_errors: true` |
 | Cross-service traces broken | Check `trace_propagation_targets`; ensure downstream services have Sentry installed |
+| Trace contamination from third-party services | Set `strict_trace_continuation: true` to only continue traces where the incoming `sentry-org_id` baggage matches your SDK's org ID (>=4.21.0) |

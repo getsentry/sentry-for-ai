@@ -11,7 +11,7 @@
 | `profiles_sample_rate` | `float` | `null` | Fraction of sampled transactions to profile (relative to `traces_sample_rate`) |
 | `ignore_transactions` | `array` | `[]` | Transaction names to never trace (e.g., `['/up', '/healthz']`) |
 | `before_send_transaction` | `callable` | no-op | Mutate or drop transaction events before sending |
-| `strict_trace_propagation` | `bool` | `false` | Only propagate trace headers when a transaction is active |
+| `strict_trace_continuation` | `bool` | `false` | Only continue an incoming distributed trace if the `sentry-org_id` baggage matches the SDK's org ID; prevents trace contamination from third-party services (>=4.21.0). Replaces deprecated `strict_trace_propagation` |
 
 ## Code Examples
 
