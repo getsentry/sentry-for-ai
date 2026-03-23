@@ -26,7 +26,7 @@ Performs a full code quality scan and generates a comprehensive bug report.
 
 3. Run this command via Bash tool:
    ```bash
-   open https://sentry-bug-report.sentry.dev
+   open https://bug-report.sentry.dev
    ```
 
 4. Say: "Your bug report is ready — check your browser."
