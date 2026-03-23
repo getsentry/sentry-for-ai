@@ -599,6 +599,29 @@ Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the err
 | `sampleRate` | `number` | `1.0` | Fraction of error events to send (0–1) |
 | `shutdownTimeout` | `number` | `2000` | Milliseconds to flush events before process exit |
 
+### `nativeNodeFetchIntegration()` Options
+
+Configures outgoing `fetch`/`undici` span capture. Since `@opentelemetry/instrumentation-undici@0.22.0`, response headers like `content-length` are no longer captured automatically — use `headersToSpanAttributes` to opt in:
+
+```javascript
+Sentry.init({
+  integrations: [
+    Sentry.nativeNodeFetchIntegration({
+      headersToSpanAttributes: {
+        requestHeaders: ["x-request-id"],
+        responseHeaders: ["content-length", "content-type"],
+      },
+    }),
+  ],
+});
+```
+
+| Option | Type | Default | Notes |
+|--------|------|---------|-------|
+| `breadcrumbs` | `boolean` | `true` | Record breadcrumbs for outgoing fetch requests |
+| `headersToSpanAttributes.requestHeaders` | `string[]` | — | Request header names to capture as span attributes |
+| `headersToSpanAttributes.responseHeaders` | `string[]` | — | Response header names to capture as span attributes |
+
 ### Graceful Shutdown
 
 Flush buffered events before process exit — important for short-lived scripts and serverless:

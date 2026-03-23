@@ -122,8 +122,36 @@ tracesSampler: ({ inheritOrSampleWith }) => inheritOrSampleWith(0.1),
 |---------|------|-----------------|
 | `node:http` / `node:https` (incoming) | `http.server` | Method, URL, status code, duration |
 | `node:http` / `node:https` (outgoing) | `http.client` | Method, URL, status code, duration |
-| `fetch` / `undici` | `http.client` | Method, URL, status code |
+| `fetch` / `undici` | `http.client` | Method, URL, status code (headers opt-in via `headersToSpanAttributes`) |
 | `axios` | `http.client` | Method, URL, status code |
+
+#### Capturing HTTP Headers on Fetch Spans
+
+Since `@opentelemetry/instrumentation-undici@0.22.0`, response headers like `content-length` are **no longer captured automatically** on outgoing `fetch`/`undici` spans. To restore header capture or add custom headers, use `headersToSpanAttributes` on `nativeNodeFetchIntegration()`:
+
+```typescript
+import * as Sentry from "@sentry/node";
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
+  integrations: [
+    Sentry.nativeNodeFetchIntegration({
+      headersToSpanAttributes: {
+        requestHeaders: ["x-request-id", "x-custom-header"],
+        responseHeaders: ["content-length", "content-type"],
+      },
+    }),
+  ],
+});
+```
+
+Matched headers appear as span attributes: `http.request.header.<name>` and `http.response.header.<name>`.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `headersToSpanAttributes.requestHeaders` | `string[]` | `undefined` | Request header names to capture as span attributes |
+| `headersToSpanAttributes.responseHeaders` | `string[]` | `undefined` | Response header names to capture as span attributes |
 
 ### Databases
 
@@ -638,6 +666,16 @@ Sentry.init({
     }
     return span;
   },
+
+  // Capture HTTP headers on outgoing fetch/undici spans
+  integrations: [
+    Sentry.nativeNodeFetchIntegration({
+      headersToSpanAttributes: {
+        requestHeaders: ["x-request-id"],
+        responseHeaders: ["content-length", "content-type"],
+      },
+    }),
+  ],
 });
 ```
 
