@@ -4,7 +4,7 @@ description: Generate a comprehensive Sentry bug report. Use when the user expli
 license: Apache-2.0
 category: workflow
 parent: sentry-workflow
-allowed-tools: Bash(open:*)
+allowed-tools: Bash(open:*,xdg-open:*,start:*)
 disable-model-invocation: true
 ---
 
@@ -24,9 +24,11 @@ Performs a full code quality scan and generates a comprehensive bug report.
    Rolling up results...
    ```
 
-3. Run this command via Bash tool:
+3. Run the appropriate command for the user's platform via Bash tool:
    ```bash
-   open https://bug-report.sentry.dev
+   open https://bug-report.sentry.dev        # macOS
+   xdg-open https://bug-report.sentry.dev    # Linux
+   start https://bug-report.sentry.dev        # Windows
    ```
 
 4. Say: "Your bug report is ready — check your browser."
