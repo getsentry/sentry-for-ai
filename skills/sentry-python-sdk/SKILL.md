@@ -333,6 +333,7 @@ If a frontend exists without Sentry, suggest the matching skill:
 | Django exceptions not captured | Ensure `sentry_sdk.init()` is at the **top** of `settings.py` before other imports |
 | Flask exceptions not captured | Init must happen **before** `app = Flask(__name__)` |
 | FastAPI exceptions not captured | Init before `app = FastAPI()`; both `StarletteIntegration` and `FastApiIntegration` auto-enabled |
+| ASGI chained exceptions suppressed | By default, Sentry's ASGI middleware strips exception chains (`raise exc from None`). To preserve chained exceptions, set `_experiments={"suppress_asgi_chained_exceptions": False}` in `sentry_sdk.init()` |
 | Celery task errors not captured | Must call `sentry_sdk.init()` in the **worker process** via `celeryd_init` signal |
 | Sanic init not working | Init must be inside `@app.listener("before_server_start")`, not module level |
 | uWSGI not capturing | Add `--enable-threads --py-call-uwsgi-fork-hooks` to uWSGI command |

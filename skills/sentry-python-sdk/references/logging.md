@@ -159,12 +159,34 @@ sentry_sdk.init(dsn="...", enable_logs=True, before_send_log=before_log)
 
 ### Suppress noisy loggers
 
-```python
-from sentry_sdk.integrations.logging import ignore_logger
+Events/breadcrumbs and Sentry Logs have **separate** ignore lists. `ignore_logger()` only suppresses breadcrumbs and error events — it does **not** affect Sentry Logs. This means framework loggers silenced for events (e.g. `django.server`) can still be captured as Sentry Logs.
 
+```python
+from sentry_sdk.integrations.logging import (
+    ignore_logger,
+    ignore_logger_for_sentry_logs,
+    unignore_logger,
+    unignore_logger_for_sentry_logs,
+)
+
+# Suppress breadcrumbs and error events only (Sentry Logs still captured)
 ignore_logger("a.spammy.logger")
 ignore_logger("boto3.*")   # glob patterns supported
+
+# Suppress Sentry Logs only (breadcrumbs and error events still captured)
+ignore_logger_for_sentry_logs("a.noisy.logger")
+
+# Reverse a previous ignore
+unignore_logger("a.spammy.logger")
+unignore_logger_for_sentry_logs("a.noisy.logger")
 ```
+
+| Helper | Affects |
+|--------|---------|
+| `ignore_logger(name)` | Breadcrumbs + error events only |
+| `ignore_logger_for_sentry_logs(name)` | Sentry Logs only |
+| `unignore_logger(name)` | Reverses `ignore_logger()` |
+| `unignore_logger_for_sentry_logs(name)` | Reverses `ignore_logger_for_sentry_logs()` |
 
 ## Decision Table
 
@@ -176,6 +198,9 @@ ignore_logger("boto3.*")   # glob patterns supported
 | Breadcrumbs for error context | `LoggingIntegration(level=logging.INFO)` (default) |
 | Auto-create error events from log calls | `LoggingIntegration(event_level=logging.ERROR)` (default) |
 | Drop/modify a log before sending | `before_send_log` callback |
+| Suppress a logger from breadcrumbs/events only | `ignore_logger(name)` |
+| Suppress a logger from Sentry Logs only | `ignore_logger_for_sentry_logs(name)` |
+| Re-enable a previously ignored logger | `unignore_logger(name)` / `unignore_logger_for_sentry_logs(name)` |
 
 ## Automatically Added Attributes
 
@@ -200,3 +225,5 @@ Every log record receives these automatically:
 | Logger's own level filters out records | SDK respects the logger's configured level — set it to `logging.INFO` or lower |
 | Too many log records hitting quota | Use `before_send_log` to filter by severity or attribute |
 | Loguru not auto-activating | Verify `loguru` is installed; or add `LoguruIntegration()` explicitly |
+| `ignore_logger()` still sending Sentry Logs | Expected — `ignore_logger()` only suppresses breadcrumbs/events; use `ignore_logger_for_sentry_logs()` to suppress Sentry Logs |
+| Framework logger (e.g. `django.server`) not appearing in Sentry Logs | It may be in the default Sentry Logs ignore list; call `unignore_logger_for_sentry_logs("django.server")` |
