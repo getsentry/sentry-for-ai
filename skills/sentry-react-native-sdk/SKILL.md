@@ -681,7 +681,7 @@ These integrations are enabled automatically — no config needed:
 | `mobileReplayIntegration()` | Add to `integrations` array |
 | `reactNavigationIntegration()` | Add to `integrations` array |
 | `reactNativeNavigationIntegration()` | Add to `integrations` array (Wix only) |
-| `feedbackIntegration()` | Add to `integrations` array (user feedback widget) |
+| `feedbackIntegration()` | Add to `integrations` array (user feedback widget; supports `enableShakeToReport` for native shake detection) |
 
 ---
 

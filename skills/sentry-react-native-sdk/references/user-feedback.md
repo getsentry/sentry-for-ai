@@ -40,7 +40,7 @@ Without `Sentry.wrap`, `Sentry.showFeedbackWidget()` and `Sentry.showFeedbackBut
 
 ## Approach 1: Built-In Feedback Widget
 
-The simplest integration. Call `Sentry.showFeedbackWidget()` from anywhere — a button, menu item, shake gesture handler, or support screen.
+The simplest integration. Call `Sentry.showFeedbackWidget()` from anywhere — a button, menu item, or support screen. For automatic shake-to-report, see [Shake to Report](#shake-to-report-built-in-native-detection) below.
 
 ### Trigger the Widget
 
@@ -69,6 +69,38 @@ Sentry.showFeedbackButton();
 // Hide it when no longer needed
 Sentry.hideFeedbackButton();
 ```
+
+### Shake to Report (Built-In Native Detection)
+
+The SDK provides built-in device shake detection that automatically shows the feedback widget when the user shakes their device. This delegates to native shake detectors in the iOS and Android SDKs — no permissions required.
+
+**Option A: Enable via `feedbackIntegration` config**
+
+```typescript
+Sentry.init({
+  dsn: "YOUR_DSN",
+  integrations: [
+    Sentry.feedbackIntegration({ enableShakeToReport: true }),
+  ],
+});
+```
+
+**Option B: Imperative API (enable/disable at runtime)**
+
+```typescript
+import * as Sentry from "@sentry/react-native";
+
+// Start listening for device shakes — shows feedback widget on shake
+Sentry.enableFeedbackOnShake();
+
+// Stop listening when no longer needed
+Sentry.disableFeedbackOnShake();
+```
+
+> **Platform details:**
+> - **iOS:** Uses UIKit motion event detection (`SentryShakeDetector`)
+> - **Android:** Uses accelerometer sensor (`SentryShakeDetector`)
+> - **Web:** Not supported — shake detection is native-only
 
 ### Configure the Widget via `feedbackIntegration`
 
@@ -638,6 +670,7 @@ Returns the feedback event ID (or `undefined` if SDK is disabled).
 | `isNameRequired` | `boolean` | `false` | Make name field required |
 | `isEmailRequired` | `boolean` | `false` | Make email field required |
 | `useSentryUser` | `object` | — | Maps Sentry user scope fields to pre-fill name/email |
+| `enableShakeToReport` | `boolean` | `false` | Show feedback widget when the user shakes the device (native iOS/Android only) |
 | `styles` | `object` | — | Style overrides for widget UI elements |
 
 ---
@@ -649,6 +682,8 @@ Returns the feedback event ID (or `undefined` if SDK is disabled).
 | `Sentry.showFeedbackWidget()` | Open the built-in feedback modal |
 | `Sentry.showFeedbackButton()` | Show the persistent floating feedback button |
 | `Sentry.hideFeedbackButton()` | Hide the persistent floating feedback button |
+| `Sentry.enableFeedbackOnShake()` | Start native shake detection to show feedback widget |
+| `Sentry.disableFeedbackOnShake()` | Stop native shake detection |
 | `Sentry.captureFeedback(feedback, hint?)` | Submit feedback programmatically |
 | `Sentry.lastEventId()` | Get the ID of the most recent captured event (for linking) |
 | `Sentry.feedbackIntegration(options)` | Configure the built-in widget |
@@ -664,6 +699,7 @@ Returns the feedback event ID (or `undefined` if SDK is disabled).
 | `feedbackIntegration()` | ≥6.9.0 | Configure widget appearance |
 | `FeedbackWidget` component | ≥6.9.0 | Inline embedded widget |
 | `showFeedbackButton()` / `hideFeedbackButton()` | ≥6.15.0 | Floating feedback button |
+| `enableShakeToReport` / `enableFeedbackOnShake()` | ≥8.5.0 | Native shake detection (iOS & Android) |
 | Offline caching | Built-in | Automatic, no config needed |
 | Session Replay attachment | ≥6.9.0 | When `mobileReplayIntegration` enabled |
 | New Architecture (Fabric) support | React Native ≥0.71 | Widget works on new arch |
@@ -743,3 +779,5 @@ Sentry.captureFeedback({
 | Replay not attaching to feedback | Confirm `mobileReplayIntegration()` is in `integrations` and the app is running as a native build |
 | `associatedEventId` not linking correctly | Pass the exact event ID string returned by `captureException`, `captureMessage`, or `lastEventId()` |
 | Widget styles not applying | Pass `styles` config inside `feedbackIntegration({ styles: { ... } })` in `Sentry.init` |
+| Shake to report not working | Confirm `Sentry.wrap(App)` wraps your root component; shake detection is native-only (not available on Web or Expo Go) |
+| Shake detected but widget doesn't appear | Ensure `feedbackIntegration()` is in the `integrations` array; check `debug: true` for logs |
