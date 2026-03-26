@@ -5,7 +5,7 @@ license: Apache-2.0
 category: workflow
 parent: sentry-workflow
 allowed-tools: Bash(open:*,xdg-open:*,start:*)
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Generate Bug Report
