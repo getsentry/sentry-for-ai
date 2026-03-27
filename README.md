@@ -55,7 +55,7 @@ Restart Claude Code to activate, then verify:
 
 ### Cursor
 
-Search for **Sentry** in Cursor Settings > Extensions and install.
+Search for **Sentry** in Cursor Settings > Plugins and install.
 
 ### From Source
 
@@ -66,7 +66,7 @@ git clone https://github.com/getsentry/sentry-for-ai.git
 /install-plugin file:///path/to/sentry-for-ai
 
 # Cursor
-# Add the plugin path in Cursor Settings > Extensions > Install from path
+ln -s /path/to/sentry-for-ai ~/.cursor/plugins/local/sentry-for-ai
 ```
 
 ## Skills
