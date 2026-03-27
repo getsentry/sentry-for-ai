@@ -93,6 +93,7 @@ Present a concrete recommendation based on what you found. Lead with a proposal 
 
 **Optional (enhanced observability):**
 - ⚡ **Profiling** — CPU profiling; recommend for performance-critical services running on .NET 6+
+- ⚡ **Metrics** — counters, gauges, distributions linked to traces; recommend for apps that need custom business metrics
 - ⚡ **Crons** — detect missed/failed scheduled jobs; recommend when Hangfire, Quartz.NET, or scheduled endpoints detected
 
 **Recommendation logic:**
@@ -103,6 +104,7 @@ Present a concrete recommendation based on what you found. Lead with a proposal 
 | Tracing | **Always for ASP.NET Core** — request traces, EF Core spans, HttpClient spans are high-value |
 | Logging | App uses `ILogger<T>`, Serilog, NLog, or log4net |
 | Profiling | Performance-critical service on .NET 6+ |
+| Metrics | App needs custom business metrics (request counts, queue depths, response times) |
 | Crons | App uses Hangfire, Quartz.NET, or scheduled Azure Functions |
 
 Propose: *"I recommend setting up Error Monitoring + Tracing + Logging. Want me to also add Profiling or Crons?"*
@@ -460,6 +462,7 @@ Load the corresponding reference file and follow its steps:
 | Tracing | `references/tracing.md` | Server apps, distributed tracing, EF Core spans, custom instrumentation |
 | Profiling | `references/profiling.md` | Performance-critical apps on .NET 6+ |
 | Logging | `references/logging.md` | `ILogger<T>`, Serilog, NLog, log4net integration |
+| Metrics | `references/metrics.md` | Custom counters, gauges, distributions; `EmitCounter`, `EmitGauge`, `EmitDistribution` |
 | Crons | `references/crons.md` | Hangfire, Quartz.NET, or scheduled function monitoring |
 
 For each feature: read the reference file, follow its steps exactly, and verify before moving on.
