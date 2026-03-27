@@ -4,8 +4,8 @@ on:
 
 description: >
   Weekly SDK skill drift detector. Compares recent merged PRs in Sentry SDK
-  repos against the corresponding skill files. Creates issues when skill
-  content may need updating due to SDK changes.
+  repos against the corresponding skill files. Opens PRs with fixes for
+  straightforward drift and creates issues for complex cases.
 
 engine: claude
 
@@ -19,6 +19,13 @@ network:
     - mcp.sentry.dev
 
 safe-outputs:
+  create-pull-request:
+    title-prefix: "[skill-drift] "
+    labels: [skill-drift, automated]
+    draft: false
+    max: 10
+    expires: "14d"
+    protected-files: fallback-to-issue
   create-issue:
     title-prefix: "[skill-drift] "
     labels: [skill-drift, automated]
@@ -26,6 +33,14 @@ safe-outputs:
     max: 15
     expires: "14d"
     close-older-issues: true
+  add-reviewer:
+    reviewers:
+      - getsentry/team-mobile
+      - getsentry/team-javascript-sdks
+      - getsentry/team-web-sdk-backend
+      - getsentry/team-mobile-cross-platform
+      - getsentry/owners-python-sdk
+    max: 10
   allowed-github-references:
     - getsentry/sentry-javascript
     - getsentry/sentry-python
@@ -131,14 +146,62 @@ check if the skill reflects the new requirements.
 If a PR title or body mentions "BREAKING" or the PR modifies public API signatures,
 flag it as high priority drift.
 
-## Step 4: Create Issues
+## Step 4: Fix Drift — Open PRs or Create Issues
 
-If you find drift for a skill, create ONE issue per affected skill (not per PR).
+For each skill with detected drift, decide whether to **open a PR with a fix** or
+**create an issue** for manual review.
 
-**Do NOT create an issue if:**
+### 4a. Open a PR (preferred for straightforward drift)
+
+Open a PR when the fix is mechanical and low-risk:
+- Adding a new config option to a table
+- Adding a new integration entry to a list
+- Updating a minimum version number
+- Adding a new reference to a feature that's well-documented in the SDK
+
+**How to create a fix:**
+1. Read the affected skill files (`SKILL.md` and relevant `references/*.md`)
+2. Read the PR diff from the SDK repo to understand exactly what changed
+3. Edit the skill files to incorporate the change (add config options, update tables, etc.)
+4. Create a pull request with your changes
+
+**PR format:**
+
+Title: `[skill-drift] fix(<skill-name>): <concise description of what was updated>`
+
+Body:
+```
+## SDK Changes
+
+The following PRs were merged to `<repo>` that affect the `<skill-name>` skill:
+
+- <repo>#<number> — <title> (<url>)
+
+## Changes Made
+
+- <What was added/updated in the skill files>
+
+## Verified Against
+
+- SDK source: <repo>@<branch> (<commit or PR reference>)
+```
+
+5. After creating the PR, use the `add_reviewer` tool to request review from the
+   team owner listed in the SDK-to-Repo Mapping table above. Use the exact team
+   slug without the `@` prefix (e.g., `getsentry/team-javascript-sdks`).
+
+### 4b. Create an Issue (for complex or risky drift)
+
+Fall back to creating an issue when:
+- The change involves breaking API removals that need careful migration guidance
+- Multiple interconnected files need rewriting
+- You're unsure about the correct fix (e.g., ambiguous API behavior)
+- The drift involves removing a feature that was previously recommended
+
+**Do NOT create an issue or PR if:**
 - No relevant PRs were merged in the last 7 days for that repo
 - All relevant PRs only touch areas already covered by the skill
-- An open issue with the same `[skill-drift]` prefix already exists for that skill
+- An open issue or PR with the same `[skill-drift]` prefix already exists for that skill
 
 **Issue format:**
 
@@ -161,6 +224,11 @@ the `<skill-name>` skill:
 1. **<Gap type>**: <Description of what changed and what the skill is missing>
 2. **<Gap type>**: <Description>
 
+## Why This Needs Manual Review
+
+<Explain why an automated fix wasn't possible — e.g., breaking change needs migration
+guidance, ambiguous behavior, multiple files need coordinated rewriting>
+
 ## Skill Files to Review
 
 - `skills/<skill-name>/SKILL.md`
@@ -172,12 +240,12 @@ the `<skill-name>` skill:
 ```
 
 The `cc` line must use the exact team handle from the "Team Owner" column in the mapping table.
-This notifies the SDK team that owns the upstream repo so they can review the Copilot-generated fix.
 
 ## Step 5: Summary
 
 After processing all repos, output a brief summary of:
 - How many repos were checked
 - How many had relevant PRs
-- How many issues were created
+- How many PRs were opened (with links)
+- How many issues were created (with links)
 - Any repos that couldn't be accessed (permission errors, etc.)
