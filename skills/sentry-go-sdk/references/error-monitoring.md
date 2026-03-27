@@ -290,7 +290,6 @@ sentry.Init(sentry.ClientOptions{Dsn: "...", Transport: transport})
 scope.SetUser(sentry.User{ID: "42", Email: "user@example.com"})
 scope.SetTag("key", "value")
 scope.SetTags(map[string]string{"k": "v"})
-scope.SetExtra("key", value)           // deprecated — prefer SetContext
 scope.SetContext("key", map[string]interface{}{"field": "value"})
 scope.SetLevel(sentry.LevelError)      // "debug" | "info" | "warning" | "error" | "fatal"
 scope.SetRequest(r *http.Request)
@@ -300,6 +299,34 @@ scope.ClearBreadcrumbs()
 scope.AddEventProcessor(func(*sentry.Event, *sentry.EventHint) *sentry.Event)
 scope.Clear()
 scope.Clone() *sentry.Scope
+
+// Attributes — attach typed key-value pairs to logs and metrics
+scope.SetAttributes(attribute.String("key", "value"), attribute.Int("count", 42))
+scope.RemoveAttribute("key")
+
+// Deprecated — do not use in new code
+scope.SetExtra("key", value)           // use SetTag / SetContext (error events) or SetAttributes (logs/metrics)
+scope.SetExtras(map[string]interface{}{})  // same as SetExtra
+scope.RemoveExtra("key")               // use RemoveTag / RemoveContext or RemoveAttribute
+```
+
+**Migration from deprecated Extra APIs:**
+
+```go
+// Before (deprecated)
+scope.SetExtra("key.string", "str")
+scope.SetExtra("key.int", 42)
+
+// After — for error events, use tags and contexts:
+scope.SetTag("key.string", "str")
+scope.SetContext("my_data", sentry.Context{"key.int": 42})
+
+// After — for logs and metrics, use attributes:
+scope.SetAttributes(
+    attribute.String("key.string", "str"),
+    attribute.Int("key.int", 42),
+)
+scope.RemoveAttribute("key.string") // replaces RemoveExtra
 ```
 
 ## Best Practices
@@ -309,7 +336,8 @@ scope.Clone() *sentry.Scope
 - Always `defer sentry.Flush(2 * time.Second)` in `main()`; call it explicitly before `os.Exit()`
 - Clone the hub before passing it to goroutines: `hub := sentry.CurrentHub().Clone()`
 - Use `WithScope` for one-off context; use `ConfigureScope` for persistent session context
-- Prefer `SetContext` over `SetExtra` for structured data (Extra is deprecated)
+- Prefer `SetTag` or `SetContext` over `SetExtra` for error event data (`SetExtra`/`SetExtras`/`RemoveExtra` are deprecated)
+- Use `SetAttributes` / `RemoveAttribute` to attach typed key-value pairs to logs and metrics (attributes do not appear on error events)
 - Use `BeforeSend` to strip PII — never send raw email/IP unless `SendDefaultPII: true` is intentional
 - Set `MaxErrorDepth` to a sensible value (5–10) for deeply wrapped error chains
 
