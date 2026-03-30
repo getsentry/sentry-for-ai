@@ -201,6 +201,19 @@ Transaction
 | LangChain | Yes | Tracked |
 | Manual `gen_ai.*` | Yes | Set token counts after stream completes |
 
+## Unsupported Providers
+
+| Provider | Workaround |
+|----------|-----------|
+| Pydantic AI | Python SDK only - use manual `gen_ai.*` spans in Node |
+| OpenAI Agents SDK | Python SDK only - use manual `gen_ai.*` spans in Node |
+| HuggingFace Hub | Python SDK only - use manual `gen_ai.*` spans in Node |
+| MCP | Python SDK auto-instruments MCP servers - use manual spans in Node |
+| Cohere | Manual `gen_ai.*` spans |
+| AWS Bedrock | Manual `gen_ai.*` spans |
+| Mistral | Manual `gen_ai.*` spans |
+| Groq | Manual `gen_ai.*` spans |
+
 ## Sampling Strategy
 
 If `tracesSampleRate` < 1.0, see the [AI sampling guide](../../sentry-setup-ai-monitoring/references/sampling.md).
