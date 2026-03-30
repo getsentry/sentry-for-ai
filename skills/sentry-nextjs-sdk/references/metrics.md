@@ -1,10 +1,12 @@
 # Metrics — Sentry Next.js SDK
 
-> Minimum SDK: `@sentry/nextjs` >=10.25.0 (stable `Sentry.metrics.*` API)
-> `enableMetrics` top-level option: >=10.24.0 (default: `true`)
-> `beforeSendMetric` hook: >=10.24.0
-> Scope attributes on metrics: >=10.33.0
+> Minimum SDK: `@sentry/nextjs` ≥10.25.0 (stable `Sentry.metrics.*` API)  
+> `enableMetrics` top-level option: ≥10.24.0 (default: `true`)  
+> `beforeSendMetric` hook: ≥10.24.0  
+> Scope attributes on metrics: ≥10.33.0  
 > Status: **Open Beta** — "Features in beta are still in-progress and may have bugs"
+>
+> Available in **all three runtimes**: browser, Node.js server, and Edge.
 
 ---
 
@@ -23,7 +25,7 @@ Key characteristics:
 
 ## Initialization
 
-Metrics are on by default in all three runtime config files. No additional configuration is needed.
+Metrics are on by default in all three runtime config files. No additional configuration is needed. `enableMetrics`, `beforeSendMetric`, and all `Sentry.metrics.*` calls work identically in every runtime.
 
 **`instrumentation-client.ts` (browser runtime):**
 
@@ -52,6 +54,7 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   // Metrics are enabled by default
+  // enableMetrics, beforeSendMetric can be configured here too
 });
 ```
 
@@ -63,6 +66,7 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   // Metrics are enabled by default
+  // enableMetrics, beforeSendMetric can be configured here too
 });
 ```
 
@@ -193,9 +197,12 @@ import type { NextRequest } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 
 export function proxy(request: NextRequest) {
+  // Use a bounded route pattern, not the raw pathname (which is high-cardinality)
+  const route = request.nextUrl.pathname.split("/").slice(0, 3).join("/"); // e.g. "/api/orders"
+
   Sentry.metrics.count("requests", 1, {
     attributes: {
-      path: request.nextUrl.pathname,
+      route,
       method: request.method,
     },
   });
@@ -228,7 +235,7 @@ Sentry.metrics.count("user.logins");               // omit unit for plain counts
 
 ---
 
-## Attributes
+## Attributes (Tags)
 
 Use `attributes` in `MetricOptions` to add filterable/groupable dimensions.
 
@@ -264,12 +271,12 @@ Sentry.metrics.distribution("db.query_time", 45.3, {
 Keep attribute values bounded. High-cardinality attributes (per-user IDs, request UUIDs) cause performance issues in Sentry's metrics backend.
 
 ```typescript
-// HIGH CARDINALITY — avoid as metric attributes
+// BAD: HIGH CARDINALITY — avoid as metric attributes
 Sentry.metrics.count("page.view", 1, {
   attributes: { user_id: "uuid-abc-123" },   // millions of unique values
 });
 
-// LOW CARDINALITY — bounded enums and sets
+// GOOD: LOW CARDINALITY — bounded enums and sets
 Sentry.metrics.count("page.view", 1, {
   attributes: {
     page: "/dashboard",
@@ -284,7 +291,7 @@ Use `Sentry.logger.*` for per-user or per-request data — logs handle high card
 
 ---
 
-## Scope-Based Attributes (SDK >=10.33.0)
+## Scope-Based Attributes (SDK ≥10.33.0)
 
 Set attributes on a scope and they auto-attach to all metrics emitted within it:
 
@@ -325,11 +332,13 @@ Sentry.withScope((scope) => {
 
 ## `beforeSendMetric` Hook
 
-Filter or modify metrics before transmission. Return `null` to drop:
+Filter or modify metrics before transmission. Return `null` to drop. Configure in any runtime config file (`instrumentation-client.ts`, `sentry.server.config.ts`, or `sentry.edge.config.ts`):
+
+**`sentry.server.config.ts`**
 
 ```typescript
 Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  dsn: process.env.SENTRY_DSN,
   beforeSendMetric: (metric) => {
     // metric: { name, value, type, unit?, attributes? }
 
@@ -356,17 +365,16 @@ Sentry.init({
 
 ## Flushing
 
-Metrics are buffered (max `MAX_METRIC_BUFFER_SIZE = 1000`) and flushed periodically. For serverless deployments or short-lived edge functions, flush explicitly:
+Metrics are buffered (up to 1000 entries) and flushed periodically. In serverless or edge environments, the function may terminate before the buffer flushes automatically. Use `flush()` to send pending metrics while keeping the client alive (suitable for reusable function instances), or `close()` to flush and permanently shut down the client:
 
 ```typescript
-await Sentry.flush(2000);  // flush + 2s timeout
-await Sentry.close(2000);  // flush + close all transports
+await Sentry.flush(2000);  // send pending data, keep client alive (use in serverless)
+await Sentry.close(2000);  // send pending data + tear down client (use on permanent shutdown)
 ```
 
 This is especially important for:
-- **Serverless API routes** — the function may terminate before the buffer flushes
-- **Edge runtime handlers** — short-lived execution contexts
-- **Vercel serverless functions** — add `Sentry.flush()` before returning responses if metrics are missing
+- **Serverless / Vercel API routes** — function instances may terminate or freeze before the buffer auto-flushes
+- **Edge runtime handlers** — short-lived execution contexts with no background flush opportunity
 
 ---
 
@@ -374,12 +382,12 @@ This is especially important for:
 
 | Problem | Likely Cause | Fix |
 |---------|-------------|-----|
-| Metrics not appearing | SDK < 10.24.0 | Upgrade to >=10.24.0 |
-| `Sentry.metrics` is undefined | SDK < 10.25.0 | Upgrade to >=10.25.0 |
+| Metrics not appearing | SDK < 10.24.0 | Upgrade to ≥10.24.0 |
+| `Sentry.metrics` is undefined | SDK < 10.25.0 | Upgrade to ≥10.25.0 |
 | Metrics silently dropped | Attribute envelope > 2 KB | Reduce number or size of `attributes` |
 | `increment()` not found | Renamed in v10 | Use `count()` instead |
 | `set()` not found | Removed in v10 | No equivalent; use `count()` with bounded attributes |
-| Scope attributes missing | SDK < 10.33.0 | Upgrade to >=10.33.0 |
+| Scope attributes missing | SDK < 10.33.0 | Upgrade to ≥10.33.0 |
 | Metrics lost in serverless | Buffer not flushed | Call `await Sentry.flush(2000)` before function returns |
 | Metrics missing on edge | Edge runtime not initialized | Ensure `sentry.edge.config.ts` has `Sentry.init()` |
 | High-cardinality issues | Unbounded attribute values | Keep attributes to bounded enums/sets |
