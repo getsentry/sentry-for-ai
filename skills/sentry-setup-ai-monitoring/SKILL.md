@@ -47,6 +47,26 @@ grep -E '"(openai|@anthropic-ai/sdk|ai|@langchain|@google/genai)"' package.json
 grep -E '(openai|anthropic|langchain|huggingface)' requirements.txt pyproject.toml 2>/dev/null
 ```
 
+## Sampling Check
+
+After detecting AI SDKs, check the current sampling configuration:
+
+```bash
+# JavaScript
+grep -E 'tracesSampleRate|tracesSampler' sentry.*.config.* instrument.* src/instrument.* app/instrument.* 2>/dev/null
+
+# Python
+grep -E 'traces_sample_rate|traces_sampler' *.py **/*.py 2>/dev/null
+```
+
+**If `tracesSampleRate` / `traces_sample_rate` is below 1.0 AND no `tracesSampler` / `traces_sampler` is configured:**
+
+Ask the user:
+
+> "Your current sample rate is {rate}. Agent runs are sampled as complete span trees — if the root span is dropped, all child gen_ai spans are lost. For full AI visibility, gen_ai-related transactions should be sampled at 100%. Would you like me to set up a `tracesSampler` that keeps AI traces at 100% while sampling other traffic at your current rate?"
+
+If user confirms, read `${SKILL_ROOT}/references/sampling.md` for implementation patterns.
+
 ## Supported SDKs
 
 ### JavaScript

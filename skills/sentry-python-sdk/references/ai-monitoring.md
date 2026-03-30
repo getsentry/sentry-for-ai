@@ -281,6 +281,10 @@ sentry_sdk.ai.set_conversation_id("user-session-abc123")
 | Groq | `LiteLLMIntegration` |
 | Vertex AI | `GoogleGenAIIntegration` or `LiteLLMIntegration` |
 
+## Sampling Strategy
+
+If your `traces_sample_rate` is below 1.0, you may be losing entire agent runs. See the [AI sampling guide](../../sentry-setup-ai-monitoring/references/sampling.md) for `traces_sampler` patterns that keep 100% of gen_ai-related transactions while sampling other traffic at a lower rate.
+
 ## Troubleshooting
 
 | Issue | Solution |

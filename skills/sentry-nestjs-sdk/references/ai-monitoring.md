@@ -341,6 +341,12 @@ Access at **Sentry → AI → Agents** (or **Insights → AI**).
 
 ---
 
+## Sampling Strategy
+
+If your `tracesSampleRate` is below 1.0, you may be losing entire agent runs. See the [AI sampling guide](../../sentry-setup-ai-monitoring/references/sampling.md) for `tracesSampler` patterns that keep 100% of gen_ai-related transactions while sampling other traffic at a lower rate.
+
+---
+
 ## Troubleshooting
 
 | Issue | Solution |
