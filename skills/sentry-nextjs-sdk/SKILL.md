@@ -376,6 +376,7 @@ Load the corresponding reference file and follow its steps:
 | Profiling | `references/profiling.md` | Continuous profiling, `Document-Policy` header, `nodeProfilingIntegration` |
 | AI Monitoring | `references/ai-monitoring.md` | App uses OpenAI, Vercel AI SDK, or Anthropic |
 | Crons | `references/crons.md` | Vercel Cron, scheduled API routes, `node-cron` |
+| Metrics | `references/metrics.md` | Custom counters, gauges, distributions via `Sentry.metrics.*` |
 
 For each feature: read the reference file, follow its steps exactly, and verify before moving on.
 
