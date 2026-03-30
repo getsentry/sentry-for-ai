@@ -205,10 +205,6 @@ Transaction
 
 | Provider | Workaround |
 |----------|-----------|
-| Pydantic AI | Python SDK only - use manual `gen_ai.*` spans in Node |
-| OpenAI Agents SDK | Python SDK only - use manual `gen_ai.*` spans in Node |
-| HuggingFace Hub | Python SDK only - use manual `gen_ai.*` spans in Node |
-| MCP | Python SDK auto-instruments MCP servers - use manual spans in Node |
 | Cohere | Manual `gen_ai.*` spans |
 | AWS Bedrock | Manual `gen_ai.*` spans |
 | Mistral | Manual `gen_ai.*` spans |
