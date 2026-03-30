@@ -103,6 +103,7 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 - ⚡ **AI Monitoring** — OpenAI, Anthropic, LangChain, Vercel AI SDK; recommend when AI/LLM calls detected
 - ⚡ **Crons** — detect missed or failed scheduled jobs; recommend when node-cron, Bull, or Agenda is detected
 - ⚡ **Metrics** — custom counters, gauges, distributions; recommend when custom KPIs needed
+- ⚡ **Runtime Metrics** — automatic collection of memory, CPU, and event loop metrics; `nodeRuntimeMetricsIntegration()` (Node.js) / `bunRuntimeMetricsIntegration()` (Bun)
 
 **Recommendation logic:**
 
@@ -115,6 +116,7 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 | AI Monitoring | App calls OpenAI, Anthropic, LangChain, Vercel AI, or Google GenAI |
 | Crons | App uses node-cron, Bull, BullMQ, Agenda, or any scheduled task pattern |
 | Metrics | App needs custom counters, gauges, or histograms |
+| Runtime Metrics | Any Node.js or Bun service wanting automatic memory/CPU/event-loop visibility |
 
 Propose: *"I recommend setting up Error Monitoring + Tracing. Want me to also add Logging or Profiling?"*
 
@@ -436,6 +438,7 @@ app.listen(3000);
 | Logging | ✅ Full | `enableLogs: true` + `Sentry.logger.*` |
 | Profiling | ❌ Not available | `@sentry/profiling-node` uses native addons incompatible with Bun |
 | Metrics | ✅ Full | `Sentry.metrics.*` |
+| Runtime Metrics | ✅ Full | `bunRuntimeMetricsIntegration()` — memory, CPU, event loop (no event loop delay percentiles) |
 | Crons | ✅ Full | `Sentry.withMonitor()` |
 | AI Monitoring | ✅ Full | OpenAI, Anthropic integrations work |
 
@@ -527,6 +530,7 @@ Deno.cron("daily-cleanup", "0 0 * * *", () => {
 | Logging | ✅ Full | `enableLogs: true` + `Sentry.logger.*` |
 | Profiling | ❌ Not available | No profiling addon for Deno |
 | Metrics | ✅ Full | `Sentry.metrics.*` |
+| Runtime Metrics | ❌ Not available | No runtime metrics integration for Deno |
 | Crons | ✅ Full | `denoCronIntegration()` + `Sentry.withMonitor()` |
 | AI Monitoring | ✅ Partial | Vercel AI SDK integration works; OpenAI/Anthropic via `npm:` |
 
@@ -543,10 +547,50 @@ Load the corresponding reference file and follow its steps:
 | Logging | `references/logging.md` | Structured logs, `Sentry.logger.*`, log-to-trace correlation |
 | Profiling | `references/profiling.md` | Node.js only — CPU profiling, Bun/Deno gaps documented |
 | Metrics | `references/metrics.md` | Custom counters, gauges, distributions |
+| Runtime Metrics | See inline below | Automatic memory, CPU, and event loop metrics for Node.js and Bun |
 | Crons | `references/crons.md` | Scheduled job monitoring, node-cron, Bull, Agenda, Deno.cron |
 | AI Monitoring | Load `sentry-setup-ai-monitoring` skill | OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI |
 
 For each feature: read the reference file, follow its steps exactly, and verify before moving on.
+
+### Runtime Metrics
+
+Automatically collect Node.js and Bun runtime health metrics (memory, CPU utilization, event loop delay/utilization, uptime) at a configurable interval. Metrics appear in Sentry's Metrics product under the `node.runtime.*` / `bun.runtime.*` namespace.
+
+**Node.js** — add `nodeRuntimeMetricsIntegration()` to your `instrument.js`:
+
+```javascript
+const Sentry = require("@sentry/node");
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [
+    Sentry.nodeRuntimeMetricsIntegration(),
+    // Optional: change collection interval (default 30 000 ms)
+    // Sentry.nodeRuntimeMetricsIntegration({ collectionIntervalMs: 60_000 }),
+  ],
+});
+```
+
+Metrics collected by default: `node.runtime.mem.rss`, `node.runtime.mem.heap_used`, `node.runtime.mem.heap_total`, `node.runtime.cpu.utilization`, `node.runtime.event_loop.delay.p50`, `node.runtime.event_loop.delay.p99`, `node.runtime.event_loop.utilization`, `node.runtime.process.uptime`.
+
+**Bun** — add `bunRuntimeMetricsIntegration()` to your `instrument.ts`:
+
+```typescript
+import * as Sentry from "@sentry/bun";
+import { bunRuntimeMetricsIntegration } from "@sentry/bun";
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [
+    bunRuntimeMetricsIntegration(),
+    // Optional: change collection interval (default 30 000 ms)
+    // bunRuntimeMetricsIntegration({ collectionIntervalMs: 60_000 }),
+  ],
+});
+```
+
+Metrics collected: same as Node.js except no event loop delay percentiles (unavailable in Bun). Prefixed with `bun.runtime.*`.
 
 ---
 
