@@ -82,11 +82,11 @@ const openai = Sentry.instrumentOpenAiClient(new OpenAI());
 
 Use when the library isn't supported, or for wrapping custom AI logic.
 
-### `gen_ai.chat` - LLM call
+### `gen_ai.request` - LLM call
 
 ```typescript
 await Sentry.startSpan({
-  op: "gen_ai.chat",
+  op: "gen_ai.request",
   name: "chat claude-sonnet-4-6",
   attributes: { "gen_ai.request.model": "claude-sonnet-4-6" },
 }, async (span) => {
@@ -171,9 +171,9 @@ await Sentry.startSpan({
 ```
 Transaction
 └── gen_ai.invoke_agent  "Weather Agent"
-    ├── gen_ai.chat      "chat claude-sonnet-4-6"
+    ├── gen_ai.request      "chat claude-sonnet-4-6"
     ├── gen_ai.execute_tool "get_weather"
-    ├── gen_ai.chat      "chat claude-sonnet-4-6"     ← follow-up
+    ├── gen_ai.request      "chat claude-sonnet-4-6"     ← follow-up
     └── gen_ai.execute_tool "format_report"
 ```
 
