@@ -63,7 +63,7 @@ Sentry.init({
 
 ```typescript
 await generateText({
-  model: openai("claude-sonnet-4-6"),
+  model: openai("gpt-4.1"),
   prompt: "Hello",
   experimental_telemetry: { isEnabled: true, recordInputs: true, recordOutputs: true },
 });
@@ -131,17 +131,6 @@ await Sentry.startSpan({
 });
 ```
 
-### `gen_ai.handoff` - Agent-to-agent transition
-
-```typescript
-await Sentry.startSpan({
-  op: "gen_ai.handoff",
-  name: "handoff Billing → Refund Agent",
-  attributes: { "gen_ai.agent.name": "Refund Agent" },
-}, async (span) => {
-  return await refundAgent.run(context);
-});
-```
 
 ## Span Attribute Reference
 
@@ -185,10 +174,7 @@ Transaction
     ├── gen_ai.chat      "chat claude-sonnet-4-6"
     ├── gen_ai.execute_tool "get_weather"
     ├── gen_ai.chat      "chat claude-sonnet-4-6"     ← follow-up
-    └── gen_ai.handoff   "→ Report Writer"
-        └── gen_ai.invoke_agent "Report Writer"
-            ├── gen_ai.chat  "chat gemini-2.5-flash"
-            └── gen_ai.execute_tool "format_report"
+    └── gen_ai.execute_tool "format_report"
 ```
 
 ## Streaming
