@@ -93,7 +93,6 @@ Debug production issues and maintain code quality with Sentry context.
 
 | Use when | Skill | Path |
 |---|---|---|
-| Generate a comprehensive Sentry bug report | [`generate-bug-report`](skills/generate-bug-report/SKILL.md) | `generate-bug-report/SKILL.md` |
 | Analyze and resolve Sentry comments on GitHub Pull Requests | [`sentry-code-review`](skills/sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
 | Find and fix issues from Sentry using MCP | [`sentry-fix-issues`](skills/sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
 | Review a project's PRs to check for issues detected in code review by Seer Bug Prediction | [`sentry-pr-code-review`](skills/sentry-pr-code-review/SKILL.md) | `sentry-pr-code-review/SKILL.md` |
