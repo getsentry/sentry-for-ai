@@ -1,0 +1,76 @@
+# Auto-assign SDK team reviewers on skill-drift PRs based on which skill
+# files were modified. Hardcoded mapping — no agent involvement needed.
+
+name: Assign SDK Team Reviewers
+
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - "skills/sentry-*-sdk/**"
+
+jobs:
+  assign-reviewers:
+    if: contains(github.event.pull_request.labels.*.name, 'skill-drift')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Assign SDK team reviewers
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            // Skill directory → team slug mapping
+            const SKILL_TEAMS = {
+              'sentry-android-sdk':       'team-mobile',
+              'sentry-browser-sdk':       'team-javascript-sdks',
+              'sentry-cloudflare-sdk':    'team-javascript-sdks',
+              'sentry-cocoa-sdk':         'team-mobile',
+              'sentry-dotnet-sdk':        'team-web-sdk-backend',
+              'sentry-elixir-sdk':        'team-web-sdk-backend',
+              'sentry-flutter-sdk':       'team-mobile-cross-platform',
+              'sentry-go-sdk':            'team-web-sdk-backend',
+              'sentry-nestjs-sdk':        'team-javascript-sdks',
+              'sentry-nextjs-sdk':        'team-javascript-sdks',
+              'sentry-node-sdk':          'team-javascript-sdks',
+              'sentry-php-sdk':           'team-web-sdk-backend',
+              'sentry-python-sdk':        'owners-python-sdk',
+              'sentry-react-native-sdk':  'team-mobile-cross-platform',
+              'sentry-react-sdk':         'team-javascript-sdks',
+              'sentry-ruby-sdk':          'team-web-sdk-backend',
+              'sentry-svelte-sdk':        'team-javascript-sdks',
+            };
+
+            // Get changed files
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+              }
+            );
+
+            // Collect unique teams from changed skill paths
+            const teams = new Set();
+            for (const file of files) {
+              const match = file.filename.match(/^skills\/(sentry-[\w-]+-sdk)\//);
+              if (match && SKILL_TEAMS[match[1]]) {
+                teams.add(SKILL_TEAMS[match[1]]);
+              }
+            }
+
+            if (teams.size === 0) {
+              console.log('No matching skill directories found in changed files');
+              return;
+            }
+
+            const teamSlugs = [...teams];
+            console.log(`Requesting review from: ${teamSlugs.join(', ')}`);
+
+            await github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              team_reviewers: teamSlugs,
+            });
