@@ -451,6 +451,21 @@ Sentry.init({
 export default Sentry.wrap(App);
 ```
 
+### App Start Accuracy — `Sentry.appLoaded()` (SDK ≥8.x)
+
+If your app does significant async work after the root component mounts (e.g., fetching config, waiting for auth), call `Sentry.appLoaded()` once that work is complete. This signals the true end of app startup to Sentry and produces more accurate app start duration measurements.
+
+```typescript
+// Call after async initialization is complete, e.g., in a useEffect or after a loading screen:
+useEffect(() => {
+  fetchConfig().then(() => {
+    Sentry.appLoaded();  // marks the end of the app startup phase
+  });
+}, []);
+```
+
+If you don't call `Sentry.appLoaded()`, the SDK estimates the app start end automatically.
+
 ---
 
 ### Navigation Setup — React Navigation (v5+)
@@ -569,6 +584,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `enableAutoPerformanceTracing` | `boolean` | `true` | Auto performance instrumentation |
 | `enableNdkScopeSync` | `boolean` | `true` | Java→NDK scope sync (Android) |
 | `attachThreads` | `boolean` | `false` | Auto-attach all threads on crash (Android) |
+| `attachAllThreads` | `boolean` | `false` | Attach full stack traces of all threads to error events (iOS only) |
 | `autoInitializeNativeSdk` | `boolean` | `true` | Set `false` for manual native init |
 | `onReady` | `function` | — | Callback after native SDKs initialize |
 

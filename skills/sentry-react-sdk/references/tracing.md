@@ -449,6 +449,24 @@ const router = sentryCreateBrowserRouter([
 ]);
 ```
 
+**Simpler alternative — `sentryOnError`**
+
+For routes where you don't need custom error UI, use the exported `Sentry.sentryOnError` as the route's `onError` handler. It captures loader, action, and component errors directly without requiring a component:
+
+```typescript
+import * as Sentry from "@sentry/react";
+import { createBrowserRouter } from "react-router";
+
+const router = Sentry.wrapCreateBrowserRouterV7(createBrowserRouter)([
+  {
+    path: "/",
+    element: <RootLayout />,
+    onError: Sentry.sentryOnError,  // automatically captures route errors
+    children: [...],
+  },
+]);
+```
+
 ---
 
 ### React Router v6

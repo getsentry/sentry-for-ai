@@ -22,6 +22,8 @@
 | `enableFileManagerSwizzling` | `Bool` | `false` | NSFileManager swizzling (experimental; needed for iOS 18+) |
 | `tracePropagationTargets` | `[String]` | `[".*"]` | Hosts/regex for outgoing distributed trace headers |
 | `enableSwizzling` | `Bool` | `true` | Master switch for method swizzling (required by several auto-instrumentation features) |
+| `strictTraceContinuation` | `Bool` | `false` | Only continue an incoming trace when `orgId` matches; prevents cross-org trace continuation (SDK 9.x+) |
+| `orgId` | `UInt64?` | auto-parsed from DSN | Organization ID used for strict trace continuation validation; auto-parsed from the DSN host |
 
 ## Code Examples
 
@@ -364,6 +366,22 @@ SentrySDK.start { options in
 > **`enablePropagateTraceparent` requires sentry-cocoa 9.0.0+.** It is not available in 8.x.
 >
 > ⚠️ Both headers must be included in CORS allowlists and must not be blocked by proxies or firewalls.
+
+### Strict Trace Continuation (SDK 9.x+)
+
+Enable `strictTraceContinuation` to reject incoming traces from other Sentry organizations. When enabled, the SDK validates that the `sentry-trace` header's organization ID matches your DSN's organization before continuing the trace:
+
+```swift
+SentrySDK.start { options in
+    options.dsn = "___PUBLIC_DSN___"
+    options.tracesSampleRate = 1.0
+
+    // Only accept traces from your own Sentry organization
+    options.strictTraceContinuation = true
+    // orgId is auto-parsed from DSN host; override only if needed:
+    // options.orgId = 12345
+}
+```
 
 ---
 
