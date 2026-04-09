@@ -68,6 +68,11 @@ cat package.json 2>/dev/null | grep -E '"node-cron"|"cron"|"agenda"|"bull"|"bull
 # Detect AI / LLM usage
 cat package.json 2>/dev/null | grep -E '"openai"|"@anthropic-ai"|"@langchain"|"@vercel/ai"|"@google/generative-ai"'
 
+# Detect OpenTelemetry tracing
+cat package.json 2>/dev/null | grep -E '"@opentelemetry/sdk-node"|"@opentelemetry/sdk-trace-node"|"@opentelemetry/sdk-trace-base"'
+grep -rn "NodeTracerProvider\|trace\.getTracer\|startActiveSpan" \
+  --include="*.ts" --include="*.js" --include="*.mjs" 2>/dev/null | head -5
+
 # Check for companion frontend
 ls frontend/ web/ client/ ui/ 2>/dev/null
 cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
@@ -85,6 +90,7 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 | Logging library detected? | Recommend Sentry Logs |
 | Cron / job scheduler detected? | Recommend Crons monitoring |
 | AI library detected? | Recommend AI Monitoring |
+| OpenTelemetry tracing detected? | Use OTLP path instead of native tracing |
 | Companion frontend found? | Trigger Phase 4 cross-link |
 
 ---
@@ -93,13 +99,16 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 
 Present a concrete recommendation based on what you found. Don't ask open-ended questions — lead with a proposal:
 
+**Route from OTel detection:**
+- **OTel tracing detected** (`@opentelemetry/sdk-node` or `@opentelemetry/sdk-trace-node` in `package.json`, or `NodeTracerProvider` in source) → use OTLP path: `otlpIntegration()` via `@sentry/node-core/light`; do **not** set `tracesSampleRate`; Sentry links errors to OTel traces automatically
+
 **Recommended (core coverage):**
 - ✅ **Error Monitoring** — always; captures unhandled exceptions, promise rejections, and framework errors
 - ✅ **Tracing** — automatic HTTP, DB, and queue instrumentation via OpenTelemetry
 
 **Optional (enhanced observability):**
 - ⚡ **Logging** — structured logs via `Sentry.logger.*`; recommend when `winston`/`pino`/`bunyan` or log search is needed
-- ⚡ **Profiling** — continuous CPU profiling (Node.js only; not available on Bun or Deno)
+- ⚡ **Profiling** — continuous CPU profiling (Node.js only; not available on Bun or Deno); **not available with OTLP path**
 - ⚡ **AI Monitoring** — OpenAI, Anthropic, LangChain, Vercel AI SDK; recommend when AI/LLM calls detected
 - ⚡ **Crons** — detect missed or failed scheduled jobs; recommend when node-cron, Bull, or Agenda is detected
 - ⚡ **Metrics** — custom counters, gauges, distributions; recommend when custom KPIs needed
@@ -110,15 +119,18 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 | Feature | Recommend when... |
 |---------|------------------|
 | Error Monitoring | **Always** — non-negotiable baseline |
-| Tracing | **Always for server apps** — HTTP spans + DB spans are high-value |
+| OTLP Integration | OTel tracing detected — **replaces** native Tracing |
+| Tracing | **Always for server apps** — HTTP spans + DB spans are high-value; **skip if OTel tracing detected** |
 | Logging | App uses winston, pino, bunyan, or needs log-to-trace correlation |
-| Profiling | **Node.js only** — performance-critical service; native addon compatible |
+| Profiling | **Node.js only** — performance-critical service; native addon compatible; **skip if OTel tracing detected** (requires `tracesSampleRate`, incompatible with OTLP) |
 | AI Monitoring | App calls OpenAI, Anthropic, LangChain, Vercel AI, or Google GenAI |
 | Crons | App uses node-cron, Bull, BullMQ, Agenda, or any scheduled task pattern |
 | Metrics | App needs custom counters, gauges, or histograms |
 | Runtime Metrics | Any Node.js or Bun service wanting automatic memory/CPU/event-loop visibility |
 
-Propose: *"I recommend setting up Error Monitoring + Tracing. Want me to also add Logging or Profiling?"*
+**OTel tracing detected:** *"I see OpenTelemetry tracing in the project. I recommend Sentry's OTLP integration for tracing (via your existing OTel setup) + Error Monitoring + Sentry Logging [+ Metrics/Crons/AI Monitoring if applicable]. Shall I proceed?"*
+
+**No OTel:** *"I recommend setting up Error Monitoring + Tracing. Want me to also add Logging or Profiling?"*
 
 ---
 
@@ -536,6 +548,96 @@ Deno.cron("daily-cleanup", "0 0 * * *", () => {
 
 ---
 
+### OTLP Integration (OTel-First Projects — Node.js Only)
+
+> Use this path **only when OpenTelemetry tracing was detected** in Phase 1
+> (e.g., `@opentelemetry/sdk-node` or `@opentelemetry/sdk-trace-node` in `package.json`).
+> For projects without an existing OTel setup, use the standard `@sentry/node` path above.
+
+The OTLP integration uses `@sentry/node-core/light` — a lightweight Sentry SDK that does not bundle its own OpenTelemetry. Instead, it hooks into the user's existing OTel `TracerProvider` and exports spans to Sentry via OTLP.
+
+#### When to Use
+
+| Scenario | Recommended path |
+|----------|-----------------|
+| New project, no existing OTel | Standard `@sentry/node` (above) — includes built-in OTel |
+| Existing OTel setup, want Sentry tracing | `@sentry/node-core/light` + `otlpIntegration()` |
+| Existing OTel setup, sending to own Collector | `@sentry/node-core/light` + `otlpIntegration({ collectorUrl })` |
+
+#### Install
+
+```bash
+npm install @sentry/node-core @opentelemetry/api @opentelemetry/sdk-trace-node @opentelemetry/sdk-trace-base
+# or
+yarn add @sentry/node-core @opentelemetry/api @opentelemetry/sdk-trace-node @opentelemetry/sdk-trace-base
+# or
+pnpm add @sentry/node-core @opentelemetry/api @opentelemetry/sdk-trace-node @opentelemetry/sdk-trace-base
+```
+
+> The `@opentelemetry/*` packages are peer dependencies. If the project already has them installed, skip duplicates.
+
+#### Initialize
+
+```javascript
+// instrument.mjs — load via --import flag before any other module
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+import * as Sentry from '@sentry/node-core/light';
+import { otlpIntegration } from '@sentry/node-core/light/otlp';
+
+// Register the user's OTel TracerProvider first
+const provider = new NodeTracerProvider();
+provider.register();
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN ?? '___DSN___',
+
+  sendDefaultPii: true,
+  enableLogs: true,
+
+  // Do NOT set tracesSampleRate — OTel controls sampling
+  integrations: [
+    otlpIntegration({
+      // Export OTel spans to Sentry via OTLP (default: true)
+      setupOtlpTracesExporter: true,
+    }),
+  ],
+});
+```
+
+**With a custom Collector endpoint:**
+
+```javascript
+Sentry.init({
+  dsn: process.env.SENTRY_DSN ?? '___DSN___',
+  integrations: [
+    otlpIntegration({
+      collectorUrl: 'http://localhost:4318/v1/traces',
+    }),
+  ],
+});
+```
+
+#### Start Your App
+
+Same `--import` pattern as the standard Node.js setup:
+
+```bash
+node --import ./instrument.mjs app.mjs
+```
+
+#### Key Differences from Standard `@sentry/node`
+
+| Aspect | `@sentry/node` (standard) | `@sentry/node-core/light` (OTLP) |
+|--------|--------------------------|----------------------------------|
+| OTel bundled | ✅ Yes — built-in TracerProvider | ❌ No — uses your existing provider |
+| Tracing control | `tracesSampleRate` in `Sentry.init()` | OTel SDK controls sampling |
+| Auto-instrumentation | ✅ Built-in (HTTP, DB, etc.) | ❌ You manage OTel instrumentations |
+| Profiling | ✅ Available | ❌ Not compatible |
+| Error ↔ trace linking | ✅ Automatic | ✅ Automatic (via `otlpIntegration`) |
+| Package size | Larger (includes OTel) | Smaller (light mode) |
+
+---
+
 ### For Each Agreed Feature
 
 Load the corresponding reference file and follow its steps:
@@ -543,9 +645,10 @@ Load the corresponding reference file and follow its steps:
 | Feature | Reference file | Load when... |
 |---------|---------------|-------------|
 | Error Monitoring | `references/error-monitoring.md` | Always (baseline) — captures, scopes, enrichment, beforeSend |
-| Tracing | `references/tracing.md` | OTel auto-instrumentation, custom spans, distributed tracing, sampling |
+| OTLP Integration | See [OTLP Integration](#otlp-integration-otel-first-projects--nodejs-only) above | OTel tracing detected — **replaces** native Tracing |
+| Tracing | `references/tracing.md` | OTel auto-instrumentation, custom spans, distributed tracing, sampling; **skip if OTel tracing detected** |
 | Logging | `references/logging.md` | Structured logs, `Sentry.logger.*`, log-to-trace correlation |
-| Profiling | `references/profiling.md` | Node.js only — CPU profiling, Bun/Deno gaps documented |
+| Profiling | `references/profiling.md` | Node.js only — CPU profiling, Bun/Deno gaps documented; **skip if OTel tracing detected** |
 | Metrics | `references/metrics.md` | Custom counters, gauges, distributions |
 | Runtime Metrics | See inline below | Automatic memory, CPU, and event loop metrics for Node.js and Bun |
 | Crons | `references/crons.md` | Scheduled job monitoring, node-cron, Bull, Agenda, Deno.cron |
@@ -632,7 +735,7 @@ Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the err
 | Option | Type | Default | Notes |
 |--------|------|---------|-------|
 | `dsn` | `string` | — | Required. Also from `SENTRY_DSN` env var |
-| `tracesSampleRate` | `number` | — | 0–1; required to enable tracing |
+| `tracesSampleRate` | `number` | — | 0–1; required to enable tracing; **do not set when using OTLP path** |
 | `sendDefaultPii` | `boolean` | `false` | Include IP, request headers, user info |
 | `includeLocalVariables` | `boolean` | `false` | Add local variable values to stack frames (Node.js) |
 | `enableLogs` | `boolean` | `false` | Enable Sentry Logs product (v9.41.0+) |
@@ -665,6 +768,15 @@ Sentry.init({
 | `breadcrumbs` | `boolean` | `true` | Record breadcrumbs for outgoing fetch requests |
 | `headersToSpanAttributes.requestHeaders` | `string[]` | — | Request header names to capture as span attributes |
 | `headersToSpanAttributes.responseHeaders` | `string[]` | — | Response header names to capture as span attributes |
+
+### `otlpIntegration()` Options (`@sentry/node-core/light/otlp`)
+
+For OTel-first projects using `@sentry/node-core/light`. Import: `import { otlpIntegration } from '@sentry/node-core/light/otlp'`.
+
+| Option | Type | Default | Purpose |
+|--------|------|---------|---------|
+| `setupOtlpTracesExporter` | `boolean` | `true` | Auto-configure OTLP exporter to send spans to Sentry; set `false` if you already export to your own Collector |
+| `collectorUrl` | `string` | `undefined` | OTLP HTTP endpoint of an OTel Collector (e.g., `http://localhost:4318/v1/traces`); when set, spans are sent to the collector instead of the DSN-derived Sentry endpoint |
 
 ### Graceful Shutdown
 
@@ -771,3 +883,6 @@ Connecting frontend and backend with the same DSN or linked projects enables **d
 | Hapi: `setupHapiErrorHandler` timing issue | Not awaited | Must `await Sentry.setupHapiErrorHandler(server)` before `server.start()` |
 | Shutdown: events lost | Process exits before flush | Add `await Sentry.close(2000)` in SIGTERM/SIGINT handler |
 | Stack traces show minified code | Source maps not uploaded | Configure `@sentry/cli` source map upload in build step |
+| No traces appearing (OTLP) | Missing `@opentelemetry/*` packages or `otlpIntegration` not added | Verify `@opentelemetry/sdk-trace-node` is installed; add `otlpIntegration()` to `integrations`; do **not** set `tracesSampleRate` |
+| OTLP: errors not linked to traces | `otlpIntegration` not registered | Ensure `otlpIntegration()` is in the `integrations` array — it registers the propagation context that links errors to OTel traces |
+| Profiling not starting (OTLP) | Profiling requires `tracesSampleRate` | Profiling is **not compatible** with the OTLP path; use the standard `@sentry/node` setup instead |
