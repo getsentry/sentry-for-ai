@@ -116,6 +116,27 @@ Metrics are buffered in a ring buffer (capacity: 1000 entries):
 
 **Buffer limit:** When more than 1000 metrics are buffered, the oldest entries are dropped. Flush periodically in high-volume scripts.
 
+## Auto-Flush Threshold
+
+`metric_flush_threshold` automatically flushes the buffer once the metric count reaches the configured value. Use this to avoid buffer overflow in high-volume scripts without manual flush calls:
+
+**PHP / Laravel:**
+```php
+\Sentry\init([
+    'dsn' => '___PUBLIC_DSN___',
+    'metric_flush_threshold' => 500,  // flush automatically after 500 metrics
+]);
+```
+
+**Symfony:**
+```yaml
+sentry:
+  options:
+    metric_flush_threshold: 500
+```
+
+When `metric_flush_threshold` is not set, the SDK uses the ring buffer capacity (1000 entries) as the implicit limit.
+
 ## Symfony Configuration
 
 ```yaml
@@ -123,6 +144,7 @@ sentry:
   options:
     enable_metrics: true                      # default: true
     attach_metric_code_locations: true        # attach file/line info
+    metric_flush_threshold: 500               # auto-flush after N metrics (optional)
     before_send_metric: 'App\Sentry\BeforeSendMetricCallback'
 ```
 
