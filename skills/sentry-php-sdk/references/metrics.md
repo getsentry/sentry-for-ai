@@ -118,7 +118,7 @@ Metrics are buffered in a ring buffer (capacity: 1000 entries):
 
 ## Auto-Flush Threshold
 
-`metric_flush_threshold` automatically flushes the buffer once the metric count reaches the configured value. Use this to avoid buffer overflow in high-volume scripts without manual flush calls:
+Use `metric_flush_threshold` to automatically flush buffered metrics after N entries, without needing to call `flush()` manually:
 
 **PHP / Laravel:**
 ```php
@@ -135,7 +135,7 @@ sentry:
     metric_flush_threshold: 500
 ```
 
-When `metric_flush_threshold` is not set, the SDK uses the ring buffer capacity (1000 entries) as the implicit limit.
+This is useful in CLI scripts or workers that emit metrics continuously. The threshold triggers a flush mid-process so the buffer never fills to its 1000-entry cap.
 
 ## Symfony Configuration
 
