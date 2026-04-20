@@ -229,6 +229,10 @@ build_keyword_lookup() {
         keywords="react native, expo" ;;
       sentry-react-sdk)
         keywords="react, react router, tanstack, redux, vite" ;;
+      sentry-react-router-framework-sdk)
+        keywords="react-router framework, @sentry/react-router, @react-router/dev, react-router reveal" ;;
+      sentry-tanstack-start-sdk)
+        keywords="tanstack start, tanstack react start, @tanstack/react-start, tanstackstart-react" ;;
       sentry-ruby-sdk)
         keywords="ruby, rails, sinatra, sidekiq, rack" ;;
       sentry-svelte-sdk)
@@ -320,6 +324,8 @@ When multiple SDKs could match, prefer the more specific one:
 - **Android** (`build.gradle` with android plugin) → `sentry-android-sdk`
 - **NestJS** (`@nestjs/core`) → `sentry-nestjs-sdk` over `sentry-node-sdk`
 - **Next.js** → `sentry-nextjs-sdk` over `sentry-react-sdk` or `sentry-node-sdk`
+- **React Router Framework** (`@sentry/react-router` or `@react-router/*`) → `sentry-react-router-framework-sdk` over `sentry-react-sdk`
+- **TanStack Start React** (`@tanstack/react-start`) → `sentry-tanstack-start-sdk` over `sentry-react-sdk`
 - **React Native** → `sentry-react-native-sdk` over `sentry-react-sdk`
 - **PHP** with Laravel or Symfony → `sentry-php-sdk`
 - **Node.js / Bun / Deno** without a specific framework → `sentry-node-sdk`

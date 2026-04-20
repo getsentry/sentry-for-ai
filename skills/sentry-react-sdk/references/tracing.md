@@ -241,6 +241,9 @@ browserTracingIntegration({ enableInp: true })
 
 All React Router integrations live in `@sentry/react`. The core mechanism: **replace** `browserTracingIntegration()` with the router-specific variant. Both cannot be used simultaneously.
 
+> This section is for React Router non-framework/data/declarative usage.
+> If the project uses React Router Framework mode with `@sentry/react-router`, use `sentry-react-router-framework-sdk`.
+
 ---
 
 ### React Router v7 (Library Mode)
@@ -711,6 +714,8 @@ This grouping is essential for meaningful performance data — without it, every
 
 ```
 Are you using React Router?
+├─ Framework mode (`@sentry/react-router`) ─► use sentry-react-router-framework-sdk
+│
 ├─ v7 (react-router package) ──────► reactRouterV7BrowserTracingIntegration
 │    ├─ createBrowserRouter? ──────► wrapCreateBrowserRouterV7(createBrowserRouter)
 │    ├─ createMemoryRouter? ───────► wrapCreateMemoryRouterV7(createMemoryRouter)

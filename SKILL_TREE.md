@@ -70,9 +70,11 @@ Install and configure Sentry for any platform. If unsure which SDK fits, detect 
 | PHP | [`sentry-php-sdk`](skills/sentry-php-sdk/SKILL.md) | `sentry-php-sdk/SKILL.md` |
 | Python | [`sentry-python-sdk`](skills/sentry-python-sdk/SKILL.md) | `sentry-python-sdk/SKILL.md` |
 | React Native and Expo | [`sentry-react-native-sdk`](skills/sentry-react-native-sdk/SKILL.md) | `sentry-react-native-sdk/SKILL.md` |
+| React Router Framework mode | [`sentry-react-router-framework-sdk`](skills/sentry-react-router-framework-sdk/SKILL.md) | `sentry-react-router-framework-sdk/SKILL.md` |
 | React | [`sentry-react-sdk`](skills/sentry-react-sdk/SKILL.md) | `sentry-react-sdk/SKILL.md` |
 | Ruby | [`sentry-ruby-sdk`](skills/sentry-ruby-sdk/SKILL.md) | `sentry-ruby-sdk/SKILL.md` |
 | Svelte and SvelteKit | [`sentry-svelte-sdk`](skills/sentry-svelte-sdk/SKILL.md) | `sentry-svelte-sdk/SKILL.md` |
+| TanStack Start React | [`sentry-tanstack-start-sdk`](skills/sentry-tanstack-start-sdk/SKILL.md) | `sentry-tanstack-start-sdk/SKILL.md` |
 
 ### Platform Detection Priority
 
@@ -81,6 +83,8 @@ When multiple SDKs could match, prefer the more specific one:
 - **Android** (`build.gradle` with android plugin) → `sentry-android-sdk`
 - **NestJS** (`@nestjs/core`) → `sentry-nestjs-sdk` over `sentry-node-sdk`
 - **Next.js** → `sentry-nextjs-sdk` over `sentry-react-sdk` or `sentry-node-sdk`
+- **React Router Framework** (`@sentry/react-router` or `@react-router/*`) → `sentry-react-router-framework-sdk` over `sentry-react-sdk`
+- **TanStack Start React** (`@tanstack/react-start`) → `sentry-tanstack-start-sdk` over `sentry-react-sdk`
 - **React Native** → `sentry-react-native-sdk` over `sentry-react-sdk`
 - **PHP** with Laravel or Symfony → `sentry-php-sdk`
 - **Node.js / Bun / Deno** without a specific framework → `sentry-node-sdk`
@@ -128,6 +132,8 @@ Match your project to a skill by keywords. Append the path to `https://skills.se
 | php, laravel, symfony | `sentry-php-sdk/SKILL.md` |
 | python, django, flask, fastapi, celery, starlette | `sentry-python-sdk/SKILL.md` |
 | react native, expo | `sentry-react-native-sdk/SKILL.md` |
+| react-router framework, @sentry/react-router, @react-router/dev, react-router reveal | `sentry-react-router-framework-sdk/SKILL.md` |
 | react, react router, tanstack, redux, vite | `sentry-react-sdk/SKILL.md` |
 | ruby, rails, sinatra, sidekiq, rack | `sentry-ruby-sdk/SKILL.md` |
 | svelte, sveltekit | `sentry-svelte-sdk/SKILL.md` |
+| tanstack start, tanstack react start, @tanstack/react-start, tanstackstart-react | `sentry-tanstack-start-sdk/SKILL.md` |

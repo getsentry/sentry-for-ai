@@ -1,6 +1,6 @@
 ---
 name: sentry-react-sdk
-description: Full Sentry SDK setup for React. Use when asked to "add Sentry to React", "install @sentry/react", or configure error monitoring, tracing, session replay, profiling, or logging for React applications. Supports React 16+, React Router v5-v7, TanStack Router, Redux, Vite, and webpack.
+description: Full Sentry SDK setup for React. Use when asked to "add Sentry to React", "install @sentry/react", or configure error monitoring, tracing, session replay, profiling, or logging for React applications. Supports React 16+, React Router v5-v7 non-framework mode, TanStack Router, Redux, Vite, and webpack.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -18,7 +18,9 @@ Opinionated wizard that scans your React project and guides you through complete
 - User asks to "add Sentry to React" or "set up Sentry" in a React app
 - User wants error monitoring, tracing, session replay, profiling, or logging in React
 - User mentions `@sentry/react`, React Sentry SDK, or Sentry error boundaries
-- User wants to monitor React Router navigation, Redux state, or component performance
+- User wants to monitor React Router v5/v6/v7 non-framework navigation, Redux state, or component performance
+
+If project is React Router **Framework mode** using `@sentry/react-router`, use `sentry-react-router-framework-sdk` instead of this skill.
 
 > **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/react` ≥8.0.0).
 > Always verify against [docs.sentry.io/platforms/javascript/guides/react/](https://docs.sentry.io/platforms/javascript/guides/react/) before implementing.
@@ -36,8 +38,8 @@ cat package.json | grep -E '"react"|"react-dom"'
 # Check for existing Sentry
 cat package.json | grep '"@sentry/'
 
-# Detect router
-cat package.json | grep -E '"react-router-dom"|"@tanstack/react-router"'
+# Detect router and framework mode hints
+cat package.json | grep -E '"react-router-dom"|"react-router"|"@react-router/"|"@tanstack/react-router"|"@sentry/react-router"'
 
 # Detect state management
 cat package.json | grep -E '"redux"|"@reduxjs/toolkit"'
@@ -61,6 +63,7 @@ cat ../go.mod ../requirements.txt ../Gemfile ../pom.xml 2>/dev/null | head -3
 | React 19+? | Use `reactErrorHandler()` hook pattern |
 | React <19? | Use `Sentry.ErrorBoundary` |
 | `@sentry/react` already present? | Skip install, go straight to feature config |
+| React Router Framework mode indicators (`@sentry/react-router`, `@react-router/*`)? | Use `sentry-react-router-framework-sdk` |
 | `react-router-dom` v5 / v6 / v7? | Determines which router integration to use |
 | `@tanstack/react-router`? | Use `tanstackRouterBrowserTracingIntegration()` |
 | Redux in use? | Recommend `createReduxEnhancer()` |
@@ -95,7 +98,8 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 
 **React-specific extras:**
 - React 19 detected → set up `reactErrorHandler()` on `createRoot`
-- React Router detected → configure matching router integration (see Phase 3)
+- React Router v5/v6/v7 non-framework detected → configure matching router integration (see Phase 3)
+- React Router Framework mode detected → switch to `sentry-react-router-framework-sdk`
 - Redux detected → add `createReduxEnhancer()` to Redux store
 - Vite detected → configure `sentryVitePlugin` for source maps (essential for readable stack traces)
 
@@ -202,7 +206,7 @@ Use `<Sentry.ErrorBoundary>` for any sub-tree that should catch errors independe
 
 ### Router Integration
 
-Configure the matching integration for your router:
+Configure the matching integration for your router (non-framework mode):
 
 | Router | Integration | Notes |
 |--------|------------|-------|
