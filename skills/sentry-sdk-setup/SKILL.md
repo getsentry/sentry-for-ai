@@ -50,6 +50,8 @@ Each SDK skill contains its own detection logic, prerequisites, and step-by-step
 | Flutter and Dart | [`sentry-flutter-sdk`](../sentry-flutter-sdk/SKILL.md) | `sentry-flutter-sdk/SKILL.md` |
 | React Native and Expo | [`sentry-react-native-sdk`](../sentry-react-native-sdk/SKILL.md) | `sentry-react-native-sdk/SKILL.md` |
 | React | [`sentry-react-sdk`](../sentry-react-sdk/SKILL.md) | `sentry-react-sdk/SKILL.md` |
+| React Router Framework | [`sentry-react-router-framework-sdk`](../sentry-react-router-framework-sdk/SKILL.md) | `sentry-react-router-framework-sdk/SKILL.md` |
+| TanStack Start React | [`sentry-tanstack-start-sdk`](../sentry-tanstack-start-sdk/SKILL.md) | `sentry-tanstack-start-sdk/SKILL.md` |
 | Ruby | [`sentry-ruby-sdk`](../sentry-ruby-sdk/SKILL.md) | `sentry-ruby-sdk/SKILL.md` |
 | Svelte and SvelteKit | [`sentry-svelte-sdk`](../sentry-svelte-sdk/SKILL.md) | `sentry-svelte-sdk/SKILL.md` |
 
@@ -61,6 +63,8 @@ When multiple SDKs could match, prefer the more specific one:
 - **Cloudflare** (`wrangler.toml` or `wrangler.jsonc`) → `sentry-cloudflare-sdk` over `sentry-node-sdk`
 - **NestJS** (`@nestjs/core`) → `sentry-nestjs-sdk` over `sentry-node-sdk`
 - **Next.js** → `sentry-nextjs-sdk` over `sentry-react-sdk` or `sentry-node-sdk`
+- **React Router Framework** (`@sentry/react-router` or `@react-router/*`) → `sentry-react-router-framework-sdk` over `sentry-react-sdk`
+- **TanStack Start React** (`@tanstack/react-start`) → `sentry-tanstack-start-sdk` over `sentry-react-sdk`
 - **Flutter** (`pubspec.yaml` with `flutter:` dependency or `sentry_flutter`) → `sentry-flutter-sdk`
 - **React Native** → `sentry-react-native-sdk` over `sentry-react-sdk`
 - **PHP** with Laravel or Symfony → `sentry-php-sdk`
@@ -90,6 +94,8 @@ Match your project to a skill by keywords. Append the path to `https://skills.se
 | flutter, dart, pubspec | `sentry-flutter-sdk/SKILL.md` |
 | react native, expo | `sentry-react-native-sdk/SKILL.md` |
 | react, react router, tanstack, redux, vite | `sentry-react-sdk/SKILL.md` |
+| react-router framework, @sentry/react-router, @react-router/dev, react-router reveal | `sentry-react-router-framework-sdk/SKILL.md` |
+| tanstack start, tanstack react start, @tanstack/react-start, tanstackstart-react | `sentry-tanstack-start-sdk/SKILL.md` |
 | ruby, rails, sinatra, sidekiq, rack | `sentry-ruby-sdk/SKILL.md` |
 | svelte, sveltekit | `sentry-svelte-sdk/SKILL.md` |
 

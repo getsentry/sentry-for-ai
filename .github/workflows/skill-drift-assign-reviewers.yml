@@ -37,6 +37,8 @@ jobs:
               'sentry-python-sdk':        'getsentry/owners-python-sdk',
               'sentry-react-native-sdk':  'getsentry/team-mobile-cross-platform',
               'sentry-react-sdk':         'getsentry/team-javascript-sdks',
+              'sentry-react-router-framework-sdk': 'getsentry/team-javascript-sdks',
+              'sentry-tanstack-start-sdk': 'getsentry/team-javascript-sdks',
               'sentry-ruby-sdk':          'getsentry/team-web-sdk-backend',
               'sentry-svelte-sdk':        'getsentry/team-javascript-sdks',
             };
