@@ -584,7 +584,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `enableAutoPerformanceTracing` | `boolean` | `true` | Auto performance instrumentation |
 | `enableNdkScopeSync` | `boolean` | `true` | Java→NDK scope sync (Android) |
 | `attachThreads` | `boolean` | `false` | Auto-attach all threads on crash (Android) |
-| `attachAllThreads` | `boolean` | `false` | Attach full stack traces of all threads to error events (iOS only) |
+| `attachAllThreads` | `boolean` | `false` | Attach full stack traces for all threads to every captured event (iOS only, requires Cocoa SDK ≥9.9.0) |
 | `autoInitializeNativeSdk` | `boolean` | `true` | Set `false` for manual native init |
 | `onReady` | `function` | — | Callback after native SDKs initialize |
 

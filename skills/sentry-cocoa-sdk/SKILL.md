@@ -301,6 +301,8 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `sampleRate` | `Float` | `1.0` | Error event sample rate |
 | `beforeSend` | `Closure` | `nil` | Hook to mutate/drop error events |
 | `onCrashedLastRun` | `Closure` | `nil` | Called on next launch after a crash |
+| `strictTraceContinuation` | `Bool` | `false` | Reject incoming traces from other orgs; validates `org_id` in baggage headers (sentry-cocoa ≥9.10.0) |
+| `orgId` | `String?` | `nil` | Organization ID for strict trace validation; auto-parsed from DSN host (e.g. `o123.ingest.sentry.io` → `"123"`) if not set explicitly |
 
 ### Environment Variables
 
