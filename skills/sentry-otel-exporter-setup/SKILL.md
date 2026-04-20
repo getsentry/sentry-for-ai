@@ -28,7 +28,7 @@ OTel Exporter Setup:
 - [ ] Step 5: Add environment variable placeholders
 - [ ] Step 6: Run the collector
 - [ ] Step 7: Verify setup
-- [ ] Step 8: Enable trace connectedness with OTLPIntegration (Python/Ruby)
+- [ ] Step 8: Enable trace connectedness with OTLPIntegration (Python/Ruby/Node.js)
 ```
 
 ## Step 1: Check for Existing Configuration
@@ -304,15 +304,16 @@ If using Docker, check logs with `docker logs otel-collector`.
 
 ## Step 8: Enable Trace Connectedness with OTLPIntegration
 
-If the user's application uses a Sentry SDK (Python or Ruby), recommend enabling the OTLPIntegration. This ensures **trace connectedness** — linking OTel traces to Sentry errors, logs, crons, and metrics — and sets up distributed tracing propagation automatically.
+If the user's application uses a Sentry SDK (Python, Ruby, or Node.js), recommend enabling the OTLPIntegration. This ensures **trace connectedness** — linking OTel traces to Sentry errors, logs, crons, and metrics — and sets up distributed tracing propagation automatically.
 
 Without this step, traces sent through the collector appear in Sentry but are not connected to other Sentry events (errors, logs) from the same service.
 
-Ask the user: **Does your application use the Sentry Python SDK or Sentry Ruby SDK?**
+Ask the user: **Does your application use the Sentry Python SDK, Sentry Ruby SDK, or Sentry Node.js SDK?**
 
 - **Python**: Follow the Python setup below
 - **Ruby**: Follow the Ruby setup below
-- **Neither / Other SDK**: Skip this step. Trace connectedness via OTLPIntegration is currently available for Python and Ruby.
+- **Node.js**: Follow the Node.js setup below
+- **Neither / Other SDK**: Skip this step. Trace connectedness via OTLPIntegration is currently available for Python, Ruby, and Node.js.
 
 ### Python OTLPIntegration
 
@@ -368,6 +369,43 @@ end
 ```
 
 Use the collector's actual OTLP HTTP endpoint. The default is `http://localhost:4318/v1/traces` if running locally.
+
+### Node.js OTLPIntegration
+
+Docs: https://docs.sentry.io/platforms/javascript/guides/node/
+
+1. Install the lightweight Sentry SDK and OpenTelemetry dependencies:
+```bash
+npm install @sentry/node-core @opentelemetry/api @opentelemetry/sdk-trace-node @opentelemetry/sdk-trace-base
+```
+
+2. Create an instrument file (`instrument.mjs`) that sets up OTel and Sentry together:
+```javascript
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+import * as Sentry from '@sentry/node-core/light';
+import { otlpIntegration } from '@sentry/node-core/light/otlp';
+
+const provider = new NodeTracerProvider();
+provider.register();
+
+Sentry.init({
+  dsn: '___PUBLIC_DSN___',
+  integrations: [
+    otlpIntegration({
+      collectorUrl: 'http://localhost:4318/v1/traces',
+    }),
+  ],
+});
+```
+
+3. Start your app with the `--import` flag:
+```bash
+node --import ./instrument.mjs app.mjs
+```
+
+Use the collector's actual OTLP HTTP endpoint. The default is `http://localhost:4318/v1/traces` if running locally.
+
+> **Do not set `tracesSampleRate`** when using `otlpIntegration` — OTel controls sampling. Setting it would conflict with the OTLP path.
 
 ## Troubleshooting
 
