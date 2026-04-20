@@ -222,7 +222,7 @@ Prefer `NODE_OPTIONS --import`:
 Fallback for platforms where runtime flags are restricted:
 
 ```tsx
-import "./instrument.server";
+import "./instrument.server.mjs";
 ```
 
 This direct-import method can result in incomplete auto-instrumentation compared to `--import`.

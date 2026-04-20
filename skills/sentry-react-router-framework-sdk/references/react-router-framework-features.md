@@ -84,7 +84,7 @@ Use `SENTRY_AUTH_TOKEN` via environment variables (or `.env.sentry-build-plugin`
 If runtime flags are unavailable, import server instrumentation at the top of `entry.server.tsx`:
 
 ```tsx
-import "./instrument.server";
+import "./instrument.server.mjs";
 ```
 
 This fallback may have incomplete automatic instrumentation compared to `--import`.

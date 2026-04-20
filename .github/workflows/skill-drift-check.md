@@ -80,6 +80,7 @@ Some repos are monorepos — use the path filters to determine which skills are 
 | `sentry-react-native-sdk` | `getsentry/sentry-react-native` | — | `@getsentry/team-mobile-cross-platform` |
 | `sentry-react-sdk` | `getsentry/sentry-javascript` | `packages/react/`, `packages/browser/`, `packages/core/` | `@getsentry/team-javascript-sdks` |
 | `sentry-react-router-framework-sdk` | `getsentry/sentry-javascript` | `packages/react-router/`, `packages/profiling-node/`, `packages/core/` | `@getsentry/team-javascript-sdks` |
+| `sentry-tanstack-start-sdk` | `getsentry/sentry-javascript` | `packages/tanstackstart-react/`, `packages/core/` | `@getsentry/team-javascript-sdks` |
 | `sentry-ruby-sdk` | `getsentry/sentry-ruby` | — | `@getsentry/team-web-sdk-backend` |
 | `sentry-svelte-sdk` | `getsentry/sentry-javascript` | `packages/svelte/`, `packages/sveltekit/`, `packages/browser/`, `packages/core/` | `@getsentry/team-javascript-sdks` |
 
