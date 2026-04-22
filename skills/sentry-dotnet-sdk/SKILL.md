@@ -524,6 +524,7 @@ Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the err
 | `ShutdownTimeout` | `TimeSpan` | — | — | Max wait for event flush on shutdown |
 | `HttpProxy` | `string` | — | — | Proxy URL for Sentry requests |
 | `EnableBackpressureHandling` | `bool` | `true` | — | Auto-reduce sample rates on delivery failures |
+| `TraceIgnoreStatusCodes` | `IList<HttpStatusCodeRange>` | `[]` | — | Drop transactions whose HTTP response status matches any range; e.g., `[404]` or `[(500, 599)]` |
 
 ### ASP.NET Core Extended Options (`SentryAspNetCoreOptions`)
 
