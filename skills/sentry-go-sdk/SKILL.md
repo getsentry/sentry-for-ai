@@ -1,6 +1,6 @@
 ---
 name: sentry-go-sdk
-description: Full Sentry SDK setup for Go. Use when asked to "add Sentry to Go", "install sentry-go", "setup Sentry in Go", or configure error monitoring, tracing, logging, metrics, or crons for Go applications. Supports net/http, Gin, Echo, Fiber, FastHTTP, Iris, and Negroni.
+description: Full Sentry SDK setup for Go. Use when asked to "add Sentry to Go", "install sentry-go", "setup Sentry in Go", or configure error monitoring, tracing, logging, metrics, or crons for Go applications. Supports net/http, Gin, Echo, Fiber, FastHTTP, Iris, Negroni, and gRPC.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -20,7 +20,8 @@ Opinionated wizard that scans your Go project and guides you through complete Se
 - User mentions `sentry-go`, `github.com/getsentry/sentry-go`, or Go Sentry SDK
 - User wants to monitor panics, HTTP handlers, or scheduled jobs in Go
 
-> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry-go v0.43.0).
+> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry-go v0.43.0+).
+> As of v0.33.0+, the SDK requires **Go 1.25 or later** (supports the two most recent Go major versions).
 > Always verify against [docs.sentry.io/platforms/go/](https://docs.sentry.io/platforms/go/) before implementing.
 
 ---
@@ -35,6 +36,9 @@ grep -i sentry go.mod 2>/dev/null
 
 # Detect web framework
 grep -E "gin-gonic/gin|labstack/echo|gofiber/fiber|valyala/fasthttp|kataras/iris|urfave/negroni" go.mod 2>/dev/null
+
+# Detect gRPC
+grep "google.golang.org/grpc" go.mod 2>/dev/null
 
 # Detect logging libraries
 grep -E "sirupsen/logrus|go.uber.org/zap|rs/zerolog|log/slog" go.mod go.sum 2>/dev/null
@@ -77,7 +81,7 @@ Based on what you found, present a concrete recommendation. Don't ask open-ended
 | Feature | Recommend when... |
 |---------|------------------|
 | Error Monitoring | **Always** — non-negotiable baseline |
-| Tracing | `net/http`, gin, echo, fiber, or gRPC imports detected |
+| Tracing | `net/http`, gin, echo, fiber, gRPC, or DB calls detected |
 | Logging | logrus, zap, zerolog, or `log/slog` imports detected |
 | Metrics | Business events, SLO tracking, or counters needed |
 | Crons | `robfig/cron`, `gocron`, or scheduled job patterns detected |
@@ -107,6 +111,9 @@ go get github.com/getsentry/sentry-go/logrus    # Logrus
 go get github.com/getsentry/sentry-go/slog      # slog (stdlib, Go 1.21+)
 go get github.com/getsentry/sentry-go/zap       # Zap
 go get github.com/getsentry/sentry-go/zerolog   # Zerolog
+
+# gRPC interceptors (only if google.golang.org/grpc is detected):
+go get github.com/getsentry/sentry-go/grpc
 
 # OpenTelemetry bridge (only if OTel is already in use):
 go get github.com/getsentry/sentry-go/otel
@@ -180,6 +187,30 @@ hub := sentryecho.GetHubFromContext(c)
 
 // Fiber:
 hub := sentryfiber.GetHubFromContext(c)
+```
+
+### gRPC Integration
+
+For gRPC servers and clients, use the `sentrygrpc` interceptors instead:
+
+```go
+import sentrygrpc "github.com/getsentry/sentry-go/grpc"
+
+// Server: register interceptors when creating the gRPC server
+server := grpc.NewServer(
+    grpc.UnaryInterceptor(sentrygrpc.UnaryServerInterceptor()),
+    grpc.StreamInterceptor(sentrygrpc.StreamServerInterceptor()),
+)
+
+// Client: register interceptors when dialing
+conn, err := grpc.NewClient(
+    address,
+    grpc.WithUnaryInterceptor(sentrygrpc.UnaryClientInterceptor()),
+    grpc.WithStreamInterceptor(sentrygrpc.StreamClientInterceptor()),
+)
+
+// Hub access inside a gRPC handler:
+hub := sentry.GetHubFromContext(ctx)
 ```
 
 ### For Each Agreed Feature
