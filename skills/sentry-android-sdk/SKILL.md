@@ -40,6 +40,15 @@ grep -ri sentry build.gradle* app/build.gradle* 2>/dev/null | head -10
 # Check app-level build file (Groovy vs KTS)
 ls app/build.gradle app/build.gradle.kts 2>/dev/null
 
+# Detect Gradle version catalog (libs.versions.toml) — modern AGP projects
+ls gradle/libs.versions.toml 2>/dev/null
+
+# Check for existing Sentry entries in the version catalog
+grep -iE 'sentry|io\.sentry' gradle/libs.versions.toml 2>/dev/null | head -10
+
+# Check if build files reference the catalog (alias/libs.* usage)
+grep -E 'alias\(libs\.|libs\.[a-zA-Z]' build.gradle build.gradle.kts app/build.gradle app/build.gradle.kts 2>/dev/null | head -5
+
 # Detect Kotlin vs Java
 find app/src/main -name "*.kt" 2>/dev/null | head -3
 find app/src/main -name "*.java" 2>/dev/null | head -3
@@ -81,6 +90,8 @@ find .. -maxdepth 2 \( -name "go.mod" -o -name "requirements.txt" -o -name "Gemf
 | Question | Impact |
 |----------|--------|
 | `build.gradle.kts` present? | Use Kotlin DSL syntax in all examples |
+| `gradle/libs.versions.toml` present? | Add Sentry to the version catalog; reference via `libs.*` in build files |
+| Catalog already has `sentry` entries? | Reuse the existing version ref; don't duplicate or hardcode versions |
 | `minSdk < 26`? | Note Session Replay requires API 26+ — silent no-op below that |
 | Compose detected? | Recommend `sentry-compose-android` and Compose-specific masking |
 | OkHttp present? | Recommend `sentry-okhttp` interceptor or Gradle plugin bytecode auto-instrumentation |
@@ -151,6 +162,77 @@ If the user skips the wizard, proceed with Option 2 (Manual Setup) below.
 ---
 
 ### Option 2: Manual Setup
+
+#### Using a Gradle Version Catalog (`gradle/libs.versions.toml`)
+
+If Phase 1 detected `gradle/libs.versions.toml`, add Sentry to the catalog **first**, then reference it from your build files. This keeps versions centralized and matches modern AGP project conventions.
+
+**Step 1 — Add entries to `gradle/libs.versions.toml`**
+
+```toml
+[versions]
+sentry = "8.33.0"
+sentryGradlePlugin = "6.1.0"
+
+[libraries]
+sentry-android = { module = "io.sentry:sentry-android", version.ref = "sentry" }
+sentry-bom = { module = "io.sentry:sentry-bom", version.ref = "sentry" }
+# Optional integrations — add only the ones your project uses:
+sentry-android-timber = { module = "io.sentry:sentry-android-timber" }
+sentry-android-fragment = { module = "io.sentry:sentry-android-fragment" }
+sentry-compose-android = { module = "io.sentry:sentry-compose-android" }
+sentry-android-navigation = { module = "io.sentry:sentry-android-navigation" }
+sentry-okhttp = { module = "io.sentry:sentry-okhttp" }
+sentry-android-sqlite = { module = "io.sentry:sentry-android-sqlite" }
+sentry-kotlin-extensions = { module = "io.sentry:sentry-kotlin-extensions" }
+
+[plugins]
+sentry-android-gradle = { id = "io.sentry.android.gradle", version.ref = "sentryGradlePlugin" }
+```
+
+> **Note:** Optional integration entries omit `version.ref` — their versions come from the BOM at resolution time. Only `sentry-bom` needs the version ref.
+> If the catalog already defines a `sentry` version, reuse it instead of adding a duplicate entry.
+
+**Step 2 — Reference the catalog from `build.gradle[.kts]`**
+
+Project-level `build.gradle.kts`:
+```kotlin
+plugins {
+    alias(libs.plugins.sentry.android.gradle) apply false
+}
+```
+
+App-level `app/build.gradle.kts`:
+```kotlin
+plugins {
+    id("com.android.application")
+    alias(libs.plugins.sentry.android.gradle)
+}
+
+dependencies {
+    implementation(platform(libs.sentry.bom))
+    implementation(libs.sentry.android)
+    // implementation(libs.sentry.okhttp)
+    // implementation(libs.sentry.compose.android)
+}
+```
+
+Groovy DSL (`app/build.gradle`) equivalent:
+```groovy
+plugins {
+    id "com.android.application"
+    alias libs.plugins.sentry.android.gradle
+}
+
+dependencies {
+    implementation platform(libs.sentry.bom)
+    implementation libs.sentry.android
+}
+```
+
+Then continue with the `sentry {}` configuration block from Path A, Step 2 below. The rest of the setup (Application class init, manifest registration, verification) is identical.
+
+---
 
 #### Path A: Gradle Plugin (Recommended)
 
@@ -690,4 +772,6 @@ This links mobile transactions to backend traces in the Sentry waterfall view.
 | Release build stack traces unreadable | ProGuard mapping not uploaded; confirm Gradle plugin `autoUploadProguardMapping = true` and auth token set |
 | Source context not showing in Sentry | Enable `includeSourceContext = true` in `sentry {}` block (Gradle plugin required) |
 | BOM version conflict | Use `implementation(platform("io.sentry:sentry-bom:8.33.0"))` and omit versions from all other `io.sentry:*` entries |
+| Version catalog alias unresolved | After editing `gradle/libs.versions.toml`, sync Gradle; alias names use `-` in TOML and `.` in build files (e.g., `sentry-android` → `libs.sentry.android`) |
+| Duplicate Sentry version in catalog | Reuse the existing `[versions] sentry = "..."` entry; don't add a second key, and don't hardcode the version in `build.gradle` when the catalog is in use |
 | `SENTRY_AUTH_TOKEN` exposed | Auth token is build-time only — never pass it to `SentryAndroid.init()` or embed in the APK |
