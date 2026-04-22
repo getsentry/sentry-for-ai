@@ -553,6 +553,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `maxBreadcrumbs` | `number` | `100` | Max breadcrumbs per event |
 | `attachStacktrace` | `boolean` | `true` | Auto-attach stack traces to messages |
 | `attachScreenshot` | `boolean` | `false` | Capture screenshot on error (SDK ≥4.11.0) |
+| `screenshot` | `object` | — | Fine-grained screenshot masking; only effective when `attachScreenshot: true`. See **Screenshot Masking Options** below |
 | `attachViewHierarchy` | `boolean` | `false` | Attach JSON view hierarchy as attachment |
 | `debug` | `boolean` | `false` | Verbose SDK output. **Never use in production** |
 | `enabled` | `boolean` | `true` | Disable SDK entirely (e.g., for testing) |
@@ -561,6 +562,29 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `maxCacheItems` | `number` | `30` | Max offline-cached envelopes |
 | `defaultIntegrations` | `boolean` | `true` | Set `false` to disable all default integrations |
 | `integrations` | `array \| function` | — | Add or filter integrations |
+
+#### Screenshot Masking Options
+
+Passed as the `screenshot` key inside `Sentry.init()` when `attachScreenshot: true`:
+
+```typescript
+Sentry.init({
+  attachScreenshot: true,
+  screenshot: {
+    maskAllText: true,       // default: true — mask all text nodes
+    maskAllImages: true,     // default: true — mask all images
+    maskedViewClasses: ['com.mapbox.maps.MapView'],    // always mask these native view classes
+    unmaskedViewClasses: ['com.example.SafeView'],     // always show these native view classes
+  },
+});
+```
+
+| Sub-option | Type | Default | Purpose |
+|------------|------|---------|---------|
+| `maskAllText` | `boolean` | `true` | Mask all text nodes in the screenshot |
+| `maskAllImages` | `boolean` | `true` | Mask all images in the screenshot |
+| `maskedViewClasses` | `string[]` | `[]` | Native view class names to always mask (Android/iOS) |
+| `unmaskedViewClasses` | `string[]` | `[]` | Native view class names to always show (Android/iOS) |
 
 ### Tracing Options
 
@@ -698,6 +722,7 @@ These integrations are enabled automatically — no config needed:
 | `reactNavigationIntegration()` | Add to `integrations` array |
 | `reactNativeNavigationIntegration()` | Add to `integrations` array (Wix only) |
 | `feedbackIntegration()` | Add to `integrations` array (user feedback widget; supports `enableShakeToReport` for native shake detection) |
+| `deeplinkIntegration()` | Add to `integrations` array (auto-captures deep link URLs as breadcrumbs; opt-in) |
 
 ---
 
