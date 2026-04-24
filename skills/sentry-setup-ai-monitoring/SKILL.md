@@ -188,7 +188,7 @@ sentry_sdk.init(
 
 ## Manual Instrumentation
 
-Use when no supported SDK is detected. Follow the [Sentry AI Agent Monitoring conventions](https://docs.sentry.io/platforms/javascript/guides/connect/ai-agent-monitoring/#manual-instrumentation).
+Use when no supported SDK is detected. Follow the canonical [Sentry Conventions for `gen_ai.*` attributes](https://getsentry.github.io/sentry-conventions/attributes/gen_ai/) — the [JS docs](https://docs.sentry.io/platforms/javascript/guides/connect/ai-agent-monitoring/#manual-instrumentation) may lag behind; do not set attributes marked deprecated in the conventions.
 
 ### Span Types
 
@@ -204,7 +204,9 @@ For LLM-call spans, the `op` follows the pattern `gen_ai.{gen_ai.operation.name}
 ### Example (JavaScript)
 
 ```javascript
-const messages = [{ role: "user", content: "Tell me a joke" }];
+const inputMessages = [
+  { role: "user", parts: [{ type: "text", content: "Tell me a joke" }] },
+];
 
 await Sentry.startSpan({
   op: "gen_ai.chat",
@@ -212,11 +214,19 @@ await Sentry.startSpan({
   attributes: {
     "gen_ai.request.model": "gpt-4o",
     "gen_ai.operation.name": "chat",
-    "gen_ai.request.messages": JSON.stringify(messages),
+    "gen_ai.input.messages": JSON.stringify(inputMessages),
   },
 }, async (span) => {
-  const result = await llmClient.complete(messages);
-  span.setAttribute("gen_ai.response.text", JSON.stringify([result.text]));
+  const result = await llmClient.complete(inputMessages);
+
+  const outputMessages = [
+    {
+      role: "assistant",
+      parts: [{ type: "text", content: result.text }],
+      finish_reason: result.finishReason,
+    },
+  ];
+  span.setAttribute("gen_ai.output.messages", JSON.stringify(outputMessages));
   span.setAttribute("gen_ai.usage.input_tokens", result.inputTokens);
   span.setAttribute("gen_ai.usage.output_tokens", result.outputTokens);
   return result;
@@ -237,10 +247,10 @@ await Sentry.startSpan({
 
 | Attribute | Description |
 |-----------|-------------|
-| `gen_ai.request.messages` | JSON-stringified message array sent to the model |
-| `gen_ai.request.available_tools` | JSON-stringified tool definitions |
-| `gen_ai.response.text` | JSON-stringified model response array |
-| `gen_ai.response.tool_calls` | JSON-stringified tool calls in the response |
+| `gen_ai.input.messages` | JSON-stringified array of input messages. Each item uses `{role, parts}` where `parts` is `[{type, content}]`; `role` is `"user"`, `"assistant"`, `"tool"`, or `"system"` |
+| `gen_ai.output.messages` | JSON-stringified array of response messages (text + tool calls), same shape as inputs |
+| `gen_ai.system_instructions` | System prompt passed to the model |
+| `gen_ai.tool.definitions` | JSON-stringified list of tools available to the model |
 
 **Token usage:**
 
@@ -258,10 +268,11 @@ await Sentry.startSpan({
 | Attribute | Description |
 |-----------|-------------|
 | `gen_ai.tool.name` | Tool identifier |
-| `gen_ai.tool.type` | `function`, `extension`, or `datastore` |
 | `gen_ai.tool.description` | Human-readable tool description |
-| `gen_ai.tool.input` | JSON-stringified tool input |
-| `gen_ai.tool.output` | JSON-stringified tool result |
+| `gen_ai.tool.call.arguments` | JSON-stringified tool arguments |
+| `gen_ai.tool.call.result` | JSON-stringified tool result |
+
+> Do not set the deprecated `gen_ai.tool.input`, `gen_ai.tool.output`, `gen_ai.tool.message`, or `gen_ai.tool.type`. Use `gen_ai.tool.call.arguments` / `gen_ai.tool.call.result`; `gen_ai.tool.type` has no replacement and should not be set.
 
 ### Token Usage and Cost Calculation
 
