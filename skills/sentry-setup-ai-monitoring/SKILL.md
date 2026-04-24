@@ -272,7 +272,6 @@ await Sentry.startSpan({
 | `gen_ai.tool.call.arguments` | JSON-stringified tool arguments |
 | `gen_ai.tool.call.result` | JSON-stringified tool result |
 
-> Do not set the deprecated `gen_ai.tool.input`, `gen_ai.tool.output`, `gen_ai.tool.message`, or `gen_ai.tool.type`. Use `gen_ai.tool.call.arguments` / `gen_ai.tool.call.result`; `gen_ai.tool.type` has no replacement and should not be set.
 
 ### Token Usage and Cost Calculation
 
