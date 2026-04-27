@@ -304,16 +304,16 @@ scope.Clone() *sentry.Scope
 scope.SetAttributes(attribute.String("key", "value"), attribute.Int("count", 42))
 scope.RemoveAttribute("key")
 
-// Deprecated — do not use in new code
-scope.SetExtra("key", value)           // use SetTag / SetContext (error events) or SetAttributes (logs/metrics)
-scope.SetExtras(map[string]interface{}{})  // same as SetExtra
-scope.RemoveExtra("key")               // use RemoveTag / RemoveContext or RemoveAttribute
+// Removed in sentry-go v0.34.0 — do not use
+// scope.SetExtra("key", value)           // REMOVED — use SetTag / SetContext or SetAttributes
+// scope.SetExtras(map[string]interface{}{})  // REMOVED
+// scope.RemoveExtra("key")               // REMOVED — use RemoveTag / RemoveContext or RemoveAttribute
 ```
 
-**Migration from deprecated Extra APIs:**
+**Migration from removed Extra APIs (removed in v0.34.0):**
 
 ```go
-// Before (deprecated)
+// Before (removed)
 scope.SetExtra("key.string", "str")
 scope.SetExtra("key.int", 42)
 
@@ -336,7 +336,7 @@ scope.RemoveAttribute("key.string") // replaces RemoveExtra
 - Always `defer sentry.Flush(2 * time.Second)` in `main()`; call it explicitly before `os.Exit()`
 - Clone the hub before passing it to goroutines: `hub := sentry.CurrentHub().Clone()`
 - Use `WithScope` for one-off context; use `ConfigureScope` for persistent session context
-- Prefer `SetTag` or `SetContext` over `SetExtra` for error event data (`SetExtra`/`SetExtras`/`RemoveExtra` are deprecated)
+- Use `SetTag` or `SetContext` for error event data — `SetExtra`/`SetExtras`/`RemoveExtra` were **removed in v0.34.0** and no longer compile
 - Use `SetAttributes` / `RemoveAttribute` to attach typed key-value pairs to logs and metrics (attributes do not appear on error events)
 - Use `BeforeSend` to strip PII — never send raw email/IP unless `SendDefaultPII: true` is intentional
 - Set `MaxErrorDepth` to a sensible value (5–10) for deeply wrapped error chains
