@@ -309,7 +309,12 @@ const { getDefaultConfig } = require("@react-native/metro-config");
 const { withSentryConfig } = require("@sentry/react-native/metro");
 
 const config = getDefaultConfig(__dirname);
-module.exports = withSentryConfig(config);
+module.exports = withSentryConfig(config, {
+  // Set to false to exclude @sentry-internal/replay from the native bundle (web only).
+  // includeWebReplay: true,
+  // Set to false to exclude @sentry-internal/feedback from the native bundle (web only).
+  // includeWebFeedback: true,
+});
 ```
 
 **Step 3 — iOS: Modify Xcode build phase**
@@ -723,6 +728,20 @@ These integrations are enabled automatically — no config needed:
 | `reactNativeNavigationIntegration()` | Add to `integrations` array (Wix only) |
 | `feedbackIntegration()` | Add to `integrations` array (user feedback widget; supports `enableShakeToReport` for native shake detection) |
 | `deeplinkIntegration()` | Add to `integrations` array (auto-captures deep link URLs as breadcrumbs; opt-in) |
+
+### Rage Tap Detection (TouchEventBoundary)
+
+`TouchEventBoundary` (wraps your app root) includes built-in rage tap detection. When a user taps the same element 3+ times within 1 second, a `ui.multiClick` breadcrumb is emitted and shown on the replay timeline. Configure via props:
+
+```tsx
+<Sentry.TouchEventBoundary
+  enableRageTapDetection={true}   // default: true — set false to disable
+  rageTapThreshold={3}            // taps required to trigger (default: 3)
+  rageTapTimeWindow={1000}        // detection window in ms (default: 1000)
+>
+  <App />
+</Sentry.TouchEventBoundary>
+```
 
 ---
 
