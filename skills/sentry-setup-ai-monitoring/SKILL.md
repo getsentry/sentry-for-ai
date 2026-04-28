@@ -188,27 +188,45 @@ sentry_sdk.init(
 
 ## Manual Instrumentation
 
-Use when no supported SDK is detected.
+Use when no supported SDK is detected. Follow the canonical [Sentry Conventions for `gen_ai.*` attributes](https://getsentry.github.io/sentry-conventions/attributes/gen_ai/) — the [JS docs](https://docs.sentry.io/platforms/javascript/guides/connect/ai-agent-monitoring/#manual-instrumentation) may lag behind; do not set attributes marked deprecated in the conventions.
 
 ### Span Types
 
-| `op` Value | Purpose |
-|------------|---------|
-| `gen_ai.request` | Individual LLM calls |
-| `gen_ai.invoke_agent` | Agent execution lifecycle |
-| `gen_ai.execute_tool` | Tool/function calls |
-| `gen_ai.handoff` | Agent-to-agent transitions |
+| `op` | Span `name` pattern | Purpose |
+|------|---------------------|---------|
+| `gen_ai.{operation}` (e.g. `gen_ai.chat`, `gen_ai.request`) | `{operation} {model}` (e.g. `chat gpt-4o`) | Individual LLM call |
+| `gen_ai.invoke_agent` | `invoke_agent {agent_name}` | Agent execution lifecycle |
+| `gen_ai.execute_tool` | `execute_tool {tool_name}` | Tool/function call |
+| `gen_ai.handoff` | `handoff from {source} to {target}` | Agent-to-agent transition |
+
+For LLM-call spans, the `op` follows the pattern `gen_ai.{gen_ai.operation.name}` — use `gen_ai.chat`, `gen_ai.embeddings`, `gen_ai.generate_content`, or `gen_ai.text_completion` where the operation is known. Span attributes only accept primitives; arrays/objects must be JSON-stringified.
 
 ### Example (JavaScript)
 
 ```javascript
+const inputMessages = [
+  { role: "user", parts: [{ type: "text", content: "Tell me a joke" }] },
+];
+
 await Sentry.startSpan({
-  op: "gen_ai.request",
-  name: "LLM request gpt-4o",
-  attributes: { "gen_ai.request.model": "gpt-4o" },
+  op: "gen_ai.chat",
+  name: "chat gpt-4o",
+  attributes: {
+    "gen_ai.request.model": "gpt-4o",
+    "gen_ai.operation.name": "chat",
+    "gen_ai.input.messages": JSON.stringify(inputMessages),
+  },
 }, async (span) => {
-  span.setAttribute("gen_ai.request.messages", JSON.stringify(messages));
-  const result = await llmClient.complete(prompt);
+  const result = await llmClient.complete(inputMessages);
+
+  const outputMessages = [
+    {
+      role: "assistant",
+      parts: [{ type: "text", content: result.text }],
+      finish_reason: result.finishReason,
+    },
+  ];
+  span.setAttribute("gen_ai.output.messages", JSON.stringify(outputMessages));
   span.setAttribute("gen_ai.usage.input_tokens", result.inputTokens);
   span.setAttribute("gen_ai.usage.output_tokens", result.outputTokens);
   return result;
@@ -217,16 +235,56 @@ await Sentry.startSpan({
 
 ### Key Attributes
 
+**Common (all AI spans):**
+
+| Attribute | Required | Description |
+|-----------|----------|-------------|
+| `gen_ai.request.model` | Yes | Model identifier (e.g., `gpt-4o`, `claude-sonnet-4-6`) |
+| `gen_ai.operation.name` | No | Operation label (`chat`, `embeddings`, `invoke_agent`, `execute_tool`, `handoff`, etc.) |
+| `gen_ai.agent.name` | No | Agent name (set on agent and tool spans) |
+
+**Request / response content (PII — enable only after confirming; see Data Capture Warning above):**
+
 | Attribute | Description |
 |-----------|-------------|
-| `gen_ai.request.model` | Model identifier |
-| `gen_ai.request.messages` | JSON input messages |
-| `gen_ai.usage.input_tokens` | Input token count |
-| `gen_ai.usage.output_tokens` | Output token count |
-| `gen_ai.agent.name` | Agent identifier |
-| `gen_ai.tool.name` | Tool identifier |
+| `gen_ai.input.messages` | JSON-stringified array of input messages. Each item uses `{role, parts}` where `parts` is `[{type, content}]`; `role` is `"user"`, `"assistant"`, `"tool"`, or `"system"` |
+| `gen_ai.output.messages` | JSON-stringified array of response messages (text + tool calls), same shape as inputs |
+| `gen_ai.system_instructions` | System prompt passed to the model |
+| `gen_ai.tool.definitions` | JSON-stringified list of tools available to the model |
 
-Enable prompt/output capture only after confirming with the user (see Data Capture Warning above).
+**Token usage:**
+
+| Attribute | Description |
+|-----------|-------------|
+| `gen_ai.usage.input_tokens` | Total input tokens — **includes** cached tokens |
+| `gen_ai.usage.input_tokens.cached` | Subset of input tokens served from cache |
+| `gen_ai.usage.input_tokens.cache_write` | Tokens written to cache while processing input |
+| `gen_ai.usage.output_tokens` | Total output tokens — **includes** reasoning tokens |
+| `gen_ai.usage.output_tokens.reasoning` | Subset of output tokens used for reasoning |
+| `gen_ai.usage.total_tokens` | Sum of input + output tokens |
+
+**Tool spans (`gen_ai.execute_tool`):**
+
+| Attribute | Description |
+|-----------|-------------|
+| `gen_ai.tool.name` | Tool identifier |
+| `gen_ai.tool.description` | Human-readable tool description |
+| `gen_ai.tool.call.arguments` | JSON-stringified tool arguments |
+| `gen_ai.tool.call.result` | JSON-stringified tool result |
+
+
+### Token Usage and Cost Calculation
+
+Sentry uses token attributes to [calculate model costs](https://docs.sentry.io/ai/monitoring/agents/costs/). **Cached and reasoning tokens are subsets, not separate counts** — `gen_ai.usage.input_tokens` already includes `gen_ai.usage.input_tokens.cached`, and `gen_ai.usage.output_tokens` already includes `gen_ai.usage.output_tokens.reasoning`.
+
+Sentry subtracts the cached/reasoning counts from the totals to compute the uncached/non-reasoning portion. Reporting a cached or reasoning count greater than its total produces negative costs in the dashboard.
+
+Example — 100 input tokens total, 90 served from cache:
+
+- Correct: `input_tokens = 100`, `input_tokens.cached = 90`
+- Wrong: `input_tokens = 10`, `input_tokens.cached = 90` (cached larger than total → negative cost)
+
+The same rule applies to `gen_ai.usage.output_tokens` vs. `gen_ai.usage.output_tokens.reasoning`.
 
 ## Verification
 
@@ -238,5 +296,6 @@ After configuring, make an LLM call and check the Sentry Traces dashboard. AI sp
 |-------|----------|
 | AI spans not appearing | Verify `tracesSampleRate > 0`, check SDK version |
 | Token counts missing | Some providers don't return tokens for streaming |
+| Negative or wrong costs in dashboard | Cached/reasoning tokens are subsets of totals — see Token Usage and Cost Calculation |
 | Prompts not captured | Enable `recordInputs`/`include_prompts` |
 | Vercel AI not working | Add `experimental_telemetry` to each call |
