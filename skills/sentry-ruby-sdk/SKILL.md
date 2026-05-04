@@ -41,6 +41,9 @@ grep -iE '\bpuma\b' Gemfile 2>/dev/null
 # Background jobs
 grep -iE '\bsidekiq\b|\bresque\b|\bdelayed_job\b' Gemfile 2>/dev/null
 
+# Yabeda metrics framework
+grep -iE '\byabeda\b' Gemfile 2>/dev/null
+
 # Competitor monitoring tools — triggers migration path if found
 grep -iE '\bappsignal\b|\bhoneybadger\b|\bbugsnag\b|\brollbar\b|\bairbrake\b' Gemfile 2>/dev/null
 
@@ -66,6 +69,7 @@ cat package.json frontend/package.json web/package.json 2>/dev/null | grep -E '"
 - **Rails** → use `sentry-rails` + `config/initializers/sentry.rb`
 - **Rack/Sinatra** → `sentry-ruby` + `Sentry::Rack::CaptureExceptions` middleware
 - **Sidekiq** → add `sentry-sidekiq`; recommend Metrics if existing metric patterns found
+- **Yabeda detected** → add `sentry-yabeda`; routes Yabeda metrics to Sentry metrics
 - **Puma detected** → queue time capture is automatic (v6.4.0+), but the reverse proxy must set `X-Request-Start` header; see `${SKILL_ROOT}/references/tracing.md` → "Request Queue Time"
 - **OTel tracing detected** (`opentelemetry-sdk` + instrumentations in Gemfile, or `OpenTelemetry::SDK.configure` in source) → use OTLP path: `config.otlp.enabled = true`; do **not** set `traces_sample_rate`; Sentry links errors to OTel traces automatically
 
@@ -103,6 +107,7 @@ gem "sentry-rails"
 gem "sentry-sidekiq"      # if using Sidekiq
 gem "sentry-resque"       # if using Resque
 gem "sentry-delayed_job"  # if using DelayedJob
+gem "sentry-yabeda"       # if using Yabeda metrics framework
 ```
 
 **Rack / Sinatra / plain Ruby:**
@@ -121,6 +126,7 @@ Run `bundle install`.
 | Sidekiq | `sentry-sidekiq` | Sentry initializer or Sidekiq config | Worker execution → transactions |
 | Resque | `sentry-resque` | Sentry initializer | Worker execution → transactions |
 | DelayedJob | `sentry-delayed_job` | Sentry initializer | Job execution → transactions |
+| Yabeda metrics | `sentry-yabeda` | Sentry initializer | Yabeda metric events → Sentry metrics |
 
 ### Init — Rails (`config/initializers/sentry.rb`)
 
