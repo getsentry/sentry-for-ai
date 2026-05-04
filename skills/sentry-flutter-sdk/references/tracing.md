@@ -53,6 +53,10 @@ MaterialApp(
       ignoreRoutes: ['/splash', '/loading'],
       // Use route name as the Sentry transaction name (default: false)
       setRouteNameAsTransaction: false,
+      // Generate a fresh trace on each push/pop/replace (default: false).
+      // Changed from true → false in sentry_flutter 9.19.0.
+      // Set to true to restore the previous opt-out behavior.
+      enableNewTraceOnNavigation: false,
     ),
   ],
   routes: {
@@ -465,6 +469,7 @@ await SentryFlutter.init(
 |-------|----------|
 | No transactions in Sentry | Confirm `tracesSampleRate > 0`; set to `1.0` to see all during debugging |
 | Navigation not tracked | Add `SentryNavigatorObserver()` to `navigatorObservers`; name all routes |
+| Traces not being connected across navigations | `enableNewTraceOnNavigation` defaults to `false` since 9.19.0 — set it to `true` to generate a fresh trace on each navigation event |
 | TTID/TTFD spans missing | SDK ≥ 9.1.0 required; routes must have names |
 | TTFD never reports | Call `SentryFlutter.currentDisplay()?.reportFullyDisplayed()` or use `SentryDisplayWidget` |
 | GoRouter tabs not tracked | Known Flutter limitation — tab transitions don't trigger standard navigator callbacks |
