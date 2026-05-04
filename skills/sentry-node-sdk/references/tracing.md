@@ -441,18 +441,30 @@ Sentry.startSpan(
 
 ## `ignoreSpans` — Filtering Spans
 
-Drop specific spans before they are sent. Accepts strings (substring match), RegExp, or functions:
+Drop specific spans before they are sent. Accepts strings (substring match), RegExp, functions, or objects with an optional `attributes` field for attribute-based matching:
 
 ```typescript
 Sentry.init({
   ignoreSpans: [
-    // Drop health check spans
+    // Drop health check spans (string substring match)
+    "health",
+    // Drop spans by name pattern (RegExp)
     /health|heartbeat|ping/,
-    // Drop internal DB keepalive queries
+    // Drop internal DB keepalive queries (function)
     (span) => span.op === "db.query" && span.description?.includes("SELECT 1"),
+    // Drop spans matching specific attributes (object form, SDK ≥9.x)
+    {
+      name: /health/,             // optional: name/op substring or RegExp
+      attributes: {
+        "http.url": "/health",    // string = substring match
+        "http.status_code": 200,  // non-string = strict equality
+      },
+    },
   ],
 });
 ```
+
+The `attributes` field on an object entry matches span attributes: string values use substring/RegExp matching, non-string values (numbers, booleans, arrays) use strict equality.
 
 ---
 

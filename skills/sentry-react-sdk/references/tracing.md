@@ -1261,6 +1261,15 @@ Sentry.init({
 
     // Object — name regex
     { name: /^(hotjar|analytics|gtag)/ },
+
+    // Object — filter by span attributes (SDK ≥10.6.0)
+    // String attribute values use substring/RegExp matching; non-strings use strict equality
+    {
+      attributes: {
+        "url.path": "/health",     // substring match
+        "http.response.status_code": 200,  // strict equality
+      },
+    },
   ],
 });
 ```
