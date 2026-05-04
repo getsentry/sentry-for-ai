@@ -552,7 +552,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `dsn` | `string` | — | **Required.** Project DSN; SDK disabled if empty. Env: `SENTRY_DSN` |
 | `environment` | `string` | — | e.g., `"production"`, `"staging"`. Env: `SENTRY_ENVIRONMENT` |
 | `release` | `string` | — | App version, e.g., `"my-app@1.0.0+42"`. Env: `SENTRY_RELEASE` |
-| `dist` | `string` | — | Build number / variant identifier (max 64 chars) |
+| `dist` | `string` | — | Build number / variant identifier (max 64 chars). Env: `SENTRY_DIST` |
 | `sendDefaultPii` | `boolean` | `false` | Include PII: IP address, cookies, user data |
 | `sampleRate` | `number` | `1.0` | Error event sampling (0.0–1.0) |
 | `maxBreadcrumbs` | `number` | `100` | Max breadcrumbs per event |
@@ -659,6 +659,7 @@ Sentry.init({
 | `SENTRY_ORG` | Organization slug | Used by wizard and build plugins |
 | `SENTRY_PROJECT` | Project slug | Used by wizard and build plugins |
 | `SENTRY_RELEASE` | Release identifier | Falls back from `release` option |
+| `SENTRY_DIST` | Distribution identifier | Falls back from `dist` option |
 | `SENTRY_ENVIRONMENT` | Environment name | Falls back from `environment` option |
 | `SENTRY_DISABLE_AUTO_UPLOAD` | Skip source map upload | Set `true` during local builds |
 | `EXPO_PUBLIC_SENTRY_DSN` | Expo public env var for DSN | Safe to embed in client bundle |

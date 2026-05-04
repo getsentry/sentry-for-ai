@@ -21,7 +21,6 @@
 | `sessionReplay.errorReplayDuration` | `TimeInterval` | `30` | Seconds of buffer kept before an error |
 | `sessionReplay.sessionSegmentDuration` | `TimeInterval` | `5` | Seconds per upload segment |
 | `sessionReplay.maximumDuration` | `TimeInterval` | `3600` | Maximum session duration (60 min) |
-| `experimental.enableSessionReplayInUnreliableEnvironment` | `Bool` | `false` | Force-enable on iOS 26+ (⚠️ PII risk) |
 
 ## Code Examples
 
@@ -164,15 +163,6 @@ Replay continues to work if:
 
 **SDKs older than v8.57.0** do **not** include this safeguard and may crash or leak PII on iOS 26. Upgrade immediately.
 
-**Force-enable on iOS 26+ (experimental — will be removed once masking is fixed):**
-
-```swift
-SentrySDK.start { options in
-    // ⚠️ WARNING: May leak PII. Only use if you understand the risk.
-    options.experimental.enableSessionReplayInUnreliableEnvironment = true
-}
-```
-
 Track the fix at [getsentry/sentry-cocoa#6390](https://github.com/getsentry/sentry-cocoa/issues/6390).
 
 ---
@@ -193,7 +183,6 @@ Track the fix at [getsentry/sentry-cocoa#6390](https://github.com/getsentry/sent
 
 ## Best Practices
 
-- Never enable `enableSessionReplayInUnreliableEnvironment` in production without understanding the PII risk
 - Set `maskAllText = true` and `maskAllImages = true` (both default) — only unmasked explicitly what's safe to show
 - Use `.sentryReplayUnmask()` sparingly on known-safe content rather than globally disabling masking
 - Start with `onErrorSampleRate = 1.0` and `sessionSampleRate = 0` to capture replays only on errors (lowest overhead)
@@ -204,7 +193,7 @@ Track the fix at [getsentry/sentry-cocoa#6390](https://github.com/getsentry/sent
 | Issue | Solution |
 |-------|----------|
 | No replays appearing | Verify `sessionSampleRate > 0` or `onErrorSampleRate > 0`; both default to `0` |
-| Replay disabled on iOS 26 | Expected — SDK 8.57.0+ auto-disables for safety; use the experimental override at your own risk |
+| Replay disabled on iOS 26 | Expected — SDK 8.57.0+ auto-disables for safety; set `UIDesignRequiresCompatibility = YES` in `Info.plist` to build with Xcode < 26 compatibility |
 | PII visible in replay | Verify `maskAllText = true` and `maskAllImages = true`; check `.sentryReplayUnmask()` isn't applied too broadly |
 | Scrolling jank during replay | Enable `enableFastViewRendering = true`; switch to `quality = .low`; consider disabling on low-end devices |
 | Replay stops after 60 minutes | Expected — `maximumDuration = 3600` seconds is the default cap |
