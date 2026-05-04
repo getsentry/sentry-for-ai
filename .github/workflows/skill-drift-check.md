@@ -33,14 +33,6 @@ safe-outputs:
     max: 15
     expires: "14d"
     close-older-issues: true
-  add-reviewer:
-    reviewers:
-      - getsentry/team-mobile
-      - getsentry/team-javascript-sdks
-      - getsentry/team-web-sdk-backend
-      - getsentry/team-mobile-cross-platform
-      - getsentry/owners-python-sdk
-    max: 10
   allowed-github-references:
     - getsentry/sentry-javascript
     - getsentry/sentry-python
@@ -167,6 +159,11 @@ Open a PR when the fix is mechanical and low-risk:
 3. Edit the skill files to incorporate the change (add config options, update tables, etc.)
 4. Create a pull request with your changes
 
+Reviewer assignment is fully automated by the `Assign SDK Team Reviewers` workflow
+(`.github/workflows/skill-drift-assign-reviewers.yml`), which fires on `pull_request:
+opened` and maps changed `skills/sentry-*-sdk/**` paths to the right team. Do not
+call any reviewer-assignment tool yourself.
+
 **PR format:**
 
 Title: `[skill-drift] fix(<skill-name>): <concise description of what was updated>`
@@ -187,10 +184,6 @@ The following PRs were merged to `<repo>` that affect the `<skill-name>` skill:
 
 - SDK source: <repo>@<branch> (<commit or PR reference>)
 ```
-
-5. After creating the PR, use the `add_reviewer` tool to request review from the
-   team owner listed in the SDK-to-Repo Mapping table above. Use the exact team
-   slug without the `@` prefix (e.g., `getsentry/team-javascript-sdks`).
 
 ### 4b. Create an Issue (for complex or risky drift)
 
