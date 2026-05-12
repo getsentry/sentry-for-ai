@@ -25,7 +25,7 @@ jobs:
     outputs:
       result: ${{ steps.run-creator.outputs.result }}
       has_changes: ${{ steps.diff.outputs.has_changes }}
-      skipped: ${{ steps.run-creator.outputs.skipped }}
+      status: ${{ steps.run-creator.outputs.status }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -48,13 +48,12 @@ jobs:
           echo "result<<EOF" >> "$GITHUB_OUTPUT"
           cat result.json >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
-          # Surface skipped state
-          if jq -e '.skipped' result.json > /dev/null; then
-            REASON=$(jq -r '.skipped.reason' result.json)
+
+          STATUS=$(jq -r '.status' result.json)
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          if [ "$STATUS" = "skipped" ]; then
+            REASON=$(jq -r '.reason' result.json)
             echo "::warning::Skill Creator skipped: $REASON"
-            echo "skipped=$REASON" >> "$GITHUB_OUTPUT"
-          else
-            echo "skipped=" >> "$GITHUB_OUTPUT"
           fi
       - name: Capture patch
         id: diff
@@ -77,7 +76,7 @@ jobs:
 
   actuate:
     needs: create
-    if: needs.create.outputs.has_changes == 'true' && needs.create.outputs.skipped == ''
+    if: needs.create.outputs.has_changes == 'true' && needs.create.outputs.status == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

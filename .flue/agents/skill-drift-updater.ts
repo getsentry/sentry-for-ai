@@ -3,7 +3,8 @@ import * as v from 'valibot';
 
 export const triggers = {};
 
-const UpdaterOutput = v.object({
+const UpdaterSuccess = v.object({
+  status: v.literal('success'),
   skill: v.string(),
   summary: v.string(),
   files_changed: v.array(v.string()),
@@ -13,10 +14,14 @@ const UpdaterOutput = v.object({
     title: v.string(),
     url: v.string(),
   })),
-  skipped: v.optional(v.object({
-    reason: v.string(),
-  })),
 });
+
+const UpdaterSkipped = v.object({
+  status: v.literal('skipped'),
+  reason: v.string(),
+});
+
+const UpdaterOutput = v.union([UpdaterSuccess, UpdaterSkipped]);
 
 interface UpdaterPayload {
   issue_number: number;

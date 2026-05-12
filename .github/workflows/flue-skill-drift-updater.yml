@@ -66,9 +66,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          SKIPPED=$(jq -r '.skipped // empty' result.json)
-          if [ -n "$SKIPPED" ]; then
-            REASON=$(jq -r '.skipped.reason // .skipped' result.json)
+          STATUS=$(jq -r '.status' result.json)
+          if [ "$STATUS" = "skipped" ]; then
+            REASON=$(jq -r '.reason' result.json)
             gh issue comment "${{ steps.issue.outputs.issue_number }}" \
               --body "Updater skipped: $REASON"
           fi
@@ -93,7 +93,7 @@ jobs:
 
   actuate:
     needs: update
-    if: needs.update.outputs.has_changes == 'true' && fromJSON(needs.update.outputs.result).skipped == null
+    if: needs.update.outputs.has_changes == 'true' && fromJSON(needs.update.outputs.result).status == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

@@ -3,17 +3,22 @@ import * as v from 'valibot';
 
 export const triggers = {};
 
-const CreatorOutput = v.object({
+const CreatorSuccess = v.object({
+  status: v.literal('success'),
   skill: v.string(),
   platform: v.string(),
   summary: v.string(),
   files_created: v.array(v.string()),
   files_modified: v.array(v.string()),
   router_updated: v.string(),
-  skipped: v.optional(v.object({
-    reason: v.string(),
-  })),
 });
+
+const CreatorSkipped = v.object({
+  status: v.literal('skipped'),
+  reason: v.string(),
+});
+
+const CreatorOutput = v.union([CreatorSuccess, CreatorSkipped]);
 
 interface CreatorPayload {
   platform: string;

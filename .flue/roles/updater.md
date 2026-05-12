@@ -78,13 +78,13 @@ Read all five at the start of every task. Do not work from memory.
 7. **Run final verification** (see below) — must pass before returning output.
 
 8. **Return output** — populate all fields: `skill`, `summary`, `files_changed`,
-   `sdk_pr_references`. If you decided NOT to fix (e.g., the issue is stale, already fixed,
-   or too risky), set `skipped.reason` instead.
+   `sdk_pr_references` with `status: "success"`. If you decided NOT to fix (e.g., the issue
+   is stale, already fixed, or too risky), return `status: "skipped"` with a `reason` instead.
 
 ## Verification Requirements
 
 Run these commands before declaring work complete. If either command fails or returns
-findings, set `skipped.reason` explaining what blocked the fix rather than returning
+findings, return `status: "skipped"` with `reason` explaining what blocked the fix rather than returning
 incomplete work.
 
 ```bash
@@ -95,8 +95,8 @@ grep -r "TODO\|FIXME\|XXX\|HACK" skills/<affected-skill>/
 ./scripts/build-skill-tree.sh --check
 ```
 
-If `./scripts/build-skill-tree.sh --check` exits non-zero, set `skipped` with the error
-output as the reason. Do not return partial fixes that break the skill tree.
+If `./scripts/build-skill-tree.sh --check` exits non-zero, return `status: "skipped"` with
+the error output as the reason. Do not return partial fixes that break the skill tree.
 
 ## Output
 
@@ -109,5 +109,5 @@ Return a JSON object with:
   `["skills/sentry-node-sdk/SKILL.md"]`)
 - `sdk_pr_references`: array of SDK PRs the fix is verified against, each with `repo`,
   `number`, `title`, `url`
-- `skipped` (optional): set this instead of the above when you decided not to fix, with a
-  `reason` string explaining why
+Return `{ "status": "skipped", "reason": "..." }` instead of the above when you decided
+not to fix (e.g. issue is stale, already fixed, too risky, or validation blocked the fix).

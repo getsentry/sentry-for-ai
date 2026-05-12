@@ -40,14 +40,14 @@ Check `getsentry/sentry-<platform>` on GitHub (or the relevant monorepo path for
 SDKs — see the SDK-to-Repo Mapping table below). Use `gh repo view getsentry/sentry-<platform>`
 or check the Sentry docs landing page at `https://docs.sentry.io/platforms/<platform>/`.
 
-If no SDK exists (the repo 404s and the docs page 404s), set `skipped.reason` and return
-immediately. Do not fabricate a skill for a non-existent SDK.
+If no SDK exists (the repo 404s and the docs page 404s), return `status: "skipped"` with a
+`reason` and stop immediately. Do not fabricate a skill for a non-existent SDK.
 
 Also check whether the skill already exists:
 ```bash
 ls skills/sentry-*<platform>*-sdk/ 2>/dev/null
 ```
-If it already exists, set `skipped.reason` and return immediately.
+If it already exists, return `status: "skipped"` with a `reason` and stop immediately.
 
 ## SDK-to-Repo Mapping
 
@@ -147,8 +147,8 @@ grep -r "TODO\|FIXME\|XXX\|HACK" skills/sentry-<platform>-sdk/
 ./scripts/build-skill-tree.sh --check
 ```
 
-If `./scripts/build-skill-tree.sh --check` exits non-zero, set `skipped` with the error
-output as the reason. Do not return partial work that breaks the skill tree.
+If `./scripts/build-skill-tree.sh --check` exits non-zero, return `status: "skipped"` with
+the error output as the reason. Do not return partial work that breaks the skill tree.
 
 ### Phase 6: Register in Skill Tree
 
@@ -174,6 +174,5 @@ Return a JSON object with:
 - `files_modified`: array of repo-relative paths you modified (e.g.
   `["skills/sentry-sdk-setup/SKILL.md", "SKILL_TREE.md"]`)
 - `router_updated`: which router skill's table was updated (e.g. `"sentry-sdk-setup"`)
-- `skipped` (optional): set this instead of the above when you decided not to create the
-  skill, with a `reason` string explaining why (SDK doesn't exist, skill already exists,
-  verification failed, etc.)
+Return `{ "status": "skipped", "reason": "..." }` instead of the above when you decided not
+to create the skill (SDK doesn't exist, skill already exists, verification failed, etc.).
