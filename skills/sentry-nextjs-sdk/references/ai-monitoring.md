@@ -2,7 +2,7 @@
 
 > OpenAI integration: `@sentry/nextjs` ≥10.53.0+ (recommended)  
 > Vercel AI SDK integration: ≥10.53.0+ (recommended)  
-> Anthropic integration: see platform docs
+> Anthropic integration: ≥10.53.0+
 
 > ⚠️ **Tracing must be enabled.** AI monitoring piggybacks on tracing infrastructure. `tracesSampleRate` must be > 0.
 
@@ -26,7 +26,7 @@ Sentry AI Agents Monitoring automatically tracks:
 |---------|----------------|----------------------------|----------------|
 | **OpenAI** (`openai`) | `openAIIntegration` / `instrumentOpenAiClient` | ✅ Yes | **10.53.0** |
 | **Vercel AI SDK** (`ai`) | `vercelAIIntegration` | ✅ Yes (Node), ❌ Edge manual | **10.53.0** |
-| **Anthropic** (`@anthropic-ai/sdk`) | `anthropicAIIntegration` / `instrumentAnthropicAiClient` | ✅ Yes | See platform docs |
+| **Anthropic** (`@anthropic-ai/sdk`) | `anthropicAIIntegration` / `instrumentAnthropicAiClient` | ✅ Yes | **10.53.0** |
 
 ---
 

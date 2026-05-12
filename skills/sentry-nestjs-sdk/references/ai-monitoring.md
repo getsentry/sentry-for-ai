@@ -2,8 +2,8 @@
 
 > OpenAI integration: `@sentry/nestjs` ≥10.53.0+ (recommended)
 > Vercel AI SDK integration: ≥10.53.0+
-> Anthropic integration: see platform docs
-> Google GenAI integration: see platform docs
+> Anthropic integration: ≥10.53.0+
+> Google GenAI integration: ≥10.53.0+
 
 > ⚠️ **Tracing must be enabled.** AI monitoring piggybacks on tracing infrastructure. `tracesSampleRate` must be > 0.
 
@@ -29,9 +29,9 @@ All integrations listed below are **auto-enabled** when the corresponding AI lib
 |---------|----------------|---------------|----------------|
 | **OpenAI** (`openai`) | `openAIIntegration` / `instrumentOpenAiClient` | ✅ Yes | **10.53.0** |
 | **Vercel AI SDK** (`ai`) | `vercelAIIntegration` | ✅ Yes | **10.53.0** |
-| **Anthropic** (`@anthropic-ai/sdk`) | `anthropicAIIntegration` / `instrumentAnthropicAiClient` | ✅ Yes | See docs |
-| **Google GenAI** (`@google/generative-ai`) | — | ✅ Yes | See docs |
-| **LangChain** (`langchain`, `@langchain/core`) | `langchainIntegration` | ✅ Yes | See docs |
+| **Anthropic** (`@anthropic-ai/sdk`) | `anthropicAIIntegration` / `instrumentAnthropicAiClient` | ✅ Yes | **10.53.0** |
+| **Google GenAI** (`@google/generative-ai`) | — | ✅ Yes | **10.53.0** |
+| **LangChain** (`langchain`, `@langchain/core`) | `langchainIntegration` | ✅ Yes | **10.53.0** |
 
 ---
 
