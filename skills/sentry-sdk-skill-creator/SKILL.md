@@ -40,7 +40,7 @@ Establish the **feature matrix** — which Sentry pillars does this SDK support?
 | Tracing/Performance | Usually available | Check for span API |
 | Profiling | Varies | May be removed or experimental |
 | Logging | Newer feature | Check minimum version |
-| Metrics | Newer feature | May be beta/experimental |
+| Metrics | Newer feature | Check minimum version |
 | Crons | Backend only | Not available for frontend SDKs |
 | Session Replay | Frontend only | Not available for backend SDKs |
 | AI Monitoring | Some SDKs | Usually JS + Python only |

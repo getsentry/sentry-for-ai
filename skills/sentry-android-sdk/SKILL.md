@@ -502,7 +502,7 @@ Walk through features one at a time. Load the reference file for each, follow it
 | Profiling | `${SKILL_ROOT}/references/profiling.md` | Performance-sensitive production apps |
 | Session Replay | `${SKILL_ROOT}/references/session-replay.md` | User-facing apps (API 26+) |
 | Logging | `${SKILL_ROOT}/references/logging.md` | Structured logging / log-to-trace correlation |
-| Metrics | `${SKILL_ROOT}/references/metrics.md` | Custom metric tracking (Beta, SDK ≥ 8.30.0) |
+| Metrics | `${SKILL_ROOT}/references/metrics.md` | Custom metric tracking (SDK ≥ 8.30.0) |
 | Crons | `${SKILL_ROOT}/references/crons.md` | Scheduled jobs, WorkManager check-ins |
 
 For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exactly, verify it works.

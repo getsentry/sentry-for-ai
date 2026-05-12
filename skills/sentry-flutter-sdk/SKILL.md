@@ -93,7 +93,7 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 **Optional (enhanced observability):**
 - ⚡ **Profiling** — CPU profiling; iOS and macOS only (alpha)
 - ⚡ **Logging** — structured logs via `Sentry.logger.*` and `sentry_logging` integration
-- ⚡ **Metrics** — counters, gauges, distributions (open beta, SDK ≥9.11.0)
+- ⚡ **Metrics** — counters, gauges, distributions (SDK ≥9.11.0)
 
 **Platform limitations — be upfront:**
 
@@ -421,7 +421,7 @@ Walk through features one at a time. Load the reference file for each, follow it
 | Session Replay | `${SKILL_ROOT}/references/session-replay.md` | iOS/Android user-facing apps |
 | Profiling | `${SKILL_ROOT}/references/profiling.md` | iOS/macOS performance-sensitive apps |
 | Logging | `${SKILL_ROOT}/references/logging.md` | Structured logging / log-trace correlation |
-| Metrics | `${SKILL_ROOT}/references/metrics.md` | Custom business metrics (open beta) |
+| Metrics | `${SKILL_ROOT}/references/metrics.md` | Custom business metrics |
 
 For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exactly, verify it works.
 
@@ -795,7 +795,6 @@ This links mobile transactions to backend traces in the Sentry waterfall view.
 | Too many transactions in dashboard | Lower `tracesSampleRate` to `0.1` or use `tracesSampler` to drop health checks |
 | `beforeSend` not firing for native crashes | Expected — `beforeSend` intercepts only Dart-layer events; native crashes bypass it |
 | Crons not available | The Flutter/Dart SDK does not support Sentry Crons; use a server-side SDK instead |
-| Metrics marked as experimental | `sentry_flutter` Metrics API is open beta (SDK ≥9.11.0); stable on other SDKs |
 | `SentryWidget` warning in tests | Wrap test widget with `SentryFlutter.init()` in `setUpAll`, or use `enabled: false` |
 | Firebase Remote Config: Linux/Windows | `sentry_firebase_remote_config` not supported on Linux/Windows (Firebase limitation) |
 | Isar tracing on Web | `sentry_isar` does NOT support Web (Isar does not support Web) |

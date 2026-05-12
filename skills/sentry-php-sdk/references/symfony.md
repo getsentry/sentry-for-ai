@@ -509,7 +509,7 @@ Respects `trace_propagation_targets` — only injects headers to matching hostna
 
 ---
 
-## Metrics (≥ 5.8.0, Open Beta)
+## Metrics (≥ 5.8.0)
 
 ```php
 use function Sentry\traceMetrics;

@@ -1,6 +1,6 @@
 # Metrics — Sentry NestJS SDK
 
-> Minimum SDK: `@sentry/nestjs` 10.25.0+ · Status: ⚠️ Open beta
+> Minimum SDK: `@sentry/nestjs` 10.25.0+
 
 ## Overview
 

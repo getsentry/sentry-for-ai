@@ -1,7 +1,6 @@
 # Metrics — Sentry Flutter SDK
 
 > **Minimum SDK:** `sentry_flutter` ≥ **9.11.0** for trace-connected metrics  
-> **Status:** ⚠️ **Open Beta** — API is stable but some edge cases may change  
 > **Supported metric types:** Counter, Distribution, Gauge (no `set` type)  
 > **Per-metric key limit:** 2 KB
 
@@ -279,7 +278,7 @@ No special configuration is required for metrics beyond initializing the SDK wit
 |------------|---------|
 | No `set` type | `Sentry.metrics.set()` is **not supported** in the Flutter/Dart SDK. Use counters or external tracking for unique-value counting. |
 | 2 KB per-metric key limit | The metric key name + all tag key-value pairs must fit within 2 KB total. |
-| Open Beta status | The metrics API is stable but under active development. Some edge cases may change in future minor versions. |
+| Active development | The metrics API is stable but under active development. Some edge cases may change in future minor versions. |
 | Aggregation window | Metrics are aggregated locally before being flushed. Individual data points are not preserved — you see aggregations (sum, count, min, max). |
 | No sampling for metrics | Unlike errors and transactions, there is no sample rate for metrics — all emitted metrics are sent. Use tags and filtering instead of emitting fewer data points. |
 | Tag values must be strings | Passing non-string tag values will be coerced or dropped. |

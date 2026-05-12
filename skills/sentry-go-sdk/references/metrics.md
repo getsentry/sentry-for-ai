@@ -1,7 +1,6 @@
 # Metrics — Sentry Go SDK
 
-> Minimum SDK: `github.com/getsentry/sentry-go` v0.42.0+  
-> **⚠️ Open Beta** — API may change in future releases.
+> Minimum SDK: `github.com/getsentry/sentry-go` v0.42.0+
 
 ## Configuration
 

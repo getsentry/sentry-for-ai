@@ -3,8 +3,7 @@
 > Minimum SDK: `@sentry/nextjs` ≥10.25.0 (stable `Sentry.metrics.*` API)  
 > `enableMetrics` top-level option: ≥10.24.0 (default: `true`)  
 > `beforeSendMetric` hook: ≥10.24.0  
-> Scope attributes on metrics: ≥10.33.0  
-> Status: **Open Beta** — "Features in beta are still in-progress and may have bugs"
+> Scope attributes on metrics: ≥10.33.0
 >
 > Available in **all three runtimes**: browser, Node.js server, and Edge.
 

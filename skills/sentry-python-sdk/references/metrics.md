@@ -1,6 +1,6 @@
 # Metrics — Sentry Python SDK
 
-> Minimum SDK: `sentry-sdk` 2.44.0+ · Status: ⚠️ Open beta
+> Minimum SDK: `sentry-sdk` 2.44.0+
 
 ## Overview
 

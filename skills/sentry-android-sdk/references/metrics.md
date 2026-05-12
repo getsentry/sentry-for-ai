@@ -1,15 +1,8 @@
 # Metrics — Sentry Android SDK
 
 > **Minimum SDK:** `io.sentry:sentry-android:8.30.0`  
-> **⚠️ Status: Open Beta** — API surface is stable but subject to change  
 > **Enabled by default:** Yes — no opt-in required  
 > **Docs:** https://docs.sentry.io/platforms/android/metrics/
-
----
-
-## ⚠️ Beta Notice
-
-Metrics is currently in **Open Beta**. The feature is enabled by default as of SDK 8.30.0 and the API is stable in practice, but Sentry may revise the data model or UI. Test thoroughly before relying on metrics data in production dashboards.
 
 ---
 

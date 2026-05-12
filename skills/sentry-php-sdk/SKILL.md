@@ -72,7 +72,7 @@ Based on what you found, present a concrete proposal. Don't ask open-ended quest
 - ✅ **Tracing** — web framework detected (Laravel/Symfony auto-instrument HTTP, DB, Twig/Blade, cache)
 - ⚡ **Profiling** — production apps where performance matters (requires `excimer` PHP extension, Linux/macOS only)
 - ⚡ **Crons** — scheduler patterns detected (Laravel Scheduler, Symfony Scheduler, custom cron jobs)
-- ⚡ **Metrics** — business KPIs or SLO tracking (beta; uses `TraceMetrics` API)
+- ⚡ **Metrics** — business KPIs or SLO tracking (uses `TraceMetrics` API)
 
 **Recommendation matrix:**
 
@@ -82,7 +82,7 @@ Based on what you found, present a concrete proposal. Don't ask open-ended quest
 | Tracing | Laravel/Symfony detected, or manual spans needed | `${SKILL_ROOT}/references/tracing.md` |
 | Profiling | Production + `excimer` extension available | `${SKILL_ROOT}/references/profiling.md` |
 | Logging | **Always**; Monolog for Laravel/Symfony | `${SKILL_ROOT}/references/logging.md` |
-| Metrics | Business events or SLO tracking needed (beta) | `${SKILL_ROOT}/references/metrics.md` |
+| Metrics | Business events or SLO tracking needed | `${SKILL_ROOT}/references/metrics.md` |
 | Crons | Scheduler or cron patterns detected | `${SKILL_ROOT}/references/crons.md` |
 
 Propose: *"I recommend Error Monitoring + Tracing [+ Logging]. Want Profiling, Crons, or Metrics too?"*
@@ -226,7 +226,7 @@ Walk through features one at a time. Load the reference, follow its steps, verif
 | Tracing | `${SKILL_ROOT}/references/tracing.md` | HTTP handlers / distributed tracing |
 | Profiling | `${SKILL_ROOT}/references/profiling.md` | Performance-sensitive production |
 | Logging | `${SKILL_ROOT}/references/logging.md` | Always; Monolog for Laravel/Symfony |
-| Metrics | `${SKILL_ROOT}/references/metrics.md` | Business KPIs / SLO tracking (beta) |
+| Metrics | `${SKILL_ROOT}/references/metrics.md` | Business KPIs / SLO tracking |
 | Crons | `${SKILL_ROOT}/references/crons.md` | Scheduler / cron patterns detected |
 
 For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exactly, verify it works.
