@@ -73,12 +73,12 @@ If user confirms, read `${SKILL_ROOT}/references/sampling.md` for implementation
 
 | Package | Integration | Min Sentry SDK | Auto? |
 |---------|-------------|----------------|-------|
-| `openai` | `openAIIntegration()` | 10.28.0 | Yes |
-| `@anthropic-ai/sdk` | `anthropicAIIntegration()` | 10.28.0 | Yes |
+| `openai` | `openAIIntegration()` | 10.53.0 | Yes |
+| `@anthropic-ai/sdk` | `anthropicAIIntegration()` | 10.53.0 | Yes |
 | `ai` (Vercel) | `vercelAIIntegration()` | 10.6.0 | Yes* |
-| `@langchain/*` | `langChainIntegration()` | 10.28.0 | Yes |
-| `@langchain/langgraph` | `langGraphIntegration()` | 10.28.0 | Yes |
-| `@google/genai` | `googleGenAIIntegration()` | 10.28.0 | Yes |
+| `@langchain/*` | `langChainIntegration()` | 10.53.0 | Yes |
+| `@langchain/langgraph` | `langGraphIntegration()` | 10.53.0 | Yes |
+| `@google/genai` | `googleGenAIIntegration()` | 10.53.0 | Yes |
 
 *Vercel AI: 10.6.0+ for Node.js, Cloudflare Workers, Vercel Edge Functions, Bun. 10.12.0+ for Deno. Requires `experimental_telemetry` per-call.
 
@@ -107,6 +107,7 @@ Just ensure tracing is enabled. Integrations auto-enable when the AI package is 
 Sentry.init({
   dsn: "YOUR_DSN",
   tracesSampleRate: 1.0, // Lower in production (e.g., 0.1)
+  streamGenAiSpans: true, // Required for conversations (SDK ≥10.53.0)
   // OpenAI, Anthropic, Google GenAI, LangChain integrations auto-enable in Node.js
 });
 ```

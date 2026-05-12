@@ -1,13 +1,13 @@
 # AI Monitoring - Sentry Node.js SDK
 
-> Minimum SDK: `@sentry/node` >=10.28.0 (OpenAI, Anthropic, LangChain, LangGraph, Google GenAI). Vercel AI SDK: >=10.6.0.
+> Minimum SDK: `@sentry/node` >=10.53.0 (recommended). OpenAI, Anthropic, LangChain, LangGraph, Google GenAI auto-instrument. Vercel AI SDK: >=10.6.0.
 
 ## Prerequisites
 
 Tracing must be enabled - AI spans require an active trace:
 
 ```typescript
-Sentry.init({ dsn: "...", tracesSampleRate: 1.0 });
+Sentry.init({ dsn: "...", tracesSampleRate: 1.0, streamGenAiSpans: true });
 ```
 
 ## Integration Matrix
@@ -41,6 +41,7 @@ import * as Sentry from "@sentry/node";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
   sendDefaultPii: true, // required to capture prompts/outputs
 });
 // OpenAI, Anthropic, LangChain, LangGraph, Google GenAI activate automatically
@@ -52,6 +53,7 @@ Sentry.init({
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
   integrations: [
     Sentry.openAIIntegration({ recordInputs: true, recordOutputs: true }),
     Sentry.vercelAIIntegration({ recordInputs: true, recordOutputs: true }),
@@ -204,7 +206,7 @@ If `tracesSampleRate` < 1.0, see the [AI sampling guide](../../sentry-setup-ai-m
 
 | Issue | Solution |
 |-------|----------|
-| No AI spans appearing | Verify `tracesSampleRate > 0`; check SDK >=10.28.0 |
+| No AI spans appearing | Verify `tracesSampleRate > 0`; check SDK >=10.53.0 |
 | Token counts missing in streams | Add `stream_options: { include_usage: true }` (OpenAI) |
 | Vercel AI spans not tracked | Add `experimental_telemetry: { isEnabled: true }` per call |
 | Browser OpenAI not traced | Use `Sentry.instrumentOpenAiClient()` - auto-instrumentation is server-only |

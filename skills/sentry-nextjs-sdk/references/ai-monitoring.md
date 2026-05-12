@@ -1,6 +1,6 @@
 # AI Monitoring — Sentry Next.js SDK
 
-> OpenAI integration: `@sentry/nextjs` ≥10.28.0+  
+> OpenAI integration: `@sentry/nextjs` ≥10.53.0+ (recommended)  
 > Vercel AI SDK integration: ≥10.6.0+ (Node/Edge/Bun), ≥10.12.0+ (Deno)  
 > Anthropic integration: see platform docs
 
@@ -24,7 +24,7 @@ Sentry AI Agents Monitoring automatically tracks:
 
 | Library | Integration API | Auto-enabled (Node server)? | Min SDK Version |
 |---------|----------------|----------------------------|----------------|
-| **OpenAI** (`openai`) | `openAIIntegration` / `instrumentOpenAiClient` | ✅ Yes | **10.28.0** |
+| **OpenAI** (`openai`) | `openAIIntegration` / `instrumentOpenAiClient` | ✅ Yes | **10.53.0** |
 | **Vercel AI SDK** (`ai`) | `vercelAIIntegration` | ✅ Yes (Node), ❌ Edge manual | **10.6.0** |
 | **Anthropic** (`@anthropic-ai/sdk`) | `anthropicAIIntegration` / `instrumentAnthropicAiClient` | ✅ Yes | See platform docs |
 
@@ -52,6 +52,7 @@ Sentry.init({
 
   // Tracing MUST be enabled for AI monitoring
   tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
 
   integrations: [
     Sentry.openAIIntegration({
@@ -121,6 +122,7 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
   integrations: [
     Sentry.vercelAIIntegration({
       force: true, // ← Required for Vercel production deployments (see note below)
@@ -138,6 +140,7 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
   integrations: [
     Sentry.vercelAIIntegration(),
   ],
@@ -212,6 +215,7 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
   integrations: [
     Sentry.anthropicAIIntegration({
       recordInputs: true,
@@ -286,6 +290,7 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   sendDefaultPii: true, // ← enables input/output recording by default
   tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
 });
 ```
 
@@ -313,6 +318,7 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
   integrations: [
     Sentry.openAIIntegration({ recordInputs: true, recordOutputs: true }),
     Sentry.vercelAIIntegration({ force: true, recordInputs: true, recordOutputs: true }),
@@ -389,7 +395,7 @@ Access at **Sentry → AI → Agents** (or **Insights → AI**).
 | Vercel AI SDK integration (Deno) | **10.12.0** |
 | Vercel AI `recordInputs`/`recordOutputs` | 9.27.0 |
 | Vercel AI `force` option | 9.29.0 |
-| OpenAI integration (`openAIIntegration` / `instrumentOpenAiClient`) | **10.28.0** |
+| OpenAI integration (`openAIIntegration` / `instrumentOpenAiClient`) | **10.53.0** |
 
 ---
 
