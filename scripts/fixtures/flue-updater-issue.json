@@ -1,0 +1,6 @@
+{
+  "issue_number": 9999,
+  "issue_title": "[skill-drift] sentry-node-sdk may need updates",
+  "issue_url": "https://github.com/getsentry/sentry-for-ai/issues/9999",
+  "issue_body": "cc @getsentry/team-javascript-sdks\n\n## SDK Changes Detected\n\nThe following PRs were merged to `getsentry/sentry-javascript` in the last 7 days that may affect the `sentry-node-sdk` skill:\n\n- getsentry/sentry-javascript#99999 — feat(node): add new `maxQueueSize` init option (https://github.com/getsentry/sentry-javascript/pull/99999)\n\n## Potential Skill Gaps\n\n1. **Missing config option**: The new `maxQueueSize` option is not documented in the Configuration Reference table of `skills/sentry-node-sdk/SKILL.md`.\n\n## Why This Needs Review\n\nThis is a small mechanical addition — adding one row to the config table.\n\n## Skill Files to Review\n\n- `skills/sentry-node-sdk/SKILL.md`\n\n## Priority\n\nLOW"
+}
