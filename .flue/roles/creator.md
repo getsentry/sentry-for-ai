@@ -55,8 +55,10 @@ If it already exists, return `status: "skipped"` with a `reason` and stop immedi
 |-------|-------------|---------------|
 | `sentry-android-sdk` | `getsentry/sentry-android` | — |
 | `sentry-browser-sdk` | `getsentry/sentry-javascript` | `packages/browser/`, `packages/core/` |
+| `sentry-cloudflare-sdk` | `getsentry/sentry-javascript` | `packages/cloudflare/`, `packages/core/` |
 | `sentry-cocoa-sdk` | `getsentry/sentry-cocoa` | — |
 | `sentry-dotnet-sdk` | `getsentry/sentry-dotnet` | — |
+| `sentry-elixir-sdk` | `getsentry/sentry-elixir` | — |
 | `sentry-flutter-sdk` | `getsentry/sentry-dart` | — |
 | `sentry-go-sdk` | `getsentry/sentry-go` | — |
 | `sentry-nestjs-sdk` | `getsentry/sentry-javascript` | `packages/nestjs/`, `packages/node/`, `packages/core/` |
@@ -143,12 +145,13 @@ head -5 skills/sentry-<platform>-sdk/SKILL.md
 # 3. No TODO/FIXME left behind
 grep -r "TODO\|FIXME\|XXX\|HACK" skills/sentry-<platform>-sdk/
 
-# 4. Skill tree validates (must pass — see Phase 6 first)
-./scripts/build-skill-tree.sh --check
+# 4. Sanity-check the router table you just updated (Phase 6)
+grep -F '<platform>' skills/sentry-sdk-setup/SKILL.md
 ```
 
-If `./scripts/build-skill-tree.sh --check` exits non-zero, return `status: "skipped"` with
-the error output as the reason. Do not return partial work that breaks the skill tree.
+Do not run `./scripts/build-skill-tree.sh` — the workflow's actuator regenerates
+`SKILL_TREE.md` after the allowlist check. Running it yourself would write a protected
+file and cause the PR to be downgraded to an issue.
 
 ### Phase 6: Register in Skill Tree
 
@@ -156,10 +159,13 @@ Do this BEFORE running the skill tree validator. The validator checks that every
 with a `parent` field appears in its parent router.
 
 1. **Update the parent router table** — add the new skill as a row in
-   `skills/sentry-sdk-setup/SKILL.md`'s routing table. This step is mandatory.
-   The router table links the new skill by name and description so agents can find it.
-2. Run `./scripts/build-skill-tree.sh` to regenerate `SKILL_TREE.md`
-3. Update `AGENTS.md` SDK skills table if needed
+   `skills/sentry-sdk-setup/SKILL.md`'s routing table. This is the only file outside
+   `skills/sentry-<platform>-sdk/` that you should touch, and it is still under
+   `skills/` so it is allowed.
+
+The workflow will regenerate `SKILL_TREE.md` and re-run the validator after your work.
+Do NOT run `./scripts/build-skill-tree.sh` yourself, and do NOT modify `AGENTS.md` —
+both are outside `skills/` and are blocked by the commit allowlist.
 
 ## Output
 
@@ -172,7 +178,8 @@ Return a JSON object with:
 - `files_created`: array of repo-relative paths you created (e.g.
   `["skills/sentry-nuxt-sdk/SKILL.md", "skills/sentry-nuxt-sdk/references/tracing.md"]`)
 - `files_modified`: array of repo-relative paths you modified (e.g.
-  `["skills/sentry-sdk-setup/SKILL.md", "SKILL_TREE.md"]`)
+  `["skills/sentry-sdk-setup/SKILL.md"]`). Do NOT include `SKILL_TREE.md` or
+  `AGENTS.md` — those are regenerated/managed by the workflow, not by you.
 - `router_updated`: which router skill's table was updated (e.g. `"sentry-sdk-setup"`)
 Return `{ "status": "skipped", "reason": "..." }` instead of the above when you decided not
 to create the skill (SDK doesn't exist, skill already exists, verification failed, etc.).

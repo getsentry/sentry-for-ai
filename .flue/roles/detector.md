@@ -25,8 +25,10 @@ Some repos are monorepos — use the path filters to determine which skills are 
 |-------|------|---------------------------|------------|
 | `sentry-android-sdk` | `getsentry/sentry-android` | — | `@getsentry/team-mobile` |
 | `sentry-browser-sdk` | `getsentry/sentry-javascript` | `packages/browser/`, `packages/core/` | `@getsentry/team-javascript-sdks` |
+| `sentry-cloudflare-sdk` | `getsentry/sentry-javascript` | `packages/cloudflare/`, `packages/core/` | `@getsentry/team-javascript-sdks` |
 | `sentry-cocoa-sdk` | `getsentry/sentry-cocoa` | — | `@getsentry/team-mobile` |
 | `sentry-dotnet-sdk` | `getsentry/sentry-dotnet` | — | `@getsentry/team-web-sdk-backend` |
+| `sentry-elixir-sdk` | `getsentry/sentry-elixir` | — | `@getsentry/team-web-sdk-backend` |
 | `sentry-flutter-sdk` | `getsentry/sentry-dart` | — | `@getsentry/team-mobile-cross-platform` |
 | `sentry-go-sdk` | `getsentry/sentry-go` | — | `@getsentry/team-web-sdk-backend` |
 | `sentry-nestjs-sdk` | `getsentry/sentry-javascript` | `packages/nestjs/`, `packages/node/`, `packages/core/` | `@getsentry/team-javascript-sdks` |

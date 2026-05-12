@@ -37,8 +37,10 @@ Read all five at the start of every task. Do not work from memory.
 |-------|-------------|---------------|
 | `sentry-android-sdk` | `getsentry/sentry-android` | — |
 | `sentry-browser-sdk` | `getsentry/sentry-javascript` | `packages/browser/`, `packages/core/` |
+| `sentry-cloudflare-sdk` | `getsentry/sentry-javascript` | `packages/cloudflare/`, `packages/core/` |
 | `sentry-cocoa-sdk` | `getsentry/sentry-cocoa` | — |
 | `sentry-dotnet-sdk` | `getsentry/sentry-dotnet` | — |
+| `sentry-elixir-sdk` | `getsentry/sentry-elixir` | — |
 | `sentry-flutter-sdk` | `getsentry/sentry-dart` | — |
 | `sentry-go-sdk` | `getsentry/sentry-go` | — |
 | `sentry-nestjs-sdk` | `getsentry/sentry-javascript` | `packages/nestjs/`, `packages/node/`, `packages/core/` |
