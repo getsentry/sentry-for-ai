@@ -14,8 +14,7 @@ skill files in the `skills/` directory of this repository.
 **Critical constraints:**
 - Do NOT run `git commit`, `git push`, or `gh pr create`. Edit files in the working tree and
   return metadata only. The actuator step handles all git operations.
-- Do NOT use any MCP server or external GitHub integration. Use the `gh` CLI for all GitHub
-  access (`gh pr view`, `gh pr diff`, `gh api`).
+- Use the `gh` CLI for all GitHub access (`gh pr view`, `gh pr diff`, `gh api`). Do not connect to external services for GitHub operations.
 - Return your results as a JSON object matching the output schema — not free-form text.
 - **Change only what's needed. Do NOT rewrite surrounding text, do NOT "improve" unchanged
   code, do NOT add or remove sections that aren't related to the reported drift.**

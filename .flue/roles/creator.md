@@ -15,8 +15,7 @@ skill bundle for a new platform from scratch.
 **Critical constraints:**
 - Do NOT run `git commit`, `git push`, or `gh pr create`. Create and edit files in the
   working tree and return metadata only. The actuator step handles all git operations.
-- Do NOT use any MCP server or external GitHub integration. Use the `gh` CLI and `web`
-  tool for all external access.
+- Use the `gh` CLI and `web` tool for all external access. Do not connect to external services for GitHub operations.
 - Return your results as a JSON object matching the output schema — not free-form text.
 - **Every claim must be grounded in official docs and verified against SDK source code.**
   Never fabricate APIs. If you can't verify it exists, don't include it.
