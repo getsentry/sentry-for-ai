@@ -1,7 +1,7 @@
 # AI Monitoring — Sentry NestJS SDK
 
 > OpenAI integration: `@sentry/nestjs` ≥10.53.0+ (recommended)
-> Vercel AI SDK integration: ≥10.6.0+
+> Vercel AI SDK integration: ≥10.53.0+
 > Anthropic integration: see platform docs
 > Google GenAI integration: see platform docs
 
@@ -28,7 +28,7 @@ All integrations listed below are **auto-enabled** when the corresponding AI lib
 | Library | Integration API | Auto-enabled? | Min SDK Version |
 |---------|----------------|---------------|----------------|
 | **OpenAI** (`openai`) | `openAIIntegration` / `instrumentOpenAiClient` | ✅ Yes | **10.53.0** |
-| **Vercel AI SDK** (`ai`) | `vercelAIIntegration` | ✅ Yes | **10.6.0** |
+| **Vercel AI SDK** (`ai`) | `vercelAIIntegration` | ✅ Yes | **10.53.0** |
 | **Anthropic** (`@anthropic-ai/sdk`) | `anthropicAIIntegration` / `instrumentAnthropicAiClient` | ✅ Yes | See docs |
 | **Google GenAI** (`@google/generative-ai`) | — | ✅ Yes | See docs |
 | **LangChain** (`langchain`, `@langchain/core`) | `langchainIntegration` | ✅ Yes | See docs |

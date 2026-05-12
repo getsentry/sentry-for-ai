@@ -75,12 +75,12 @@ If user confirms, read `${SKILL_ROOT}/references/sampling.md` for implementation
 |---------|-------------|----------------|-------|
 | `openai` | `openAIIntegration()` | 10.53.0 | Yes |
 | `@anthropic-ai/sdk` | `anthropicAIIntegration()` | 10.53.0 | Yes |
-| `ai` (Vercel) | `vercelAIIntegration()` | 10.6.0 | Yes* |
+| `ai` (Vercel) | `vercelAIIntegration()` | 10.53.0 | Yes* |
 | `@langchain/*` | `langChainIntegration()` | 10.53.0 | Yes |
 | `@langchain/langgraph` | `langGraphIntegration()` | 10.53.0 | Yes |
 | `@google/genai` | `googleGenAIIntegration()` | 10.53.0 | Yes |
 
-*Vercel AI: 10.6.0+ for Node.js, Cloudflare Workers, Vercel Edge Functions, Bun. 10.12.0+ for Deno. Requires `experimental_telemetry` per-call.
+*Vercel AI: 10.53.0+ recommended. Requires `experimental_telemetry` per-call.
 
 ### Python
 

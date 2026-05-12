@@ -1,6 +1,6 @@
 # AI Monitoring - Sentry Node.js SDK
 
-> Minimum SDK: `@sentry/node` >=10.53.0 (recommended). OpenAI, Anthropic, LangChain, LangGraph, Google GenAI auto-instrument. Vercel AI SDK: >=10.6.0.
+> Minimum SDK: `@sentry/node` >=10.53.0 (recommended). OpenAI, Anthropic, LangChain, LangGraph, Google GenAI, Vercel AI SDK auto-instrument.
 
 ## Prerequisites
 

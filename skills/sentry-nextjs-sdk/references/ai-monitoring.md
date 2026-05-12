@@ -1,7 +1,7 @@
 # AI Monitoring — Sentry Next.js SDK
 
 > OpenAI integration: `@sentry/nextjs` ≥10.53.0+ (recommended)  
-> Vercel AI SDK integration: ≥10.6.0+ (Node/Edge/Bun), ≥10.12.0+ (Deno)  
+> Vercel AI SDK integration: ≥10.53.0+ (recommended)  
 > Anthropic integration: see platform docs
 
 > ⚠️ **Tracing must be enabled.** AI monitoring piggybacks on tracing infrastructure. `tracesSampleRate` must be > 0.
@@ -25,7 +25,7 @@ Sentry AI Agents Monitoring automatically tracks:
 | Library | Integration API | Auto-enabled (Node server)? | Min SDK Version |
 |---------|----------------|----------------------------|----------------|
 | **OpenAI** (`openai`) | `openAIIntegration` / `instrumentOpenAiClient` | ✅ Yes | **10.53.0** |
-| **Vercel AI SDK** (`ai`) | `vercelAIIntegration` | ✅ Yes (Node), ❌ Edge manual | **10.6.0** |
+| **Vercel AI SDK** (`ai`) | `vercelAIIntegration` | ✅ Yes (Node), ❌ Edge manual | **10.53.0** |
 | **Anthropic** (`@anthropic-ai/sdk`) | `anthropicAIIntegration` / `instrumentAnthropicAiClient` | ✅ Yes | See platform docs |
 
 ---
@@ -391,8 +391,8 @@ Access at **Sentry → AI → Agents** (or **Insights → AI**).
 
 | Feature | Min SDK Version |
 |---------|----------------|
-| Vercel AI SDK integration (Node/CF/Edge/Bun) | **10.6.0** |
-| Vercel AI SDK integration (Deno) | **10.12.0** |
+| Vercel AI SDK integration (Node/CF/Edge/Bun) | **10.53.0** |
+| Vercel AI SDK integration (Deno) | **10.53.0** |
 | Vercel AI `recordInputs`/`recordOutputs` | 9.27.0 |
 | Vercel AI `force` option | 9.29.0 |
 | OpenAI integration (`openAIIntegration` / `instrumentOpenAiClient`) | **10.53.0** |
