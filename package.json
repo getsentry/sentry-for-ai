@@ -1,0 +1,12 @@
+{
+  "name": "sentry-for-ai",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@flue/cli": "0.5.3",
+    "@flue/sdk": "0.5.3",
+    "valibot": "1.4.0"
+  }
+}
