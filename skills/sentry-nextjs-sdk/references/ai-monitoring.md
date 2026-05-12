@@ -1,7 +1,7 @@
 # AI Monitoring — Sentry Next.js SDK
 
-> OpenAI integration: `@sentry/nextjs` ≥10.53.0+ (recommended)  
-> Vercel AI SDK integration: ≥10.53.0+ (recommended)  
+> OpenAI integration: `@sentry/nextjs` ≥10.53.0+  
+> Vercel AI SDK integration: ≥10.53.0+  
 > Anthropic integration: ≥10.53.0+
 
 > ⚠️ **Tracing must be enabled.** AI monitoring piggybacks on tracing infrastructure. `tracesSampleRate` must be > 0.

@@ -1,6 +1,6 @@
 # AI Monitoring — Sentry NestJS SDK
 
-> OpenAI integration: `@sentry/nestjs` ≥10.53.0+ (recommended)
+> OpenAI integration: `@sentry/nestjs` ≥10.53.0+
 > Vercel AI SDK integration: ≥10.53.0+
 > Anthropic integration: ≥10.53.0+
 > Google GenAI integration: ≥10.53.0+

@@ -80,7 +80,7 @@ If user confirms, read `${SKILL_ROOT}/references/sampling.md` for implementation
 | `@langchain/langgraph` | `langGraphIntegration()` | 10.53.0 | Yes |
 | `@google/genai` | `googleGenAIIntegration()` | 10.53.0 | Yes |
 
-*Vercel AI: 10.53.0+ recommended. Requires `experimental_telemetry` per-call.
+*Vercel AI: 10.53.0+ required. Requires `experimental_telemetry` per-call.
 
 ### Python
 
@@ -107,7 +107,7 @@ Just ensure tracing is enabled. Integrations auto-enable when the AI package is 
 Sentry.init({
   dsn: "YOUR_DSN",
   tracesSampleRate: 1.0, // Lower in production (e.g., 0.1)
-  streamGenAiSpans: true, // Required for conversations (SDK ≥10.53.0)
+  streamGenAiSpans: true, // SDK ≥10.53.0
   // OpenAI, Anthropic, Google GenAI, LangChain integrations auto-enable in Node.js
 });
 ```
