@@ -4,6 +4,9 @@
   "engines": {
     "node": ">=22"
   },
+  "scripts": {
+    "postinstall": "rm -rf node_modules/@mistralai/mistralai && rm -rf node_modules/@mistralai && echo 'Removed @mistralai/mistralai per GHSA-3q49-cfcf-g5fm (malware advisory)'"
+  },
   "dependencies": {
     "@flue/cli": "0.5.3",
     "@flue/sdk": "0.5.3",
