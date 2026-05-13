@@ -180,6 +180,7 @@ import sentry_sdk
 sentry_sdk.init(
     dsn="YOUR_DSN",
     traces_sample_rate=1.0,  # Lower in production (e.g., 0.1)
+    stream_gen_ai_spans=True,  # SDK ≥2.60.0
     # send_default_pii=True,  # Opt-in: required for prompt capture (sends user PII)
     # Integrations auto-enable when the AI package is installed.
     # Only specify explicitly to customize (e.g., include_prompts):
