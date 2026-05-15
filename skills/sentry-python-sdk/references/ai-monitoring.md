@@ -1,13 +1,13 @@
 # AI Monitoring — Sentry Python SDK
 
-> Minimum SDK: `sentry-sdk` 2.1.0+ (core AI spans); 2.45.0+ for auto-enabling all integrations
+> Minimum SDK: `sentry-sdk` >=2.60.0
 
 ## Prerequisites
 
 Tracing must be enabled — AI spans require an active transaction:
 
 ```python
-sentry_sdk.init(dsn="...", traces_sample_rate=1.0)
+sentry_sdk.init(dsn="...", traces_sample_rate=1.0, stream_gen_ai_spans=True)
 ```
 
 ## Integration Matrix
@@ -49,6 +49,7 @@ import sentry_sdk
 sentry_sdk.init(
     dsn="https://<key>@<org>.ingest.sentry.io/<project>",
     traces_sample_rate=1.0,
+    stream_gen_ai_spans=True,
     send_default_pii=True,    # required to capture prompts/outputs
 )
 
@@ -65,6 +66,7 @@ from sentry_sdk.integrations.anthropic import AnthropicIntegration
 sentry_sdk.init(
     dsn="...",
     traces_sample_rate=1.0,
+    stream_gen_ai_spans=True,
     send_default_pii=True,
     integrations=[
         OpenAIIntegration(
@@ -85,6 +87,7 @@ from sentry_sdk.integrations.litellm import LiteLLMIntegration
 sentry_sdk.init(
     dsn="...",
     traces_sample_rate=1.0,
+    stream_gen_ai_spans=True,
     send_default_pii=True,
     integrations=[
         LiteLLMIntegration(include_prompts=True),   # 100+ providers via proxy
