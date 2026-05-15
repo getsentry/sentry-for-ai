@@ -21,30 +21,52 @@ Migrate from the default transaction-based trace lifecycle (`static`) to span st
 - User mentions `traceLifecycle`, `spanStreamingIntegration`, or `withStreamedSpan`
 - User wants lower latency span delivery or per-span processing
 
-## Prerequisites
+## Supported Platforms
 
-- Sentry JavaScript SDK `>=10.53.1` (span streaming is not available in earlier versions)
-- Existing Sentry setup with tracing enabled (`tracesSampleRate` or `tracesSampler` configured)
+| Platform | Status |
+|---|---|
+| JavaScript (Browser, Node.js, Bun, Deno, Cloudflare) | Supported |
+| Python | Not yet available |
+| Ruby | Not yet available |
+| Go | Not yet available |
+| Other SDKs | Not yet available |
+
+If the user's project does not use a JavaScript Sentry SDK, inform them that span streaming is currently only available for JavaScript SDKs and stop here.
 
 ---
 
 ## Phase 1: Detect
 
-Identify the user's environment, SDK version, and current tracing configuration.
+Identify the user's platform, SDK version, and current tracing configuration.
 
-### 1.1 Detect SDK and Environment
+### 1.1 Detect Platform and SDK
 
 ```bash
-# Find Sentry packages and versions
+# Check for JavaScript Sentry packages
 cat package.json 2>/dev/null | grep -E '"@sentry/'
 
+# Check for Python Sentry
+cat requirements.txt setup.py pyproject.toml 2>/dev/null | grep -i sentry
+
+# Check for Ruby Sentry
+cat Gemfile 2>/dev/null | grep sentry
+
+# Check for Go Sentry
+cat go.mod 2>/dev/null | grep sentry
+```
+
+If a non-JavaScript Sentry SDK is detected, inform the user that span streaming is not yet available for their platform.
+
+### 1.2 Detect JavaScript Environment
+
+```bash
 # Detect if browser, server, or both
 grep -rn "from '@sentry/browser'\|from '@sentry/react'\|from '@sentry/vue'\|from '@sentry/angular'\|from '@sentry/svelte'\|from '@sentry/nextjs'\|from '@sentry/nuxt'\|from '@sentry/sveltekit'\|from '@sentry/remix'\|from '@sentry/solidstart'\|from '@sentry/astro'\|from '@sentry/react-router'" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" --include="*.mjs" -l 2>/dev/null | head -20
 
 grep -rn "from '@sentry/node'\|from '@sentry/bun'\|from '@sentry/deno'\|from '@sentry/cloudflare'" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" --include="*.mjs" -l 2>/dev/null | head -20
 ```
 
-### 1.2 Find Existing Sentry Config
+### 1.3 Find Existing Sentry Config
 
 ```bash
 # Find Sentry.init calls
@@ -60,7 +82,7 @@ grep -rn "beforeSendTransaction" --include="*.ts" --include="*.js" --include="*.
 grep -rn "ignoreSpans" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" --include="*.mjs" -l 2>/dev/null
 ```
 
-### 1.3 Classify Environment
+### 1.4 Classify Environment
 
 Based on detection results, classify each `Sentry.init` call as:
 
@@ -72,7 +94,9 @@ Based on detection results, classify each `Sentry.init` call as:
 
 ---
 
-## Phase 2: Migrate
+## Phase 2: Migrate (JavaScript)
+
+**Prerequisites:** Sentry JavaScript SDK `>=10.53.1` with tracing enabled (`tracesSampleRate` or `tracesSampler` configured).
 
 Apply changes to each `Sentry.init` call. Work through each file identified in Phase 1.
 
@@ -333,7 +357,7 @@ Instruct the user to verify in their browser devtools or server logs:
 
 ---
 
-## Quick Reference
+## Quick Reference (JavaScript)
 
 ### Minimal Server Setup
 
