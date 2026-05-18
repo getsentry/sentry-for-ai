@@ -81,6 +81,38 @@ Sentry MCP server configured at `https://mcp.sentry.dev/mcp`. Two config files e
 - GitHub CLI (`gh`) required for PR-related skills
 - Avoid emojis in skill/command content — keep output platform-neutral
 
+## Flue Subproject
+
+The `flue/` project root (`package.json`, `tsconfig.json`, `flue.config.ts`,
+`.flue/`) is a TypeScript agent harness for the skill-drift automation system.
+It runs side-by-side with the original `gh-aw` workflows.
+
+**File layout:**
+
+```
+.flue/
+  agents/   # skill-drift-detector.ts, skill-drift-updater.ts, skill-creator.ts
+  roles/    # detector.md, updater.md, creator.md  (role prompts)
+.github/workflows/
+  flue-skill-drift-detector.yml
+  flue-skill-drift-updater.yml
+  flue-skill-creator.yml
+scripts/
+  test-flue-detector.sh
+  test-flue-updater.sh
+  test-flue-creator.sh
+  fixtures/flue-updater-issue.json
+```
+
+**Running locally:**
+```bash
+npm ci
+export ANTHROPIC_API_KEY=sk-ant-...
+export GH_TOKEN=ghp_...
+./scripts/test-flue-detector.sh        # costs ~$0.20-1.00
+./scripts/test-flue-creator.sh nuxt   # costs ~$0.50-2.00
+```
+
 ## Skill Tree Navigation
 
 **How it works:**

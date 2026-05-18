@@ -1,0 +1,216 @@
+name: Flue Skill Drift Detector
+
+on:
+  schedule:
+    - cron: "42 22 * * 1" # Monday 22:42 UTC, matches gh-aw cadence
+  workflow_dispatch:
+    inputs:
+      since:
+        description: "Cutoff date (ISO format). Defaults to 7 days ago."
+        required: false
+        type: string
+
+concurrency:
+  group: flue-skill-drift-detector
+  cancel-in-progress: false
+
+permissions:
+  contents: read # checkout + reading SDK PRs via gh CLI
+  # NB: pull-requests/issues write happens in the actuator step which uses a separate token
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      result: ${{ steps.run-detector.outputs.result }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run Flue Detector
+        id: run-detector
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for gh CLI inside the agent
+          SINCE: ${{ inputs.since }}
+        run: |
+          payload='{}'
+          if [ -n "$SINCE" ]; then payload="$(jq -c -n --arg s "$SINCE" '{since:$s}')"; fi
+          npx flue run skill-drift-detector --target node --id "detector-$(date +%s)" \
+            --payload "$payload" \
+            > result.json
+          # Surface as output for the actuator job
+          DELIM=$(openssl rand -hex 16)
+          echo "result<<$DELIM" >> "$GITHUB_OUTPUT"
+          cat result.json >> "$GITHUB_OUTPUT"
+          echo "$DELIM" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: detector-result
+          path: result.json
+          retention-days: 14
+
+  actuate:
+    needs: detect
+    if: ${{ needs.detect.outputs.result != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need full history for branching
+      - uses: actions/download-artifact@v4
+        with:
+          name: detector-result
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Apply actions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          RESULT=result.json
+          SUMMARY_PRS=0
+          SUMMARY_ISSUES=0
+          SUMMARY_SKIPS=0
+          SUMMARY_FAILS=0
+
+          # Allowlist: agents are only permitted to edit files under skills/.
+          # Any path outside this allowlist triggers downgrade-to-issue. This is
+          # a "default deny" guard against the LLM emitting patches that touch
+          # CI config, lockfiles, agent code, or other sensitive paths.
+          ALLOWED_PATTERN='^skills/'
+
+          handle_create_pr() {
+            local action="$1"
+            local skill title body branch patch suffix branch_full
+            skill=$(jq -r '.skill' <<<"$action")
+            title=$(jq -r '.title' <<<"$action")
+            body=$(jq -r '.body' <<<"$action")
+            branch=$(jq -r '.branch' <<<"$action")
+            patch=$(jq -r '.patch' <<<"$action")
+            suffix=$(date +%s)
+            branch_full="${branch}-${suffix}"
+
+            echo "::group::create_pr for $skill"
+            git switch -c "$branch_full" origin/main
+
+            # Apply patch
+            if ! printf '%s' "$patch" | git apply --check 2>/tmp/apply-err; then
+              echo "::error::Patch did not apply cleanly for $skill"
+              cat /tmp/apply-err
+              git switch main
+              git branch -D "$branch_full"
+              SUMMARY_FAILS=$((SUMMARY_FAILS + 1))
+              echo "::endgroup::"
+              return
+            fi
+            printf '%s' "$patch" | git apply
+
+            # Protected files check
+            local touched
+            touched=$(git diff --name-only)
+            local violation=""
+            while IFS= read -r path; do
+              # Skip empty lines
+              [[ -z "$path" ]] && continue
+              # Strip ./ prefix defensively (git diff normalizes, but be explicit)
+              local normalized="${path#./}"
+              if ! [[ "$normalized" =~ $ALLOWED_PATTERN ]]; then
+                violation="$path"
+                break
+              fi
+            done <<<"$touched"
+
+            if [[ -n "$violation" ]]; then
+              echo "::warning::Protected file touched ($violation) — downgrading to issue"
+              git reset --hard origin/main
+              git switch main
+              git branch -D "$branch_full"
+              local issue_body
+              issue_body="The Detector proposed a change to a protected path (\`$violation\`) for skill \`$skill\`.
+
+          Original title: $title
+
+          Original body:
+
+          $body
+
+          Touched paths:
+          \`\`\`
+          $touched
+          \`\`\`
+
+          Please review and apply manually if appropriate."
+              gh issue create \
+                --title "[skill-drift] Manual review needed: $skill" \
+                --body "$issue_body" \
+                --label "skill-drift" \
+                --label "automated"
+              SUMMARY_ISSUES=$((SUMMARY_ISSUES + 1))
+              echo "::endgroup::"
+              return
+            fi
+
+            git add -A
+            git commit -m "$title
+
+          $body
+
+          Co-Authored-By: Claude (claude-opus-4-6 via Flue Detector)"
+            git push origin "$branch_full"
+
+            gh pr create --base main --head "$branch_full" \
+              --title "$title" \
+              --body "$body" \
+              --label "skill-drift" \
+              --label "automated"
+
+            SUMMARY_PRS=$((SUMMARY_PRS + 1))
+            git switch main
+            echo "::endgroup::"
+          }
+
+          handle_create_issue() {
+            local action="$1"
+            local title body extra_labels label_args
+            title=$(jq -r '.title' <<<"$action")
+            body=$(jq -r '.body' <<<"$action")
+            extra_labels=$(jq -r '.labels // [] | join(",")' <<<"$action")
+            label_args=(--label "skill-drift" --label "automated")
+            if [[ -n "$extra_labels" ]]; then
+              IFS=',' read -ra extras <<<"$extra_labels"
+              for l in "${extras[@]}"; do label_args+=(--label "$l"); done
+            fi
+            gh issue create --title "$title" --body "$body" "${label_args[@]}"
+            SUMMARY_ISSUES=$((SUMMARY_ISSUES + 1))
+          }
+
+          handle_skip() {
+            local action="$1"
+            echo "skip: $(jq -r '.skill' <<<"$action") — $(jq -r '.reason' <<<"$action")"
+            SUMMARY_SKIPS=$((SUMMARY_SKIPS + 1))
+          }
+
+          while IFS= read -r action; do
+            type=$(jq -r '.type' <<<"$action")
+            case "$type" in
+              create_pr) handle_create_pr "$action" ;;
+              create_issue) handle_create_issue "$action" ;;
+              skip) handle_skip "$action" ;;
+              *) echo "::warning::Unknown action type: $type" ;;
+            esac
+          done < <(jq -c '.actions[]' "$RESULT")
+
+          echo "::notice::Done. PRs=$SUMMARY_PRS issues=$SUMMARY_ISSUES skips=$SUMMARY_SKIPS fails=$SUMMARY_FAILS"

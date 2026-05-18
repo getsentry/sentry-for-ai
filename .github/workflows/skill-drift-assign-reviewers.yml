@@ -1,5 +1,25 @@
-# Auto-assign SDK team reviewers on skill-drift PRs based on which skill
-# files were modified. Hardcoded mapping — no agent involvement needed.
+# Reviewer auto-assignment for skill-drift PRs.
+#
+# This workflow is deterministic and source-agnostic — it fires on ANY
+# PR labeled `skill-drift` that touches `skills/sentry-*-sdk/**`,
+# regardless of whether the PR was created by:
+#   - The gh-aw Detector (.github/workflows/skill-drift-check.{md,lock.yml})
+#   - The gh-aw Updater (Copilot custom agent — .github/agents/skill-updater.agent.md)
+#   - The Flue Detector (.github/workflows/flue-skill-drift-detector.yml)
+#   - The Flue Updater (.github/workflows/flue-skill-drift-updater.yml)
+#   - The Flue Creator (.github/workflows/flue-skill-creator.yml — when the
+#     created skill matches an entry in SKILL_TEAMS below; otherwise no-op
+#     and a human reviewer is required for brand-new platforms)
+#
+# All three Flue workflows apply the `skill-drift` label to their PRs, so
+# this workflow's `if:` condition is satisfied in all cases.
+#
+# SKILL_TEAMS covers all 19 current skills in skills/sentry-*-sdk/. Brand-new
+# platforms created by Flue Creator won't match any entry — the script logs
+# "No matching skill directories found" and exits cleanly; reviewer routing
+# for a brand-new platform is a follow-up for a human.
+#
+# Permissions: pull-requests:write is sufficient for pulls.requestReviewers.
 
 name: Assign SDK Team Reviewers
 
