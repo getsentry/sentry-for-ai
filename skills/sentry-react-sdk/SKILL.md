@@ -356,7 +356,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `dsn` | `string` | — | **Required.** SDK disabled when empty |
 | `environment` | `string` | `"production"` | e.g., `"staging"`, `"development"` |
 | `release` | `string` | — | e.g., `"my-app@1.0.0"` or git SHA — links errors to releases |
-| `sendDefaultPii` | `boolean` | `false` | Includes IP addresses and request headers |
+| `sendDefaultPii` | `boolean` | `false` | Recommended when privacy policy permits; includes IP addresses/request headers and enables PII-gated AI input/output capture where supported |
 | `tracesSampleRate` | `number` | — | 0–1; `1.0` in dev, `0.1–0.2` in prod |
 | `tracesSampler` | `function` | — | Per-transaction sampling; overrides rate |
 | `tracePropagationTargets` | `(string\|RegExp)[]` | — | Outgoing URLs that receive distributed tracing headers |

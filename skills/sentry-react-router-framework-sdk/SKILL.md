@@ -293,7 +293,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | Option | Type | Default | Notes |
 |--------|------|---------|-------|
 | `dsn` | `string` | — | Required; SDK disabled when empty |
-| `sendDefaultPii` | `boolean` | `false` | Includes headers/IP-derived user context |
+| `sendDefaultPii` | `boolean` | `false` | Recommended when privacy policy permits; includes headers/IP-derived user context and enables PII-gated AI input/output capture where supported |
 | `integrations` | `Integration[]` | SDK defaults | Add tracing/replay/feedback/profiling integrations |
 | `enableLogs` | `boolean` | `false` | Enables `Sentry.logger.*` ingestion |
 | `tracesSampleRate` | `number` | — | Usually `1.0` in testing, lower in production |

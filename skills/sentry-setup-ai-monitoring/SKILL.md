@@ -27,13 +27,13 @@ AI monitoring requires **tracing enabled** (`tracesSampleRate > 0`).
 
 ## Data Capture Warning
 
-**Prompt and output recording captures user content that is likely PII.** Before enabling `recordInputs`/`recordOutputs` (JS) or `include_prompts`/`send_default_pii` (Python), confirm:
+**Prompt and output recording captures user content that is likely PII.** Before enabling send-default-PII (`sendDefaultPii: true` in JavaScript or `send_default_pii=True` in Python) or per-integration prompt/output capture (`recordInputs`/`recordOutputs` in JS, `include_prompts` in Python), confirm:
 
 - The application's privacy policy permits capturing user prompts and model responses
 - Captured data complies with applicable regulations (GDPR, CCPA, etc.)
 - Sentry data retention settings are appropriate for the sensitivity of the data
 
-**Ask the user** whether they want prompt/output capture enabled. Do not enable it by default — configure it only when explicitly requested or confirmed. Use `tracesSampleRate: 1.0` only in development; in production, use a lower value or a `tracesSampler` function.
+**Ask the user** whether they want prompt/output capture enabled. When they confirm, recommend enabling the SDK's send-default-PII option first, then use integration-level options only to override defaults. Do not enable prompt/output capture without explicit confirmation. Use `tracesSampleRate: 1.0` only in development; in production, use a lower value or a `tracesSampler` function.
 
 ## Detection First
 
@@ -112,15 +112,20 @@ Sentry.init({
 });
 ```
 
-To customize (e.g., enable prompt capture — see Data Capture Warning):
+To customize (e.g., enable prompt capture after user confirmation — see Data Capture Warning):
 
 ```javascript
-integrations: [
-  Sentry.openAIIntegration({
-    // recordInputs: true,  // Opt-in: captures prompt content (PII)
-    // recordOutputs: true, // Opt-in: captures response content (PII)
-  }),
-],
+Sentry.init({
+  dsn: "YOUR_DSN",
+  tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
+  sendDefaultPii: true, // Recommended when prompt/output capture is approved
+  integrations: [
+    Sentry.openAIIntegration({
+      // recordInputs/recordOutputs default to true when sendDefaultPii is true
+    }),
+  ],
+});
 ```
 
 ### Browser / Next.js OpenAI (manual wrapping required)
@@ -138,23 +143,29 @@ const openai = Sentry.instrumentOpenAiClient(new OpenAI());
 ### LangChain / LangGraph (auto-enabled)
 
 ```javascript
-integrations: [
-  Sentry.langChainIntegration({
-    // recordInputs: true,  // Opt-in: captures prompt content (PII)
-    // recordOutputs: true, // Opt-in: captures response content (PII)
-  }),
-  Sentry.langGraphIntegration({
-    // recordInputs: true,
-    // recordOutputs: true,
-  }),
-],
+Sentry.init({
+  dsn: "YOUR_DSN",
+  tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
+  sendDefaultPii: true, // Recommended when prompt/output capture is approved
+  integrations: [
+    Sentry.langChainIntegration(),
+    Sentry.langGraphIntegration(),
+  ],
+});
 ```
 
 ### Vercel AI SDK
 
-Add to `sentry.edge.config.ts` for Edge runtime:
+Add to `sentry.edge.config.ts` for Edge runtime. Include `sendDefaultPii: true` once prompt/output capture is approved:
 ```javascript
-integrations: [Sentry.vercelAIIntegration()],
+Sentry.init({
+  dsn: "YOUR_DSN",
+  tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
+  sendDefaultPii: true,
+  integrations: [Sentry.vercelAIIntegration()],
+});
 ```
 
 Enable telemetry per-call:
@@ -164,8 +175,7 @@ await generateText({
   prompt: "Hello",
   experimental_telemetry: {
     isEnabled: true,
-    // recordInputs: true,  // Opt-in: captures prompt content (PII)
-    // recordOutputs: true, // Opt-in: captures response content (PII)
+    // recordInputs/recordOutputs default to true when sendDefaultPii is true
   },
 });
 ```
@@ -181,7 +191,8 @@ sentry_sdk.init(
     dsn="YOUR_DSN",
     traces_sample_rate=1.0,  # Lower in production (e.g., 0.1)
     stream_gen_ai_spans=True,  # SDK ≥2.60.0
-    # send_default_pii=True,  # Opt-in: required for prompt capture (sends user PII)
+    # Recommended once prompt/output capture is approved:
+    # send_default_pii=True,  # required for prompt/output capture (sends user PII)
     # Integrations auto-enable when the AI package is installed.
     # Only specify explicitly to customize (e.g., include_prompts):
     # integrations=[OpenAIIntegration(include_prompts=True)],
@@ -299,5 +310,5 @@ After configuring, make an LLM call and check the Sentry Traces dashboard. AI sp
 | AI spans not appearing | Verify `tracesSampleRate > 0`, check SDK version |
 | Token counts missing | Some providers don't return tokens for streaming |
 | Negative or wrong costs in dashboard | Cached/reasoning tokens are subsets of totals — see Token Usage and Cost Calculation |
-| Prompts not captured | Enable `recordInputs`/`include_prompts` |
+| Prompts not captured | Set `sendDefaultPii: true` (JS) or `send_default_pii=True` (Python); use `recordInputs`/`include_prompts` only for explicit overrides |
 | Vercel AI not working | Add `experimental_telemetry` to each call |

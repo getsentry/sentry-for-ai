@@ -242,7 +242,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `dsn` | `string\|bool\|null` | `$_SERVER['SENTRY_DSN']` | SDK disabled if empty or `false` |
 | `environment` | `string\|null` | `$_SERVER['SENTRY_ENVIRONMENT']` | e.g., `"staging"` |
 | `release` | `string\|null` | `$_SERVER['SENTRY_RELEASE']` | e.g., `"myapp@1.0.0"` |
-| `send_default_pii` | `bool` | `false` | Include request headers, cookies, IP |
+| `send_default_pii` | `bool` | `false` | Recommended when privacy policy permits; includes request headers, cookies, and IP |
 | `sample_rate` | `float` | `1.0` | Error event sample rate (0.0–1.0) |
 | `traces_sample_rate` | `float\|null` | `null` | Transaction sample rate; `null` disables tracing |
 | `traces_sampler` | `callable\|null` | `null` | Custom per-transaction sampling (overrides rate) |

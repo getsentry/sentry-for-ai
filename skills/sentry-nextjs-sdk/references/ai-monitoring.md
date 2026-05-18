@@ -53,17 +53,17 @@ Sentry.init({
   // Tracing MUST be enabled for AI monitoring
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
+  sendDefaultPii: true, // recommended when prompt/output capture is approved
 
   integrations: [
-    Sentry.openAIIntegration({
-      recordInputs: true,   // capture prompts sent to OpenAI
-      recordOutputs: true,  // capture completions from OpenAI
-    }),
+    Sentry.openAIIntegration(), // recordInputs/recordOutputs default to true with sendDefaultPii
   ],
 });
 ```
 
 ### Client-Side / Manual Wrapping
+
+Prompt/output capture assumes the matching client-side `Sentry.init()` also sets `sendDefaultPii: true` after approval.
 
 ```typescript
 import OpenAI from "openai";
@@ -73,11 +73,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY, // ⚠️ Never expose this in the browser!
 });
 
-// Wrap once at module level — reuse this client everywhere
-const client = Sentry.instrumentOpenAiClient(openai, {
-  recordInputs: true,
-  recordOutputs: true,
-});
+// Wrap once at module level — reuse this client everywhere.
+// Input/output recording follows sendDefaultPii unless explicitly overridden.
+const client = Sentry.instrumentOpenAiClient(openai);
 
 const response = await client.chat.completions.create({
   model: "gpt-4o",
@@ -123,11 +121,10 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
+  sendDefaultPii: true, // recommended when prompt/output capture is approved
   integrations: [
     Sentry.vercelAIIntegration({
       force: true, // ← Required for Vercel production deployments (see note below)
-      recordInputs: true,
-      recordOutputs: true,
     }),
   ],
 });
@@ -141,6 +138,7 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
+  sendDefaultPii: true, // recommended when prompt/output capture is approved
   integrations: [
     Sentry.vercelAIIntegration(),
   ],
@@ -162,8 +160,7 @@ const result = await generateText({
   experimental_telemetry: {
     isEnabled: true,
     functionId: "my-text-generation",  // helps identify this function in traces
-    recordInputs: true,
-    recordOutputs: true,
+    // recordInputs/recordOutputs default to true when sendDefaultPii is true
   },
 });
 
@@ -216,11 +213,9 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
+  sendDefaultPii: true, // recommended when prompt/output capture is approved
   integrations: [
-    Sentry.anthropicAIIntegration({
-      recordInputs: true,
-      recordOutputs: true,
-    }),
+    Sentry.anthropicAIIntegration(),
   ],
 });
 ```
@@ -235,10 +230,8 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY, // ⚠️ Never expose in the browser!
 });
 
-const client = Sentry.instrumentAnthropicAiClient(anthropic, {
-  recordInputs: true,
-  recordOutputs: true,
-});
+// Input/output recording follows sendDefaultPii unless explicitly overridden.
+const client = Sentry.instrumentAnthropicAiClient(anthropic);
 
 const response = await client.messages.create({
   model: "claude-3-5-sonnet-20241022",
@@ -294,13 +287,13 @@ Sentry.init({
 });
 ```
 
-Or enable explicitly without `sendDefaultPii`:
+Use explicit integration options only when you need per-integration overrides instead of the recommended SDK-level default:
 
 ```typescript
 integrations: [
   Sentry.openAIIntegration({
-    recordInputs: true,   // explicitly opt in
-    recordOutputs: true,
+    recordInputs: false,  // opt out for this integration despite sendDefaultPii: true
+    recordOutputs: false,
   }),
 ],
 ```
@@ -319,10 +312,11 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
+  sendDefaultPii: true,
   integrations: [
-    Sentry.openAIIntegration({ recordInputs: true, recordOutputs: true }),
-    Sentry.vercelAIIntegration({ force: true, recordInputs: true, recordOutputs: true }),
-    Sentry.anthropicAIIntegration({ recordInputs: true, recordOutputs: true }),
+    Sentry.openAIIntegration(),
+    Sentry.vercelAIIntegration({ force: true }),
+    Sentry.anthropicAIIntegration(),
   ],
 });
 ```
@@ -363,8 +357,7 @@ export async function POST(req: Request) {
     experimental_telemetry: {
       isEnabled: true,            // ← Required for Sentry to capture spans
       functionId: "chat-handler",
-      recordInputs: true,
-      recordOutputs: true,
+      // recordInputs/recordOutputs default to true when sendDefaultPii is true
     },
   });
 
@@ -412,7 +405,7 @@ If your `tracesSampleRate` is below 1.0, you may be losing entire agent runs. Se
 | No AI spans appearing | Verify `tracesSampleRate` > 0; AI monitoring requires tracing |
 | Token counts missing in streams | Add `stream_options: { include_usage: true }` to all OpenAI streaming calls |
 | Vercel AI spans show raw names (`ai.toolCall`) | Add `vercelAIIntegration({ force: true })` in server config |
-| `recordInputs`/`recordOutputs` not capturing | Set `sendDefaultPii: true` or explicitly pass `recordInputs: true` to the integration |
+| `recordInputs`/`recordOutputs` not capturing | Set `sendDefaultPii: true`; check no integration or callsite override sets recording to `false` |
 | Anthropic spans missing | Check SDK version supports Anthropic integration; add `anthropicAIIntegration()` explicitly |
 | Cost estimates not showing | Model name must match models.dev/OpenRouter pricing data; custom/fine-tuned models may show no estimate |
 | Edge runtime AI spans missing | Add `vercelAIIntegration()` to `sentry.edge.config.ts` explicitly (not auto-enabled for Edge) |

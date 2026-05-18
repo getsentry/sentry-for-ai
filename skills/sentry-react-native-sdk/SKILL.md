@@ -553,7 +553,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `environment` | `string` | — | e.g., `"production"`, `"staging"`. Env: `SENTRY_ENVIRONMENT` |
 | `release` | `string` | — | App version, e.g., `"my-app@1.0.0+42"`. Env: `SENTRY_RELEASE` |
 | `dist` | `string` | — | Build number / variant identifier (max 64 chars). Env: `SENTRY_DIST` |
-| `sendDefaultPii` | `boolean` | `false` | Include PII: IP address, cookies, user data |
+| `sendDefaultPii` | `boolean` | `false` | Recommended when privacy disclosures permit; includes IP address, cookies, and user data |
 | `sampleRate` | `number` | `1.0` | Error event sampling (0.0–1.0) |
 | `maxBreadcrumbs` | `number` | `100` | Max breadcrumbs per event |
 | `attachStacktrace` | `boolean` | `true` | Auto-attach stack traces to messages |

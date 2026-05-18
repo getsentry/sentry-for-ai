@@ -239,7 +239,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `Dsn` | `string` | `""` | SDK disabled if empty; env: `SENTRY_DSN` |
 | `Environment` | `string` | `""` | e.g., `"production"`; env: `SENTRY_ENVIRONMENT` |
 | `Release` | `string` | `""` | e.g., `"my-app@1.0.0"`; env: `SENTRY_RELEASE` |
-| `SendDefaultPII` | `bool` | `false` | Include IP, request headers |
+| `SendDefaultPII` | `bool` | `false` | Recommended when privacy policy permits; includes IP and request headers |
 | `AttachStacktrace` | `bool` | `false` | Stack traces on `CaptureMessage` calls |
 | `SampleRate` | `float64` | `1.0` | Error event sample rate (0.0 treated as 1.0) |
 | `EnableTracing` | `bool` | `false` | Enable performance tracing |

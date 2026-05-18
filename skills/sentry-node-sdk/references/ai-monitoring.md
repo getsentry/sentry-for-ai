@@ -7,7 +7,12 @@
 Tracing must be enabled - AI spans require an active trace:
 
 ```typescript
-Sentry.init({ dsn: "...", tracesSampleRate: 1.0, streamGenAiSpans: true });
+Sentry.init({
+  dsn: "...",
+  tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
+  // Add sendDefaultPii: true when prompt/output capture is approved.
+});
 ```
 
 ## Integration Matrix
@@ -31,6 +36,8 @@ Sentry.init({ dsn: "...", tracesSampleRate: 1.0, streamGenAiSpans: true });
 | `true` | `true` (default) | Yes |
 | `true` | `false` | No |
 
+Recommended path: when privacy policy and user consent allow capturing AI inputs/outputs, set `sendDefaultPii: true` in `Sentry.init()` and let supported integrations default `recordInputs`/`recordOutputs` to `true`. Use integration-level options to opt out or override specific integrations.
+
 ## Configuration Examples
 
 ### Auto-enabled integrations
@@ -47,16 +54,17 @@ Sentry.init({
 // OpenAI, Anthropic, LangChain, LangGraph, Google GenAI activate automatically
 ```
 
-### Explicit configuration with recordInputs/recordOutputs override
+### Explicit configuration with sendDefaultPii defaults
 
 ```typescript
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
+  sendDefaultPii: true, // recommended when prompt/output capture is approved
   integrations: [
-    Sentry.openAIIntegration({ recordInputs: true, recordOutputs: true }),
-    Sentry.vercelAIIntegration({ recordInputs: true, recordOutputs: true }),
+    Sentry.openAIIntegration(),
+    Sentry.vercelAIIntegration(),
   ],
 });
 ```
@@ -67,7 +75,8 @@ Sentry.init({
 await generateText({
   model: openai("gpt-4.1"),
   prompt: "Hello",
-  experimental_telemetry: { isEnabled: true, recordInputs: true, recordOutputs: true },
+  // recordInputs/recordOutputs default to true when sendDefaultPii is true in Sentry.init().
+  experimental_telemetry: { isEnabled: true },
 });
 ```
 
@@ -144,7 +153,7 @@ await Sentry.startSpan({
 | `gen_ai.operation.name` | string | No | Human-readable operation label |
 | `gen_ai.agent.name` | string | No | Agent name (for agent spans) |
 
-### Content attributes (PII-gated - only when `sendDefaultPii: true` + `recordInputs/recordOutputs: true`)
+### Content attributes (PII-gated — requires `sendDefaultPii: true` and no integration-level recording opt-out)
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
@@ -210,6 +219,6 @@ If `tracesSampleRate` < 1.0, see the [AI sampling guide](../../sentry-setup-ai-m
 | Token counts missing in streams | Add `stream_options: { include_usage: true }` (OpenAI) |
 | Vercel AI spans not tracked | Add `experimental_telemetry: { isEnabled: true }` per call |
 | Browser OpenAI not traced | Use `Sentry.instrumentOpenAiClient()` - auto-instrumentation is server-only |
-| Prompts not captured | Set `sendDefaultPii: true` or explicit `recordInputs: true` |
+| Prompts not captured | Set `sendDefaultPii: true`; check no integration or callsite override sets recording to `false` |
 | AI Agents Dashboard empty | Ensure traces are being sent; check DSN and `tracesSampleRate` |
 | Wrong cost calculations | Cached/reasoning tokens are subsets of totals, not additions |

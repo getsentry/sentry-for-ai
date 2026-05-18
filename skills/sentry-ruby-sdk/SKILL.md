@@ -212,7 +212,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `environment` | String | `nil` | e.g., `"production"`; env: `SENTRY_ENVIRONMENT` |
 | `release` | String | `nil` | e.g., `"myapp@1.0.0"`; env: `SENTRY_RELEASE` |
 | `spotlight` | Boolean | `false` | Send events to Spotlight sidecar (local dev, no DSN needed) |
-| `send_default_pii` | Boolean | `false` | Include IP addresses and request headers |
+| `send_default_pii` | Boolean | `false` | Recommended when privacy policy permits; includes IP addresses and request headers |
 | `sample_rate` | Float | `1.0` | Error event sample rate (0.0–1.0) |
 | `traces_sample_rate` | Float | `nil` | Transaction sample rate; `nil` disables tracing |
 | `profiles_sample_rate` | Float | `nil` | Profiling rate relative to `traces_sample_rate`; requires `stackprof` or `vernier` |

@@ -570,7 +570,7 @@ The plugin can inject instrumentation automatically (no source changes):
 | `environment` | `String` | — | e.g., `"production"`, `"staging"`. Env: `SENTRY_ENVIRONMENT` |
 | `release` | `String` | — | App version, e.g., `"my-app@1.0.0+42"`. Env: `SENTRY_RELEASE` |
 | `dist` | `String` | — | Build variant / distribution identifier |
-| `sendDefaultPii` | `Boolean` | `false` | Include PII: IP address, user data |
+| `sendDefaultPii` | `Boolean` | `false` | Recommended when privacy disclosures permit; includes IP address and user data |
 | `sampleRate` | `Double` | `1.0` | Error event sampling (0.0–1.0) |
 | `maxBreadcrumbs` | `Int` | `100` | Max breadcrumbs per event |
 | `isAttachStacktrace` | `Boolean` | `true` | Auto-attach stack traces to message events |
