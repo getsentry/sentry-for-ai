@@ -75,8 +75,7 @@ Sentry.init({
 await generateText({
   model: openai("gpt-4.1"),
   prompt: "Hello",
-  // recordInputs/recordOutputs default to true when sendDefaultPii is true in Sentry.init().
-  experimental_telemetry: { isEnabled: true },
+  experimental_telemetry: { isEnabled: true, recordInputs: true, recordOutputs: true },
 });
 ```
 

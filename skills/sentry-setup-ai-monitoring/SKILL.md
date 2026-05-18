@@ -175,7 +175,8 @@ await generateText({
   prompt: "Hello",
   experimental_telemetry: {
     isEnabled: true,
-    // recordInputs/recordOutputs default to true when sendDefaultPii is true
+    recordInputs: true,
+    recordOutputs: true,
   },
 });
 ```

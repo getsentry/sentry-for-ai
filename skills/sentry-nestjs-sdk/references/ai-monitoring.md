@@ -142,7 +142,8 @@ export class AiService {
       experimental_telemetry: {
         isEnabled: true,
         functionId: "my-text-generation",
-        // recordInputs/recordOutputs default to true when sendDefaultPii is true
+        recordInputs: true,
+        recordOutputs: true,
       },
     });
     return result.text;

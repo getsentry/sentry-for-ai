@@ -160,7 +160,8 @@ const result = await generateText({
   experimental_telemetry: {
     isEnabled: true,
     functionId: "my-text-generation",  // helps identify this function in traces
-    // recordInputs/recordOutputs default to true when sendDefaultPii is true
+    recordInputs: true,
+    recordOutputs: true,
   },
 });
 
@@ -357,7 +358,8 @@ export async function POST(req: Request) {
     experimental_telemetry: {
       isEnabled: true,            // ← Required for Sentry to capture spans
       functionId: "chat-handler",
-      // recordInputs/recordOutputs default to true when sendDefaultPii is true
+      recordInputs: true,
+      recordOutputs: true,
     },
   });
 
