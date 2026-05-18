@@ -245,7 +245,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `dsn` | `str` | `None` | SDK disabled if empty; env: `SENTRY_DSN` |
 | `environment` | `str` | `"production"` | e.g., `"staging"`; env: `SENTRY_ENVIRONMENT` |
 | `release` | `str` | `None` | e.g., `"myapp@1.0.0"`; env: `SENTRY_RELEASE` |
-| `send_default_pii` | `bool` | `False` | Recommended when privacy policy permits; includes IP/headers/cookies/auth user and enables AI prompt/output capture |
+| `send_default_pii` | `bool` | `False` | Include IP, headers, cookies, auth user |
 | `traces_sample_rate` | `float` | `None` | Transaction sample rate; `None` disables tracing |
 | `traces_sampler` | `Callable` | `None` | Custom per-transaction sampling (overrides rate) |
 | `profile_session_sample_rate` | `float` | `None` | Continuous profiling session rate |

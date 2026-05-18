@@ -266,7 +266,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | Option | Type | Default | Notes |
 |--------|------|---------|-------|
 | `dsn` | `string` | — | Required; SDK is disabled when empty |
-| `sendDefaultPii` | `boolean` | `false` | Recommended when privacy policy permits; sends request headers/IP-derived user context and enables PII-gated AI input/output capture where supported |
+| `sendDefaultPii` | `boolean` | `false` | Sends request headers and IP-derived user context |
 | `integrations` | `Integration[]` | SDK defaults | Include TanStack Router tracing, replay, feedback as needed |
 | `enableLogs` | `boolean` | `false` | Enables `Sentry.logger.*` APIs |
 | `tracesSampleRate` | `number` | — | `1.0` in development, lower in production |

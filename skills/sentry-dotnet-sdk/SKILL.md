@@ -514,7 +514,7 @@ Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the err
 | `TracesSampleRate` | `double` | `0.0` | — | Transaction sampling. Must be `> 0` to enable. |
 | `TracesSampler` | `Func<SamplingContext, double>` | — | — | Per-transaction dynamic sampler; overrides `TracesSampleRate` |
 | `ProfilesSampleRate` | `double` | `0.0` | — | Fraction of traced transactions to profile. Requires `Sentry.Profiling`. |
-| `SendDefaultPii` | `bool` | `false` | — | Recommended when privacy disclosures permit; includes user IP, name, and email |
+| `SendDefaultPii` | `bool` | `false` | — | Include user IP, name, email |
 | `AttachStacktrace` | `bool` | `true` | — | Attach stack trace to all messages |
 | `MaxBreadcrumbs` | `int` | `100` | — | Max breadcrumbs stored per event |
 | `IsGlobalModeEnabled` | `bool` | `false`* | — | *Auto-`true` for MAUI, Blazor WASM. **Must** be `true` for WPF, WinForms, Console. |

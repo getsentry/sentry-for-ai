@@ -491,7 +491,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `dsn`                      | `string`                | —              | SDK disabled if empty; env: `SENTRY_DSN`                                                         |
 | `environment`              | `string`                | `"production"` | e.g., `"staging"`; env: `SENTRY_ENVIRONMENT`                                                     |
 | `release`                  | `string`                | —              | e.g., `"myapp@1.0.0"`; env: `SENTRY_RELEASE`                                                     |
-| `sendDefaultPii`           | `boolean`               | `false`        | Recommended when privacy policy permits; includes IP/request context and enables AI input/output capture defaults |
+| `sendDefaultPii`           | `boolean`               | `false`        | Include IP addresses and request headers                                                         |
 | `tracesSampleRate`         | `number`                | —              | Transaction sample rate; `undefined` disables tracing                                            |
 | `tracesSampler`            | `function`              | —              | Custom per-transaction sampling (overrides rate)                                                 |
 | `tracePropagationTargets`  | `Array<string\|RegExp>` | —              | URLs to propagate `sentry-trace`/`baggage` headers to                                            |

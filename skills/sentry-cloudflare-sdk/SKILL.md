@@ -427,7 +427,7 @@ Deploy and trigger the route, then check your [Sentry Issues dashboard](https://
 | `dsn` | `string` | — | Required. Read from `env.SENTRY_DSN` automatically if not set |
 | `tracesSampleRate` | `number` | — | 0–1; 1.0 in dev, lower in prod recommended |
 | `tracesSampler` | `function` | — | Dynamic sampling function; mutually exclusive with `tracesSampleRate` |
-| `sendDefaultPii` | `boolean` | `false` | Recommended when privacy policy permits; includes request headers/cookies and enables PII-gated AI input/output capture where supported |
+| `sendDefaultPii` | `boolean` | `false` | Include request headers and cookies in events |
 | `enableLogs` | `boolean` | `false` | Enable Sentry Logs product |
 | `environment` | `string` | auto | Read from `env.SENTRY_ENVIRONMENT` if not set |
 | `release` | `string` | auto | Detected from `CF_VERSION_METADATA.id` or `SENTRY_RELEASE` |

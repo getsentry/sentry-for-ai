@@ -419,7 +419,7 @@ Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the err
 | `tracesSampleRate` | `number` | — | 0–1; 1.0 in dev, 0.1 in prod recommended |
 | `replaysSessionSampleRate` | `number` | `0.1` | Fraction of all sessions recorded |
 | `replaysOnErrorSampleRate` | `number` | `1.0` | Fraction of error sessions recorded |
-| `sendDefaultPii` | `boolean` | `false` | Recommended when privacy policy permits; includes IP/request context and enables AI input/output capture defaults |
+| `sendDefaultPii` | `boolean` | `false` | Include IP, request headers in events |
 | `includeLocalVariables` | `boolean` | `false` | Attach local variable values to stack frames (server only) |
 | `enableLogs` | `boolean` | `false` | Enable Sentry Logs product |
 | `environment` | `string` | auto | `"production"`, `"staging"`, etc. |

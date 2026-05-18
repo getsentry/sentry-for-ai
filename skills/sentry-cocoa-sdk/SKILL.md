@@ -283,7 +283,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `environment` | `String` | `""` | e.g., `"production"`; reads `SENTRY_ENVIRONMENT` |
 | `releaseName` | `String` | `""` | e.g., `"my-app@1.0.0"`; reads `SENTRY_RELEASE` |
 | `debug` | `Bool` | `false` | Verbose SDK output — **disable in production** |
-| `sendDefaultPii` | `Bool` | `false` | Recommended when privacy disclosures permit; includes IP and user info from active integrations |
+| `sendDefaultPii` | `Bool` | `false` | Include IP, user info from active integrations |
 | `enableCrashHandler` | `Bool` | `true` | Master switch for crash reporting |
 | `enableAppHangTrackingV2` | `Bool` | `true` (9.0+) | Differentiates fully/non-fully blocked hangs |
 | `appHangTimeoutInterval` | `Double` | `2.0` | Seconds before classifying as hang |

@@ -736,7 +736,7 @@ Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the err
 |--------|------|---------|-------|
 | `dsn` | `string` | — | Required. Also from `SENTRY_DSN` env var |
 | `tracesSampleRate` | `number` | — | 0–1; required to enable tracing; **do not set when using OTLP path** |
-| `sendDefaultPii` | `boolean` | `false` | Recommended when privacy policy permits; includes IP/request/user context and enables AI input/output capture defaults |
+| `sendDefaultPii` | `boolean` | `false` | Include IP, request headers, user info |
 | `includeLocalVariables` | `boolean` | `false` | Add local variable values to stack frames (Node.js) |
 | `enableLogs` | `boolean` | `false` | Enable Sentry Logs product (v9.41.0+) |
 | `environment` | `string` | `"production"` | Also from `SENTRY_ENVIRONMENT` env var |
