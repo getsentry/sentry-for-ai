@@ -1,0 +1,45 @@
+{
+  "name": "sentry",
+  "version": "1.0.0",
+  "description": "Sentry plugin for AI coding assistants with MCP, commands, and skills for setup, debugging, and monitoring workflows.",
+  "author": {
+    "name": "Sentry",
+    "url": "https://sentry.io/"
+  },
+  "homepage": "https://github.com/getsentry/sentry-for-ai",
+  "repository": "https://github.com/getsentry/sentry-for-ai",
+  "license": "MIT",
+  "keywords": [
+    "sentry",
+    "debugging",
+    "monitoring",
+    "error-tracking",
+    "observability"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Sentry",
+    "shortDescription": "Set up Sentry, debug production issues, and query Sentry from Codex",
+    "longDescription": "Use Sentry skills and the Sentry MCP server to add Sentry to projects, inspect and fix production issues, review code with Sentry context, create alerts, and configure monitoring workflows.",
+    "developerName": "Sentry",
+    "category": "Engineering",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://sentry.io/",
+    "privacyPolicyURL": "https://sentry.io/privacy/",
+    "termsOfServiceURL": "https://sentry.io/terms/",
+    "defaultPrompt": [
+      "Add Sentry to my project",
+      "Fix the recent Sentry errors",
+      "Create a Slack alert for high-priority issues"
+    ],
+    "brandColor": "#584674",
+    "composerIcon": "./assets/logo.svg",
+    "logo": "./assets/logo.svg",
+    "screenshots": []
+  }
+}
