@@ -50,6 +50,7 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 |-------|-------------|
 | `sentry-setup-ai-monitoring` | Instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI |
 | `sentry-otel-exporter-setup` | Setup OTel Collector with Sentry Exporter |
+| `sentry-span-streaming` | Migrate from transaction-based to streamed span delivery |
 
 ### Workflow Skills
 | Skill | Description |
