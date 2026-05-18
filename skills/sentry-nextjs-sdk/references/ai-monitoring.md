@@ -53,7 +53,7 @@ Sentry.init({
   // Tracing MUST be enabled for AI monitoring
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
-  sendDefaultPii: true, // recommended when prompt/output capture is approved
+  sendDefaultPii: true,
 
   integrations: [
     Sentry.openAIIntegration(), // recordInputs/recordOutputs default to true with sendDefaultPii
@@ -63,7 +63,7 @@ Sentry.init({
 
 ### Client-Side / Manual Wrapping
 
-Prompt/output capture assumes the matching client-side `Sentry.init()` also sets `sendDefaultPii: true` after approval.
+Prompt/output capture assumes the matching client-side `Sentry.init()` also sets `sendDefaultPii: true`.
 
 ```typescript
 import OpenAI from "openai";
@@ -121,7 +121,7 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
-  sendDefaultPii: true, // recommended when prompt/output capture is approved
+  sendDefaultPii: true,
   integrations: [
     Sentry.vercelAIIntegration({
       force: true, // ← Required for Vercel production deployments (see note below)
@@ -138,7 +138,7 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
-  sendDefaultPii: true, // recommended when prompt/output capture is approved
+  sendDefaultPii: true,
   integrations: [
     Sentry.vercelAIIntegration(),
   ],
@@ -214,7 +214,7 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
-  sendDefaultPii: true, // recommended when prompt/output capture is approved
+  sendDefaultPii: true,
   integrations: [
     Sentry.anthropicAIIntegration(),
   ],
@@ -407,7 +407,7 @@ If your `tracesSampleRate` is below 1.0, you may be losing entire agent runs. Se
 | No AI spans appearing | Verify `tracesSampleRate` > 0; AI monitoring requires tracing |
 | Token counts missing in streams | Add `stream_options: { include_usage: true }` to all OpenAI streaming calls |
 | Vercel AI spans show raw names (`ai.toolCall`) | Add `vercelAIIntegration({ force: true })` in server config |
-| `recordInputs`/`recordOutputs` not capturing | Set `sendDefaultPii: true`; check no integration or callsite override sets recording to `false` |
+| `recordInputs`/`recordOutputs` not capturing | Set `sendDefaultPii: true`, or explicitly pass `recordInputs: true` / `recordOutputs: true` to the integration |
 | Anthropic spans missing | Check SDK version supports Anthropic integration; add `anthropicAIIntegration()` explicitly |
 | Cost estimates not showing | Model name must match models.dev/OpenRouter pricing data; custom/fine-tuned models may show no estimate |
 | Edge runtime AI spans missing | Add `vercelAIIntegration()` to `sentry.edge.config.ts` explicitly (not auto-enabled for Edge) |

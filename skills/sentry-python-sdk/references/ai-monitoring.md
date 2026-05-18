@@ -11,7 +11,7 @@ sentry_sdk.init(
     dsn="...",
     traces_sample_rate=1.0,
     stream_gen_ai_spans=True,
-    # Add send_default_pii=True when prompt/output capture is approved.
+    send_default_pii=True,
 )
 ```
 
@@ -42,7 +42,7 @@ Every integration follows the same two-layer control:
 | `True` | `True` (default) | ✅ Yes |
 | `True` | `False` | ❌ No |
 
-Recommended path: when privacy policy and user consent allow capturing AI inputs/outputs, set `send_default_pii=True` in `sentry_sdk.init()` and leave `include_prompts` at its default `True`. Use `include_prompts=False` per integration only to opt out.
+Set `send_default_pii=True` in `sentry_sdk.init()` and leave `include_prompts` at its default `True`. Use `include_prompts=False` per integration only to opt out.
 
 ## Configuration Examples
 

@@ -291,7 +291,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 
 ### Default PII Guidance
 
-Most Sentry SDKs expose a send-default-PII option that should be recommended when privacy policy and user disclosures permit. As of sentry v12, the Elixir SDK does not expose a `send_default_pii` config option in its documented option list or current config schema, so do **not** add a non-existent option. For richer user context, use `Sentry.PlugContext` and explicitly set allowed fields with `Sentry.Context.set_user_context/1`, then scrub with `:before_send` if needed. If a future Elixir SDK release adds `send_default_pii`, recommend setting it when permitted.
+Most Sentry SDKs expose a send-default-PII option. As of sentry v12, the Elixir SDK does not expose a `send_default_pii` config option in its documented option list or current config schema, so do **not** add a non-existent option. For richer user context, use `Sentry.PlugContext` and explicitly set allowed fields with `Sentry.Context.set_user_context/1`, then scrub with `:before_send` if needed. If a future Elixir SDK release adds `send_default_pii`, recommend setting it.
 
 ### Environment Variables
 

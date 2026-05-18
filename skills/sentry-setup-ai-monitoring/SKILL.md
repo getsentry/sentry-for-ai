@@ -33,7 +33,7 @@ AI monitoring requires **tracing enabled** (`tracesSampleRate > 0`).
 - Captured data complies with applicable regulations (GDPR, CCPA, etc.)
 - Sentry data retention settings are appropriate for the sensitivity of the data
 
-**Ask the user** whether they want prompt/output capture enabled. When they confirm, recommend enabling the SDK's send-default-PII option first, then use integration-level options only to override defaults. Do not enable prompt/output capture without explicit confirmation. Use `tracesSampleRate: 1.0` only in development; in production, use a lower value or a `tracesSampler` function.
+**Ask the user** whether they want prompt/output capture enabled. Do not enable prompt/output capture without explicit confirmation. Use `tracesSampleRate: 1.0` only in development; in production, use a lower value or a `tracesSampler` function.
 
 ## Detection First
 
@@ -119,7 +119,7 @@ Sentry.init({
   dsn: "YOUR_DSN",
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
-  sendDefaultPii: true, // Recommended when prompt/output capture is approved
+  sendDefaultPii: true,
   integrations: [
     Sentry.openAIIntegration({
       // recordInputs/recordOutputs default to true when sendDefaultPii is true
@@ -147,7 +147,7 @@ Sentry.init({
   dsn: "YOUR_DSN",
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
-  sendDefaultPii: true, // Recommended when prompt/output capture is approved
+  sendDefaultPii: true,
   integrations: [
     Sentry.langChainIntegration(),
     Sentry.langGraphIntegration(),
@@ -157,7 +157,7 @@ Sentry.init({
 
 ### Vercel AI SDK
 
-Add to `sentry.edge.config.ts` for Edge runtime. Include `sendDefaultPii: true` once prompt/output capture is approved:
+Add to `sentry.edge.config.ts` for Edge runtime:
 ```javascript
 Sentry.init({
   dsn: "YOUR_DSN",
@@ -192,8 +192,7 @@ sentry_sdk.init(
     dsn="YOUR_DSN",
     traces_sample_rate=1.0,  # Lower in production (e.g., 0.1)
     stream_gen_ai_spans=True,  # SDK ≥2.60.0
-    # Recommended once prompt/output capture is approved:
-    # send_default_pii=True,  # required for prompt/output capture (sends user PII)
+    send_default_pii=True,
     # Integrations auto-enable when the AI package is installed.
     # Only specify explicitly to customize (e.g., include_prompts):
     # integrations=[OpenAIIntegration(include_prompts=True)],

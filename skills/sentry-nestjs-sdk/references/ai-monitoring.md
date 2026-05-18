@@ -39,7 +39,7 @@ All integrations listed below are **auto-enabled** when the corresponding AI lib
 
 ### Auto-Enabled Setup
 
-OpenAI is auto-instrumented — no changes to `instrument.ts` needed. Set `sendDefaultPii: true` when prompt/output capture is approved:
+OpenAI is auto-instrumented — no changes to `instrument.ts` needed:
 
 ```typescript
 // instrument.ts
@@ -117,7 +117,7 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
-  sendDefaultPii: true, // recommended when prompt/output capture is approved
+  sendDefaultPii: true,
   integrations: [
     Sentry.vercelAIIntegration(),
   ],
@@ -186,7 +186,7 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
-  sendDefaultPii: true, // recommended when prompt/output capture is approved
+  sendDefaultPii: true,
   integrations: [
     Sentry.anthropicAIIntegration(),
   ],
@@ -245,7 +245,7 @@ Sentry automatically captures token usage following OpenTelemetry GenAI semantic
 `recordInputs` captures prompts sent to the AI API.
 `recordOutputs` captures the generated text/completions returned.
 
-Both default to `true` only when `sendDefaultPii: true` is set. Recommend this path when privacy policy and user consent allow prompt/output capture:
+Both default to `true` only when `sendDefaultPii: true` is set:
 
 ```typescript
 Sentry.init({
@@ -347,7 +347,7 @@ If your `tracesSampleRate` is below 1.0, you may be losing entire agent runs. Se
 |-------|----------|
 | No AI spans appearing | Verify `tracesSampleRate` > 0; AI monitoring requires tracing |
 | Token counts missing in streams | Add `stream_options: { include_usage: true }` to all OpenAI streaming calls |
-| `recordInputs`/`recordOutputs` not capturing | Set `sendDefaultPii: true`; check no integration or callsite override sets recording to `false` |
+| `recordInputs`/`recordOutputs` not capturing | Set `sendDefaultPii: true`, or explicitly pass `recordInputs: true` / `recordOutputs: true` to the integration |
 | Anthropic spans missing | Check SDK version; add `anthropicAIIntegration()` explicitly |
 | Cost estimates not showing | Model name must match models.dev/OpenRouter pricing data; custom models may show no estimate |
 | Vercel AI spans not tracked | Pass `experimental_telemetry: { isEnabled: true }` to every AI SDK call |
