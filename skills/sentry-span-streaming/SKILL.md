@@ -259,11 +259,11 @@ Sentry.init({
       name: /^corsMiddleware/,
     },
 
-    // Filter by attributes
+    // Filter by attributes (string = substring match, RegExp for patterns)
     {
       op: 'http.server',
       attributes: {
-        'http.route': '/internal/*',
+        'http.route': /^\/internal\//,
       },
     },
   ],
