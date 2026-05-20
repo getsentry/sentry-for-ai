@@ -1,7 +1,7 @@
 # Error Monitoring — Sentry Cocoa SDK
 
-> Minimum SDK: `sentry-cocoa` v7.0.0+  
-> Swift Error improvements: v8.7.0+  
+> Minimum SDK: `sentry-cocoa` v7.0.0+
+> Swift Error improvements: v8.7.0+
 > HTTP client error capture: v8.0.0+
 
 ## Configuration
@@ -11,10 +11,11 @@
 | `enableCrashHandler` | `Bool` | `true` | Master switch for crash reporting (signal handlers, Mach exceptions, C++) |
 | `sampleRate` | `Float` (0.0–1.0) | `1.0` | Percentage of error events sent |
 | `attachStacktrace` | `Bool` | `true` | Attach stack traces to all captured messages |
+| `attachAllThreads` | `Bool` | `false` | Attach full stack traces for all threads (SDK 9.9+) |
 | `maxBreadcrumbs` | `Int` | `100` | Max breadcrumbs per event |
 | `enableAppHangTracking` | `Bool` | `true` | Detect main thread unresponsiveness |
 | `appHangTimeoutInterval` | `Double` | `2.0` | Seconds before a hang is reported |
-| `enableAppHangTrackingV2` | `Bool` | `true` (v9+) | Differentiates fully/non-fully-blocking hangs |
+| `enableReportNonFullyBlockingAppHangs` | `Bool` | `true` | Include non-fully-blocking hangs where V2 is supported |
 | `enableWatchdogTerminationTracking` | `Bool` | `true` | Track OS watchdog kills via heuristics |
 | `enableCaptureFailedRequests` | `Bool` | `true` | Auto-capture HTTP client errors as Sentry events |
 | `failedRequestStatusCodes` | `[HttpStatusCodeRange]` | `[500–599]` | Status code ranges that trigger error capture |
@@ -119,8 +120,8 @@ SentrySDK.start { options in
     options.enableAppHangTracking = true
     options.appHangTimeoutInterval = 2.0    // default; avoid values < 0.1
 
-    // V2: differentiates fully vs non-fully blocking hangs (default in v9+)
-    options.enableAppHangTrackingV2 = true
+    // V2 is the default in v9+ where supported; this option controls whether
+    // less-actionable non-fully-blocking hangs are reported.
     options.enableReportNonFullyBlockingAppHangs = true
 }
 
@@ -235,10 +236,9 @@ SentrySDK.start { options in
             return nil
         }
         // Suppress app hang events
-        // Note: V1 (enableAppHangTracking) uses exception type "App Hanging"
-        //       V2 (enableAppHangTrackingV2, default in 9.0+) may use a different
-        //       type — inspect event.exceptions?.first?.type in beforeSend to confirm
-        if event.exceptions?.first?.type == "App Hanging" {
+        // V1/macOS may use "App Hanging"; V2 uses the more specific values
+        // listed above. Inspect event.exceptions?.first?.type in beforeSend.
+        if event.exceptions?.first?.type?.contains("App Hang") == true {
             return nil
         }
         // Scrub sensitive data
@@ -325,7 +325,7 @@ When `enableCrashHandler = true` (default), the SDK installs:
 - **C++ exception handlers** — `std::terminate` interception
 - **Objective-C uncaught exception handler** — `NSSetUncaughtExceptionHandler`
 
-> ⚠️ Always test crash reporting **without a debugger attached**. The debugger intercepts signals and prevents the SDK from capturing crashes.
+> Warning: Always test crash reporting **without a debugger attached**. The debugger intercepts signals and prevents the SDK from capturing crashes.
 
 ### macOS — uncaught NSException reporting
 
