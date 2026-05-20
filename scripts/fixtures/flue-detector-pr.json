@@ -1,0 +1,7 @@
+{
+  "skill_name": "sentry-node-sdk",
+  "sdk_repo": "getsentry/sentry-javascript",
+  "pr_number": 99999,
+  "pr_url": "https://github.com/getsentry/sentry-javascript/pull/99999",
+  "sdk_repo_path": "/tmp/sentry-javascript-fixture"
+}
