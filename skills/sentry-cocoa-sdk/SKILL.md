@@ -21,7 +21,7 @@ Opinionated wizard that scans your Apple project and guides you through complete
 - User wants to monitor crashes, app hangs, watchdog terminations, or performance
 
 > **Note:** SDK versions and APIs below reflect sentry-cocoa 9.13.0.
-> Before implementing, verify against the [Apple SDK docs](https://github.com/getsentry/sentry-docs/tree/master/docs/platforms/apple), [sentry-cocoa changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md), and [sentry-cocoa source](https://github.com/getsentry/sentry-cocoa). Release notes may be ahead of docs for newly changed behavior.
+> Before implementing, verify against the [Apple SDK docs](https://docs.sentry.io/platforms/apple/), [sentry-cocoa changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md), and [sentry-cocoa source](https://github.com/getsentry/sentry-cocoa). Release notes may be ahead of docs for newly changed behavior.
 
 ---
 
