@@ -21,7 +21,7 @@ Opinionated wizard that scans your Apple project and guides you through complete
 - User wants to monitor crashes, app hangs, watchdog terminations, or performance
 
 > **Note:** SDK versions and APIs below reflect sentry-cocoa 9.13.0.
-> Before implementing, verify against the local Apple docs, `../sentry-cocoa/CHANGELOG.md`, and SDK source. Release notes may be ahead of docs for newly changed behavior.
+> Before implementing, verify against the [Apple SDK docs](https://github.com/getsentry/sentry-docs/tree/master/docs/platforms/apple), [sentry-cocoa changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md), and [sentry-cocoa source](https://github.com/getsentry/sentry-cocoa). Release notes may be ahead of docs for newly changed behavior.
 
 ---
 
@@ -31,18 +31,21 @@ Run these commands to understand the project before making any recommendations:
 
 ```bash
 # Check existing Sentry dependency
-rg -n -i "sentry|sentry-cocoa|SentrySPM|SentrySwiftUI" -g "Package.swift" -g "Podfile" -g "Cartfile" -g "Package.resolved" -g "*.pbxproj" . 2>/dev/null
+grep -rEi "sentry|sentry-cocoa|SentrySPM|SentrySwiftUI" \
+  --include="Package.swift" --include="Podfile" --include="Cartfile" \
+  --include="Package.resolved" --include="project.pbxproj" . 2>/dev/null | head -20
 
 # Detect UI framework (SwiftUI vs UIKit)
-rg -n -m 5 "@main|struct .*: App" -g "*.swift" . 2>/dev/null
-rg -n -m 5 "AppDelegate|UIApplicationMain|@UIApplicationDelegateAdaptor" -g "*.swift" . 2>/dev/null
+grep -rE "@main|struct .*: App" --include="*.swift" . 2>/dev/null | head -5
+grep -rE "AppDelegate|UIApplicationMain|@UIApplicationDelegateAdaptor" --include="*.swift" . 2>/dev/null | head -5
 
 # Detect platform and deployment targets
-rg -n "platforms:|\\.iOS|\\.macOS|\\.tvOS|\\.watchOS|\\.visionOS|IPHONEOS_DEPLOYMENT_TARGET|MACOSX_DEPLOYMENT_TARGET|TVOS_DEPLOYMENT_TARGET|WATCHOS_DEPLOYMENT_TARGET|XROS_DEPLOYMENT_TARGET" -g "Package.swift" -g "*.pbxproj" . 2>/dev/null
-rg -n "platform :ios|platform :osx|platform :tvos|platform :watchos" Podfile 2>/dev/null
+grep -rE "platforms:|\\.iOS|\\.macOS|\\.tvOS|\\.watchOS|\\.visionOS|IPHONEOS_DEPLOYMENT_TARGET|MACOSX_DEPLOYMENT_TARGET|TVOS_DEPLOYMENT_TARGET|WATCHOS_DEPLOYMENT_TARGET|XROS_DEPLOYMENT_TARGET" \
+  --include="Package.swift" --include="project.pbxproj" . 2>/dev/null | head -20
+grep -E "platform :ios|platform :osx|platform :tvos|platform :watchos" Podfile 2>/dev/null
 
 # Detect logging
-rg -n -m 5 "import OSLog|import os\\.log|Logger\\(|CocoaLumberjack|DDLog" -g "*.swift" . 2>/dev/null
+grep -rE "import OSLog|import os\\.log|Logger\\(|CocoaLumberjack|DDLog" --include="*.swift" . 2>/dev/null | head -5
 
 # Detect companion backend
 ls ../backend ../server ../api 2>/dev/null
