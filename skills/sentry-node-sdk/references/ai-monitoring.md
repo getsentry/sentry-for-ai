@@ -210,6 +210,40 @@ Transaction
 
 If `tracesSampleRate` < 1.0, see the [AI sampling guide](../../sentry-setup-ai-monitoring/references/sampling.md).
 
+## Conversation Tracking
+
+Link AI spans across turns into a chat-style timeline at **Explore > Conversations**.
+
+**Prerequisites:** `streamGenAiSpans: true` (SDK >=10.53.0) and `sendDefaultPii: true` must be set — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
+
+```typescript
+import * as Sentry from "@sentry/node";
+
+// Set at the start of a conversation
+Sentry.setConversationId("conv_abc123");
+
+// All subsequent AI calls carry gen_ai.conversation.id: "conv_abc123"
+await openai.chat.completions.create({
+  model: "gpt-4o",
+  messages: [{ role: "user", content: "Hello" }],
+});
+
+// Later turns in the same conversation are linked automatically
+await openai.chat.completions.create({
+  model: "gpt-4o",
+  messages: [
+    { role: "user", content: "Hello" },
+    { role: "assistant", content: "Hi there!" },
+    { role: "user", content: "What's the weather?" },
+  ],
+});
+
+// Unset when the conversation ends
+Sentry.setConversationId(null);
+```
+
+A single conversation can span multiple traces (e.g., page refresh), and a single trace can contain multiple conversations.
+
 ## Troubleshooting
 
 | Issue | Solution |
@@ -221,3 +255,4 @@ If `tracesSampleRate` < 1.0, see the [AI sampling guide](../../sentry-setup-ai-m
 | Prompts not captured | Set `sendDefaultPii: true`, or explicitly pass `recordInputs: true` / `recordOutputs: true` to the integration |
 | AI Agents Dashboard empty | Ensure traces are being sent; check DSN and `tracesSampleRate` |
 | Wrong cost calculations | Cached/reasoning tokens are subsets of totals, not additions |
+| Conversations view empty | Ensure `streamGenAiSpans: true`, `sendDefaultPii: true`, and a conversation ID is set via `Sentry.setConversationId()` |

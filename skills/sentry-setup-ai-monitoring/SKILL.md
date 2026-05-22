@@ -303,6 +303,73 @@ The same rule applies to `gen_ai.usage.output_tokens` vs. `gen_ai.usage.output_t
 
 After configuring, make an LLM call and check the Sentry Traces dashboard. AI spans appear with `gen_ai.*` operations showing model, token counts, and latency.
 
+## Conversations
+
+Conversations gives a readable, chat-style view of past sessions with your AI agent. It groups spans by `gen_ai.conversation.id` — so whether a user talked across multiple traces or multiple conversations happened inside one trace, you get a timeline of every message, tool call, and response.
+
+Find it at **Explore > Conversations** in Sentry.
+
+### Prerequisites for Conversations
+
+- Tracing enabled with `tracesSampleRate > 0`
+- `streamGenAiSpans: true` (JS SDK >=10.53.0) / `stream_gen_ai_spans=True` (Python SDK >=2.60.0) — required so AI spans are sent as standalone items. Without this, spans with large inputs/outputs can hit transaction payload size limits and be dropped.
+- **Input and output capture enabled** — Conversations reconstructs the chat from `gen_ai.input.messages` and `gen_ai.output.messages` attributes. Set `sendDefaultPii: true` (JS) / `send_default_pii=True` (Python). Without it, conversations appear empty.
+
+### Setting a Conversation ID
+
+Some integrations (OpenAI Agents SDK for Python, OpenAI SDK for Node) infer the conversation ID automatically. For all others, set it manually.
+
+#### JavaScript
+
+```javascript
+import * as Sentry from "@sentry/node"; // or @sentry/nextjs, @sentry/nestjs, etc.
+
+// Set at the start of a conversation
+Sentry.setConversationId("conv_abc123");
+
+// All subsequent AI calls carry gen_ai.conversation.id: "conv_abc123"
+await openai.chat.completions.create({
+  model: "gpt-4o",
+  messages: [{ role: "user", content: "Hello" }],
+});
+
+// Unset when the conversation ends
+Sentry.setConversationId(null);
+```
+
+#### Python
+
+```python
+import sentry_sdk.ai
+
+# Set at the start of a conversation
+sentry_sdk.ai.set_conversation_id("conv_abc123")
+
+# All subsequent AI calls carry gen_ai.conversation.id = "conv_abc123"
+```
+
+Some integrations infer the conversation ID automatically. For example, the Python OpenAI integration picks it up when you use the `conversation` parameter:
+
+```python
+import openai
+import sentry_sdk
+
+sentry_sdk.init(...)
+
+conversation = openai.conversations.create()
+response = openai.responses.create(
+    model="gpt-4.1",
+    input=[{"role": "user", "content": "What are the 5 Ds of dodgeball?"}],
+    conversation=conversation.id  # automatically sets gen_ai.conversation.id
+)
+```
+
+### Conversations vs Traces
+
+These are independent concepts:
+- A single conversation can span **multiple traces** (e.g., user refreshes the page mid-conversation — new trace, same conversation ID)
+- A single trace can contain spans from **different conversations** (e.g., user starts a new chat without refreshing)
+
 ## Troubleshooting
 
 | Issue | Solution |
@@ -312,3 +379,4 @@ After configuring, make an LLM call and check the Sentry Traces dashboard. AI sp
 | Negative or wrong costs in dashboard | Cached/reasoning tokens are subsets of totals — see Token Usage and Cost Calculation |
 | Prompts not captured | Set `sendDefaultPii: true` (JS) or `send_default_pii=True` (Python); use `recordInputs`/`include_prompts` only for explicit overrides |
 | Vercel AI not working | Add `experimental_telemetry` to each call |
+| Conversations view empty | Ensure `streamGenAiSpans: true` / `stream_gen_ai_spans=True`, `sendDefaultPii: true` / `send_default_pii=True`, and a conversation ID is set |
