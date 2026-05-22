@@ -414,12 +414,9 @@ Sentry.setConversationId("conv_abc123");
 
 // All subsequent AI calls carry gen_ai.conversation.id: "conv_abc123"
 await openai.chat.completions.create({
-  model: "gpt-4o",
+  model: "gpt-5.5",
   messages: [{ role: "user", content: "Hello" }],
 });
-
-// Unset when the conversation ends
-Sentry.setConversationId(null);
 ```
 
 A single conversation can span multiple traces, and a single trace can contain multiple conversations.

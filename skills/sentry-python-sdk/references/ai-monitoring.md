@@ -281,7 +281,7 @@ sentry_sdk.init(...)
 
 conversation = openai.conversations.create()
 response = openai.responses.create(
-    model="gpt-4.1",
+    model="gpt-5.4",
     input=[{"role": "user", "content": "What are the 5 Ds of dodgeball?"}],
     conversation=conversation.id  # automatically sets gen_ai.conversation.id
 )
