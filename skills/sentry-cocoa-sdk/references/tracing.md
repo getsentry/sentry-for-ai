@@ -23,7 +23,7 @@
 | `tracePropagationTargets` | `[Any]` | all requests | Strings or `NSRegularExpression` values for outgoing distributed trace headers |
 | `enableSwizzling` | `Bool` | `true` | Master switch for method swizzling (required by several auto-instrumentation features) |
 | `strictTraceContinuation` | `Bool` | `false` | Only continue an incoming trace when `orgId` matches; prevents cross-org trace continuation (SDK 9.x+) |
-| `orgId` | `String?` | auto-parsed from DSN | Organization ID used for strict trace continuation validation; auto-parsed from the DSN host |
+| `orgId` | `String?` | `nil` | Organization ID for strict trace validation; auto-parsed from DSN host (e.g. `o123.ingest.sentry.io` → `"123"`) if not set explicitly |
 
 ## Code Examples
 
