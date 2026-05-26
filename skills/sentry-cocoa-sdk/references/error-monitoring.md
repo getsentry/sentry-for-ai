@@ -303,15 +303,17 @@ SentrySDK.start { options in
 
 `"{{ default }}"` substitutes Sentry's standard hash, allowing you to *extend* rather than fully replace default grouping.
 
-### onCrashedLastRun callback
+### onLastRunStatusDetermined callback
 
 ```swift
 SentrySDK.start { options in
     options.dsn = "___PUBLIC_DSN___"
-    options.onCrashedLastRun = { event in
-        // Called once after init when the previous run crashed.
+    options.onLastRunStatusDetermined = { status, crashEvent in
+        // Called once after init when the previous run's crash status is determined.
         // Keep this minimal — complex logic can cascade into another crash.
-        UserDefaults.standard.set(true, forKey: "didCrashLastRun")
+        if status == .didCrash {
+            UserDefaults.standard.set(true, forKey: "didCrashLastRun")
+        }
     }
 }
 ```
@@ -366,7 +368,7 @@ SentrySDK.configureScope { scope in
 - Set `releaseName` to a consistent value (e.g., `CFBundleShortVersionString + "+" + CFBundleVersion`) for regression tracking between deployments
 - Use `NSDebugDescriptionErrorKey` — not `NSLocalizedDescriptionKey` — for error user info to avoid locale-based duplicate issues
 - Use `beforeSend` to strip PII (`event.request?.cookies = nil`) when `sendDefaultPii = false`
-- Use `onCrashedLastRun` only for lightweight operations (flag writes); heavy logic risks a cascading crash
+- Use `onLastRunStatusDetermined` only for lightweight operations (flag writes); heavy logic risks a cascading crash
 - Disable app hang tracking for **Widgets and Live Activities** to avoid false positives
 - Use `initialScope` to set global context before the first event fires
 
@@ -381,4 +383,4 @@ SentrySDK.configureScope { scope in
 | HTTP errors not captured | Verify `enableCaptureFailedRequests = true` and `failedRequestStatusCodes` covers the status code |
 | Screenshots contain PII | Enable `screenshot.maskAllText = true` and `screenshot.maskAllImages = true` (both default) |
 | Events missing from `beforeSend` for transactions | `beforeSend` is for error/message events only; use `beforeSendSpan` for spans |
-| `onCrashedLastRun` not firing | SDK must be initialized on main thread; check `enableCrashHandler = true` |
+| `onLastRunStatusDetermined` not firing | SDK must be initialized on main thread; check `enableCrashHandler = true` |
