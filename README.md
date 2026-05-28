@@ -98,6 +98,7 @@ Full platform bundles that scan your project, recommend features, and guide you 
 | Skill | Description |
 |-------|-------------|
 | `sentry-setup-ai-monitoring` | Instrument OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI |
+| `sentry-setup-logs-javascript` | Add structured, queryable JavaScript/TypeScript Sentry Logs after SDK setup |
 | `sentry-otel-exporter-setup` | Configure OTel Collector with Sentry Exporter for multi-project routing |
 
 ### Workflow
@@ -108,6 +109,7 @@ Full platform bundles that scan your project, recommend features, and guide you 
 | `sentry-pr-code-review` | Resolve issues flagged by Seer Bug Prediction |
 | `sentry-fix-issues` | Find and fix Sentry issues using MCP |
 | `sentry-create-alert` | Create alerts using the Sentry workflow engine API |
+| `sentry-logs-migration-javascript` | Migrate JavaScript/TypeScript console and logger calls to structured Sentry Logs |
 
 ### Slash Commands
 
