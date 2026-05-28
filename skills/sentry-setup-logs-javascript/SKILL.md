@@ -1,6 +1,6 @@
 ---
 name: sentry-setup-logs-javascript
-description: Configure JavaScript/TypeScript Sentry Logs after basic SDK setup. Use when making logs more useful for debugging and operations with structured attributes, event catalogs, workflow boundaries, sampling, and sensitive data controls.
+description: Configure JavaScript/TypeScript Sentry Logs after basic SDK setup. Use when adding or improving operation-boundary logs for debugging and operations with structured attributes, event catalogs, sampling, and sensitive data controls.
 license: Apache-2.0
 category: feature-setup
 parent: sentry-feature-setup
