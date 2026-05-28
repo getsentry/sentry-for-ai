@@ -487,6 +487,13 @@ jobs:
                 ;;
 
               create_pr)
+                # Reset skills/ to a known-clean state. A previous iteration
+                # may have left untracked files (from rsync overlay on a
+                # bail-out path) which would otherwise leak into this
+                # iteration's diff and fail the allowlist below.
+                git checkout -- skills/ 2>/dev/null || true
+                git clean -fd -- skills/ 2>/dev/null || true
+
                 # Verify the artifact actually contains a skill subdirectory
                 # diff that, when overlaid, differs from main.
                 STAGED_SKILL_DIR="$dir/skills/$SKILL"
@@ -509,10 +516,33 @@ jobs:
                 # Overlay only the skill subdir from the artifact.
                 rsync -a --delete "$STAGED_SKILL_DIR/" "skills/$SKILL/"
 
-                # Post-overlay path-allowlist check (defense in depth — the
-                # artifact's contents should already be confined by detect,
-                # but the deterministic apply job also enforces the rule).
-                TOUCHED=$( (git diff --name-only HEAD; git ls-files --others --exclude-standard) | sort -u )
+                # Compute touched paths SCOPED to skills/ only. The apply
+                # job's working tree also contains an `artifacts/` directory
+                # from download-artifact; an unscoped `git ls-files --others`
+                # would surface those and incorrectly fail the regex below.
+                # Scoping with `-- skills/` is the simplest defense and keeps
+                # `artifacts/` (or any other untracked top-level path) out of
+                # the picture entirely.
+                TOUCHED=$( { git diff --name-only HEAD -- skills/; git ls-files --others --exclude-standard -- skills/; } | sort -u )
+
+                # Empty-diff guard: catches the case where rsync produced no
+                # net change. Uses TOUCHED (which includes untracked files),
+                # so this works correctly even when the agent's only change
+                # is adding a brand-new file under skills/$SKILL/.
+                if [[ -z "$TOUCHED" ]]; then
+                  echo "::warning::No effective diff after overlay for $SKILL — skipping"
+                  git switch main
+                  git branch -D "$BRANCH" || true
+                  git clean -fd -- skills/ 2>/dev/null || true
+                  FAILED=$((FAILED + 1))
+                  echo "::endgroup::"
+                  continue
+                fi
+
+                # Path-allowlist: every changed/new file must be under
+                # this skill's own subtree (defense in depth — the artifact's
+                # contents should already be confined by detect, but the
+                # deterministic apply job also enforces the rule).
                 ALLOWED_RE="^skills/${SKILL}/"
                 violation=""
                 while IFS= read -r path; do
@@ -526,6 +556,7 @@ jobs:
                   echo "::warning::Path-allowlist violation on apply ($violation) — downgrading to issue"
                   git switch main
                   git branch -D "$BRANCH" || true
+                  git clean -fd -- skills/ 2>/dev/null || true
                   ISSUE_BODY=$(printf '%s\n\n---\n\nDowngraded from auto-PR because the artifact touched a disallowed path: `%s`.\n\nTouched paths:\n```\n%s\n```' \
                     "$BODY" "$violation" "$TOUCHED")
                   gh issue create \
@@ -535,15 +566,6 @@ jobs:
                     --label "skill-drift" \
                     --label "automated"
                   ISSUES_OPENED=$((ISSUES_OPENED + 1))
-                  echo "::endgroup::"
-                  continue
-                fi
-
-                if git diff --quiet HEAD; then
-                  echo "::warning::No effective diff after overlay for $SKILL — skipping"
-                  git switch main
-                  git branch -D "$BRANCH" || true
-                  FAILED=$((FAILED + 1))
                   echo "::endgroup::"
                   continue
                 fi
@@ -559,17 +581,26 @@ jobs:
                   if length == 0 then ""
                   else "\n\n## Source PRs\n\n" + (map("- [" + .title + "](" + .url + ")") | join("\n"))
                   end')
-                PR_URL=$(gh pr create \
+                gh pr create \
                   --repo "$GITHUB_REPOSITORY" \
                   --base main \
                   --head "$BRANCH" \
                   --title "$TITLE" \
                   --body "${BODY}${FOOTER}" \
                   --label "skill-drift" \
-                  --label "automated")
-                PR_NUM=$(basename "$PR_URL")
-                OPENED_PR_NUMS+=("$PR_NUM")
-                PRS_OPENED=$((PRS_OPENED + 1))
+                  --label "automated"
+                # Look up the PR number via `gh pr view <branch>` — the
+                # canonical source. Parsing `gh pr create` stdout is fragile
+                # because warnings or other text can be intermixed with the
+                # URL on some gh versions.
+                PR_NUM=$(gh pr view "$BRANCH" --repo "$GITHUB_REPOSITORY" --json number --jq '.number' 2>/dev/null || echo "")
+                if [[ "$PR_NUM" =~ ^[0-9]+$ ]]; then
+                  OPENED_PR_NUMS+=("$PR_NUM")
+                  PRS_OPENED=$((PRS_OPENED + 1))
+                else
+                  echo "::warning::Created PR for $SKILL on branch $BRANCH but could not determine PR number for reviewer assignment"
+                  FAILED=$((FAILED + 1))
+                fi
                 git switch main
                 ;;
             esac
@@ -606,7 +637,10 @@ jobs:
             const nums = (process.env.OPENED_PR_NUMS || '').split(',').filter(Boolean);
             for (const num of nums) {
               const pr = Number(num);
-              if (!Number.isInteger(pr) || pr <= 0) continue;
+              if (!Number.isInteger(pr) || pr <= 0) {
+                core.warning(`Skipping reviewer assignment for invalid PR number from apply step: ${JSON.stringify(num)}`);
+                continue;
+              }
 
               const { data: files } = await github.rest.pulls.listFiles({
                 owner: context.repo.owner,
