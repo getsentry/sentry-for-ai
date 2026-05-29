@@ -72,8 +72,13 @@ jobs:
             FILTERED=$(jq -c '.' "$MATRIX_FILE")
           else
             # Build a JSON string array from the comma list, trim whitespace,
-            # then keep only matrix entries whose .skill is in the wanted set.
-            JSON_WANTED=$(jq -R -c 'split(",") | map(gsub("^\\s+|\\s+$"; ""))' <<<"$SKILLS_FILTER")
+            # drop empty tokens (handles trailing/leading/double commas), then
+            # keep only matrix entries whose .skill is in the wanted set.
+            JSON_WANTED=$(jq -R -c 'split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))' <<<"$SKILLS_FILTER")
+            if [[ "$(jq 'length' <<<"$JSON_WANTED")" == "0" ]]; then
+              echo "::error::workflow_dispatch input 'skills' contained no non-empty entries"
+              exit 1
+            fi
             ALL_SKILLS=$(jq -c '[.[].skill]' "$MATRIX_FILE")
             UNKNOWN=$(jq -c --argjson all "$ALL_SKILLS" --argjson wanted "$JSON_WANTED" \
               '$wanted | map(select(. as $s | $all | index($s) | not))')
@@ -272,6 +277,16 @@ jobs:
             For `no_drift`, set `title`/`body` to a short rationale; the
             apply job will skip it.
 
+            Length limits (enforced by the validation step — exceeding them
+            discards the entire detection for this skill):
+              - `title`: <= 256 characters
+              - `body`:  <= 10000 characters
+            Keep PR bodies focused on the change summary; do not paste
+            entire source files or PR diffs.
+
+            For `create_pr` and `create_issue`, both `title` and `body` must
+            be non-empty.
+
             ## File-edit allowlist
 
             You may ONLY create or modify files under:
@@ -306,16 +321,29 @@ jobs:
           fi
           jq empty "$SUMMARY" || { echo "::error::$SUMMARY is not valid JSON"; exit 1; }
 
-          # 2. Required fields and action enum
-          jq -e '
+          # 2. Required fields, action enum, and content caps. Title/body are
+          #    posted verbatim to GitHub via gh, so we cap their length here
+          #    (defense against prompt-injection content pulled from external
+          #    SDK PRs) and require non-empty values for actionable runs (an
+          #    empty title would break `git commit -m ""` and yield a useless
+          #    issue/PR otherwise).
+          TITLE_MAX=256
+          BODY_MAX=10000
+          jq -e --argjson tmax "$TITLE_MAX" --argjson bmax "$BODY_MAX" '
             (.schema_version == 1) and
             (.skill | type == "string") and
             (.repo | type == "string") and
             (.action | IN("create_pr","create_issue","no_drift")) and
             (.title | type == "string") and
-            (.body | type == "string")
+            (.body  | type == "string") and
+            (.title | length <= $tmax) and
+            (.body  | length <= $bmax) and
+            (
+              .action == "no_drift"
+              or ((.title | length > 0) and (.body | length > 0))
+            )
           ' "$SUMMARY" >/dev/null || {
-            echo "::error::summary.json shape invalid";
+            echo "::error::summary.json shape invalid (check enum, required fields, title<=${TITLE_MAX} chars, body<=${BODY_MAX} chars, non-empty for create_pr/create_issue)";
             cat "$SUMMARY";
             exit 1;
           }
@@ -405,6 +433,13 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Download all artifacts
+        # `continue-on-error` so that a run where every detect job emitted
+        # no_drift (and therefore uploaded an artifact whose `summary.json`
+        # encodes a no-op) — or where every detect job failed before
+        # uploading — does not fail the entire apply job at the download
+        # step. The Apply script below handles the empty-artifacts case
+        # gracefully.
+        continue-on-error: true
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           path: artifacts
@@ -424,11 +459,30 @@ jobs:
           FAILED=0
           OPENED_PR_NUMS=()
 
+          # Title / body length caps. Mirrors the detect job's validate step.
+          # These bound the amount of attacker-controlled text (sourced from
+          # external SDK PR bodies / source files) that can land in our
+          # auto-created GitHub issues or PRs.
+          TITLE_MAX=256
+          BODY_MAX=10000
+
+          # Prepend a visible warning header to any body that is posted to a
+          # human-readable surface. Use GitHub's `> [!WARNING]` alert syntax.
+          prepend_body_warning() {
+            printf '> [!WARNING]\n> Auto-generated from external SDK content. Review all links and code suggestions before acting on them.\n\n%s' "$1"
+          }
+
           shopt -s nullglob
           ART_DIRS=(artifacts/skill-drift-*)
           if [[ ${#ART_DIRS[@]} -eq 0 ]]; then
             echo "::notice::No detector artifacts to apply"
-            echo "prs=0" >> "$GITHUB_OUTPUT" 2>/dev/null || true
+            {
+              echo "prs=0"
+              echo "issues=0"
+              echo "no_drift=0"
+              echo "failed=0"
+              echo "opened_pr_nums="
+            } >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -440,12 +494,22 @@ jobs:
               continue
             fi
 
-            # Re-validate JSON shape (artifacts are signed by GH but cheap to
-            # re-check; cost of mis-parsed input on a privileged job is high).
-            jq -e '
+            # Re-validate JSON shape, action enum, content caps, and
+            # non-emptiness. Artifacts are signed by GH but the cost of
+            # mis-parsed input on a privileged job is high. Mirror exactly
+            # the rules enforced in detect's validate step.
+            jq -e --argjson tmax "$TITLE_MAX" --argjson bmax "$BODY_MAX" '
               (.schema_version == 1) and
               (.skill | type == "string") and
-              (.action | IN("create_pr","create_issue","no_drift"))
+              (.action | IN("create_pr","create_issue","no_drift")) and
+              (.title | type == "string") and
+              (.body  | type == "string") and
+              (.title | length <= $tmax) and
+              (.body  | length <= $bmax) and
+              (
+                .action == "no_drift"
+                or ((.title | length > 0) and (.body | length > 0))
+              )
             ' "$SUMMARY" >/dev/null || {
               echo "::warning::Invalid summary.json in $dir — skipping";
               FAILED=$((FAILED + 1));
@@ -477,10 +541,11 @@ jobs:
               create_issue)
                 # Look up team owner from matrix for reviewer cc (already in body
                 # if the agent followed the prompt, but we don't double-tag).
+                ISSUE_BODY=$(prepend_body_warning "$BODY")
                 gh issue create \
                   --repo "$GITHUB_REPOSITORY" \
                   --title "$TITLE" \
-                  --body "$BODY" \
+                  --body "$ISSUE_BODY" \
                   --label "skill-drift" \
                   --label "automated"
                 ISSUES_OPENED=$((ISSUES_OPENED + 1))
@@ -559,6 +624,7 @@ jobs:
                   git clean -fd -- skills/ 2>/dev/null || true
                   ISSUE_BODY=$(printf '%s\n\n---\n\nDowngraded from auto-PR because the artifact touched a disallowed path: `%s`.\n\nTouched paths:\n```\n%s\n```' \
                     "$BODY" "$violation" "$TOUCHED")
+                  ISSUE_BODY=$(prepend_body_warning "$ISSUE_BODY")
                   gh issue create \
                     --repo "$GITHUB_REPOSITORY" \
                     --title "[skill-drift] Manual review: $SKILL" \
@@ -581,24 +647,35 @@ jobs:
                   if length == 0 then ""
                   else "\n\n## Source PRs\n\n" + (map("- [" + .title + "](" + .url + ")") | join("\n"))
                   end')
+                PR_BODY=$(prepend_body_warning "${BODY}${FOOTER}")
                 gh pr create \
                   --repo "$GITHUB_REPOSITORY" \
                   --base main \
                   --head "$BRANCH" \
                   --title "$TITLE" \
-                  --body "${BODY}${FOOTER}" \
+                  --body "$PR_BODY" \
                   --label "skill-drift" \
                   --label "automated"
                 # Look up the PR number via `gh pr view <branch>` — the
                 # canonical source. Parsing `gh pr create` stdout is fragile
                 # because warnings or other text can be intermixed with the
-                # URL on some gh versions.
-                PR_NUM=$(gh pr view "$BRANCH" --repo "$GITHUB_REPOSITORY" --json number --jq '.number' 2>/dev/null || echo "")
+                # URL on some gh versions. The GitHub API is eventually
+                # consistent so we retry briefly; without the loop a
+                # transient 404 immediately after creation would silently
+                # skip reviewer assignment.
+                PR_NUM=""
+                for attempt in 1 2 3 4 5; do
+                  PR_NUM=$(gh pr view "$BRANCH" --repo "$GITHUB_REPOSITORY" --json number --jq '.number' 2>/dev/null || echo "")
+                  if [[ "$PR_NUM" =~ ^[0-9]+$ ]]; then
+                    break
+                  fi
+                  sleep 1
+                done
                 if [[ "$PR_NUM" =~ ^[0-9]+$ ]]; then
                   OPENED_PR_NUMS+=("$PR_NUM")
                   PRS_OPENED=$((PRS_OPENED + 1))
                 else
-                  echo "::warning::Created PR for $SKILL on branch $BRANCH but could not determine PR number for reviewer assignment"
+                  echo "::warning::Created PR for $SKILL on branch $BRANCH but could not determine PR number after 5 retries (reviewer assignment skipped)"
                   FAILED=$((FAILED + 1))
                 fi
                 git switch main
@@ -642,11 +719,19 @@ jobs:
                 continue;
               }
 
-              const { data: files } = await github.rest.pulls.listFiles({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: pr,
-              });
+              // Paginate listFiles so PRs touching >100 files don't get
+              // partial team coverage. In practice skill-drift PRs only
+              // touch one skill subdir, but mirror the convention used by
+              // skill-drift-assign-reviewers.yml for consistency.
+              const files = await github.paginate(
+                github.rest.pulls.listFiles,
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr,
+                  per_page: 100,
+                },
+              );
               const teams = new Set();
               for (const f of files) {
                 const m = f.filename.match(/^skills\/(sentry-[\w-]+-sdk)\//);
