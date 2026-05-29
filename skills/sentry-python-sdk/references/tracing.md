@@ -153,6 +153,7 @@ sentry_sdk.init(dsn="...", traces_sampler=traces_sampler)
 | Django | ✅ | Requests, DB queries (ORM), cache, signals |
 | Flask | ✅ | Requests, Jinja2 rendering |
 | FastAPI / Starlette | ✅ | Requests, background tasks |
+| Pyramid | ✅ | Requests, route matching |
 | Celery | ✅ | Task execution, queue operations |
 | SQLAlchemy | ✅ | All queries as spans + breadcrumbs |
 | Redis | ✅ | All commands as spans + breadcrumbs |
