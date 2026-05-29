@@ -80,9 +80,13 @@ jobs:
               exit 1
             fi
             ALL_SKILLS=$(jq -c '[.[].skill]' "$MATRIX_FILE")
-            UNKNOWN=$(jq -c --argjson all "$ALL_SKILLS" --argjson wanted "$JSON_WANTED" \
+            # -n (null input) is required because this jq invocation has no
+            # stdin source; without it jq reads zero JSON values, applies
+            # the filter zero times, and produces no output — silently
+            # yielding UNKNOWN="" instead of UNKNOWN="[]".
+            UNKNOWN=$(jq -nc --argjson all "$ALL_SKILLS" --argjson wanted "$JSON_WANTED" \
               '$wanted | map(select(. as $s | $all | index($s) | not))')
-            if [[ "$(jq 'length' <<<"$UNKNOWN")" != "0" ]]; then
+            if [[ "$(jq 'length' <<<"${UNKNOWN:-[]}")" != "0" ]]; then
               echo "::error::Unknown skill(s) in workflow_dispatch input: $UNKNOWN"
               exit 1
             fi
