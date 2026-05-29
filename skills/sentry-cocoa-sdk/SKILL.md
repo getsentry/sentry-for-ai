@@ -20,7 +20,7 @@ Opinionated wizard that scans your Apple project and guides you through complete
 - User mentions `sentry-cocoa`, `SentrySDK`, or the Apple/iOS Sentry SDK
 - User wants to monitor crashes, app hangs, watchdog terminations, or performance
 
-> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry-cocoa 9.5.1).
+> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry-cocoa 9.15.0).
 > Always verify against [docs.sentry.io/platforms/apple/](https://docs.sentry.io/platforms/apple/) before implementing.
 
 ---
@@ -117,7 +117,7 @@ https://github.com/getsentry/sentry-cocoa.git
 
 Or in `Package.swift`:
 ```swift
-.package(url: "https://github.com/getsentry/sentry-cocoa", from: "9.5.1"),
+.package(url: "https://github.com/getsentry/sentry-cocoa", from: "9.15.0"),
 ```
 
 **SPM Products** — choose **exactly one** per target:
@@ -136,7 +136,7 @@ Or in `Package.swift`:
 
 ```swift
 // Package.swift (Swift 6.1+)
-.package(url: "https://github.com/getsentry/sentry-cocoa", from: "9.5.1"),
+.package(url: "https://github.com/getsentry/sentry-cocoa", from: "9.15.0"),
 
 // In your target's dependencies:
 .product(name: "SentrySPM", package: "sentry-cocoa", condition: .when(traits: ["NoUIFramework"]))
@@ -152,7 +152,7 @@ platform :ios, '11.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '9.5.1'
+  pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '9.15.0'
 end
 ```
 
