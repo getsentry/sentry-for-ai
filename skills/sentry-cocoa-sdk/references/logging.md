@@ -1,6 +1,6 @@
 # Logging — Sentry Cocoa SDK
 
-> Minimum SDK (experimental): `sentry-cocoa` v8.55.0+  
+> Minimum SDK (experimental): `sentry-cocoa` v8.55.0+
 > Minimum SDK (stable): `sentry-cocoa` v9.0.0+
 
 ## Configuration
@@ -59,7 +59,7 @@ logger.error("Payment failed",            attributes: ["amount": 99.99])
 logger.fatal("Connection pool exhausted", attributes: ["activeConnections": 100])
 ```
 
-Supported attribute value types: `String`, `Int`, `Double`, `Bool`.
+Supported Swift attribute value types include `String`, `Bool`, `Int`, `Double`, `Float`, arrays, and sets; other values are converted to strings.
 
 ### Log levels (severity order)
 
@@ -103,19 +103,19 @@ SentrySDK.start { options in
         if log.level == .debug && options.environment == "production" { return nil }
 
         // Enrich all logs with app version
-        var mutableLog = log
-        mutableLog.attributes["app.version"] =
-            Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-        return mutableLog
+        if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
+            log.attributes["app.version"] = SentryAttribute(string: version)
+        }
+        return log
     }
 }
 ```
 
 Available on `SentryLog`:
-- `log.level` — `SentryLevel` (`.trace`, `.debug`, `.info`, `.warning`, `.error`, `.fatal`)
-- `log.message` — `String`
+- `log.level` — `SentryLog.Level` (`.trace`, `.debug`, `.info`, `.warn`, `.error`, `.fatal`)
+- `log.body` — `String`
 - `log.timestamp` — `Date`
-- `log.attributes` — `[String: Any]`
+- `log.attributes` — `[String: SentryAttribute]`
 
 ### Automatic default attributes
 
@@ -188,7 +188,7 @@ SentrySDK.logger.info("User signed in",
 | Logs not appearing in Sentry | Verify `options.enableLogs = true` (v9+) or `options.experimental.enableLogs = true` (v8.55+) |
 | Logs only partially appearing | Logs may be lost during crashes; this is a known SDK limitation |
 | `SentrySDK.logger` not found | Requires v8.55.0+; check SPM/CocoaPods version |
-| Attributes not queryable | Only `String`, `Int`, `Double`, and `Bool` are supported attribute value types |
+| Attributes not queryable | Prefer `String`, `Bool`, `Int`, `Double`, `Float`, arrays, or sets; convert complex objects to stable strings |
 | `beforeSendLog` not called | Ensure you set it before `SentrySDK.start` completes and `enableLogs = true` |
 | Too many logs overwhelming Sentry | Use `beforeSendLog` to filter by level; set minimum level for production |
 | Logs missing user context | Call `SentrySDK.setUser(...)` before logging to attach user identity automatically |

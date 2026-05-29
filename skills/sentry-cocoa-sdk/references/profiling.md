@@ -1,7 +1,8 @@
 # Profiling — Sentry Cocoa SDK
 
-> Minimum SDK for UI Profiling (`configureProfiling`): `sentry-cocoa` v8.49.0+  
-> Minimum SDK for stable `configureProfiling` API: v9.0.0+  
+> Minimum SDK for UI Profiling (`configureProfiling`): `sentry-cocoa` v8.49.0+
+> Minimum SDK for stable `configureProfiling` API: v9.0.0+
+> Supported platforms: iOS and macOS. Not supported on tvOS, watchOS, or visionOS.
 > **All legacy profiling APIs (`profilesSampleRate`, `enableAppLaunchProfiling`, continuous beta) were removed in v9.0.0.**
 
 ## Configuration
@@ -9,7 +10,7 @@
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `configureProfiling` | `((SentryProfileOptions) -> Void)?` | `nil` | Closure to configure UI Profiling (v8.49.0+) |
-| `sessionSampleRate` | `Double` (0.0–1.0) | `0` | Fraction of user sessions to profile; evaluated once per session |
+| `sessionSampleRate` | `Float` (0.0–1.0) | `0` | Fraction of user sessions to profile; evaluated once per session |
 | `lifecycle` | `SentryProfileLifecycle` | `.manual` | `.trace` (auto) or `.manual` (explicit start/stop) |
 | `profileAppStarts` | `Bool` | `false` | Profile from the earliest possible lifecycle stage on next launch |
 
@@ -149,7 +150,7 @@ For CI/CD, set `SENTRY_AUTH_TOKEN` as an environment variable.
 // BEFORE (removed in v9.0.0)
 SentrySDK.start { options in
     options.tracesSampleRate = 1.0
-    options.profilesSampleRate = 1.0   // ❌ no longer exists
+    options.profilesSampleRate = 1.0   // Removed: no longer exists
 }
 
 // AFTER (v9.0.0+)
@@ -157,7 +158,7 @@ SentrySDK.start { options in
     options.tracesSampleRate = 1.0
     options.configureProfiling = {
         $0.sessionSampleRate = 1.0
-        $0.lifecycle = .trace          // ✅ equivalent behaviour
+        $0.lifecycle = .trace          // Equivalent behavior
     }
 }
 ```
@@ -174,9 +175,9 @@ MetricKit delivers hang diagnostic payloads on iOS 15+ and macOS 12+. Starting w
 |----------|----------------------|
 | iOS | 15+ |
 | macOS | 12+ |
-| tvOS | ❌ |
-| watchOS | ❌ |
-| visionOS | ❌ |
+| tvOS | No |
+| watchOS | No |
+| visionOS | No |
 
 ## Best Practices
 

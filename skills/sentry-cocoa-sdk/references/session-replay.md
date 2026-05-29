@@ -1,8 +1,9 @@
 # Session Replay — Sentry Cocoa SDK
 
-> Minimum SDK: `sentry-cocoa` v8.31.1+  
-> View Renderer V2 (default): v8.50.0+  
-> iOS 26 auto-disable safeguard: v8.57.0+
+> Minimum SDK: `sentry-cocoa` v8.31.1+
+> View Renderer V2 (default): v8.50.0+
+> Official support: iOS 16+ with UIKit and SwiftUI. tvOS 16+ may work but is not officially supported.
+> SDK 9.12.0+ runs on iOS 26 Liquid Glass; verify masking for your app.
 
 ## Configuration
 
@@ -21,6 +22,12 @@
 | `sessionReplay.errorReplayDuration` | `TimeInterval` | `30` | Seconds of buffer kept before an error |
 | `sessionReplay.sessionSegmentDuration` | `TimeInterval` | `5` | Seconds per upload segment |
 | `sessionReplay.maximumDuration` | `TimeInterval` | `3600` | Maximum session duration (60 min) |
+| `experimental.enableReplayNetworkDetailsCapturing` | `Bool` | `false` | Capture request/response details in replays (SDK 9.12+) |
+| `sessionReplay.networkDetailAllowUrls` | `[SentryUrlMatchable]` | `[]` | URL allowlist for replay network details |
+| `sessionReplay.networkDetailDenyUrls` | `[SentryUrlMatchable]` | `[]` | URL denylist for replay network details |
+| `sessionReplay.networkCaptureBodies` | `Bool` | `true` | Capture bodies for allowed URLs when network details are enabled |
+| `sessionReplay.networkRequestHeaders` | `[String]` | default safe headers | Request headers to capture for allowed URLs |
+| `sessionReplay.networkResponseHeaders` | `[String]` | default safe headers | Response headers to capture for allowed URLs |
 
 ## Code Examples
 
@@ -54,12 +61,12 @@ SentrySDK.start { options in
 
 What is masked by default:
 
-- ✅ All text content (`maskAllText = true`)
-- ✅ All images (`maskAllImages = true`)
-- ✅ User input fields (always masked, regardless of settings)
-- ✅ Video players
-- ✅ WebViews
-- ❌ Bundled image assets (considered low PII risk — shown in replay)
+- Masked: all text content (`maskAllText = true`)
+- Masked: all images (`maskAllImages = true`)
+- Masked: user input fields (always masked, regardless of settings)
+- Masked: video players
+- Masked: WebViews
+- Not masked by default: bundled image assets (considered low PII risk; shown in replay)
 
 ### SwiftUI view modifiers
 
@@ -113,6 +120,29 @@ SentrySDK.replay.showMaskPreview(0.5)    // 50% opacity
 #endif
 ```
 
+### Network details in replays (SDK 9.12+)
+
+Network details are opt-in and require both the experimental flag and an allowlist:
+
+```swift
+SentrySDK.start { options in
+    options.experimental.enableReplayNetworkDetailsCapturing = true
+    options.sessionReplay.networkDetailAllowUrls = [
+        "api.myapp.com",
+        ".*\\.myapp\\.com"
+    ]
+    options.sessionReplay.networkDetailDenyUrls = [
+        "api.myapp.com/oauth",
+        "api.myapp.com/payment"
+    ]
+    options.sessionReplay.networkCaptureBodies = false
+    options.sessionReplay.networkRequestHeaders = ["Content-Type", "X-Request-ID"]
+    options.sessionReplay.networkResponseHeaders = ["Content-Type", "X-Request-ID"]
+}
+```
+
+Keep request and response bodies disabled unless you have explicitly reviewed them for sensitive data.
+
 ### Exclude views from subtree traversal
 
 For views that cause crashes or performance issues during replay capture:
@@ -148,22 +178,33 @@ if ProcessInfo.processInfo.isLowPowerModeEnabled {
 
 ---
 
-## ⚠️ iOS 26 / Xcode 26 / Liquid Glass Caveat
+## iOS 26 / Xcode 26 / Liquid Glass
 
-Apple's **Liquid Glass** rendering engine in iOS 26 breaks the SDK's view-snapshotting approach, causing unreliable masking and potential PII leaks.
+There is version-specific behavior here:
 
-**Starting with v8.57.0**, Session Replay is **automatically and silently disabled** when both:
-- App is running on **iOS 26.0 or later**
-- App was **compiled with Xcode 26.0 or later**
+- SDK 8.57.0 through 9.11.x auto-disabled Session Replay on iOS 26 Liquid Glass builds to avoid masking risks.
+- SDK 9.12.0+ removed that safeguard after redaction fixes; Session Replay records on iOS 26 again.
+- If your app needs to keep replay disabled for Liquid Glass, gate `sessionSampleRate` and `onErrorSampleRate` yourself.
 
-Replay continues to work if:
-- The device runs iOS < 26
-- The app was built with Xcode < 26
-- `UIDesignRequiresCompatibility = YES` is set in `Info.plist`
+Example manual gate:
 
-**SDKs older than v8.57.0** do **not** include this safeguard and may crash or leak PII on iOS 26. Upgrade immediately.
+```swift
+var sessionRate: Float = 0.1
+var errorRate: Float = 1.0
 
-Track the fix at [getsentry/sentry-cocoa#6390](https://github.com/getsentry/sentry-cocoa/issues/6390).
+if #available(iOS 26.0, *) {
+    let compatibilityMode = Bundle.main.object(forInfoDictionaryKey: "UIDesignRequiresCompatibility") as? Bool ?? false
+    let xcodeVersion = Int(Bundle.main.object(forInfoDictionaryKey: "DTXcode") as? String ?? "") ?? 0
+    let liquidGlassActive = xcodeVersion >= 2600 && !compatibilityMode
+    if liquidGlassActive {
+        sessionRate = 0
+        errorRate = 0
+    }
+}
+
+options.sessionReplay.sessionSampleRate = sessionRate
+options.sessionReplay.onErrorSampleRate = errorRate
+```
 
 ---
 
@@ -183,17 +224,18 @@ Track the fix at [getsentry/sentry-cocoa#6390](https://github.com/getsentry/sent
 
 ## Best Practices
 
-- Set `maskAllText = true` and `maskAllImages = true` (both default) — only unmasked explicitly what's safe to show
+- Set `maskAllText = true` and `maskAllImages = true` (both default) — only unmask content that is explicitly safe to show
 - Use `.sentryReplayUnmask()` sparingly on known-safe content rather than globally disabling masking
 - Start with `onErrorSampleRate = 1.0` and `sessionSampleRate = 0` to capture replays only on errors (lowest overhead)
 - Test masking on real devices — use `SentrySDK.replay.showMaskPreview()` in DEBUG builds to verify
+- Re-test masking on iOS 26+ Liquid Glass after every SDK or Xcode upgrade
 
 ## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
 | No replays appearing | Verify `sessionSampleRate > 0` or `onErrorSampleRate > 0`; both default to `0` |
-| Replay disabled on iOS 26 | Expected — SDK 8.57.0+ auto-disables for safety; set `UIDesignRequiresCompatibility = YES` in `Info.plist` to build with Xcode < 26 compatibility |
+| Replay disabled on iOS 26 | SDK 8.57.0–9.11.x auto-disabled Liquid Glass builds; SDK 9.12+ records again unless you gate sample rates yourself |
 | PII visible in replay | Verify `maskAllText = true` and `maskAllImages = true`; check `.sentryReplayUnmask()` isn't applied too broadly |
 | Scrolling jank during replay | Enable `enableFastViewRendering = true`; switch to `quality = .low`; consider disabling on low-end devices |
 | Replay stops after 60 minutes | Expected — `maximumDuration = 3600` seconds is the default cap |

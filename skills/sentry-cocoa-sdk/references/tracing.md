@@ -1,7 +1,7 @@
 # Tracing — Sentry Cocoa SDK
 
-> Minimum SDK: `sentry-cocoa` v7.0.0+  
-> SwiftUI instrumentation stable: v8.17.0+  
+> Minimum SDK: `sentry-cocoa` v7.0.0+
+> SwiftUI instrumentation stable: v8.17.0+
 > File I/O manual tracing extensions: v8.48.0+
 
 ## Configuration
@@ -20,10 +20,10 @@
 | `enablePreWarmedAppStartTracing` | `Bool` | `true` | Prewarmed cold/warm start tracing (iOS 15+) |
 | `enableDataSwizzling` | `Bool` | `true` | NSData swizzling for automatic file I/O tracing |
 | `enableFileManagerSwizzling` | `Bool` | `false` | NSFileManager swizzling (experimental; needed for iOS 18+) |
-| `tracePropagationTargets` | `[String]` | `[".*"]` | Hosts/regex for outgoing distributed trace headers |
+| `tracePropagationTargets` | `[Any]` | all requests | Strings or `NSRegularExpression` values for outgoing distributed trace headers |
 | `enableSwizzling` | `Bool` | `true` | Master switch for method swizzling (required by several auto-instrumentation features) |
 | `strictTraceContinuation` | `Bool` | `false` | Only continue an incoming trace when `orgId` matches; prevents cross-org trace continuation (SDK 9.x+) |
-| `orgId` | `UInt64?` | auto-parsed from DSN | Organization ID used for strict trace continuation validation; auto-parsed from the DSN host |
+| `orgId` | `String?` | `nil` | Organization ID for strict trace validation; auto-parsed from DSN host (e.g. `o123.ingest.sentry.io` → `"123"`) if not set explicitly |
 
 ## Code Examples
 
@@ -166,9 +166,9 @@ Child spans produced (sequential):
 | Application Init | SDK startup → `didFinishLaunchingNotification` |
 | Initial Frame Render | `didFinishLaunchingNotification` → first CADisplayLink callback (v9+) |
 
-> ⚠️ If more than **5 seconds** elapse between transaction start and app-start end, app start spans are **not attached** to avoid misassociation. This limit is skipped when standalone app start tracing is enabled.
+> Warning: If more than **5 seconds** elapse between transaction start and app-start end, app start spans are **not attached** to avoid misassociation. This limit is skipped when standalone app start tracing is enabled.
 
-#### Standalone App Start Tracing (Experimental, 9.14.0+)
+#### Standalone App Start Tracing (Experimental, 9.15.0+)
 
 **Platforms:** iOS, tvOS, visionOS
 
@@ -236,7 +236,7 @@ struct MyApp: App {
 
 ### URLSession Network Tracking
 
-**Platforms:** All  
+**Platforms:** All
 **Note:** `NSURLConnection` is **not** supported — only `NSURLSession`.
 
 Automatically adds HTTP spans to any active scope-bound transaction.
@@ -248,7 +248,7 @@ options.enableNetworkTracking = false
 
 ### UIViewController Lifecycle Tracing
 
-**Platforms:** iOS, tvOS, Mac Catalyst  
+**Platforms:** iOS, tvOS, Mac Catalyst
 **Not available for:** SwiftUI (use `SentryTracedView` instead)
 
 - Transaction operation: `ui.load`
@@ -287,10 +287,10 @@ TTFD span status:
 
 ### SwiftUI Instrumentation
 
-**Package:** `SentrySwiftUI` (separate SPM product — do not also add `Sentry`)
+For SDK 9.4.1+, SwiftUI tracing APIs are available from the main `Sentry` module. The `SentrySwiftUI` product/module still exists as a deprecated re-export for older setups.
 
 ```swift
-import SentrySwiftUI
+import Sentry
 
 // Option 1: wrapper
 var body: some View {
@@ -317,9 +317,11 @@ SentryTracedView("Content", waitForFullDisplay: true) {
 }
 ```
 
+If maintaining an older project that already uses the `SentrySwiftUI` product, `import SentrySwiftUI` still works in SDK 9.x but should be migrated to `import Sentry` before the next major version. Source-build `SentrySPM` projects may expose the module as `SentrySwift`; verify imports against the selected product.
+
 ### Slow & Frozen Frames
 
-**Platforms:** iOS, tvOS, Mac Catalyst  
+**Platforms:** iOS, tvOS, Mac Catalyst
 Tracked automatically during any active transaction. Appears as Mobile Vitals in the Sentry Performance UI.
 
 | Threshold | Classification |
@@ -329,7 +331,7 @@ Tracked automatically during any active transaction. Appears as Mobile Vitals in
 
 ### User Interaction Tracing
 
-**Platforms:** iOS, tvOS, Mac Catalyst  
+**Platforms:** iOS, tvOS, Mac Catalyst
 **Not available for:** SwiftUI
 
 Creates a transaction for every UIControl tap/click.
@@ -354,7 +356,7 @@ options.enableUserInteractionTracing = false
 
 ### File I/O Tracing (NSData)
 
-**Platforms:** All  
+**Platforms:** All
 Tracks `NSData` read/write operations as spans.
 
 ```swift
@@ -392,7 +394,7 @@ Span operations created:
 
 ### Core Data Tracing
 
-**Platforms:** All  
+**Platforms:** All
 Instruments `NSManagedObjectContext` fetch and save operations.
 
 ```swift
@@ -431,7 +433,7 @@ SentrySDK.start { options in
 
 > **`enablePropagateTraceparent` requires sentry-cocoa 9.0.0+.** It is not available in 8.x.
 >
-> ⚠️ Both headers must be included in CORS allowlists and must not be blocked by proxies or firewalls.
+> Warning: Both headers must be included in CORS allowlists and must not be blocked by proxies or firewalls.
 
 ### Strict Trace Continuation (SDK 9.x+)
 
@@ -445,7 +447,7 @@ SentrySDK.start { options in
     // Only accept traces from your own Sentry organization
     options.strictTraceContinuation = true
     // orgId is auto-parsed from DSN host; override only if needed:
-    // options.orgId = 12345
+    // options.orgId = "12345"
 }
 ```
 
@@ -455,18 +457,18 @@ SentrySDK.start { options in
 
 | Feature | iOS | tvOS | macOS | Mac Catalyst |
 |---------|-----|------|-------|--------------|
-| `tracesSampleRate` | ✅ | ✅ | ✅ | ✅ |
-| App Start Tracing | ✅ | ✅ | ❌ | ✅ |
-| UIViewController Lifecycle | ✅ | ✅ | ❌ | ✅ |
-| TTID / TTFD | ✅ | ✅ | ❌ | ✅ |
-| Slow & Frozen Frames | ✅ | ✅ | ❌ | ✅ |
-| Network Tracking (URLSession) | ✅ | ✅ | ✅ | ✅ |
-| File I/O Tracing | ✅ | ✅ | ✅ | ✅ |
-| Core Data Tracing | ✅ | ✅ | ✅ | ✅ |
-| User Interaction Tracing | ✅ | ✅ | ❌ | ✅ |
-| SwiftUI (`SentryTracedView`) | ✅ (13+) | ✅ | ✅ | ✅ |
-| Prewarmed App Start | ✅ (15+) | ❌ | ❌ | ❌ |
-| NSFileManager Swizzling | ✅ (18+) | ✅ (18+) | ✅ (15+) | ✅ |
+| `tracesSampleRate` | Yes | Yes | Yes | Yes |
+| App Start Tracing | Yes | Yes | No | Yes |
+| UIViewController Lifecycle | Yes | Yes | No | Yes |
+| TTID / TTFD | Yes | Yes | No | Yes |
+| Slow & Frozen Frames | Yes | Yes | No | Yes |
+| Network Tracking (URLSession) | Yes | Yes | Yes | Yes |
+| File I/O Tracing | Yes | Yes | Yes | Yes |
+| Core Data Tracing | Yes | Yes | Yes | Yes |
+| User Interaction Tracing | Yes | Yes | No | Yes |
+| SwiftUI (`SentryTracedView`) | Yes (13+) | Yes | Yes | Yes |
+| Prewarmed App Start | Yes (15+) | No | No | No |
+| NSFileManager Swizzling | Yes (18+) | Yes (18+) | Yes (15+) | Yes |
 
 ---
 
@@ -476,7 +478,7 @@ SentrySDK.start { options in
 - Use `tracesSampler` (not `tracesSampleRate`) for route-specific or user-tier-based sampling
 - Use `bindToScope: true` when starting a transaction so child spans created anywhere in the call stack are automatically linked
 - Always `finish()` spans — unfinished spans are silently dropped
-- Use `SentryTracedView` from the `SentrySwiftUI` package for SwiftUI screens (UIViewController tracing doesn't apply)
+- Use `SentryTracedView` or `.sentryTrace()` from the main `Sentry` module for SwiftUI screens on SDK 9.4.1+ (UIViewController tracing doesn't apply)
 - Call `SentrySDK.reportFullyDisplayed()` only after your async data has been rendered — not just loaded
 - Avoid setting `tracePropagationTargets = [".*"]` in production if you make requests to third-party services not using Sentry
 
@@ -491,5 +493,5 @@ SentrySDK.start { options in
 | Network spans not appearing | Requires active scope-bound transaction; verify `enableNetworkTracking = true` and `enableSwizzling = true` |
 | Distributed trace not linking to backend | Propagate both `sentry-trace` AND `baggage` headers; add them to CORS allowlist |
 | File I/O spans missing on iOS 18+ | Enable `enableFileManagerSwizzling = true` (experimental) or use manual `WithSentryTracing` extensions |
-| `SentryTracedView` not available | Add `SentrySwiftUI` SPM product — it's a separate package from `Sentry` |
+| `SentryTracedView` not available | SDK 9.4.1+: use `import Sentry` with the `Sentry` product; older/deprecated setups may need the `SentrySwiftUI` product |
 | High-cardinality transaction names | UIViewController transactions use class name — expected; custom transactions should use stable names |
