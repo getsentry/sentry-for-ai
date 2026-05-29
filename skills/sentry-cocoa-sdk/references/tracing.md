@@ -168,7 +168,7 @@ Child spans produced (sequential):
 
 > Warning: If more than **5 seconds** elapse between transaction start and app-start end, app start spans are **not attached** to avoid misassociation. This limit is skipped when standalone app start tracing is enabled.
 
-#### Standalone App Start Tracing (Experimental, 9.14.0+)
+#### Standalone App Start Tracing (Experimental, 9.15.0+)
 
 **Platforms:** iOS, tvOS, visionOS
 
