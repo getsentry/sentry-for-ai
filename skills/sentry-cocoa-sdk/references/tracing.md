@@ -166,7 +166,73 @@ Child spans produced (sequential):
 | Application Init | SDK startup → `didFinishLaunchingNotification` |
 | Initial Frame Render | `didFinishLaunchingNotification` → first CADisplayLink callback (v9+) |
 
-> Warning: If more than **5 seconds** elapse between transaction start and app-start end, app start spans are **not attached** to avoid misassociation.
+> Warning: If more than **5 seconds** elapse between transaction start and app-start end, app start spans are **not attached** to avoid misassociation. This limit is skipped when standalone app start tracing is enabled.
+
+#### Standalone App Start Tracing (Experimental, 9.14.0+)
+
+**Platforms:** iOS, tvOS, visionOS
+
+By default, app start transactions are attached to the first UIViewController transaction. Standalone app start tracing creates a dedicated transaction just for app launch, independent of any UIViewController.
+
+```swift
+SentrySDK.start { options in
+    options.dsn = "___PUBLIC_DSN___"
+    options.tracesSampleRate = 1.0
+    options.experimental.enableStandaloneAppStartTracing = true
+}
+```
+
+**Extending app launch beyond the default end point (9.15.0+):**
+
+For apps with initial data loading or authentication flows, you can extend the app start measurement:
+
+```swift
+// UIKit — in AppDelegate
+func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+) -> Bool {
+    SentrySDK.start { options in
+        options.dsn = "___PUBLIC_DSN___"
+        options.tracesSampleRate = 1.0
+        options.experimental.enableStandaloneAppStartTracing = true
+    }
+    SentrySDK.extendAppLaunch()  // call before didFinishLaunchingNotification is posted
+    return true
+}
+
+// Later, when your app is fully ready:
+func onInitialDataLoaded() {
+    SentrySDK.finishExtendedAppLaunch()
+}
+```
+
+```swift
+// SwiftUI — in App constructor
+@main
+struct MyApp: App {
+    init() {
+        SentrySDK.start { options in
+            options.dsn = "___PUBLIC_DSN___"
+            options.tracesSampleRate = 1.0
+            options.experimental.enableStandaloneAppStartTracing = true
+        }
+        SentrySDK.extendAppLaunch()
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .onAppear {
+                    // After initial data loads:
+                    SentrySDK.finishExtendedAppLaunch()
+                }
+        }
+    }
+}
+```
+
+> **Note:** `extendAppLaunch()` must be called after `SentrySDK.start()` but before the `didFinishLaunchingNotification` is posted. If not called, or if the extended launch was already finished, `finishExtendedAppLaunch()` does nothing.
 
 ### URLSession Network Tracking
 

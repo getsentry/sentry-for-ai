@@ -341,6 +341,23 @@ If your `tracesSampleRate` is below 1.0, you may be losing entire agent runs. Se
 
 ---
 
+## Conversation Tracking
+
+Link AI spans across turns into a chat-style timeline at **Explore > Conversations**.
+
+**Prerequisites:** `streamGenAiSpans: true` (SDK >=10.53.0) and `sendDefaultPii: true` must be set — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
+
+```typescript
+import * as Sentry from "@sentry/nestjs";
+
+// Set at the start of a conversation
+Sentry.setConversationId("conv_abc123");
+
+// All subsequent AI calls carry gen_ai.conversation.id: "conv_abc123"
+```
+
+A single conversation can span multiple traces, and a single trace can contain multiple conversations.
+
 ## Troubleshooting
 
 | Issue | Solution |

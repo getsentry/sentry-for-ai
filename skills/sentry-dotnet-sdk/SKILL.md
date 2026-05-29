@@ -21,7 +21,7 @@ Opinionated wizard that scans your .NET project and guides you through complete 
 - User wants to capture unhandled exceptions in WPF, WinForms, MAUI, or Azure Functions
 - User asks about `SentryOptions`, `BeforeSend`, `TracesSampleRate`, or symbol upload
 
-> **Note:** SDK version and APIs below reflect `Sentry` NuGet packages ≥6.1.0.
+> **Note:** SDK version and APIs below reflect `Sentry` NuGet packages ≥6.1.0 (OTLP export requires ≥6.5.0).
 > Always verify against [docs.sentry.io/platforms/dotnet/](https://docs.sentry.io/platforms/dotnet/) before implementing.
 
 ---
@@ -334,23 +334,16 @@ await builder.Build().RunAsync();
 
 #### Azure Functions (Isolated Worker) — `Program.cs`
 
+> **Recommended:** Install `Sentry.OpenTelemetry.Exporter` (≥6.5.0) for OTLP export. Alternatively, use `Sentry.OpenTelemetry` for the bridge pattern.
+
 ```csharp
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Trace;
-using Sentry.OpenTelemetry;
 
+// Package: Sentry.OpenTelemetry.Exporter
 var host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
-    .ConfigureServices(services =>
-    {
-        services.AddOpenTelemetry().WithTracing(builder =>
-        {
-            builder
-                .AddSentry()                        // route OTel spans to Sentry
-                .AddHttpClientInstrumentation();    // capture outgoing HTTP
-        });
-    })
     .ConfigureLogging(logging =>
     {
         logging.AddSentry(options =>
@@ -358,8 +351,16 @@ var host = new HostBuilder()
             options.Dsn = "___YOUR_DSN___";
             options.Debug = true;
             options.TracesSampleRate = 1.0;
-            options.UseOpenTelemetry();                     // let OTel drive tracing
-            options.DisableSentryHttpMessageHandler = true; // prevent duplicate HTTP spans
+            options.UseOtlp(); // send OTel spans via OTLP (requires 6.5.0+)
+        });
+    })
+    .ConfigureServices(services =>
+    {
+        services.AddOpenTelemetry().WithTracing(builder =>
+        {
+            builder
+                .AddHttpClientInstrumentation()
+                .AddSentryOtlpExporter("___YOUR_DSN___"); // route spans to Sentry OTLP endpoint
         });
     })
     .Build();

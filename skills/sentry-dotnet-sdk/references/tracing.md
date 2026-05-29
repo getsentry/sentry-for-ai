@@ -431,7 +431,138 @@ catch (Exception ex)
 
 ## OpenTelemetry Integration
 
-### Version Requirements
+Sentry offers two ways to integrate with OpenTelemetry:
+
+1. **OTLP Export (Recommended)** — Send OTel traces directly to Sentry's OTLP endpoint using standard protocol. Added in 6.5.0.
+2. **Bridge Pattern** — Convert OTel spans to Sentry's proprietary format via a span processor. Available since 6.1.0.
+
+**Use OTLP Export when:**
+- Starting a new OTel integration
+- You want standard OTLP protocol compliance
+- You prefer letting OTel handle all instrumentation
+
+**Use Bridge Pattern when:**
+- You need to maintain compatibility with existing integrations
+- You want to mix Sentry's built-in instrumentations with OTel
+
+---
+
+### Option 1: OTLP Export (Recommended)
+
+> **Added in:** `Sentry` ≥6.5.0, `Sentry.OpenTelemetry.Exporter` ≥6.5.0
+
+Sends OpenTelemetry traces directly to Sentry's OTLP endpoint using the standard OpenTelemetry Protocol. This disables Sentry's built-in tracing instrumentation — all span creation must be done via OTel libraries.
+
+#### Install
+
+```bash
+dotnet add package Sentry.OpenTelemetry.Exporter
+```
+
+#### Full ASP.NET Core Setup
+
+```csharp
+using OpenTelemetry.Trace;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Part 1: Configure Sentry with UseOtlp()
+builder.WebHost.UseSentry(options =>
+{
+    options.Dsn = "https://...@o0.ingest.sentry.io/...";
+    options.TracesSampleRate = 1.0;
+    options.UseOtlp(); // ← disables Sentry tracing, enables OTel propagation context
+});
+
+// Part 2: Configure OTel TracerProvider with AddSentryOtlpExporter()
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddSentryOtlpExporter(builder.Configuration["Sentry:Dsn"]!) // ← sends spans via OTLP
+    );
+
+var app = builder.Build();
+app.UseSentry();
+app.Run();
+```
+
+#### Azure Functions (Isolated Worker)
+
+```csharp
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Trace;
+
+var host = new HostBuilder()
+    .ConfigureFunctionsWorkerDefaults()
+    .ConfigureLogging(logging =>
+    {
+        logging.AddSentry(options =>
+        {
+            options.Dsn = "https://...@o0.ingest.sentry.io/...";
+            options.TracesSampleRate = 1.0;
+            options.UseOtlp(); // ← required for OTLP mode
+        });
+    })
+    .ConfigureServices(services =>
+    {
+        services.AddOpenTelemetry().WithTracing(builder =>
+        {
+            builder
+                .AddHttpClientInstrumentation()
+                .AddSentryOtlpExporter(Environment.GetEnvironmentVariable("SENTRY_DSN")!);
+        });
+    })
+    .Build();
+
+await host.RunAsync();
+```
+
+#### What `UseOtlp()` Does
+
+- Sets `options.Instrumenter = Instrumenter.OpenTelemetry`
+- Sets `options.DisableSentryTracing = true` — disables `SentryHttpMessageHandler`, `DiagnosticSource` listeners, and EF Core interception
+- Configures `ExternalPropagationContext` to read trace IDs from OTel `Activity`
+
+**Critical:** All tracing must be done via OTel instrumentation libraries. Sentry's built-in span creation (`SentrySdk.StartTransaction()`, auto HTTP/DB spans) is disabled.
+
+#### Custom OTLP Endpoint
+
+```csharp
+// Use a custom OTLP collector instead of Sentry's endpoint
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .AddSentryOtlpExporter(
+            dsnString: builder.Configuration["Sentry:Dsn"]!,
+            collectorUrl: new Uri("https://custom-otel-collector.example.com/v1/traces")
+        )
+    );
+```
+
+#### ⚠️ Exception Capture
+
+OTel's exception APIs strip exception data before Sentry sees it. Use Sentry's or ILogger's capture methods:
+
+```csharp
+// ❌ Loses exception details
+activity.RecordException(ex);
+
+// ✅ Use these instead
+_logger.LogError(ex, "Something failed");
+SentrySdk.CaptureException(ex);
+```
+
+---
+
+### Option 2: Bridge Pattern
+
+> **Added in:** `Sentry` ≥6.1.0, `Sentry.OpenTelemetry` ≥6.1.0
+
+Registers a `SentrySpanProcessor` that converts OTel spans to Sentry's proprietary transaction/span format before sending. Use when you need compatibility with existing Sentry integrations or want to mix instrumentation approaches.
+
+#### Version Requirements
 
 | Package | Minimum Version |
 |---|---|
@@ -443,7 +574,7 @@ catch (Exception ex)
 dotnet add package Sentry.OpenTelemetry
 ```
 
-### How It Works
+#### How It Works
 
 The `AddSentry()` extension registers a `SentrySpanProcessor` with the OTel `TracerProvider`. Span mapping:
 
@@ -451,7 +582,7 @@ The `AddSentry()` extension registers a `SentrySpanProcessor` with the OTel `Tra
 - **Child** OTel `Span`s with the same parent become Sentry **child Spans** on that transaction
 - A new top-level OTel `Span` from a different service creates a new Sentry **Transaction**, linked via the same distributed trace
 
-### Full ASP.NET Core Setup
+#### Full ASP.NET Core Setup
 
 Two parts are required — both must be configured:
 
@@ -474,7 +605,7 @@ builder.Services.AddOpenTelemetry()
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
-        .AddSentry() // ← routes all OTel spans to Sentry
+        .AddSentry() // ← converts OTel spans to Sentry format
     );
 
 var app = builder.Build();
@@ -482,7 +613,7 @@ app.UseSentry();
 app.Run();
 ```
 
-### ⚠️ Exception Capture in OTel Mode
+#### ⚠️ Exception Capture
 
 **Do NOT use OTel's exception APIs** — they strip exception data before Sentry can see it:
 
