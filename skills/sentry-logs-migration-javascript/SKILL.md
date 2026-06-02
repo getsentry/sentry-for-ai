@@ -14,11 +14,16 @@ compatibility: >-
 
 # Console and Existing Loggers to Sentry Logs
 
-## Use
+## Invoke This Skill When
 
-Use for JS/TS apps using `@sentry/nextjs`, `@sentry/node`, `@sentry/react`,
-`@sentry/vue`, or `@sentry/browser`. For SDK installation, framework init files,
-runtime boundaries, or package wiring, use the platform SDK skill first.
+- User wants to migrate JS/TS `console.*` calls to Sentry-captured structured logs
+- User wants to keep `pino`, `winston`, `consola`, or custom logger calls while
+  making them structured and Sentry-captured
+- User asks for flow mapping, scope placement, wide events, redaction, or ESLint
+  audit during a logs migration
+
+For SDK installation, framework init files, runtime boundaries, or package
+wiring, use the platform SDK skill first.
 
 Docs: [JavaScript Logs](https://docs.sentry.io/platforms/javascript/logs/),
 [Tracing](https://docs.sentry.io/platforms/javascript/tracing/)

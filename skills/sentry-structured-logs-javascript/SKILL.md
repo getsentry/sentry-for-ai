@@ -14,10 +14,11 @@ compatibility: >-
 
 # Structured Sentry Logs Instrumentation (JavaScript/TypeScript)
 
-## Use
+## Invoke This Skill When
 
-Use for JS/TS apps already sending Sentry Logs that need high-signal, queryable,
-operation-level instrumentation.
+- User wants to add or improve high-signal, queryable Sentry Logs in a JS/TS app
+- Sentry Logs are already enabled and operation-level instrumentation is needed
+- User asks for event catalogs, structured attributes, sampling, or log redaction
 
 Docs: [JavaScript Logs](https://docs.sentry.io/platforms/javascript/logs/),
 [Tracing](https://docs.sentry.io/platforms/javascript/tracing/)
