@@ -185,7 +185,7 @@ const result = await Sentry.startSpan(
 );
 
 Sentry.logger.info("report_export_completed", {
-  report_id: result.reportId,
+  "report.id": result.reportId,
   "result.status": "completed",
 });
 ```
