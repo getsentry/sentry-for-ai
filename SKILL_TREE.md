@@ -99,6 +99,7 @@ Debug production issues and maintain code quality with Sentry context.
 |---|---|---|
 | Analyze and resolve Sentry comments on GitHub Pull Requests | [`sentry-code-review`](skills/sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
 | Find and fix issues from Sentry using MCP | [`sentry-fix-issues`](skills/sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
+| Migrate TypeScript/JavaScript console.* or existing logger calls to Sentry-captured structured logs | [`sentry-logs-migration-javascript`](skills/sentry-logs-migration-javascript/SKILL.md) | `sentry-logs-migration-javascript/SKILL.md` |
 | Review a project's PRs to check for issues detected in code review by Seer Bug Prediction | [`sentry-pr-code-review`](skills/sentry-pr-code-review/SKILL.md) | `sentry-pr-code-review/SKILL.md` |
 | Upgrade the Sentry JavaScript SDK across major versions | [`sentry-sdk-upgrade`](skills/sentry-sdk-upgrade/SKILL.md) | `sentry-sdk-upgrade/SKILL.md` |
 
@@ -111,6 +112,7 @@ Configure specific Sentry capabilities beyond basic SDK setup.
 | Create Sentry alerts using the workflow engine API | [`sentry-create-alert`](skills/sentry-create-alert/SKILL.md) | `sentry-create-alert/SKILL.md` |
 | Configure the OpenTelemetry Collector with Sentry Exporter for multi-project routing and automatic project creation | [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) | `sentry-otel-exporter-setup/SKILL.md` |
 | Setup Sentry AI Agent Monitoring in any project | [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) | `sentry-setup-ai-monitoring/SKILL.md` |
+| Add and improve JavaScript/TypeScript structured Sentry Logs in apps where Logs are already enabled | [`sentry-structured-logs-javascript`](skills/sentry-structured-logs-javascript/SKILL.md) | `sentry-structured-logs-javascript/SKILL.md` |
 
 ## Quick Lookup
 
