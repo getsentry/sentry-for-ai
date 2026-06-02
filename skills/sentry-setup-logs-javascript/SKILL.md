@@ -74,8 +74,9 @@ Sentry.logger.info("Order created", {
 
 Reserved-prefix checks apply to custom attributes, not to `Sentry.setUser`.
 
-Lint enforcement in touched logging scope:
+Lint enforcement in touched logging scope (ESLint):
 
+- Copy/configure the local plugin (docs: `../sentry-logs-migration-javascript/references/eslint-plugin-sentry-structured-logs.md`, asset: `../sentry-logs-migration-javascript/assets/eslint/sentry-structured-logs-plugin.mjs`).
 - `sentry-structured-logs/require-message-and-flat-attrs`
 - `sentry-structured-logs/no-reserved-attr-keys`
 - `sentry-structured-logs/no-sensitive-attr-keys`
