@@ -20,6 +20,8 @@ compatibility: >-
 - Sentry Logs are already enabled and operation-level instrumentation is needed
 - User asks for event catalogs, structured attributes, sampling, or log redaction
 
+If Logs are not enabled yet, use the relevant SDK setup skill first.
+
 Docs: [JavaScript Logs](https://docs.sentry.io/platforms/javascript/logs/),
 [Tracing](https://docs.sentry.io/platforms/javascript/tracing/)
 
