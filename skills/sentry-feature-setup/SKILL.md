@@ -24,7 +24,7 @@ Append the path from the `Path` column in the table below to `https://skills.sen
 **Do not skip this section.** Do not assume which feature the user needs. Ask first.
 
 1. If the user mentions **AI monitoring, LLM tracing, conversations, or instrumenting an AI SDK** (OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI, Pydantic AI) → `sentry-setup-ai-monitoring`
-2. If the user mentions **making JavaScript/TypeScript Sentry Logs more useful, structured, queryable, or operationally useful after SDK setup** → `sentry-setup-logs-javascript`
+2. If the user mentions **adding or improving JavaScript/TypeScript structured Sentry Logs at operation boundaries after Logs are enabled** → `sentry-structured-logs-javascript`
 3. If the user mentions **OpenTelemetry, OTel Collector, or multi-service telemetry routing** → `sentry-otel-exporter-setup`
 4. If the user mentions **alerts, notifications, on-call, Slack/PagerDuty/Discord integration, or workflow rules** → `sentry-create-alert`
 
@@ -37,7 +37,7 @@ When unclear, **ask the user** which feature they want to configure. Do not gues
 | Feature | Skill | Path |
 |---|---|---|
 | AI/LLM monitoring and conversations — instrument OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI, Pydantic AI | [`sentry-setup-ai-monitoring`](../sentry-setup-ai-monitoring/SKILL.md) | `sentry-setup-ai-monitoring/SKILL.md` |
-| JavaScript/TypeScript Sentry Logs — event catalogs, structured attributes, sampling, and redaction | [`sentry-setup-logs-javascript`](../sentry-setup-logs-javascript/SKILL.md) | `sentry-setup-logs-javascript/SKILL.md` |
+| JavaScript/TypeScript structured Sentry Logs — operation boundaries, event catalogs, structured attributes, sampling, and redaction | [`sentry-structured-logs-javascript`](../sentry-structured-logs-javascript/SKILL.md) | `sentry-structured-logs-javascript/SKILL.md` |
 | OpenTelemetry Collector with Sentry Exporter — multi-project routing, automatic project creation | [`sentry-otel-exporter-setup`](../sentry-otel-exporter-setup/SKILL.md) | `sentry-otel-exporter-setup/SKILL.md` |
 | Alerts via workflow engine API — email, Slack, PagerDuty, Discord | [`sentry-create-alert`](../sentry-create-alert/SKILL.md) | `sentry-create-alert/SKILL.md` |
 

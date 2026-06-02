@@ -112,7 +112,7 @@ Configure specific Sentry capabilities beyond basic SDK setup.
 | Create Sentry alerts using the workflow engine API | [`sentry-create-alert`](skills/sentry-create-alert/SKILL.md) | `sentry-create-alert/SKILL.md` |
 | Configure the OpenTelemetry Collector with Sentry Exporter for multi-project routing and automatic project creation | [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) | `sentry-otel-exporter-setup/SKILL.md` |
 | Setup Sentry AI Agent Monitoring in any project | [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) | `sentry-setup-ai-monitoring/SKILL.md` |
-| Configure JavaScript/TypeScript Sentry Logs after basic SDK setup | [`sentry-setup-logs-javascript`](skills/sentry-setup-logs-javascript/SKILL.md) | `sentry-setup-logs-javascript/SKILL.md` |
+| Add and improve JavaScript/TypeScript structured Sentry Logs in apps where Logs are already enabled | [`sentry-structured-logs-javascript`](skills/sentry-structured-logs-javascript/SKILL.md) | `sentry-structured-logs-javascript/SKILL.md` |
 
 ## Quick Lookup
 
