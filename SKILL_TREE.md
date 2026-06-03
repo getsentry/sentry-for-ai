@@ -111,7 +111,8 @@ Configure specific Sentry capabilities beyond basic SDK setup.
 | Create Sentry alerts using the workflow engine API | [`sentry-create-alert`](skills/sentry-create-alert/SKILL.md) | `sentry-create-alert/SKILL.md` |
 | Configure the OpenTelemetry Collector with Sentry Exporter for multi-project routing and automatic project creation | [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) | `sentry-otel-exporter-setup/SKILL.md` |
 | Setup Sentry AI Agent Monitoring in any project | [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) | `sentry-setup-ai-monitoring/SKILL.md` |
-| Migrate to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming`](skills/sentry-span-streaming/SKILL.md) | `sentry-span-streaming/SKILL.md` |
+| Migrate JavaScript SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-js`](skills/sentry-span-streaming-js/SKILL.md) | `sentry-span-streaming-js/SKILL.md` |
+| Migrate Python SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-python`](skills/sentry-span-streaming-python/SKILL.md) | `sentry-span-streaming-python/SKILL.md` |
 
 ## Quick Lookup
 
