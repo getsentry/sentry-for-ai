@@ -12,9 +12,11 @@ place by hand are exactly three things:
   only signal that records *why*), not sampled, so you can always find this request
 - a **metric** — the rate across *all* requests, sliceable by version and outcome
 
-> The APIs below match the patterns in `sentry-python-sdk/references/` and
-> `sentry-nextjs-sdk/references/`. Logs and metrics must be enabled at init (see those SDK skills).
-> Always confirm signatures and minimum versions against [docs.sentry.io](https://docs.sentry.io).
+> These examples show the *shape* of deliberate instrumentation, not how to set the SDK up. For
+> exact API signatures, the init flags that enable logs and metrics, and current minimum versions,
+> follow the matching SDK skill (`sentry-python-sdk`, `sentry-nextjs-sdk`, `sentry-node-sdk`, etc.)
+> and its `references/tracing.md`, `references/logging.md`, and `references/metrics.md`. Those are
+> the maintained source of truth; this guide intentionally doesn't duplicate them.
 
 ## Python (FastAPI)
 
@@ -65,8 +67,8 @@ def get_recommendations(user_id: int):
 ```
 
 If you *do* want a sub-operation timed in the waterfall (say the ranking step, or a call to an
-external recommender), wrap it in a custom span with
-[`sentry_sdk.start_span`](https://docs.sentry.io/platforms/python/tracing/instrumentation/custom-instrumentation/):
+external recommender), wrap it in a custom span with `sentry_sdk.start_span` (see
+`sentry-python-sdk`'s `references/tracing.md` for the full custom-span API):
 
 ```python
 with sentry_sdk.start_span(op="rank", name="rank_candidates") as span:

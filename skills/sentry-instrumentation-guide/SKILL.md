@@ -91,13 +91,14 @@ event?" arguments live in [`references/choosing-signals.md`](references/choosing
 Each signal's retention falls out of the question it answers:
 
 - **Traces are sampled.** You don't need every request to understand where time goes, so keep a
-  representative slice via `traces_sample_rate` (higher in dev, lower in production). See
-  [configure sampling](https://docs.sentry.io/platforms/python/tracing/configure-sampling/).
+  representative slice via `traces_sample_rate` (higher in dev, lower in production).
 - **Errors are captured by default.** No sampling to think about for the baseline.
 - **Logs and metrics are NOT sampled.** You keep every one and *filter* instead, with
-  `before_send_log` and [`before_send_metric`](https://docs.sentry.io/platforms/python/metrics/#before_send_metric).
-  This is the point: the whole reason for a log is to find the one rare request that went sideways,
-  and you can't find what you sampled away.
+  `before_send_log` and `before_send_metric`. This is the point: the whole reason for a log is to
+  find the one rare request that went sideways, and you can't find what you sampled away.
+
+(For the exact sampling and filtering config in your language, see the matching SDK skill's
+`references/tracing.md` and `references/metrics.md`.)
 
 Because all four signals come from one SDK, they share a `trace_id` and correlate on their own —
 every log and metric is tied to its trace, so you can drill from a metric spike straight into the
