@@ -446,13 +446,16 @@ grep -rn "@trace\|from sentry_sdk import trace\|from sentry_sdk.tracing import t
 # Find continue_trace usage
 grep -rn "continue_trace" --include="*.py" -l 2>/dev/null | head -20
 
+# Find before_send_transaction usage
+grep -rn "before_send_transaction" --include="*.py" -l 2>/dev/null | head -20
+
 # Find set_data / set_tag / set_context on spans
 grep -rn "set_data\|set_tag\|set_context" --include="*.py" -l 2>/dev/null | head -20
 ```
 
 ### Enable Span Streaming
 
-**Prerequisites:** `sentry-sdk` `>=TODO` with tracing enabled (`traces_sample_rate` or `traces_sampler` configured).
+**Prerequisites:** `sentry-sdk` `>=2.62.0` with tracing enabled (`traces_sample_rate` or `traces_sampler` configured).
 
 Add `trace_lifecycle` to `_experiments` in `sentry_sdk.init()`:
 
@@ -770,7 +773,7 @@ with sentry_sdk.start_span(
     ...
 
 # After
-sentry_sdk.get_current_scope().set_custom_sampling_context({"asgi_scope": asgi_scope})
+sentry_sdk.Scope.set_custom_sampling_context({"asgi_scope": asgi_scope})
 with sentry_sdk.traces.start_span(name="handle request"):
     ...
 ```
@@ -819,6 +822,18 @@ Only the span name and attributes set at creation time are available for matchin
 
 If an ignored span is a top-level span, its entire subtree is also ignored. If a non-top-level span is ignored, its children are not automatically ignored unless they match a rule themselves.
 
+### Migrate `before_send_transaction`
+
+`before_send_transaction` has no effect in streaming mode. Spans are sent individually, not batched into transactions.
+
+| Use Case | Streaming Replacement |
+|---|---|
+| Drop spans by name/route | Use `ignore_spans` |
+| Modify span data before send | Use `before_send_span` |
+| Filter by transaction name | Use `ignore_spans` with string/regex pattern |
+
+Remove the `before_send_transaction` option from `sentry_sdk.init()` after migrating its logic.
+
 ### Configure `before_send_span` (Optional)
 
 `before_send_span` lets you modify spans before they leave the SDK, for example to sanitize sensitive values. It receives `span` and `hint` arguments and must return a span:
@@ -863,6 +878,7 @@ Instruct the user to verify:
 | `set_data`/`set_tag` has no effect on span | These methods don't apply to streaming spans | Use `span.set_attribute()` |
 | Scope tags missing from spans | `set_tag` not applied to streaming spans | Use `sentry_sdk.set_attribute()` |
 | Custom sampling context not available in `traces_sampler` | Set after `start_span` or before `continue_trace` | Set on scope after `continue_trace` but before `start_span` |
+| `before_send_transaction` not called | Expected in streaming mode | Migrate logic to `before_send_span` or `ignore_spans` |
 
 ### Python Quick Reference
 
@@ -891,7 +907,7 @@ with start_span(name="my operation", attributes={"sentry.op": "task"}) as span:
 
 #### Python Migration Checklist
 
-- [ ] SDK version is `>=TODO`
+- [ ] SDK version is `>=2.62.0`
 - [ ] Added `_experiments={"trace_lifecycle": "stream"}` to `sentry_sdk.init()`
 - [ ] `sentry_sdk.start_span()` migrated to `sentry_sdk.traces.start_span()`
 - [ ] `sentry_sdk.start_transaction()` migrated to `sentry_sdk.traces.start_span()`
@@ -905,4 +921,6 @@ with start_span(name="my operation", attributes={"sentry.op": "task"}) as span:
 - [ ] `continue_trace` migrated to non-context-manager `sentry_sdk.traces.continue_trace()`
 - [ ] `custom_sampling_context` migrated to `scope.set_custom_sampling_context()`
 - [ ] (If using `traces_sampler`) Updated to handle new `sampling_context` shape
+- [ ] `before_send_transaction` logic migrated to `before_send_span` or `ignore_spans`
+- [ ] `before_send_transaction` removed from config
 - [ ] Spans visible in Sentry dashboard
