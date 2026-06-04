@@ -21,7 +21,7 @@ become work items with an owner and a lifecycle.
   nothing threw, the error feed will be empty even while users are unhappy — which is exactly the
   case where you need the other three signals.
 
-### Spans — "Did the request flow as designed, and where did the time go?"
+### Traces and spans — "Did the request flow the way it was supposed to?"
 
 Timed operations nested inside a trace, rendered as a waterfall. This is how you follow a request
 across services and see the DB query that dragged, the API call that timed out, the LLM tool call

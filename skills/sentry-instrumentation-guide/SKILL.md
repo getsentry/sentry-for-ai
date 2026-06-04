@@ -43,12 +43,12 @@ skill before implementing.
 | Signal | The question it answers | Docs |
 |--------|-------------------------|------|
 | **Errors** | "What just broke?" — a stack trace and exception type, grouped into a deduplicated Issue that gets assigned and tracked to resolution. If your code threw, it's an error. | [Issues](https://docs.sentry.io/product/issues/) |
-| **Spans** | "Did the request flow the way it was supposed to, and where did the time go?" — timed operations nested in a trace, rendered as a waterfall. Mostly auto-instrumented. | [Trace Explorer](https://docs.sentry.io/product/explore/trace-explorer/) |
+| **Traces** | "Did the request flow the way it was supposed to?" — a waterfall of timed spans. Mostly auto-instrumented. | [Trace Explorer](https://docs.sentry.io/product/explore/trace-explorer/) |
 | **Logs** | "What was true at this point in the code, and why?" — the system's state at one moment as a structured event: config, flags, inputs/outputs, the decision that was made. | [Logs](https://docs.sentry.io/product/explore/logs/) |
-| **Metrics** | "How have the key parts been behaving over time?" — counters, gauges, distributions you can slice by attribute and chart, alert on, or compare across a deploy. | [Metrics](https://docs.sentry.io/product/explore/metrics/) |
+| **Metrics** | "How's this trending over time?" — counters, gauges, distributions you can slice by attribute and chart, alert on, or compare across a deploy. | [Metrics](https://docs.sentry.io/product/explore/metrics/) |
 
 A useful mental split: a **log is one request's story** (the needle), a **metric is the aggregate**
-(whether the haystack is normal), a **span is where the time went**, and an **error is the thing
+(whether the haystack is normal), a **trace is where the time went**, and an **error is the thing
 that needs a stack trace and an owner**.
 
 ## The Decision Table
@@ -58,8 +58,8 @@ Use this as a gut check:
 | What you want to know | Reach for |
 |-----------------------|-----------|
 | Something crashed, show the stack trace | **Error** |
-| How long did this take? Which step is slow? | **Span** |
-| Did the request flow through the steps I expected? | **Span** |
+| How long did this take? Which step is slow? | **Traces / Spans** |
+| Did the request flow through the steps I expected? | **Traces / Spans** |
 | What was the state when the code made this decision? | **Log** |
 | What did this function receive and return? | **Log** |
 | How often does X happen? Is the rate normal? | **Metric** |
