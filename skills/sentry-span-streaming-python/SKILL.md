@@ -330,6 +330,22 @@ span.set_tag("http.status_code", 201)
 span.set_attribute("http.response.status_code", 201)
 ```
 
+When migrating multiple consecutive `set_data` / `set_tag` calls, combine them into a single `set_attributes()` call:
+
+```python
+# Before
+span.set_data("flow.step", "submit_payment")
+span.set_data("flow.version", "0.35")
+span.set_tag("http.status_code", 201)
+
+# After
+span.set_attributes({
+    "flow.step": "submit_payment",
+    "flow.version": "0.35",
+    "http.response.status_code": 201,
+})
+```
+
 #### Replace `set_context`
 
 Dictionaries are not supported as attribute values. Flatten them into separate attributes:
