@@ -320,7 +320,24 @@ Prefer the direct property access where possible — `_get_trace_context()` is a
 
 ### Migrate Span Data
 
-In span streaming mode, spans have no contexts, data, or tags. Everything is a span attribute. Attribute keys are strings; values must be `int`, `bool`, `str`, `float`, or an array of these types. `None` is not supported. Unsupported types (e.g. objects) are cast to string.
+In span streaming mode, spans have no contexts, data, or tags. Everything is a span attribute. Attribute keys are strings; values must be `int`, `bool`, `str`, `float`, or an array of these types. `None` is not supported.
+
+**Important:** Unlike the old `set_data` / `set_tag` APIs, `set_attribute` only supports primitive types. Non-primitive values must be either stringified or broken down into multiple primitive-typed attributes:
+
+```python
+# Before — set_data accepted any type
+span.set_data("request", {"method": "POST", "path": "/api/checkout"})
+span.set_data("response_headers", response.headers)
+
+# After — flatten dicts into separate attributes
+span.set_attributes({
+    "request.method": "POST",
+    "request.path": "/api/checkout",
+})
+
+# After — stringify objects that can't be flattened
+span.set_attribute("response_headers", str(response.headers))
+```
 
 #### Replace `set_data`
 
