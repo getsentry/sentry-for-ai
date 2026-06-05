@@ -48,6 +48,12 @@ grep -rn "from sentry_sdk.tracing import\|from sentry_sdk import.*Span\|from sen
 
 # Find set_data / set_tag / set_context on spans
 grep -rn "set_data\|set_tag\|set_context" --include="*.py" -l 2>/dev/null | head -20
+
+# Find scope.span / scope.transaction access
+grep -rn "scope\.span\|scope\.transaction" --include="*.py" -l 2>/dev/null | head -20
+
+# Find get_trace_context usage
+grep -rn "get_trace_context" --include="*.py" -l 2>/dev/null | head -20
 ```
 
 ### Parallelization
@@ -225,6 +231,34 @@ from sentry_sdk.traces import get_current_span
 span = get_current_span()
 ```
 
+#### `scope.span` and `scope.transaction`
+
+If the code accesses the current span or transaction through the scope object, migrate to the new APIs:
+
+```python
+import sentry_sdk
+
+# Before
+scope = sentry_sdk.get_current_scope()
+current_span = scope.span
+
+# After
+current_span = sentry_sdk.traces.get_current_span()
+```
+
+```python
+import sentry_sdk
+
+# Before
+scope = sentry_sdk.get_current_scope()
+transaction = scope.transaction
+
+# After
+root_span = sentry_sdk.traces.get_current_span()._segment
+```
+
+`_segment` returns the root span of the current trace (the equivalent of what used to be the transaction). It is a private API — prefer restructuring the code to avoid needing the root span where possible.
+
 #### `Span` and `Transaction` Classes
 
 If the code imports `Span` or `Transaction` directly (e.g. for type annotations), replace both with `StreamedSpan`:
@@ -242,6 +276,35 @@ from sentry_sdk.traces import StreamedSpan
 def process(span: StreamedSpan) -> None:
     ...
 ```
+
+#### `get_trace_context`
+
+`span.get_trace_context()` no longer exists on streaming spans. Migrate based on what you actually need from the trace context:
+
+If the code only reads specific fields (like `trace_id`, `span_id`, or `parent_span_id`), access them directly as span properties:
+
+```python
+# Before
+ctx = span.get_trace_context()
+trace_id = ctx["trace_id"]
+span_id = ctx["span_id"]
+
+# After
+trace_id = span.trace_id
+span_id = span.span_id
+```
+
+If the code genuinely needs the full trace context dict (e.g. to pass it to an external system or serialize it), use the private method `span._get_trace_context()`:
+
+```python
+# Before
+ctx = span.get_trace_context()
+
+# After
+ctx = span._get_trace_context()
+```
+
+Prefer the direct property access where possible — `_get_trace_context()` is a private API and may change.
 
 ### Migrate Span Data
 
@@ -502,6 +565,8 @@ Instruct the user to verify:
 | `set_data`/`set_tag` has no effect on span | These methods don't apply to streaming spans | Use `span.set_attribute()` |
 | Scope tags missing from spans | `set_tag` not applied to streaming spans | Use `sentry_sdk.set_attribute()` |
 | Custom sampling context not available in `traces_sampler` | Set after `start_span` or before `continue_trace` | Set on scope after `continue_trace` but before `start_span` |
+| `scope.span` returns wrong type or `None` | Scope-based span access not reliable in streaming mode | Use `sentry_sdk.traces.get_current_span()` |
+| `AttributeError` on `get_trace_context` | Method removed in streaming mode | Use `span.trace_id` / `span.span_id` directly, or `span._get_trace_context()` |
 | `before_send_transaction` not called | Expected in streaming mode | Migrate logic to `before_send_span` or `ignore_spans` |
 | `before_send_transaction` logic relied on late-set attributes (e.g. status code) | These attributes aren't available at span creation time | Remove the logic or use server-side filtering (Sentry inbound filters / Relay rules) |
 
@@ -538,8 +603,11 @@ with start_span(name="my operation", attributes={"sentry.op": "task"}) as span:
 - [ ] `sentry_sdk.start_transaction()` migrated to `sentry_sdk.traces.start_span()`
 - [ ] `span.start_child()` migrated to `sentry_sdk.traces.start_span()`
 - [ ] `sentry_sdk.get_current_span()` migrated to `sentry_sdk.traces.get_current_span()`
+- [ ] `scope.span` replaced with `sentry_sdk.traces.get_current_span()`
+- [ ] `scope.transaction` replaced with `sentry_sdk.traces.get_current_span()._segment`
 - [ ] `@sentry_sdk.trace` migrated to `@sentry_sdk.traces.trace`
 - [ ] `Span` / `Transaction` class imports replaced with `StreamedSpan`
+- [ ] `span.get_trace_context()` replaced with direct properties (`span.trace_id`, etc.) or `span._get_trace_context()`
 - [ ] `description` replaced with `name`
 - [ ] `op` replaced with `sentry.op` attribute
 - [ ] `set_data()` / `set_tag()` / `set_context()` replaced with `set_attribute()`
