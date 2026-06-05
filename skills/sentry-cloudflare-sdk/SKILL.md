@@ -21,7 +21,7 @@ Opinionated wizard that scans your Cloudflare project and guides you through com
 - User asks about `withSentry`, `sentryPagesPlugin`, `instrumentDurableObjectWithSentry`, or `instrumentD1WithSentry`
 - User wants to monitor Durable Objects, Queues, Workflows, Scheduled handlers, or Email handlers on Cloudflare
 
-> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.43.0).
+> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.55.0).
 > Always verify against [docs.sentry.io/platforms/javascript/guides/cloudflare/](https://docs.sentry.io/platforms/javascript/guides/cloudflare/) before implementing.
 
 ---
@@ -79,7 +79,7 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 | Question | Impact |
 |----------|--------|
 | Workers or Pages? | Determines wrapper: `withSentry` vs `sentryPagesPlugin` |
-| Hono framework? | Automatic Hono error handler integration via `honoIntegration` |
+| Hono framework? | Recommend standalone `@sentry/hono` package (v10.55.0+) for cleaner integration |
 | `@sentry/cloudflare` already installed? | Skip install, go to feature config |
 | Durable Objects configured? | Recommend `instrumentDurableObjectWithSentry` |
 | D1 databases bound? | Recommend `instrumentD1WithSentry` |
@@ -251,7 +251,42 @@ export const handle = ({ event, resolve }) => {
 
 #### Hono on Cloudflare Workers
 
-Hono apps are objects with a `fetch` method — wrap them with `withSentry` directly:
+**Recommended (v10.55.0+):** Use the standalone `@sentry/hono` package for Hono apps:
+
+```bash
+npm install @sentry/hono @sentry/cloudflare
+```
+
+The `@sentry/cloudflare` package is a peer dependency and must stay in sync with `@sentry/hono`.
+
+```typescript
+import { Hono } from "hono";
+import { sentry } from "@sentry/hono/cloudflare";
+
+type Bindings = { SENTRY_DSN: string };
+
+const app = new Hono<{ Bindings: Bindings }>();
+
+// Initialize Sentry middleware as early as possible
+app.use(
+  sentry(app, (env) => ({
+    dsn: env.SENTRY_DSN,
+    tracesSampleRate: 1.0,
+  })),
+);
+
+app.get("/", (ctx) => ctx.json({ message: "Hello" }));
+
+app.get("/error", () => {
+  throw new Error("Test error");
+});
+
+export default app;
+```
+
+The `sentry()` middleware automatically captures errors and creates transaction spans with route patterns.
+
+**Legacy approach (deprecated):** Using `@sentry/cloudflare` with `withSentry` still works, but `honoIntegration` is deprecated:
 
 ```typescript
 import { Hono } from "hono";
@@ -261,14 +296,6 @@ const app = new Hono();
 
 app.get("/", (ctx) => ctx.json({ message: "Hello" }));
 
-app.get("/error", () => {
-  throw new Error("Test error");
-});
-
-app.onError((err, ctx) => {
-  return ctx.json({ error: err.message }, 500);
-});
-
 export default Sentry.withSentry(
   (env: Env) => ({
     dsn: env.SENTRY_DSN,
@@ -277,8 +304,6 @@ export default Sentry.withSentry(
   app,
 );
 ```
-
-The `honoIntegration` (enabled by default) automatically captures errors from Hono's `onError` handler and sets the correct transaction name with the route path.
 
 #### Set Up the SENTRY_DSN Secret
 
@@ -465,7 +490,7 @@ These are registered automatically by `getDefaultIntegrations()`:
 | `functionToStringIntegration` | Preserve original function names |
 | `linkedErrorsIntegration` | Follow `cause` chains in errors |
 | `fetchIntegration` | Trace outbound `fetch()` calls, create breadcrumbs |
-| `honoIntegration` | Auto-capture Hono `onError` exceptions |
+| `honoIntegration` | **Deprecated in v10.55.0** — use `@sentry/hono` package instead. Auto-capture Hono `onError` exceptions |
 | `requestDataIntegration` | Attach request data to events |
 | `consoleIntegration` | Capture `console.*` calls as breadcrumbs |
 
@@ -515,7 +540,7 @@ Connecting frontend and backend with linked Sentry projects enables **distribute
 | `AsyncLocalStorage is not defined` | Missing compatibility flag | Add `nodejs_als` or `nodejs_compat` to `compatibility_flags` in `wrangler.toml` |
 | Stack traces show minified code | Source maps not uploaded | Configure `@sentry/vite-plugin` or run `npx @sentry/wizard -i sourcemaps`; verify `SENTRY_AUTH_TOKEN` in CI |
 | Events lost on short-lived requests | SDK not flushing before worker terminates | Ensure `withSentry` or `sentryPagesPlugin` wraps your handler — they use `ctx.waitUntil()` to flush |
-| Hono errors not captured | Hono app not wrapped with `withSentry` | Pass the Hono app as the second argument to `Sentry.withSentry()` |
+| Hono errors not captured | Hono app not instrumented | Use `@sentry/hono/cloudflare` — import `sentry` middleware and call `app.use(sentry(app, options))` |
 | Durable Object errors missing | DO class not instrumented | Wrap class with `Sentry.instrumentDurableObjectWithSentry()` — see `references/durable-objects.md` |
 | D1 queries not creating spans | D1 binding not instrumented | Wrap binding with `Sentry.instrumentD1WithSentry(env.DB)` before use |
 | Scheduled handler not monitored | `withSentry` not wrapping the handler | Ensure `export default Sentry.withSentry(...)` wraps your entire exported handler object |

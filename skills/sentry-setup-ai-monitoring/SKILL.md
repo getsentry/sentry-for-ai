@@ -1,6 +1,6 @@
 ---
 name: sentry-setup-ai-monitoring
-description: Setup Sentry AI Agent Monitoring in any project. Use when asked to monitor LLM calls, track AI agents, or instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI/Pydantic AI. Detects installed AI SDKs and configures appropriate integrations.
+description: Setup Sentry AI Agent Monitoring in any project. Use when asked to monitor LLM calls, track AI agents, track conversations, or instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI/Pydantic AI. Detects installed AI SDKs and configures appropriate integrations.
 license: Apache-2.0
 category: feature-setup
 parent: sentry-feature-setup
@@ -27,13 +27,13 @@ AI monitoring requires **tracing enabled** (`tracesSampleRate > 0`).
 
 ## Data Capture Warning
 
-**Prompt and output recording captures user content that is likely PII.** Before enabling `recordInputs`/`recordOutputs` (JS) or `include_prompts`/`send_default_pii` (Python), confirm:
+**Prompt and output recording captures user content that is likely PII.** Before enabling send-default-PII (`sendDefaultPii: true` in JavaScript or `send_default_pii=True` in Python) or per-integration prompt/output capture (`recordInputs`/`recordOutputs` in JS, `include_prompts` in Python), confirm:
 
 - The application's privacy policy permits capturing user prompts and model responses
 - Captured data complies with applicable regulations (GDPR, CCPA, etc.)
 - Sentry data retention settings are appropriate for the sensitivity of the data
 
-**Ask the user** whether they want prompt/output capture enabled. Do not enable it by default — configure it only when explicitly requested or confirmed. Use `tracesSampleRate: 1.0` only in development; in production, use a lower value or a `tracesSampler` function.
+**Ask the user** whether they want prompt/output capture enabled. Do not enable prompt/output capture without explicit confirmation. Use `tracesSampleRate: 1.0` only in development; in production, use a lower value or a `tracesSampler` function.
 
 ## Detection First
 
@@ -112,15 +112,20 @@ Sentry.init({
 });
 ```
 
-To customize (e.g., enable prompt capture — see Data Capture Warning):
+To customize (e.g., enable prompt capture after user confirmation — see Data Capture Warning):
 
 ```javascript
-integrations: [
-  Sentry.openAIIntegration({
-    // recordInputs: true,  // Opt-in: captures prompt content (PII)
-    // recordOutputs: true, // Opt-in: captures response content (PII)
-  }),
-],
+Sentry.init({
+  dsn: "YOUR_DSN",
+  tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
+  sendDefaultPii: true,
+  integrations: [
+    Sentry.openAIIntegration({
+      // recordInputs/recordOutputs default to true when sendDefaultPii is true
+    }),
+  ],
+});
 ```
 
 ### Browser / Next.js OpenAI (manual wrapping required)
@@ -138,23 +143,29 @@ const openai = Sentry.instrumentOpenAiClient(new OpenAI());
 ### LangChain / LangGraph (auto-enabled)
 
 ```javascript
-integrations: [
-  Sentry.langChainIntegration({
-    // recordInputs: true,  // Opt-in: captures prompt content (PII)
-    // recordOutputs: true, // Opt-in: captures response content (PII)
-  }),
-  Sentry.langGraphIntegration({
-    // recordInputs: true,
-    // recordOutputs: true,
-  }),
-],
+Sentry.init({
+  dsn: "YOUR_DSN",
+  tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
+  sendDefaultPii: true,
+  integrations: [
+    Sentry.langChainIntegration(),
+    Sentry.langGraphIntegration(),
+  ],
+});
 ```
 
 ### Vercel AI SDK
 
 Add to `sentry.edge.config.ts` for Edge runtime:
 ```javascript
-integrations: [Sentry.vercelAIIntegration()],
+Sentry.init({
+  dsn: "YOUR_DSN",
+  tracesSampleRate: 1.0,
+  streamGenAiSpans: true,
+  sendDefaultPii: true,
+  integrations: [Sentry.vercelAIIntegration()],
+});
 ```
 
 Enable telemetry per-call:
@@ -164,8 +175,8 @@ await generateText({
   prompt: "Hello",
   experimental_telemetry: {
     isEnabled: true,
-    // recordInputs: true,  // Opt-in: captures prompt content (PII)
-    // recordOutputs: true, // Opt-in: captures response content (PII)
+    recordInputs: true,
+    recordOutputs: true,
   },
 });
 ```
@@ -181,7 +192,7 @@ sentry_sdk.init(
     dsn="YOUR_DSN",
     traces_sample_rate=1.0,  # Lower in production (e.g., 0.1)
     stream_gen_ai_spans=True,  # SDK ≥2.60.0
-    # send_default_pii=True,  # Opt-in: required for prompt capture (sends user PII)
+    send_default_pii=True,
     # Integrations auto-enable when the AI package is installed.
     # Only specify explicitly to customize (e.g., include_prompts):
     # integrations=[OpenAIIntegration(include_prompts=True)],
@@ -292,6 +303,70 @@ The same rule applies to `gen_ai.usage.output_tokens` vs. `gen_ai.usage.output_t
 
 After configuring, make an LLM call and check the Sentry Traces dashboard. AI spans appear with `gen_ai.*` operations showing model, token counts, and latency.
 
+## Conversations
+
+Conversations gives a readable, chat-style view of past sessions with your AI agent. It groups spans by `gen_ai.conversation.id` — so whether a user talked across multiple traces or multiple conversations happened inside one trace, you get a timeline of every message, tool call, and response.
+
+Find it at **Explore > Conversations** in Sentry.
+
+### Prerequisites for Conversations
+
+- Tracing enabled with `tracesSampleRate > 0`
+- `streamGenAiSpans: true` (JS SDK >=10.53.0) / `stream_gen_ai_spans=True` (Python SDK >=2.60.0) — required so AI spans are sent as standalone items. Without this, spans with large inputs/outputs can hit transaction payload size limits and be dropped.
+- **Input and output capture enabled** — Conversations reconstructs the chat from `gen_ai.input.messages` and `gen_ai.output.messages` attributes. Set `sendDefaultPii: true` (JS) / `send_default_pii=True` (Python). Without it, conversations appear empty.
+
+### Setting a Conversation ID
+
+Some integrations (OpenAI Agents SDK for Python, OpenAI SDK for Node) infer the conversation ID automatically. For all others, set it manually.
+
+#### JavaScript
+
+```javascript
+import * as Sentry from "@sentry/node"; // or @sentry/nextjs, @sentry/nestjs, etc.
+
+// Set at the start of a conversation
+Sentry.setConversationId("conv_abc123");
+
+// All subsequent AI calls carry gen_ai.conversation.id: "conv_abc123"
+await openai.chat.completions.create({
+  model: "gpt-5.5",
+  messages: [{ role: "user", content: "Hello" }],
+});
+```
+
+#### Python
+
+```python
+import sentry_sdk.ai
+
+# Set at the start of a conversation
+sentry_sdk.ai.set_conversation_id("conv_abc123")
+
+# All subsequent AI calls carry gen_ai.conversation.id = "conv_abc123"
+```
+
+Some integrations infer the conversation ID automatically. For example, the Python OpenAI integration picks it up when you use the `conversation` parameter:
+
+```python
+import openai
+import sentry_sdk
+
+sentry_sdk.init(...)
+
+conversation = openai.conversations.create()
+response = openai.responses.create(
+    model="gpt-5.4",
+    input=[{"role": "user", "content": "What are the 5 Ds of dodgeball?"}],
+    conversation=conversation.id  # automatically sets gen_ai.conversation.id
+)
+```
+
+### Conversations vs Traces
+
+These are independent concepts:
+- A single conversation can span **multiple traces** (e.g., user refreshes the page mid-conversation — new trace, same conversation ID)
+- A single trace can contain spans from **different conversations** (e.g., user starts a new chat without refreshing)
+
 ## Troubleshooting
 
 | Issue | Solution |
@@ -299,5 +374,6 @@ After configuring, make an LLM call and check the Sentry Traces dashboard. AI sp
 | AI spans not appearing | Verify `tracesSampleRate > 0`, check SDK version |
 | Token counts missing | Some providers don't return tokens for streaming |
 | Negative or wrong costs in dashboard | Cached/reasoning tokens are subsets of totals — see Token Usage and Cost Calculation |
-| Prompts not captured | Enable `recordInputs`/`include_prompts` |
+| Prompts not captured | Set `sendDefaultPii: true` (JS) or `send_default_pii=True` (Python); use `recordInputs`/`include_prompts` only for explicit overrides |
 | Vercel AI not working | Add `experimental_telemetry` to each call |
+| Conversations view empty | Ensure `streamGenAiSpans: true` / `stream_gen_ai_spans=True`, `sendDefaultPii: true` / `send_default_pii=True`, and a conversation ID is set |

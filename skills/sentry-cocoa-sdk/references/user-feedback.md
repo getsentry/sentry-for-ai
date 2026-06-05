@@ -1,6 +1,6 @@
 # User Feedback — Sentry Cocoa SDK
 
-> Minimum SDK: `sentry-cocoa` v8.46.0+  
+> Minimum SDK: `sentry-cocoa` v8.46.0+
 > Self-hosted Sentry server: 24.4.2+
 
 ## Configuration
@@ -29,7 +29,7 @@ import Sentry
 
 SentrySDK.start { options in
     options.dsn = "___PUBLIC_DSN___"
-    options.configureUserFeedback { config in
+    options.configureUserFeedback = { config in
         config.onSubmitSuccess = { data in
             // data keys: "message", "name", "email", "attachments"
             print("Feedback submitted: \(data["message"] ?? "")")
@@ -86,11 +86,8 @@ func sceneDidBecomeActive(_ scene: UIScene) {
 
 ```swift
 SentrySDK.start { options in
-    options.configureUserFeedback { config in
-        config.configureWidget { widget in
-            widget.autoInject = false       // disable the default floating button
-            widget.customButton = myButton  // tapping this button opens the form
-        }
+    options.configureUserFeedback = { config in
+        config.customButton = myButton  // tapping this button opens the form
     }
 }
 ```
@@ -98,7 +95,7 @@ SentrySDK.start { options in
 ### Trigger via shake gesture or screenshot
 
 ```swift
-options.configureUserFeedback { config in
+options.configureUserFeedback = { config in
     config.useShakeGesture = true          // shake to open form
     config.showFormForScreenshots = true   // auto-open after screenshot
 }
@@ -138,8 +135,8 @@ SentrySDK.capture(feedback: .init(
 ### Form customisation
 
 ```swift
-options.configureUserFeedback { config in
-    config.configureForm { form in
+options.configureUserFeedback = { config in
+    config.configureForm = { form in
         form.formTitle           = "Share Your Feedback"
         form.submitButtonLabel   = "Send Feedback"
         form.cancelButtonLabel   = "Never Mind"
@@ -155,8 +152,8 @@ options.configureUserFeedback { config in
 ### Widget placement and labels
 
 ```swift
-options.configureUserFeedback { config in
-    config.configureWidget { widget in
+options.configureUserFeedback = { config in
+    config.configureWidget = { widget in
         widget.labelText = "Give Feedback"
         widget.location  = [.bottom, .trailing]   // anchor edges
         widget.showIcon  = true
@@ -168,14 +165,14 @@ options.configureUserFeedback { config in
 ### Theme customisation
 
 ```swift
-options.configureUserFeedback { config in
-    config.theme { theme in
-        theme.submitBackground = .init(color: .systemBlue)
+options.configureUserFeedback = { config in
+    config.configureTheme = { theme in
+        theme.submitBackground = .systemBlue
         theme.fontFamily       = "SF Pro Rounded"
     }
-    config.darkTheme { theme in
-        theme.background       = .init(color: .black)
-        theme.submitBackground = .init(color: .systemPurple)
+    config.configureDarkTheme = { theme in
+        theme.background       = .black
+        theme.submitBackground = .systemPurple
     }
 }
 ```
@@ -205,12 +202,12 @@ import Sentry
 SentrySDK.start { options in
     options.dsn = "___PUBLIC_DSN___"
 
-    options.configureUserFeedback { config in
+    options.configureUserFeedback = { config in
         config.showFormForScreenshots = true
         config.useShakeGesture        = false
         config.animations             = true
 
-        config.configureForm { form in
+        config.configureForm = { form in
             form.formTitle           = "Report a Bug"
             form.submitButtonLabel   = "Send Bug Report"
             form.isNameRequired      = true
@@ -219,26 +216,26 @@ SentrySDK.start { options in
             form.useSentryUser       = true
         }
 
-        config.configureWidget { widget in
+        config.configureWidget = { widget in
             widget.labelText  = "Report a Bug"
             widget.location   = [.bottom, .trailing]
             widget.autoInject = true
         }
 
-        config.theme { theme in
-            theme.submitBackground = .init(color: .systemBlue)
+        config.configureTheme = { theme in
+            theme.submitBackground = .systemBlue
         }
-        config.darkTheme { theme in
-            theme.background = .init(color: .black)
+        config.configureDarkTheme = { theme in
+            theme.background = .black
         }
 
         config.onFormOpen  = { print("Feedback form opened") }
         config.onFormClose = { print("Feedback form closed") }
         config.onSubmitSuccess = { data in
-            print("✅ Feedback: \(data["message"] ?? "")")
+            print("Feedback: \(data["message"] ?? "")")
         }
         config.onSubmitError = { error in
-            print("❌ Submission failed: \(error)")
+            print("Submission failed: \(error)")
         }
     }
 }
@@ -255,7 +252,8 @@ SentrySDK.start { options in
 | `showIcon` | `Bool` | `true` |
 | `labelText` | `String?` | `"Report a Bug"` |
 | `widgetAccessibilityLabel` | `String` | `labelText` |
-| `customButton` | `UIButton?` | `nil` |
+
+`customButton` is on `SentryUserFeedbackConfiguration`, not `SentryUserFeedbackWidgetConfiguration`. If it is set, `configureWidget` is ignored.
 
 ## SentryUserFeedbackFormConfiguration Reference
 
@@ -280,7 +278,7 @@ SentrySDK.start { options in
 
 - Set `useSentryUser = true` (default) and call `SentrySDK.setUser(...)` so the form pre-fills name and email — reduces friction
 - Enable `showFormForScreenshots = true` — users often take screenshots when something goes wrong; it's a natural trigger
-- Disable `autoInject` and use `widget.customButton = myButton` to match your app's design language
+- Disable `autoInject` for SwiftUI, or set `config.customButton = myButton` to bind the form to your own UIKit button
 - Use `config.onSubmitSuccess` to show a native confirmation (toast/alert) after the Sentry form dismisses
 - If collecting feedback from a known event ID, use `associatedEventId` to link the feedback to the specific issue in Sentry
 - Add `tags` on the configuration to automatically tag all feedback events with context (e.g., app version, screen name)

@@ -99,6 +99,7 @@ Full platform bundles that scan your project, recommend features, and guide you 
 |-------|-------------|
 | `sentry-setup-ai-monitoring` | Instrument OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI |
 | `sentry-otel-exporter-setup` | Configure OTel Collector with Sentry Exporter for multi-project routing |
+| `sentry-instrumentation-guide` | Decide which signal to reach for — error vs span vs log vs metric, and what to instrument where |
 
 ### Workflow
 
