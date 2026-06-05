@@ -50,6 +50,10 @@ grep -rn "from sentry_sdk.tracing import\|from sentry_sdk import.*Span\|from sen
 grep -rn "set_data\|set_tag\|set_context" --include="*.py" -l 2>/dev/null | head -20
 ```
 
+### Parallelization
+
+After detecting the environment, assess how many files need changes. If the codebase has many files to migrate (e.g. dozens of files with `start_span`, `start_transaction`, `set_data`, etc.), launch subagents to handle independent migration tasks in parallel — for example, one subagent per migration category (span creation, span data, trace propagation) or per module/package. Each subagent should receive the relevant migration rules from this skill and operate on a distinct set of files.
+
 ### Enable Span Streaming
 
 **Prerequisites:** `sentry-sdk` `>=2.62.0` with tracing enabled (`traces_sample_rate` or `traces_sampler` configured).
