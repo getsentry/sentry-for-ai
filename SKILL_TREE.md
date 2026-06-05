@@ -112,6 +112,7 @@ Configure specific Sentry capabilities beyond basic SDK setup.
 | Decide which Sentry signal to reach for when instrumenting code — error, span, span attribute, log, or metric | [`sentry-instrumentation-guide`](skills/sentry-instrumentation-guide/SKILL.md) | `sentry-instrumentation-guide/SKILL.md` |
 | Configure the OpenTelemetry Collector with Sentry Exporter for multi-project routing and automatic project creation | [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) | `sentry-otel-exporter-setup/SKILL.md` |
 | Setup Sentry AI Agent Monitoring in any project | [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) | `sentry-setup-ai-monitoring/SKILL.md` |
+| Migrate to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming`](skills/sentry-span-streaming/SKILL.md) | `sentry-span-streaming/SKILL.md` |
 
 ## Quick Lookup
 
