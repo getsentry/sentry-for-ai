@@ -115,7 +115,6 @@ Configure specific Sentry capabilities beyond basic SDK setup.
 | Migrate JavaScript SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-js`](skills/sentry-span-streaming-js/SKILL.md) | `sentry-span-streaming-js/SKILL.md` |
 | Migrate Python SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-python`](skills/sentry-span-streaming-python/SKILL.md) | `sentry-span-streaming-python/SKILL.md` |
 
-
 ## Quick Lookup
 
 Match your project to a skill by keywords. Append the path to `https://skills.sentry.dev/` to fetch.
