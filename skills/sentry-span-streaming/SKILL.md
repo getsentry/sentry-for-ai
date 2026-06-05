@@ -12,7 +12,7 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 
 # Sentry Span Streaming Migration
 
-Migrate from the default transaction-based trace lifecycle (`static`) to span streaming (`stream`), where spans are sent individually as they complete instead of being batched into a transaction at the end.
+Migrate from the default transaction-based trace lifecycle (`static`) to span streaming (`stream`), where spans are sent in multiple batches as they complete instead of being batched into one transaction at the end.
 
 ## Invoke This Skill When
 
