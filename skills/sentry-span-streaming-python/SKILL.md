@@ -49,8 +49,8 @@ grep -rn "from sentry_sdk.tracing import\|from sentry_sdk import.*Span\|from sen
 # Find set_data / set_tag / set_context on spans
 grep -rn "set_data\|set_tag\|set_context" --include="*.py" -l 2>/dev/null | head -20
 
-# Find scope.span / scope.transaction access
-grep -rn "scope\.span\|scope\.transaction" --include="*.py" -l 2>/dev/null | head -20
+# Find scope.span / scope.transaction / containing_transaction access
+grep -rn "scope\.span\|scope\.transaction\|containing_transaction" --include="*.py" -l 2>/dev/null | head -20
 
 # Find get_trace_context usage
 grep -rn "get_trace_context" --include="*.py" -l 2>/dev/null | head -20
@@ -258,6 +258,18 @@ root_span = sentry_sdk.traces.get_current_span()._segment
 ```
 
 `_segment` returns the root span of the current trace (the equivalent of what used to be the transaction). It is a private API — prefer restructuring the code to avoid needing the root span where possible.
+
+#### `span.containing_transaction`
+
+`span.containing_transaction` no longer exists. Use `span._segment` to get the root span:
+
+```python
+# Before
+transaction = span.containing_transaction
+
+# After
+root_span = span._segment
+```
 
 #### `Span` and `Transaction` Classes
 
@@ -582,6 +594,7 @@ Instruct the user to verify:
 | Scope tags missing from spans | `set_tag` not applied to streaming spans | Use `sentry_sdk.set_attribute()` |
 | Custom sampling context not available in `traces_sampler` | Set after `start_span` or before `continue_trace` | Set on scope after `continue_trace` but before `start_span` |
 | `scope.span` returns wrong type or `None` | Scope-based span access not reliable in streaming mode | Use `sentry_sdk.traces.get_current_span()` |
+| `AttributeError` on `containing_transaction` | Attribute removed in streaming mode | Use `span._segment` |
 | `AttributeError` on `get_trace_context` | Method removed in streaming mode | Use `span.trace_id` / `span.span_id` directly, or `span._get_trace_context()` |
 | `before_send_transaction` not called | Expected in streaming mode | Migrate logic to `before_send_span` or `ignore_spans` |
 | `before_send_transaction` logic relied on late-set attributes (e.g. status code) | These attributes aren't available at span creation time | Remove the logic or use server-side filtering (Sentry inbound filters / Relay rules) |
@@ -621,6 +634,7 @@ with start_span(name="my operation", attributes={"sentry.op": "task"}) as span:
 - [ ] `sentry_sdk.get_current_span()` migrated to `sentry_sdk.traces.get_current_span()`
 - [ ] `scope.span` replaced with `sentry_sdk.traces.get_current_span()`
 - [ ] `scope.transaction` replaced with `sentry_sdk.traces.get_current_span()._segment`
+- [ ] `span.containing_transaction` replaced with `span._segment`
 - [ ] `@sentry_sdk.trace` migrated to `@sentry_sdk.traces.trace`
 - [ ] `Span` / `Transaction` class imports replaced with `StreamedSpan`
 - [ ] `span.get_trace_context()` replaced with direct properties (`span.trace_id`, etc.) or `span._get_trace_context()`
