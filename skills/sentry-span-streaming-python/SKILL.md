@@ -43,6 +43,9 @@ grep -rn "continue_trace" --include="*.py" -l 2>/dev/null | head -20
 # Find before_send_transaction usage
 grep -rn "before_send_transaction" --include="*.py" -l 2>/dev/null | head -20
 
+# Find direct Span / Transaction class imports
+grep -rn "from sentry_sdk.tracing import\|from sentry_sdk import.*Span\|from sentry_sdk import.*Transaction" --include="*.py" -l 2>/dev/null | head -20
+
 # Find set_data / set_tag / set_context on spans
 grep -rn "set_data\|set_tag\|set_context" --include="*.py" -l 2>/dev/null | head -20
 ```
@@ -216,6 +219,24 @@ span = get_current_span()
 from sentry_sdk.traces import get_current_span
 
 span = get_current_span()
+```
+
+#### `Span` and `Transaction` Classes
+
+If the code imports `Span` or `Transaction` directly (e.g. for type annotations), replace both with `StreamedSpan`:
+
+```python
+# Before
+from sentry_sdk.tracing import Span, Transaction
+
+def process(span: Span) -> None:
+    ...
+
+# After
+from sentry_sdk.traces import StreamedSpan
+
+def process(span: StreamedSpan) -> None:
+    ...
 ```
 
 ### Migrate Span Data
@@ -508,6 +529,7 @@ with start_span(name="my operation", attributes={"sentry.op": "task"}) as span:
 - [ ] `span.start_child()` migrated to `sentry_sdk.traces.start_span()`
 - [ ] `sentry_sdk.get_current_span()` migrated to `sentry_sdk.traces.get_current_span()`
 - [ ] `@sentry_sdk.trace` migrated to `@sentry_sdk.traces.trace`
+- [ ] `Span` / `Transaction` class imports replaced with `StreamedSpan`
 - [ ] `description` replaced with `name`
 - [ ] `op` replaced with `sentry.op` attribute
 - [ ] `set_data()` / `set_tag()` / `set_context()` replaced with `set_attribute()`
