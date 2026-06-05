@@ -443,11 +443,16 @@ If an ignored span is a top-level span, its entire subtree is also ignored. If a
 
 ### Migrate `before_send_transaction`
 
-`before_send_transaction` has no effect in streaming mode. Spans are sent individually, not batched into transactions.
+`before_send_transaction` has no effect in streaming mode. Spans are sent individually as they complete, not batched into transactions.
+
+**Important:** In the legacy transaction-based model, `before_send_transaction` ran after the entire transaction finished, so it had access to all data set during the span's lifetime (e.g. HTTP status codes, response sizes, final results). In streaming mode, the replacements (`ignore_spans` and `before_send_span`) can only work with attributes set at span start time. Attributes added later during the span's lifetime (like `http.response.status_code`, response body size, or other late-set data) are **not available**.
+
+**If your `before_send_transaction` logic depends on attributes not set at span start**, that filtering logic **cannot be replicated** in streaming mode and must be removed. Consider moving such filtering to a server-side mechanism (e.g. Sentry inbound data filters or Relay rules) instead.
 
 | Use Case | Streaming Replacement |
 |---|---|
 | Drop spans by name/route | Use `ignore_spans` |
+| Drop/filter by late-set attributes (e.g. HTTP status code) | **Cannot be replicated** — remove the logic or use server-side filtering |
 | Modify span data before send | Use `before_send_span` |
 | Filter by transaction name | Use `ignore_spans` with string/regex pattern |
 
@@ -498,6 +503,7 @@ Instruct the user to verify:
 | Scope tags missing from spans | `set_tag` not applied to streaming spans | Use `sentry_sdk.set_attribute()` |
 | Custom sampling context not available in `traces_sampler` | Set after `start_span` or before `continue_trace` | Set on scope after `continue_trace` but before `start_span` |
 | `before_send_transaction` not called | Expected in streaming mode | Migrate logic to `before_send_span` or `ignore_spans` |
+| `before_send_transaction` logic relied on late-set attributes (e.g. status code) | These attributes aren't available at span creation time | Remove the logic or use server-side filtering (Sentry inbound filters / Relay rules) |
 
 ### Quick Reference
 
@@ -542,5 +548,6 @@ with start_span(name="my operation", attributes={"sentry.op": "task"}) as span:
 - [ ] `custom_sampling_context` migrated to `Scope.set_custom_sampling_context()`
 - [ ] (If using `traces_sampler`) Updated to handle new `sampling_context` shape
 - [ ] `before_send_transaction` logic migrated to `before_send_span` or `ignore_spans`
+- [ ] `before_send_transaction` logic that depends on late-set attributes (e.g. HTTP status code) removed or moved to server-side filtering
 - [ ] `before_send_transaction` removed from config
 - [ ] Spans visible in Sentry dashboard
