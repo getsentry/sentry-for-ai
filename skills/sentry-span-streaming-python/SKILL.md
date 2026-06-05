@@ -64,7 +64,7 @@ After detecting the environment, assess how many files need changes. If the code
 
 **Prerequisites:** `sentry-sdk` `>=2.62.0` with tracing enabled (`traces_sample_rate` or `traces_sampler` configured).
 
-Add `trace_lifecycle` to `_experiments` in `sentry_sdk.init()`:
+Add `trace_lifecycle` to `_experiments` in ALL occurences of `sentry_sdk.init()`:
 
 ```python
 import sentry_sdk
