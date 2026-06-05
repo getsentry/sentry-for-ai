@@ -34,7 +34,7 @@ Run these commands to understand the project before making recommendations:
 grep -i sentry requirements.txt pyproject.toml setup.cfg setup.py 2>/dev/null
 
 # Detect web framework
-grep -rE "django|flask|fastapi|starlette|aiohttp|tornado|quart|falcon|sanic|bottle" \
+grep -rE "django|flask|fastapi|starlette|aiohttp|tornado|quart|falcon|sanic|bottle|pyramid" \
   requirements.txt pyproject.toml 2>/dev/null
 
 # Detect task queues
@@ -166,6 +166,7 @@ sentry_sdk.init(
 | **Tornado** | Module level, before app setup | No integration class needed |
 | **Quart** | Before `app = Quart(__name__)` | |
 | **Falcon** | Module level, before `app = falcon.App()` | |
+| **Pyramid** | Module level, before `config = Configurator()` | WSGI framework |
 | **Sanic** | Inside `@app.listener("before_server_start")` | Sanic's lifecycle requires async init |
 | **Celery** | `@signals.celeryd_init.connect` in worker AND in calling process | Dual-process init required |
 | **RQ** | `mysettings.py` loaded by worker via `rq worker -c mysettings` | |
@@ -211,7 +212,7 @@ Most integrations activate automatically when their package is installed — no 
 
 | Auto-enabled | Explicit required |
 |-------------|-------------------|
-| Django, Flask, FastAPI, Starlette, AIOHTTP, Tornado, Quart, Falcon, Sanic, Bottle | `DramatiqIntegration` |
+| Django, Flask, FastAPI, Starlette, AIOHTTP, Tornado, Quart, Falcon, Pyramid, Sanic, Bottle | `DramatiqIntegration` |
 | Celery, RQ, Huey, ARQ | `GRPCIntegration` |
 | SQLAlchemy, Redis, asyncpg, pymongo | `StrawberryIntegration` |
 | Requests, HTTPX, aiohttp-client | `AsyncioIntegration` |

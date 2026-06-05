@@ -7,7 +7,12 @@
 Tracing must be enabled — AI spans require an active transaction:
 
 ```python
-sentry_sdk.init(dsn="...", traces_sample_rate=1.0, stream_gen_ai_spans=True)
+sentry_sdk.init(
+    dsn="...",
+    traces_sample_rate=1.0,
+    stream_gen_ai_spans=True,
+    send_default_pii=True,
+)
 ```
 
 ## Integration Matrix
@@ -37,7 +42,7 @@ Every integration follows the same two-layer control:
 | `True` | `True` (default) | ✅ Yes |
 | `True` | `False` | ❌ No |
 
-Set `send_default_pii=True` to capture prompts. Use `include_prompts=False` per-integration to override.
+Set `send_default_pii=True` in `sentry_sdk.init()` and leave `include_prompts` at its default `True`. Use `include_prompts=False` per integration only to opt out.
 
 ## Configuration Examples
 
@@ -252,17 +257,37 @@ Transaction
 
 This populates the **AI Agents Dashboard** in Sentry with per-agent latency, tool call rates, token consumption, and model cost attribution.
 
-### Conversation tracking (Alpha)
+### Conversation Tracking
 
-> Requires SDK ≥ 2.51.0
+Link AI spans across turns in a multi-turn conversation. Sentry groups spans by `gen_ai.conversation.id` into a chat-style timeline at **Explore > Conversations**.
+
+**Prerequisites:** `stream_gen_ai_spans=True` (SDK >=2.60.0) and `send_default_pii=True` must be set — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
 
 ```python
+import sentry_sdk.ai
+
+# Set at the start of a conversation
+sentry_sdk.ai.set_conversation_id("conv_abc123")
+# All subsequent AI spans carry gen_ai.conversation.id = "conv_abc123"
+```
+
+Some integrations infer the conversation ID automatically. For example, the OpenAI integration picks it up when you use the `conversation` parameter:
+
+```python
+import openai
 import sentry_sdk
 
-# Link spans across turns in a multi-turn conversation
-sentry_sdk.ai.set_conversation_id("user-session-abc123")
-# All subsequent AI spans carry gen_ai.conversation.id = "user-session-abc123"
+sentry_sdk.init(...)
+
+conversation = openai.conversations.create()
+response = openai.responses.create(
+    model="gpt-5.4",
+    input=[{"role": "user", "content": "What are the 5 Ds of dodgeball?"}],
+    conversation=conversation.id  # automatically sets gen_ai.conversation.id
+)
 ```
+
+A single conversation can span multiple traces, and a single trace can contain multiple conversations.
 
 ## Streaming
 

@@ -179,7 +179,8 @@ npx expo customize metro.config.js
         {
           "url": "https://sentry.io/",
           "project": "YOUR_PROJECT_SLUG",
-          "organization": "YOUR_ORG_SLUG"
+          "organization": "YOUR_ORG_SLUG",
+          "disableAutoUpload": false
         }
       ]
     ]
@@ -189,19 +190,23 @@ npx expo customize metro.config.js
 
 > **Note:** Set `SENTRY_AUTH_TOKEN` as an environment variable for native builds — never commit it to version control.
 
+**Plugin options:**
+
+| Option | Type | Default | Purpose |
+|--------|------|---------|---------|
+| `url` | `string` | `"https://sentry.io/"` | Sentry instance URL |
+| `project` | `string` | — | Project slug |
+| `organization` | `string` | — | Organization slug |
+| `disableAutoUpload` | `boolean` | `false` | Skip source map + dSYM upload during local builds (SDK ≥8.13.0) |
+
 **Step 4 — Initialize Sentry**
 
 For **Expo Router** (`app/_layout.tsx`):
 
 ```typescript
-import { Stack, useNavigationContainerRef } from "expo-router";
+import { Stack } from "expo-router";
 import { isRunningInExpoGo } from "expo";
 import * as Sentry from "@sentry/react-native";
-import React from "react";
-
-const navigationIntegration = Sentry.reactNavigationIntegration({
-  enableTimeToInitialDisplay: !isRunningInExpoGo(), // disabled in Expo Go
-});
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? "YOUR_SENTRY_DSN",
@@ -220,9 +225,8 @@ Sentry.init({
   // Logging (SDK ≥7.0.0)
   enableLogs: true,
 
-  // Navigation
+  // Session Replay
   integrations: [
-    navigationIntegration,
     Sentry.mobileReplayIntegration(),
   ],
 
@@ -232,30 +236,19 @@ Sentry.init({
 });
 
 function RootLayout() {
-  const ref = useNavigationContainerRef();
-
-  React.useEffect(() => {
-    if (ref) {
-      navigationIntegration.registerNavigationContainer(ref);
-    }
-  }, [ref]);
-
   return <Stack />;
 }
 
 export default Sentry.wrap(RootLayout);
 ```
 
+> **Note:** Expo Router automatically handles navigation tracking. The `Sentry.NavigationContainer` wrapper is not needed for Expo Router projects — navigation spans are captured automatically.
+
 For **standard Expo** (`App.tsx`):
 
 ```typescript
-import { NavigationContainer, createNavigationContainerRef } from "@react-navigation/native";
 import { isRunningInExpoGo } from "expo";
 import * as Sentry from "@sentry/react-native";
-
-const navigationIntegration = Sentry.reactNavigationIntegration({
-  enableTimeToInitialDisplay: !isRunningInExpoGo(),
-});
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? "YOUR_SENTRY_DSN",
@@ -266,25 +259,17 @@ Sentry.init({
   replaysSessionSampleRate: 0.1,
   enableLogs: true,
   integrations: [
-    navigationIntegration,
     Sentry.mobileReplayIntegration(),
   ],
   enableNativeFramesTracking: !isRunningInExpoGo(),
   environment: __DEV__ ? "development" : "production",
 });
 
-const navigationRef = createNavigationContainerRef();
-
 function App() {
   return (
-    <NavigationContainer
-      ref={navigationRef}
-      onReady={() => {
-        navigationIntegration.registerNavigationContainer(navigationRef);
-      }}
-    >
+    <Sentry.NavigationContainer>
       {/* your navigation here */}
-    </NavigationContainer>
+    </Sentry.NavigationContainer>
   );
 }
 
@@ -351,8 +336,10 @@ auth.token=YOUR_ORG_AUTH_TOKEN
 Add before the `android {}` block:
 
 ```groovy
-apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
+apply from: "../../node_modules/@sentry/react-native/sentry.gradle.kts"
 ```
+
+> **Note:** SDK ≥8.13.0 uses `sentry.gradle.kts` (Kotlin DSL). For older SDKs, use `sentry.gradle` (Groovy). Both are backward-compatible.
 
 **Step 7 — Android: `android/sentry.properties`**
 
@@ -366,12 +353,7 @@ auth.token=YOUR_ORG_AUTH_TOKEN
 **Step 8 — Initialize Sentry (`App.tsx` or entry point)**
 
 ```typescript
-import { NavigationContainer, createNavigationContainerRef } from "@react-navigation/native";
 import * as Sentry from "@sentry/react-native";
-
-const navigationIntegration = Sentry.reactNavigationIntegration({
-  enableTimeToInitialDisplay: true,
-});
 
 Sentry.init({
   dsn: "YOUR_SENTRY_DSN",
@@ -382,25 +364,17 @@ Sentry.init({
   replaysSessionSampleRate: 0.1,
   enableLogs: true,
   integrations: [
-    navigationIntegration,
     Sentry.mobileReplayIntegration(),
   ],
   enableNativeFramesTracking: true,
   environment: __DEV__ ? "development" : "production",
 });
 
-const navigationRef = createNavigationContainerRef();
-
 function App() {
   return (
-    <NavigationContainer
-      ref={navigationRef}
-      onReady={() => {
-        navigationIntegration.registerNavigationContainer(navigationRef);
-      }}
-    >
+    <Sentry.NavigationContainer>
       {/* your navigation here */}
-    </NavigationContainer>
+    </Sentry.NavigationContainer>
   );
 }
 
@@ -474,6 +448,29 @@ If you don't call `Sentry.appLoaded()`, the SDK estimates the app start end auto
 ---
 
 ### Navigation Setup — React Navigation (v5+)
+
+**Recommended: Use `Sentry.NavigationContainer` wrapper (SDK ≥8.13.0)**
+
+Drop-in replacement for `NavigationContainer` that automatically wires up navigation tracking:
+
+```typescript
+import * as Sentry from "@sentry/react-native";
+
+// Replace NavigationContainer with Sentry.NavigationContainer
+<Sentry.NavigationContainer>
+  <Stack.Navigator>
+    {/* your screens */}
+  </Stack.Navigator>
+</Sentry.NavigationContainer>
+```
+
+That's it! The wrapper automatically:
+- Creates the `reactNavigationIntegration`
+- Registers the navigation container ref
+- Captures breadcrumbs for navigation events (SDK ≥8.13.0)
+- Tracks Time to Initial Display (TTID) per screen
+
+**Alternative: Manual setup (for SDK <8.13.0 or custom config)**
 
 ```typescript
 import { reactNavigationIntegration } from "@sentry/react-native";
@@ -780,12 +777,15 @@ export default {
           url: "https://sentry.io/",
           project: process.env.SENTRY_PROJECT,
           organization: process.env.SENTRY_ORG,
+          disableAutoUpload: process.env.NODE_ENV === "development",
         },
       ],
     ],
   },
 };
 ```
+
+> **Tip:** Set `disableAutoUpload: true` during local development to speed up builds by skipping source map and dSYM uploads. The option is available in SDK ≥8.13.0.
 
 ---
 
@@ -948,7 +948,7 @@ This links mobile transactions to backend traces in the Sentry waterfall view.
 | Events not appearing in Sentry | Set `debug: true`, check Metro/Xcode console for SDK errors; verify DSN is correct |
 | `pod install` fails | Run `cd ios && pod install --repo-update`; check CocoaPods version |
 | iOS build fails with Sentry script | Verify the "Bundle React Native code and images" script was replaced (not appended to) |
-| Android build fails after adding `sentry.gradle` | Ensure `apply from` line is before the `android {}` block in `build.gradle` |
+| Android build fails after adding `sentry.gradle.kts` | Ensure `apply from` line is before the `android {}` block in `build.gradle`; use `sentry.gradle` for SDK <8.13.0 |
 | Android Gradle 8+ compatibility issue | Use `sentry-android-gradle-plugin` ≥4.0.0; check `sentry.gradle` version in your SDK |
 | Source maps not uploading | Verify `sentry.properties` has a valid `auth.token`; check build logs for `sentry-cli` output |
 | Source maps not resolving in Sentry | Confirm `release` and `dist` in `Sentry.init()` match the uploaded bundle metadata |

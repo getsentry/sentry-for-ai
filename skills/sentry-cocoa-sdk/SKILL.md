@@ -1,6 +1,6 @@
 ---
 name: sentry-cocoa-sdk
-description: Full Sentry SDK setup for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS). Use when asked to "add Sentry to iOS", "add Sentry to Swift", "install sentry-cocoa", or configure error monitoring, tracing, profiling, session replay, or logging for Apple applications. Supports SwiftUI and UIKit.
+description: Full Sentry SDK setup for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS). Use when asked to "add Sentry to iOS", "add Sentry to Swift", "install sentry-cocoa", or configure error monitoring, tracing, profiling, session replay, logging, or metrics for Apple applications. Supports SwiftUI and UIKit.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -16,11 +16,11 @@ Opinionated wizard that scans your Apple project and guides you through complete
 ## Invoke This Skill When
 
 - User asks to "add Sentry to iOS/macOS/tvOS" or "set up Sentry" in an Apple app
-- User wants error monitoring, tracing, profiling, session replay, or logging in Swift/ObjC
+- User wants error monitoring, tracing, profiling, session replay, or logging in Swift/ObjC, or metrics in Swift
 - User mentions `sentry-cocoa`, `SentrySDK`, or the Apple/iOS Sentry SDK
 - User wants to monitor crashes, app hangs, watchdog terminations, or performance
 
-> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry-cocoa 9.5.1).
+> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry-cocoa 9.15.0).
 > Always verify against [docs.sentry.io/platforms/apple/](https://docs.sentry.io/platforms/apple/) before implementing.
 
 ---
@@ -31,18 +31,21 @@ Run these commands to understand the project before making any recommendations:
 
 ```bash
 # Check existing Sentry dependency
-grep -i sentry Package.swift Podfile Cartfile 2>/dev/null
+grep -rEi "sentry|sentry-cocoa|SentrySPM|SentrySwiftUI" \
+  --include="Package.swift" --include="Podfile" --include="Cartfile" \
+  --include="Package.resolved" --include="project.pbxproj" . 2>/dev/null | head -20
 
 # Detect UI framework (SwiftUI vs UIKit)
-grep -rE "@main|struct.*App.*:.*App" --include="*.swift" . 2>/dev/null | head -5
-grep -rE "AppDelegate|UIApplicationMain" --include="*.swift" . 2>/dev/null | head -5
+grep -rE "@main|struct .*: App" --include="*.swift" . 2>/dev/null | head -5
+grep -rE "AppDelegate|UIApplicationMain|@UIApplicationDelegateAdaptor" --include="*.swift" . 2>/dev/null | head -5
 
 # Detect platform and deployment targets
-grep -E "platforms:|\.iOS|\.macOS|\.tvOS|\.watchOS|\.visionOS" Package.swift 2>/dev/null
+grep -rE "platforms:|\\.iOS|\\.macOS|\\.tvOS|\\.watchOS|\\.visionOS|IPHONEOS_DEPLOYMENT_TARGET|MACOSX_DEPLOYMENT_TARGET|TVOS_DEPLOYMENT_TARGET|WATCHOS_DEPLOYMENT_TARGET|XROS_DEPLOYMENT_TARGET" \
+  --include="Package.swift" --include="project.pbxproj" . 2>/dev/null | head -20
 grep -E "platform :ios|platform :osx|platform :tvos|platform :watchos" Podfile 2>/dev/null
 
 # Detect logging
-grep -rE "import OSLog|os\.log|CocoaLumberjack|DDLog" --include="*.swift" . 2>/dev/null | head -5
+grep -rE "import OSLog|import os\\.log|Logger\\(|CocoaLumberjack|DDLog" --include="*.swift" . 2>/dev/null | head -5
 
 # Detect companion backend
 ls ../backend ../server ../api 2>/dev/null
@@ -54,6 +57,7 @@ ls ../go.mod ../requirements.txt ../Gemfile ../package.json 2>/dev/null
 - SwiftUI (`@main App` struct) or UIKit (`AppDelegate`)? Determines init pattern.
 - Which Apple platforms? (Affects which features are available — see Platform Support Matrix.)
 - Existing logging library? (Enables structured log capture.)
+- SwiftUI tracing import/product? `SentrySwiftUI` still exists but is deprecated in SDK 9.4.1+; prefer the main `Sentry` module for released binary products.
 - Companion backend? (Triggers Phase 4 cross-link for distributed tracing.)
 
 ---
@@ -63,19 +67,19 @@ ls ../go.mod ../requirements.txt ../Gemfile ../package.json 2>/dev/null
 Based on what you found, present a concrete recommendation. Don't ask open-ended questions — lead with a proposal:
 
 **Recommended (core coverage):**
-- ✅ **Error Monitoring** — always; crash reporting, app hangs, watchdog terminations, NSError/Swift errors
-- ✅ **Tracing** — always for apps; auto-instruments app launch, network, UIViewController, file I/O, Core Data
-- ✅ **Profiling** — production apps; continuous profiling with minimal overhead
+- **Error Monitoring** — always; crash reporting, app hangs, watchdog terminations, NSError/Swift errors
+- **Tracing** — always for apps; auto-instruments app launch, network, UIViewController, file I/O, Core Data
+- **Profiling** — production iOS/macOS apps; UI profiling via `configureProfiling`
 
 **Optional (enhanced observability):**
-- ⚡ **Session Replay** — user-facing apps; ⚠️ disabled by default on iOS 26+ (Liquid Glass rendering)
-- ⚡ **Logging** — when structured log capture is needed
-- ⚡ **User Feedback** — apps that want crash/error feedback forms from users
+- **Session Replay** — user-facing iOS apps; verify masking on iOS 26+ / Liquid Glass builds
+- **Logging** — when structured log capture is needed
+- **Metrics** — Swift apps needing aggregate counters, gauges, or distributions
+- **User Feedback** — apps that want crash/error feedback forms from users
 
 **Not available for Cocoa:**
-- ❌ Metrics — use custom spans instead
-- ❌ Crons — backend only
-- ❌ AI Monitoring — JS/Python only
+- Crons — backend only
+- AI Monitoring — JS/Python only
 
 **Recommendation logic:**
 
@@ -83,9 +87,10 @@ Based on what you found, present a concrete recommendation. Don't ask open-ended
 |---------|------------------|
 | Error Monitoring | **Always** — non-negotiable baseline |
 | Tracing | **Always for apps** — rich auto-instrumentation out of the box |
-| Profiling | Production apps where performance matters |
-| Session Replay | **iOS only** user-facing apps (check iOS 26+ caveat; not tvOS/macOS/watchOS/visionOS) |
+| Profiling | iOS/macOS production apps where performance matters (not tvOS/watchOS/visionOS) |
+| Session Replay | User-facing iOS apps; tvOS may work but is not officially supported |
 | Logging | Existing `os.log` / CocoaLumberjack usage, or structured logs needed |
+| Metrics | Aggregate product or health signals that should not create issues; Swift only, SDK 9.12+ |
 | User Feedback | Apps wanting in-app bug reports with screenshots |
 
 Propose: *"I recommend Error Monitoring + Tracing + Profiling. Want me to also add Session Replay and Logging?"*
@@ -117,44 +122,52 @@ https://github.com/getsentry/sentry-cocoa.git
 
 Or in `Package.swift`:
 ```swift
-.package(url: "https://github.com/getsentry/sentry-cocoa", from: "9.5.1"),
+.package(url: "https://github.com/getsentry/sentry-cocoa", from: "9.15.0"),
 ```
 
 **SPM Products** — choose **exactly one** per target:
 
 | Product | Use Case |
 |---------|----------|
-| `Sentry` | **Recommended** — static framework, fast app start |
+| `Sentry` | **Recommended** — static framework, fast app start; includes SwiftUI APIs in SDK 9.4.1+ |
 | `Sentry-Dynamic` | Dynamic framework alternative |
-| `SentrySwiftUI` | SwiftUI view performance tracking (`SentryTracedView`) |
+| `SentrySwiftUI` | Legacy/deprecated re-export for SwiftUI APIs; use only when maintaining older setup |
 | `Sentry-WithoutUIKitOrAppKit` | watchOS, app extensions, CLI tools (Swift < 6.1) |
-| `SentrySPM` + `NoUIFramework` trait | watchOS, app extensions, macOS CLI tools (**Swift 6.1+ / Xcode 16.3+** only) |
+| `SentrySPM` + `NoUIFramework` trait | Source build without UIKit/AppKit for CLI/headless targets (**SDK 9.7+ / Swift 6.1+ / Xcode 26.4+** for Xcode UI) |
 
-> ⚠️ Xcode allows selecting multiple products — choose only one.
+> Warning: Xcode allows selecting multiple products — choose only one.
+>
+> If using `SentrySPM` from source, current source-build projects may import `SentrySwift` instead of `Sentry`; verify the module name in the target. Released binary products use `import Sentry`.
 
 **Swift 6.1+ trait-based opt-out of UIKit/AppKit** (requires `Package@swift-6.1.swift` manifest):
 
 ```swift
 // Package.swift (Swift 6.1+)
-.package(url: "https://github.com/getsentry/sentry-cocoa", from: "9.5.1"),
+.package(
+    url: "https://github.com/getsentry/sentry-cocoa",
+    from: "9.15.0",
+    traits: ["NoUIFramework"]
+),
 
 // In your target's dependencies:
-.product(name: "SentrySPM", package: "sentry-cocoa", condition: .when(traits: ["NoUIFramework"]))
+.product(name: "SentrySPM", package: "sentry-cocoa")
 ```
 
-This is the preferred opt-out path for macOS command-line tools and app extensions on Swift 6.1+. For Swift < 6.1 continue using `Sentry-WithoutUIKitOrAppKit`.
+This is the preferred opt-out path for command-line/headless targets on Swift 6.1+. It compiles the SDK from source so the trait can remove UIKit/AppKit/SwiftUI linkage. For Swift < 6.1 continue using `Sentry-WithoutUIKitOrAppKit`.
 
-> **Note:** Package traits are visible in the Xcode UI starting with **Xcode 26.4+** (currently in beta). On older Xcode versions, traits still work when declared in `Package.swift` but won't appear in the GUI.
+> **Note:** Package traits are visible in the Xcode UI starting with **Xcode 26.4+**. On older Xcode versions, traits still work when declared in `Package.swift` but won't appear in the GUI.
 
-**Option 3 — CocoaPods:**
+**Option 3 — CocoaPods (deprecated; prefer SPM):**
 ```ruby
-platform :ios, '11.0'
+platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '9.5.1'
+  pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '9.15.0'
 end
 ```
+
+Sentry plans to stop publishing CocoaPods releases at the end of June 2026; use this only for existing CocoaPods projects.
 
 > **Known issue (Xcode 14+):** Sandbox `rsync.samba` error → Target Settings → "Enable User Script Sandbox" → `NO`.
 
@@ -162,7 +175,9 @@ end
 
 ### Quick Start — Recommended Init
 
-Full config enabling the most features with sensible defaults. Add before any other code at app startup.
+Full iOS app config enabling the most common features with sensible defaults. Add before any other code at app startup.
+
+For macOS, watchOS, app extensions, or `NoUIFramework` builds, omit options that are unavailable for that platform (`sessionReplay`, screenshots/view hierarchy, user-feedback UI, UIKit tracing, and profiling on tvOS/watchOS/visionOS). Keep the core `dsn`, environment, error monitoring, tracing, logs, and metrics settings that compile for the detected target.
 
 **SwiftUI — App entry point:**
 ```swift
@@ -176,11 +191,13 @@ struct MyApp: App {
             options.dsn = ProcessInfo.processInfo.environment["SENTRY_DSN"]
                 ?? "https://examplePublicKey@o0.ingest.sentry.io/0"
             options.environment = ProcessInfo.processInfo.environment["SENTRY_ENVIRONMENT"]
-            options.releaseName = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+                ?? "production"
+            // releaseName defaults to "<bundle id>@<version>+<build>"; set only if you need a custom release.
 
             // Error monitoring (on by default — explicit for clarity)
             options.enableCrashHandler = true
-            options.enableAppHangTrackingV2 = true
+            options.enableAppHangTracking = true
+            options.enableReportNonFullyBlockingAppHangs = true
             options.enableWatchdogTerminationTracking = true
             options.attachScreenshot = true
             options.attachViewHierarchy = true
@@ -195,12 +212,15 @@ struct MyApp: App {
                 $0.lifecycle = .trace
             }
 
-            // Session Replay (disabled on iOS 26+ by default — safe to configure)
-            options.sessionReplay.sessionSampleRate = 1.0
+            // Session Replay. Keep production sampling conservative and verify masking on iOS 26+.
+            options.sessionReplay.sessionSampleRate = 0.1
             options.sessionReplay.onErrorSampleRate = 1.0
 
             // Logging (SDK 9.0.0+ top-level; use options.experimental.enableLogs in 8.x)
             options.enableLogs = true
+
+            // Metrics are enabled by default in SDK 9.12+. Set false only to opt out.
+            options.enableMetrics = true
         }
     }
 
@@ -225,10 +245,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             options.dsn = ProcessInfo.processInfo.environment["SENTRY_DSN"]
                 ?? "https://examplePublicKey@o0.ingest.sentry.io/0"
             options.environment = ProcessInfo.processInfo.environment["SENTRY_ENVIRONMENT"]
-            options.releaseName = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+                ?? "production"
+            // releaseName defaults to "<bundle id>@<version>+<build>"; set only if you need a custom release.
 
             options.enableCrashHandler = true
-            options.enableAppHangTrackingV2 = true
+            options.enableAppHangTracking = true
+            options.enableReportNonFullyBlockingAppHangs = true
             options.enableWatchdogTerminationTracking = true
             options.attachScreenshot = true
             options.attachViewHierarchy = true
@@ -241,18 +263,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 $0.lifecycle = .trace
             }
 
-            options.sessionReplay.sessionSampleRate = 1.0
+            options.sessionReplay.sessionSampleRate = 0.1
             options.sessionReplay.onErrorSampleRate = 1.0
 
             // Logging (SDK 9.0.0+ top-level; use options.experimental.enableLogs in 8.x)
             options.enableLogs = true
+
+            // Metrics are enabled by default in SDK 9.12+. Set false only to opt out.
+            options.enableMetrics = true
         }
         return true
     }
 }
 ```
 
-> ⚠️ SDK initialization must occur on the **main thread**.
+> Warning: SDK initialization must occur on the **main thread**.
 
 ---
 
@@ -265,8 +290,9 @@ Walk through features one at a time. Load the reference file for each, follow it
 | Error Monitoring | `${SKILL_ROOT}/references/error-monitoring.md` | Always (baseline) |
 | Tracing | `${SKILL_ROOT}/references/tracing.md` | App launch, network, UIViewController perf |
 | Profiling | `${SKILL_ROOT}/references/profiling.md` | Production perf-sensitive apps |
-| Session Replay | `${SKILL_ROOT}/references/session-replay.md` | User-facing iOS/tvOS apps |
+| Session Replay | `${SKILL_ROOT}/references/session-replay.md` | User-facing iOS apps; tvOS only with caveat |
 | Logging | `${SKILL_ROOT}/references/logging.md` | Structured log capture needed |
+| Metrics | `${SKILL_ROOT}/references/metrics.md` | Aggregate counters, gauges, distributions |
 | User Feedback | `${SKILL_ROOT}/references/user-feedback.md` | In-app bug reporting wanted |
 
 For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exactly, verify it works.
@@ -279,13 +305,14 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 
 | Option | Type | Default | Purpose |
 |--------|------|---------|---------|
-| `dsn` | `String` | `""` | SDK disabled if empty; reads `SENTRY_DSN` env var |
-| `environment` | `String` | `""` | e.g., `"production"`; reads `SENTRY_ENVIRONMENT` |
-| `releaseName` | `String` | `""` | e.g., `"my-app@1.0.0"`; reads `SENTRY_RELEASE` |
+| `dsn` | `String?` | `nil` | SDK disabled if empty; macOS can read `SENTRY_DSN`, other Apple platforms must set explicitly |
+| `environment` | `String` | `"production"` | e.g., `"production"` |
+| `releaseName` | `String?` | bundle-derived | Defaults to `<bundle id>@<version>+<build>` |
 | `debug` | `Bool` | `false` | Verbose SDK output — **disable in production** |
 | `sendDefaultPii` | `Bool` | `false` | Include IP, user info from active integrations |
 | `enableCrashHandler` | `Bool` | `true` | Master switch for crash reporting |
-| `enableAppHangTrackingV2` | `Bool` | `true` (9.0+) | Differentiates fully/non-fully blocked hangs |
+| `enableAppHangTracking` | `Bool` | `true` | Master switch for app hang tracking |
+| `enableReportNonFullyBlockingAppHangs` | `Bool` | `true` | Report non-fully-blocking hangs on supported UI platforms |
 | `appHangTimeoutInterval` | `Double` | `2.0` | Seconds before classifying as hang |
 | `enableWatchdogTerminationTracking` | `Bool` | `true` | Track watchdog kills (iOS, tvOS, Mac Catalyst) |
 | `attachScreenshot` | `Bool` | `false` | Capture screenshot on error |
@@ -293,39 +320,42 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `tracesSampleRate` | `NSNumber?` | `nil` | Transaction sample rate (`nil` = tracing disabled); Swift auto-boxes `Double` literals (e.g. `1.0` → `NSNumber`) |
 | `tracesSampler` | `Closure` | `nil` | Dynamic per-transaction sampling (overrides rate) |
 | `enableAutoPerformanceTracing` | `Bool` | `true` | Master switch for auto-instrumentation |
-| `tracePropagationTargets` | `[String]` | `[".*"]` | Hosts/regex that receive distributed trace headers |
+| `tracePropagationTargets` | `[Any]` | all requests | Strings or `NSRegularExpression` values that receive distributed trace headers |
 | `enableCaptureFailedRequests` | `Bool` | `true` | Auto-capture HTTP 5xx errors as events |
 | `enableNetworkBreadcrumbs` | `Bool` | `true` | Breadcrumbs for outgoing HTTP requests |
-| `inAppInclude` | `[String]` | `[]` | Module prefixes treated as "in-app" code |
+| `add(inAppInclude:)` | Method | bundle executable | Add module prefixes treated as "in-app" code |
 | `maxBreadcrumbs` | `Int` | `100` | Max breadcrumbs per event |
 | `sampleRate` | `Float` | `1.0` | Error event sample rate |
 | `beforeSend` | `Closure` | `nil` | Hook to mutate/drop error events |
-| `onCrashedLastRun` | `Closure` | `nil` | Called on next launch after a crash |
-| `strictTraceContinuation` | `Bool` | `false` | Reject incoming traces from other orgs; validates `org_id` in baggage headers (sentry-cocoa ≥9.10.0) |
+| `onLastRunStatusDetermined` | `Closure` | `nil` | Called after SDK determines previous launch crash status |
+| `strictTraceContinuation` | `Bool` | `false` | Reject incoming traces from other orgs; validates `sentry-org_id` in baggage headers (sentry-cocoa ≥9.10.0) |
 | `orgId` | `String?` | `nil` | Organization ID for strict trace validation; auto-parsed from DSN host (e.g. `o123.ingest.sentry.io` → `"123"`) if not set explicitly |
+| `enableLogs` | `Bool` | `false` | Enable structured logs |
+| `enableMetrics` | `Bool` | `true` | Enable Swift Metrics API (SDK 9.12+) |
 
 ### Environment Variables
 
 | Variable | Maps to | Purpose |
 |----------|---------|---------|
-| `SENTRY_DSN` | `dsn` | Data Source Name |
-| `SENTRY_RELEASE` | `releaseName` | App version (e.g., `my-app@1.0.0`) |
-| `SENTRY_ENVIRONMENT` | `environment` | Deployment environment |
+| `SENTRY_DSN` | `dsn` | macOS fallback only; set explicitly on iOS/tvOS/watchOS/visionOS |
+| `SENTRY_RELEASE` | `releaseName` | Do not assume automatic Cocoa fallback; set explicitly if needed |
+| `SENTRY_ENVIRONMENT` | `environment` | Do not assume automatic Cocoa fallback; set explicitly if needed |
 
 ### Platform Feature Support Matrix
 
 | Feature | iOS | tvOS | macOS | watchOS | visionOS |
 |---------|-----|------|-------|---------|----------|
-| Crash Reporting | ✅ | ✅ | ✅ | ✅ | ✅ |
-| App Hangs V2 | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Watchdog Termination | ✅ | ✅ | ❌ | ❌ | ❌ |
-| App Start Tracing | ✅ | ✅ | ❌ | ❌ | ✅ |
-| UIViewController Tracing | ✅ | ✅ | ❌ | ❌ | ✅ |
-| SwiftUI Tracing | ✅ | ✅ | ✅ | ❌ | ✅ |
-| Network Tracking | ✅ | ✅ | ✅ | ❌ | ✅ |
-| Profiling | ✅ | ✅ | ✅ | ❌ | ✅ |
-| Session Replay | ✅ | ❌ | ❌ | ❌ | ❌ |
-| MetricKit | ✅ (15+) | ❌ | ✅ (12+) | ❌ | ❌ |
+| Crash Reporting | Yes | Yes | Yes | No | Yes |
+| App Hangs | Yes | Yes | Yes | No | Yes |
+| Watchdog Termination | Yes | Yes | No | No | Yes |
+| App Start Tracing | Yes | Yes | No | No | Yes |
+| UIViewController Tracing | Yes | Yes | No | No | Yes |
+| SwiftUI Tracing | Yes | Yes | Yes | No | Yes |
+| Network Tracking | Yes | Yes | Yes | No | Yes |
+| Profiling | Yes | No | Yes | No | No |
+| Session Replay | Yes | Unofficial | No | No | No |
+| MetricKit | Yes (15+) | No | Yes (12+) | No | No |
+| Metrics API | Yes | Yes | Yes | Verify | Yes |
 
 ---
 
@@ -363,6 +393,8 @@ options.configureProfiling = {
 options.sessionReplay.sessionSampleRate = 0.1   // 10% continuous
 options.sessionReplay.onErrorSampleRate = 1.0   // 100% on error (keep high)
 
+options.enableLogs = true
+options.enableMetrics = true             // default true in SDK 9.12+
 options.debug = false                   // never in production
 ```
 
@@ -385,10 +417,10 @@ If a backend is found, configure `tracePropagationTargets` to enable distributed
 
 | Backend detected | Suggest skill | Trace header support |
 |-----------------|--------------|---------------------|
-| Go (`go.mod`) | `sentry-go-sdk` | ✅ automatic |
-| Python (`requirements.txt`) | `sentry-python-sdk` | ✅ automatic |
-| Ruby (`Gemfile`) | `sentry-ruby-sdk` | ✅ automatic |
-| Node.js backend (`package.json`) | `sentry-node-sdk` (or `sentry-express-sdk`) | ✅ automatic |
+| Go (`go.mod`) | `sentry-go-sdk` | Automatic |
+| Python (`requirements.txt`) | `sentry-python-sdk` | Automatic |
+| Ruby (`Gemfile`) | `sentry-ruby-sdk` | Automatic |
+| Node.js backend (`package.json`) | `sentry-node-sdk` (or `sentry-express-sdk`) | Automatic |
 
 ---
 
@@ -399,12 +431,13 @@ If a backend is found, configure `tracePropagationTargets` to enable distributed
 | Events not appearing | Set `debug: true`, verify DSN format, ensure init is on main thread |
 | Crashes not captured | **Run without debugger attached** — debugger intercepts signals |
 | App hangs not reported | Auto-disabled when debugger attached; check `appHangTimeoutInterval` |
-| Session Replay not recording | Check iOS version — disabled by default on iOS 26+ (Liquid Glass); verify `sessionSampleRate > 0` |
+| Session Replay not recording | Verify `sessionSampleRate > 0` or `onErrorSampleRate > 0`; on iOS 26+ verify masking and any manual Liquid Glass gating |
 | Tracing data missing | Confirm `tracesSampleRate > 0`; check `enableAutoPerformanceTracing = true` |
 | Profiling data missing | Verify `sessionSampleRate > 0` in `configureProfiling`; for `.trace` lifecycle, tracing must be enabled |
 | `rsync.samba` build error (CocoaPods) | Target Settings → "Enable User Script Sandbox" → `NO` |
 | Multiple SPM products selected | Choose **only one** of `Sentry`, `Sentry-Dynamic`, `SentrySwiftUI`, `Sentry-WithoutUIKitOrAppKit`, or `SentrySPM` (with `NoUIFramework` trait on Swift 6.1+) |
-| `inAppExclude` compile error | Removed in SDK 9.0.0 — use `inAppInclude` only |
+| `inAppExclude` compile error | Removed in SDK 9.0.0 — use `options.add(inAppInclude:)` |
+| `enableAppHangTrackingV2` compile error | Removed in SDK 9.0.0 — use `enableAppHangTracking`; V2 behavior is default where supported |
 | Watchdog termination not tracked | Requires `enableCrashHandler = true` (it is by default) |
 | Network breadcrumbs missing | Requires `enableSwizzling = true` (it is by default) |
 | `profilesSampleRate` compile error | Removed in SDK 9.0.0 — use `configureProfiling` closure instead |
