@@ -25,7 +25,10 @@ No configuration beyond the `Sentry.init()` call is required for baseline error 
 ```typescript
 import * as Sentry from "@sentry/sveltekit";
 
-Sentry.init({ dsn: import.meta.env.VITE_SENTRY_DSN, sendDefaultPii: true });
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  dataCollection: { userInfo: true },
+});
 
 // Sentry captures first; your handler runs after
 const myErrorHandler = ({ error, event }: { error: unknown; event: unknown }) => {
@@ -415,9 +418,9 @@ globalScope.setTag("app.version", "1.0.0");
 ## Best Practices
 
 - Export `handleError = Sentry.handleErrorWithSentry()` from **both** hook files in SvelteKit — server errors are missed if only one is set
-- Set `sendDefaultPii: true` to capture user IP and request headers automatically
+- Configure `dataCollection.userInfo: true` to auto-populate user context from instrumentation (enabled by default in SDK ≥10.56.0)
 - Use `Sentry.withScope()` for one-off context, `Sentry.getIsolationScope()` / `Sentry.getGlobalScope()` for persistent context
-- Scrub PII in `beforeSend` if `sendDefaultPii: true` is set but specific fields must be hidden
+- Scrub PII in `beforeSend` or use `dataCollection` options to control what data is collected
 - Set `debug: true` during development to verify events are being captured
 
 ---
