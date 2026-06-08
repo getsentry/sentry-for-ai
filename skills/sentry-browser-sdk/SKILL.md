@@ -568,10 +568,10 @@ Fine-grained control over what data the SDK collects. Replaces the simple `sendD
 
 | Field | Type | Default | Notes |
 |-------|------|---------|-------|
-| `userInfo` | `boolean` | `false` | Auto-populate `user.*` fields from instrumentation |
+| `userInfo` | `boolean` | `true` | Auto-populate `user.*` fields from instrumentation |
 | `cookies` | `boolean \| { allow: string[] } \| { deny: string[] }` | `true` | Cookie collection; `true` = all (filtered), `false` = none, `allow`/`deny` = specific keys |
 | `httpHeaders` | `{ request?, response? }` | `{ request: true, response: true }` | HTTP header collection; each can be `boolean` or `allow`/`deny` object |
-| `httpBodies` | `string[]` | `[]` | HTTP body types to collect: `"incomingRequest"`, `"outgoingRequest"`, `"incomingResponse"`, `"outgoingResponse"` |
+| `httpBodies` | `string[]` | `["incomingRequest", "outgoingRequest", "incomingResponse", "outgoingResponse"]` | HTTP body types to collect (when `dataCollection` is explicitly set) |
 | `queryParams` | `boolean \| { allow: string[] } \| { deny: string[] }` | `true` | Query parameter collection with sensitive value filtering |
 | `genAI` | `{ inputs?, outputs? }` | `{ inputs: true, outputs: true }` | Generative AI input/output recording |
 | `stackFrameVariables` | `boolean` | `true` | Capture local variable values in stack frames |
