@@ -500,7 +500,7 @@ with sentry_sdk.start_span(
     ...
 
 # After
-sentry_sdk.scope.Scope.set_custom_sampling_context({"asgi_scope": asgi_scope})
+sentry_sdk.Scope.set_custom_sampling_context({"asgi_scope": asgi_scope})
 with sentry_sdk.traces.start_span(name="handle request"):
     ...
 ```
