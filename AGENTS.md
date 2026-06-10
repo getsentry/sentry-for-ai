@@ -52,6 +52,7 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 | `sentry-otel-exporter-setup` | Setup OTel Collector with Sentry Exporter |
 | `sentry-span-streaming-js` | Migrate JavaScript SDK from transaction-based to streamed span delivery |
 | `sentry-span-streaming-python` | Migrate Python SDK from transaction-based to streamed span delivery |
+| `sentry-span-streaming-dart` | Migrate Dart/Flutter SDK from transaction-based to streamed span delivery |
 | `sentry-instrumentation-guide` | Decide which signal to reach for — error vs span vs log vs metric |
 
 ### Workflow Skills

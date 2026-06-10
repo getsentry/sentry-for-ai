@@ -26,7 +26,7 @@ Append the path from the `Path` column in the table below to `https://skills.sen
 1. If the user mentions **AI monitoring, LLM tracing, conversations, or instrumenting an AI SDK** (OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI, Pydantic AI) → `sentry-setup-ai-monitoring`
 2. If the user mentions **OpenTelemetry, OTel Collector, or multi-service telemetry routing** → `sentry-otel-exporter-setup`
 3. If the user mentions **alerts, notifications, on-call, Slack/PagerDuty/Discord integration, or workflow rules** → `sentry-create-alert`
-4. If the user mentions **span streaming, traceLifecycle, trace_lifecycle, spanStreamingIntegration, or switching from transactions to streamed spans** → `sentry-span-streaming-js` (JavaScript) or `sentry-span-streaming-python` (Python)
+4. If the user mentions **span streaming, traceLifecycle, trace_lifecycle, spanStreamingIntegration, or switching from transactions to streamed spans** → `sentry-span-streaming-js` (JavaScript), `sentry-span-streaming-python` (Python), or `sentry-span-streaming-dart` (Dart/Flutter)
 5. If the user is unsure **which signal to use** — log vs span vs metric, "what to instrument where", or how to choose between errors, traces, logs, and metrics → `sentry-instrumentation-guide`
 
 When unclear, **ask the user** which feature they want to configure. Do not guess.
@@ -42,6 +42,7 @@ When unclear, **ask the user** which feature they want to configure. Do not gues
 | Alerts via workflow engine API — email, Slack, PagerDuty, Discord | [`sentry-create-alert`](../sentry-create-alert/SKILL.md) | `sentry-create-alert/SKILL.md` |
 | Span streaming (JavaScript) — migrate from transaction-based to streamed span delivery | [`sentry-span-streaming-js`](../sentry-span-streaming-js/SKILL.md) | `sentry-span-streaming-js/SKILL.md` |
 | Span streaming (Python) — migrate from transaction-based to streamed span delivery | [`sentry-span-streaming-python`](../sentry-span-streaming-python/SKILL.md) | `sentry-span-streaming-python/SKILL.md` |
+| Span streaming (Dart/Flutter) — migrate from transaction-based to streamed span delivery | [`sentry-span-streaming-dart`](../sentry-span-streaming-dart/SKILL.md) | `sentry-span-streaming-dart/SKILL.md` |
 | Instrumentation guide — decide which signal to reach for (error vs span vs log vs metric), "what to instrument where" | [`sentry-instrumentation-guide`](../sentry-instrumentation-guide/SKILL.md) | `sentry-instrumentation-guide/SKILL.md` |
 
 Each skill contains its own detection logic, prerequisites, and step-by-step instructions. Trust the skill — read it carefully and follow it. Do not improvise or take shortcuts.
