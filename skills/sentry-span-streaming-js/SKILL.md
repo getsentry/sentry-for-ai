@@ -62,6 +62,8 @@ Based on detection results, classify each `Sentry.init` call as:
 | **Server** | `@sentry/node`, `@sentry/bun`, `@sentry/deno`, `@sentry/cloudflare` | Add `traceLifecycle: 'stream'` |
 | **Framework (both)** | `@sentry/nextjs`, `@sentry/nuxt`, `@sentry/sveltekit`, `@sentry/remix`, `@sentry/astro`, `@sentry/solidstart`, `@sentry/react-router` | Migrate both client and server configs separately |
 
+---
+
 ## Phase 2: Migrate
 
 **Prerequisites:** Sentry JavaScript SDK `>=10.53.1` with tracing enabled (`tracesSampleRate` or `tracesSampler` configured).
@@ -292,6 +294,8 @@ Sentry.init({
 
 Do **not** mix legacy and v2 options. If `profilesSampleRate` is set, `profileSessionSampleRate` has no effect and the SDK logs a warning.
 
+---
+
 ## Phase 3: Verify
 
 After applying changes, verify the migration works correctly.
@@ -324,6 +328,8 @@ Instruct the user to verify in their browser devtools or server logs:
 | Type errors on `span.description` | `StreamedSpanJSON` uses `name` not `description` | Change `span.description` to `span.name` in callback |
 | Type errors on `span.data` | `StreamedSpanJSON` uses `attributes` not `data` | Change `span.data` to `span.attributes` in callback |
 | `profileSessionSampleRate` has no effect | Legacy `profilesSampleRate` is also set | Remove `profilesSampleRate` and use only `profileSessionSampleRate` + `profileLifecycle` |
+
+---
 
 ## Quick Reference
 
