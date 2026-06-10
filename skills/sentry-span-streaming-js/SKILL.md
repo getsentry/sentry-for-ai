@@ -25,9 +25,9 @@ This skill covers the JavaScript SDK (Browser, Node.js, Bun, Deno, Cloudflare). 
 
 ---
 
-### Phase 1: Detect
+## Phase 1: Detect
 
-#### 1.1 Detect Environment
+### 1.1 Detect Environment
 
 ```bash
 # Detect if browser, server, or both
@@ -36,7 +36,7 @@ grep -rn "from '@sentry/browser'\|from '@sentry/react'\|from '@sentry/vue'\|from
 grep -rn "from '@sentry/node'\|from '@sentry/bun'\|from '@sentry/deno'\|from '@sentry/cloudflare'" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" --include="*.mjs" -l 2>/dev/null | head -20
 ```
 
-#### 1.2. Find Existing Sentry Config
+### 1.2. Find Existing Sentry Config
 
 ```bash
 # Find Sentry.init calls
@@ -52,7 +52,7 @@ grep -rn "beforeSendTransaction" --include="*.ts" --include="*.js" --include="*.
 grep -rn "ignoreSpans" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" --include="*.mjs" -l 2>/dev/null
 ```
 
-#### 1.3 Classify Environment
+### 1.3 Classify Environment
 
 Based on detection results, classify each `Sentry.init` call as:
 
@@ -62,15 +62,15 @@ Based on detection results, classify each `Sentry.init` call as:
 | **Server** | `@sentry/node`, `@sentry/bun`, `@sentry/deno`, `@sentry/cloudflare` | Add `traceLifecycle: 'stream'` |
 | **Framework (both)** | `@sentry/nextjs`, `@sentry/nuxt`, `@sentry/sveltekit`, `@sentry/remix`, `@sentry/astro`, `@sentry/solidstart`, `@sentry/react-router` | Migrate both client and server configs separately |
 
-### Phase 2: Migrate
+## Phase 2: Migrate
 
 **Prerequisites:** Sentry JavaScript SDK `>=10.53.1` with tracing enabled (`tracesSampleRate` or `tracesSampler` configured).
 
 Apply changes to each `Sentry.init` call. Work through each file identified above.
 
-#### 2.1 Enable Span Streaming
+### 2.1 Enable Span Streaming
 
-##### Server-Side SDKs
+#### Server-Side SDKs
 
 Add `traceLifecycle: 'stream'` to `Sentry.init()`:
 
@@ -89,7 +89,7 @@ Sentry.init({
 });
 ```
 
-##### Browser-Side SDKs
+#### Browser-Side SDKs
 
 Add `Sentry.spanStreamingIntegration()` to the `integrations` array. The integration automatically enables `traceLifecycle: 'stream'` — you do not need to set it manually.
 
@@ -116,7 +116,7 @@ Sentry.init({
 
 The order of `spanStreamingIntegration()` relative to other integrations does not matter.
 
-##### Framework SDKs (Client + Server)
+#### Framework SDKs (Client + Server)
 
 Apply the browser migration to client config files and the server migration to server config files. Common patterns:
 
@@ -128,7 +128,7 @@ Apply the browser migration to client config files and the server migration to s
 | Remix | `entry.client.tsx` | `entry.server.tsx` |
 | Astro | Client-side init | Server-side init |
 
-#### 2.2 Migrate `beforeSendSpan`
+### 2.2 Migrate `beforeSendSpan`
 
 If the user has a `beforeSendSpan` callback, it **must** be wrapped with `Sentry.withStreamedSpan()` to work in streaming mode. Without this wrapper, the SDK falls back to static mode.
 
@@ -177,7 +177,7 @@ Sentry.init({
 
 Returning `null` from `beforeSendSpan` does **not** drop the span — it is ignored and a warning is logged.
 
-#### 2.3 Remove or Replace `beforeSendTransaction`
+### 2.3 Remove or Replace `beforeSendTransaction`
 
 `beforeSendTransaction` has **no effect** in streaming mode. Spans are sent individually, not batched into transactions.
 
@@ -205,7 +205,7 @@ Sentry.init({
 
 Remove the `beforeSendTransaction` option from `Sentry.init()` after migrating its logic.
 
-#### 2.4 Configure `ignoreSpans` (Optional)
+### 2.4 Configure `ignoreSpans` (Optional)
 
 `ignoreSpans` works in both static and streaming modes, but the filter is evaluated at different points in the span lifecycle:
 
@@ -252,7 +252,7 @@ Sentry.init({
 
 When multiple properties are specified in a filter object, **all** must match for the span to be ignored.
 
-#### 2.5 Set Up Browser Profiling (Optional)
+### 2.5 Set Up Browser Profiling (Optional)
 
 When using span streaming in the browser, use the **v2 profiling options** — not the legacy `profilesSampleRate`. The legacy option is deprecated and does not integrate with the span streaming lifecycle.
 
@@ -292,11 +292,11 @@ Sentry.init({
 
 Do **not** mix legacy and v2 options. If `profilesSampleRate` is set, `profileSessionSampleRate` has no effect and the SDK logs a warning.
 
-### Phase 3: Verify
+## Phase 3: Verify
 
 After applying changes, verify the migration works correctly.
 
-#### 3.1 Build Check
+### 3.1 Build Check
 
 ```bash
 # TypeScript check
@@ -306,7 +306,7 @@ npx tsc --noEmit 2>&1 | head -30
 npm run build 2>&1 | tail -20
 ```
 
-#### 3.2 Runtime Verification
+### 3.2 Runtime Verification
 
 Instruct the user to verify in their browser devtools or server logs:
 
@@ -314,7 +314,7 @@ Instruct the user to verify in their browser devtools or server logs:
 2. **Check Sentry dashboard**: Spans should appear in the Traces view shortly after they complete, without waiting for the full transaction to finish
 3. **Check for fallback warnings**: If the SDK logs warnings about falling back to static mode, the `beforeSendSpan` callback is likely missing the `withStreamedSpan` wrapper
 
-#### 3.3 Common Issues
+### 3.3 Common Issues
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -325,9 +325,9 @@ Instruct the user to verify in their browser devtools or server logs:
 | Type errors on `span.data` | `StreamedSpanJSON` uses `attributes` not `data` | Change `span.data` to `span.attributes` in callback |
 | `profileSessionSampleRate` has no effect | Legacy `profilesSampleRate` is also set | Remove `profilesSampleRate` and use only `profileSessionSampleRate` + `profileLifecycle` |
 
-### Quick Reference
+## Quick Reference
 
-#### Minimal Server Setup
+### Minimal Server Setup
 
 ```js
 import * as Sentry from '@sentry/node';
@@ -339,7 +339,7 @@ Sentry.init({
 });
 ```
 
-#### Minimal Browser Setup
+### Minimal Browser Setup
 
 ```js
 import * as Sentry from '@sentry/browser';
@@ -354,7 +354,7 @@ Sentry.init({
 });
 ```
 
-#### Browser Setup with Profiling
+### Browser Setup with Profiling
 
 ```js
 import * as Sentry from '@sentry/browser';
@@ -372,7 +372,7 @@ Sentry.init({
 });
 ```
 
-#### JavaScript Migration Checklist
+### Full Migration Checklist
 
 - [ ] SDK version is `>=10.53.1`
 - [ ] Server configs: added `traceLifecycle: 'stream'`
