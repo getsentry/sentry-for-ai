@@ -1,6 +1,6 @@
 ---
-name: sentry-span-streaming
-description: Migrate to Sentry span streaming (span-first trace lifecycle). Use when asked to "enable span streaming", "migrate to span streaming", "use traceLifecycle stream", "add spanStreamingIntegration", or switch from transaction-based to streamed span delivery.
+name: sentry-span-streaming-js
+description: Migrate JavaScript SDK to Sentry span streaming (span-first trace lifecycle). Use when asked to "enable span streaming", "migrate to span streaming", "use traceLifecycle stream", "add spanStreamingIntegration", or switch from transaction-based to streamed span delivery in a JavaScript project.
 license: Apache-2.0
 category: feature-setup
 parent: sentry-feature-setup
@@ -8,56 +8,26 @@ disable-model-invocation: true
 allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 ---
 
-> [All Skills](../../SKILL_TREE.md) > [Feature Setup](../sentry-feature-setup/SKILL.md) > Span Streaming
+> [All Skills](../../SKILL_TREE.md) > [Feature Setup](../sentry-feature-setup/SKILL.md) > Span Streaming (JavaScript)
 
-# Sentry Span Streaming Migration
+# Sentry Span Streaming Migration (JavaScript)
 
-Migrate from the default transaction-based trace lifecycle (`static`) to span streaming (`stream`), where spans are sent in multiple batches as they complete instead of being batched into one transaction at the end.
+Migrate from the default transaction-based trace lifecycle (`static`) to span streaming (`stream`), where spans are sent individually as they complete instead of being batched into a transaction at the end.
+
+This skill covers the JavaScript SDK (Browser, Node.js, Bun, Deno, Cloudflare). For Python, see [Span Streaming (Python)](../sentry-span-streaming-python/SKILL.md).
 
 ## Invoke This Skill When
 
-- User asks to "enable span streaming" or "migrate to span streaming"
+- User asks to "enable span streaming" or "migrate to span streaming" in a JavaScript project
 - User wants to switch from transaction-based to streamed span delivery
 - User mentions `traceLifecycle`, `spanStreamingIntegration`, or `withStreamedSpan`
 - User wants lower latency span delivery or per-span processing
-
-## Supported Platforms
-
-| Platform | Status |
-|---|---|
-| JavaScript (Browser, Node.js, Bun, Deno, Cloudflare) | Supported |
-| Python | Not yet available |
-| Ruby | Not yet available |
-| Go | Not yet available |
-| Other SDKs | Not yet available |
-
-If the user's project does not use a supported SDK, inform them that span streaming is currently only available for JavaScript SDKs and stop here.
 
 ---
 
 ## Phase 1: Detect
 
-Identify the user's platform, SDK version, and current tracing configuration.
-
-### 1.1 Detect Platform and SDK
-
-```bash
-# Check for JavaScript Sentry packages
-cat package.json 2>/dev/null | grep -E '"@sentry/'
-
-# Check for Python Sentry
-cat requirements.txt setup.py pyproject.toml 2>/dev/null | grep -i sentry
-
-# Check for Ruby Sentry
-cat Gemfile 2>/dev/null | grep sentry
-
-# Check for Go Sentry
-cat go.mod 2>/dev/null | grep sentry
-```
-
-If an unsupported Sentry SDK is detected, inform the user that span streaming is not yet available for their platform.
-
-### 1.2 Detect JavaScript Environment
+### 1.1 Detect Environment
 
 ```bash
 # Detect if browser, server, or both
@@ -66,7 +36,7 @@ grep -rn "from '@sentry/browser'\|from '@sentry/react'\|from '@sentry/vue'\|from
 grep -rn "from '@sentry/node'\|from '@sentry/bun'\|from '@sentry/deno'\|from '@sentry/cloudflare'" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" --include="*.mjs" -l 2>/dev/null | head -20
 ```
 
-### 1.3 Find Existing Sentry Config
+### 1.2. Find Existing Sentry Config
 
 ```bash
 # Find Sentry.init calls
@@ -82,7 +52,7 @@ grep -rn "beforeSendTransaction" --include="*.ts" --include="*.js" --include="*.
 grep -rn "ignoreSpans" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" --include="*.mjs" -l 2>/dev/null
 ```
 
-### 1.4 Classify Environment
+### 1.3 Classify Environment
 
 Based on detection results, classify each `Sentry.init` call as:
 
@@ -94,11 +64,11 @@ Based on detection results, classify each `Sentry.init` call as:
 
 ---
 
-## Phase 2: Migrate (JavaScript)
+## Phase 2: Migrate
 
 **Prerequisites:** Sentry JavaScript SDK `>=10.53.1` with tracing enabled (`tracesSampleRate` or `tracesSampler` configured).
 
-Apply changes to each `Sentry.init` call. Work through each file identified in Phase 1.
+Apply changes to each `Sentry.init` call. Work through each file identified above.
 
 ### 2.1 Enable Span Streaming
 
@@ -361,7 +331,7 @@ Instruct the user to verify in their browser devtools or server logs:
 
 ---
 
-## Quick Reference (JavaScript)
+## Quick Reference
 
 ### Minimal Server Setup
 
