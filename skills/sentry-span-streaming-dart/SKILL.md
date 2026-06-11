@@ -229,17 +229,22 @@ When an ignored span has children, the children are re-parented to the nearest r
 
 No code changes needed: frames tracking, app start, TTID/TTFD, navigation, user interaction, HTTP, database, and GraphQL instrumentations all switch to the streaming API automatically when `traceLifecycle` is `stream`.
 
-One related behavior to be aware of: `SentryNavigatorObserver(enableNewTraceOnNavigation: ...)` defaults to `false`, which keeps one continuous trace across navigations. Pass `true` to start a fresh trace on every route change:
+### 2.8 `configureScope` Inside Span Callbacks
+
+`Sentry.configureScope` continues to work in streaming mode. Each `startSpan` / `startSpanSync` callback runs in its own zone; scope changes made with `configureScope` within a span callback are applied to all zones in that span callback and its children, so the data lands on the current span and any child spans.
 
 ```dart
-MaterialApp(
-  navigatorObservers: [
-    SentryNavigatorObserver(enableNewTraceOnNavigation: true),
-  ],
-);
+await Sentry.startSpan('checkout', (span) async {
+  await Sentry.configureScope((scope) {
+    scope.setAttributes({'user.tier': SentryAttribute.string('premium')});
+  });
+
+  // 'checkout' and 'process-payment' both receive the scope attributes.
+  await Sentry.startSpan('process-payment', (_) => paymentService.charge(total));
+});
 ```
 
-### 2.8 Sampling
+### 2.9 Sampling
 
 `tracesSampleRate` and `tracesSampler` work unchanged. Only **root spans** are sampled; child spans inherit the root's decision. When a root span is not sampled, the callback still executes with a no-op span.
 
@@ -275,7 +280,6 @@ Instruct the user to verify with `options.debug = true` or network inspection:
 | Returning a value from `beforeSendSpan` to drop a span does nothing | `beforeSendSpan` is mutation-only (`FutureOr<void>` return) | Use `ignoreSpans` to drop spans |
 | Analyzer error `experimental_member_use` | Span streaming APIs are `@experimental` | Suppress with `// ignore_for_file: experimental_member_use` |
 | Compile error: `startSpan` callback type mismatch | Callback must return `Future<T>` for `startSpan` | Use `startSpanSync` for synchronous work |
-| New trace on every navigation no longer happens | `enableNewTraceOnNavigation` defaults to `false` | Pass `SentryNavigatorObserver(enableNewTraceOnNavigation: true)` |
 
 ---
 
