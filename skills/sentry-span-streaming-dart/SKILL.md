@@ -38,7 +38,7 @@ grep -A8 '^  sentry:' pubspec.lock 2>/dev/null | grep -m1 version
 grep -A8 '^  sentry_flutter:' pubspec.lock 2>/dev/null | grep -m1 version
 ```
 
-Span streaming requires `sentry` / `sentry_flutter` `>=9.19.0`. The feature is marked `@experimental` in the SDK — the API may change in a minor release, and the analyzer may emit `experimental_member_use` hints.
+Span streaming requires `sentry` / `sentry_flutter` `>=9.19.0`.
 
 ### 1.2 Find Existing Sentry Config and Tracing Usage
 
@@ -245,7 +245,7 @@ dart analyze 2>&1 | head -30
 flutter analyze 2>&1 | head -30
 ```
 
-`experimental_member_use` hints on `traceLifecycle` / `startSpan` are expected — the feature is experimental. Suppress per-file with `// ignore_for_file: experimental_member_use` if the project treats hints as errors.
+Expect no new analyzer errors from the migration.
 
 ### 3.2 Runtime Verification
 
@@ -263,7 +263,6 @@ Instruct the user to verify with `options.debug = true` or network inspection:
 | `Sentry.startSpan` produces no spans | `traceLifecycle` still `static` (the default), or tracing disabled | Set `options.traceLifecycle = SentryTraceLifecycle.stream` and a `tracesSampleRate` |
 | `beforeSendTransaction` never called | Expected in streaming mode | Migrate logic to `beforeSendSpan` or `ignoreSpans`, then remove it |
 | Returning a value from `beforeSendSpan` to drop a span does nothing | `beforeSendSpan` is mutation-only (`FutureOr<void>` return) | Use `ignoreSpans` to drop spans |
-| Analyzer error `experimental_member_use` | Span streaming APIs are `@experimental` | Suppress with `// ignore_for_file: experimental_member_use` |
 | Compile error: `startSpan` callback type mismatch | Callback must return `Future<T>` for `startSpan` | Use `startSpanSync` for synchronous work |
 
 ---
@@ -313,5 +312,5 @@ Future<void> main() async {
 - [ ] `setData` / `setTag` on spans replaced with typed `setAttribute` / `SentryAttribute`
 - [ ] `beforeSendTransaction` logic migrated to `beforeSendSpan` or `ignoreSpans`, option removed
 - [ ] `startInactiveSpan` spans have a guaranteed `end()` call path
-- [ ] `dart analyze` / `flutter analyze` passes (experimental hints acceptable)
+- [ ] `dart analyze` / `flutter analyze` passes
 - [ ] Spans visible in Sentry Traces view
