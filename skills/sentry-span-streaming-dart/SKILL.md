@@ -229,22 +229,7 @@ When an ignored span has children, the children are re-parented to the nearest r
 
 No code changes needed: frames tracking, app start, TTID/TTFD, navigation, user interaction, HTTP, database, and GraphQL instrumentations all switch to the streaming API automatically when `traceLifecycle` is `stream`.
 
-### 2.8 `configureScope` Inside Span Callbacks
-
-`Sentry.configureScope` continues to work in streaming mode. Each `startSpan` / `startSpanSync` callback runs in its own zone; scope changes made with `configureScope` within a span callback are applied to all zones in that span callback and its children, so the data lands on the current span and any child spans.
-
-```dart
-await Sentry.startSpan('checkout', (span) async {
-  await Sentry.configureScope((scope) {
-    scope.setAttributes({'user.tier': SentryAttribute.string('premium')});
-  });
-
-  // 'checkout' and 'process-payment' both receive the scope attributes.
-  await Sentry.startSpan('process-payment', (_) => paymentService.charge(total));
-});
-```
-
-### 2.9 Sampling
+### 2.8 Sampling
 
 `tracesSampleRate` and `tracesSampler` work unchanged. Only **root spans** are sampled; child spans inherit the root's decision. When a root span is not sampled, the callback still executes with a no-op span.
 
