@@ -655,13 +655,22 @@ Sentry.init({
 | `SENTRY_AUTH_TOKEN` | Upload source maps and dSYMs | **Never commit — use CI secrets** |
 | `SENTRY_ORG` | Organization slug | Used by wizard and build plugins |
 | `SENTRY_PROJECT` | Project slug | Used by wizard and build plugins |
-| `SENTRY_RELEASE` | Release identifier | Falls back from `release` option |
-| `SENTRY_DIST` | Distribution identifier | Falls back from `dist` option |
+| `SENTRY_RELEASE` | Release identifier (e.g., `myapp@1.2.3+42`) | Read at build time by the Sentry Metro plugin / Expo config plugin; overrides code-level `release` config |
+| `SENTRY_DIST` | Distribution identifier (e.g., build number or commit SHA) | Read at build time by the Sentry Metro plugin / Expo config plugin; overrides code-level `dist` config |
 | `SENTRY_ENVIRONMENT` | Environment name | Falls back from `environment` option |
 | `SENTRY_DISABLE_AUTO_UPLOAD` | Skip source map upload | Set `true` during local builds |
 | `EXPO_PUBLIC_SENTRY_DSN` | Expo public env var for DSN | Safe to embed in client bundle |
 | `SENTRY_EAS_BUILD_CAPTURE_SUCCESS` | EAS build hook: capture successful builds | Set `true` in EAS secrets |
 | `SENTRY_EAS_BUILD_TAGS` | EAS build hook: additional tags JSON | e.g., `{"team":"mobile"}` |
+
+Example (`.env` or CI environment):
+
+```bash
+SENTRY_RELEASE=com.myapp@1.2.3+42
+SENTRY_DIST=42
+```
+
+`SENTRY_RELEASE` and `SENTRY_DIST` are read during the native build. They do not need to be bundled into the app at runtime.
 
 ---
 
