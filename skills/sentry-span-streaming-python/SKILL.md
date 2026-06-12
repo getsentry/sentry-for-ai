@@ -14,7 +14,7 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 
 Migrate from the default transaction-based trace lifecycle (`static`) to span streaming (`stream`), where spans are sent individually as they complete instead of being batched into a transaction at the end.
 
-This skill covers the Python SDK. For JavaScript, see [Span Streaming (JavaScript)](../sentry-span-streaming-js/SKILL.md).
+This skill covers the Python SDK. For JavaScript, see [Span Streaming (JavaScript)](../sentry-span-streaming-js/SKILL.md). For Dart/Flutter, see [Span Streaming (Dart)](../sentry-span-streaming-dart/SKILL.md).
 
 ## Invoke This Skill When
 
