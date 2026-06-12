@@ -52,7 +52,9 @@ export const MyDurableObject = Sentry.instrumentDurableObjectWithSentry(
   (env: Env) => ({
     dsn: env.SENTRY_DSN,
     tracesSampleRate: 1.0,
-    sendDefaultPii: true,
+    dataCollection: {
+      cookies: true, // Include cookies (off by default for Cloudflare)
+    },
   }),
   MyDurableObjectBase,
 );
