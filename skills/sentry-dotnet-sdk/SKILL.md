@@ -526,6 +526,8 @@ Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the err
 | `HttpProxy` | `string` | — | — | Proxy URL for Sentry requests |
 | `EnableBackpressureHandling` | `bool` | `true` | — | Auto-reduce sample rates on delivery failures |
 | `TraceIgnoreStatusCodes` | `IList<HttpStatusCodeRange>` | `[]` | — | Drop transactions whose HTTP response status matches any range; e.g., `[404]` or `[(500, 599)]` |
+| `StrictTraceContinuation` | `bool` | `false` | — | Validate org IDs in distributed traces; start new trace when incoming org ID is missing (requires ≥6.6.0) |
+| `OrgId` | `string` | auto | — | Organization ID for trace validation; auto-parsed from DSN subdomain (e.g., `o123.ingest.sentry.io` → `"123"`). Override if using a custom domain (requires ≥6.6.0) |
 
 ### ASP.NET Core Extended Options (`SentryAspNetCoreOptions`)
 
