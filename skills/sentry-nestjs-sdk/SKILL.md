@@ -159,7 +159,19 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.SENTRY_ENVIRONMENT ?? "production",
   release: process.env.SENTRY_RELEASE,
-  sendDefaultPii: true,
+
+  // Data collection (SDK ≥ 10.54.0 — replaces deprecated sendDefaultPii)
+  dataCollection: {
+    userInfo: true,           // Include IP addresses and user context
+    httpHeaders: {            // Capture request/response headers
+      request: true,
+      response: true,
+    },
+    cookies: true,            // Capture cookies
+    queryParams: true,        // Capture URL query parameters
+  },
+
+  // Legacy: sendDefaultPii: true, (deprecated — use dataCollection instead)
 
   // Tracing — lower to 0.1–0.2 in high-traffic production
   tracesSampleRate: 1.0,
@@ -186,7 +198,12 @@ Sentry.init({
   dsn: config.sentry.dsn,
   environment: config.sentry.environment ?? "production",
   release: config.sentry.release,
-  sendDefaultPii: config.sentry.sendDefaultPii ?? true,
+  dataCollection: config.sentry.dataCollection ?? {
+    userInfo: true,
+    httpHeaders: { request: true, response: true },
+    cookies: true,
+    queryParams: true,
+  },
   tracesSampleRate: config.sentry.tracesSampleRate ?? 1.0,
   profileSessionSampleRate: config.sentry.profilesSampleRate ?? 1.0,
   profileLifecycle: "trace",
@@ -194,7 +211,7 @@ Sentry.init({
 });
 ```
 
-When adding new SDK options (e.g. `sendDefaultPii`, `profileSessionSampleRate`), add them to the config type so they can be configured per environment.
+When adding new SDK options (e.g. `dataCollection`, `profileSessionSampleRate`), add them to the config type so they can be configured per environment.
 
 #### Step 2: Import `instrument.ts` FIRST in `src/main.ts`
 
@@ -486,25 +503,35 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 
 ### Key `Sentry.init()` Options
 
-| Option                     | Type                    | Default        | Purpose                                                                                          |
-| -------------------------- | ----------------------- | -------------- | ------------------------------------------------------------------------------------------------ |
-| `dsn`                      | `string`                | —              | SDK disabled if empty; env: `SENTRY_DSN`                                                         |
-| `environment`              | `string`                | `"production"` | e.g., `"staging"`; env: `SENTRY_ENVIRONMENT`                                                     |
-| `release`                  | `string`                | —              | e.g., `"myapp@1.0.0"`; env: `SENTRY_RELEASE`                                                     |
-| `sendDefaultPii`           | `boolean`               | `false`        | Include IP addresses and request headers                                                         |
-| `tracesSampleRate`         | `number`                | —              | Transaction sample rate; `undefined` disables tracing                                            |
-| `tracesSampler`            | `function`              | —              | Custom per-transaction sampling (overrides rate)                                                 |
-| `tracePropagationTargets`  | `Array<string\|RegExp>` | —              | URLs to propagate `sentry-trace`/`baggage` headers to                                            |
-| `profileSessionSampleRate` | `number`                | —              | Continuous profiling session rate (SDK ≥ 10.27.0)                                                |
-| `profileLifecycle`         | `"trace"\|"manual"`     | `"trace"`      | `"trace"` = auto-start profiler with spans; `"manual"` = call `startProfiler()`/`stopProfiler()` |
-| `enableLogs`               | `boolean`               | `false`        | Send structured logs to Sentry (SDK ≥ 9.41.0)                                                    |
-| `ignoreErrors`             | `Array<string\|RegExp>` | `[]`           | Error message patterns to suppress                                                               |
-| `ignoreTransactions`       | `Array<string\|RegExp>` | `[]`           | Transaction name patterns to suppress                                                            |
-| `beforeSend`               | `function`              | —              | Hook to mutate or drop error events                                                              |
-| `beforeSendTransaction`    | `function`              | —              | Hook to mutate or drop transaction events                                                        |
-| `beforeSendLog`            | `function`              | —              | Hook to mutate or drop log events                                                                |
-| `debug`                    | `boolean`               | `false`        | Verbose SDK debug output                                                                         |
-| `maxBreadcrumbs`           | `number`                | `100`          | Max breadcrumbs per event                                                                        |
+| Option                       | Type                    | Default        | Purpose                                                                                          |
+| ---------------------------- | ----------------------- | -------------- | ------------------------------------------------------------------------------------------------ |
+| `dsn`                        | `string`                | —              | SDK disabled if empty; env: `SENTRY_DSN`                                                         |
+| `environment`                | `string`                | `"production"` | e.g., `"staging"`; env: `SENTRY_ENVIRONMENT`                                                     |
+| `release`                    | `string`                | —              | e.g., `"myapp@1.0.0"`; env: `SENTRY_RELEASE`                                                     |
+| `dataCollection`             | `object`                | See below      | Controls what data the SDK collects (SDK ≥ 10.54.0)                                              |
+| `dataCollection.userInfo`    | `boolean`               | `false`        | Include IP addresses and user context                                                            |
+| `dataCollection.httpHeaders` | `object`                | See below      | Capture HTTP headers for requests/responses                                                      |
+| `dataCollection.cookies`     | `boolean\|object`       | `true`         | Capture cookies; use `{allow: [...]}` or `{deny: [...]}` for filtering                           |
+| `dataCollection.queryParams` | `boolean\|object`       | `true`         | Capture URL query parameters; use `{allow: [...]}` or `{deny: [...]}` for filtering              |
+| `dataCollection.genAI`       | `object`                | See below      | Control AI input/output recording                                                                |
+| `sendDefaultPii`             | `boolean`               | `false`        | **Deprecated** — use `dataCollection.userInfo` instead                                           |
+| `tracesSampleRate`           | `number`                | —              | Transaction sample rate; `undefined` disables tracing                                            |
+| `tracesSampler`              | `function`              | —              | Custom per-transaction sampling (overrides rate)                                                 |
+| `tracePropagationTargets`    | `Array<string\|RegExp>` | —              | URLs to propagate `sentry-trace`/`baggage` headers to                                            |
+| `profileSessionSampleRate`   | `number`                | —              | Continuous profiling session rate (SDK ≥ 10.27.0)                                                |
+| `profileLifecycle`           | `"trace"\|"manual"`     | `"trace"`      | `"trace"` = auto-start profiler with spans; `"manual"` = call `startProfiler()`/`stopProfiler()` |
+| `enableLogs`                 | `boolean`               | `false`        | Send structured logs to Sentry (SDK ≥ 9.41.0)                                                    |
+| `ignoreErrors`               | `Array<string\|RegExp>` | `[]`           | Error message patterns to suppress                                                               |
+| `ignoreTransactions`         | `Array<string\|RegExp>` | `[]`           | Transaction name patterns to suppress                                                            |
+| `beforeSend`                 | `function`              | —              | Hook to mutate or drop error events                                                              |
+| `beforeSendTransaction`      | `function`              | —              | Hook to mutate or drop transaction events                                                        |
+| `beforeSendLog`              | `function`              | —              | Hook to mutate or drop log events                                                                |
+| `debug`                      | `boolean`               | `false`        | Verbose SDK debug output                                                                         |
+| `maxBreadcrumbs`             | `number`                | `100`          | Max breadcrumbs per event                                                                        |
+
+**`dataCollection` defaults:**
+- `httpHeaders: { request: true, response: true }`
+- `genAI: { inputs: true, outputs: true }`
 
 ### Environment Variables
 
