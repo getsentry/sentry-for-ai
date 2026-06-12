@@ -1,0 +1,21 @@
+{
+  "name": "sentry-for-ai",
+  "interface": {
+    "displayName": "Sentry for AI"
+  },
+  "plugins": [
+    {
+      "name": "sentry",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/getsentry/sentry-for-ai.git",
+        "ref": "main"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Engineering"
+    }
+  ]
+}
