@@ -4,7 +4,7 @@ Your AI coding assistant already knows how to write code. This plugin teaches it
 
 Whether you're adding Sentry to a new project, debugging a spike in errors, or configuring alerts, just ask. The plugin gives your assistant the context it needs to do it right.
 
-Supports **Claude Code**, **Cursor**, **Codex**, and **Grok**.
+Supports [**Claude Code**](https://github.com/getsentry/plugin-claude), [**Cursor**](https://github.com/getsentry/plugin-cursor), [**Codex**](https://github.com/getsentry/plugin-codex), and [**Grok**](https://github.com/getsentry/plugin-grok).
 
 ## What You Can Do
 
@@ -56,6 +56,10 @@ exactly that agent's plugin:
 
 These repositories are generated; do not edit them. Each one's README has the
 install instructions for that agent.
+
+The skill library is also browsable at [skills.sentry.dev](https://skills.sentry.dev)
+and available through the [`skills.sh`](https://www.skills.sh/getsentry/sentry-for-ai)
+installer.
 
 ### Build it yourself
 
