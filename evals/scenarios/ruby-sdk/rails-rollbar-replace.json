@@ -1,0 +1,38 @@
+{
+  "name": "rails-rollbar-replace",
+  "given": "A Rails 8 application with Rollbar already configured for error monitoring",
+  "prompt": "Replace Rollbar with Sentry in this Rails application. Set up full Sentry monitoring including error tracking, tracing, and logging. Remove the Rollbar gem and configuration. Use the SENTRY_DSN environment variable.",
+  "fixture": "rails-rollbar-replace",
+  "files": [
+    {
+      "path": "config/initializers/sentry.rb",
+      "contains": [
+        "Sentry.init",
+        "config.dsn",
+        "SENTRY_DSN",
+        "config.traces_sample_rate",
+        "config.enable_logs",
+        "config.breadcrumbs_logger",
+        "config.send_default_pii"
+      ],
+      "excludes": ["otlp", "Rollbar"]
+    },
+    {
+      "path": "Gemfile",
+      "contains": ["sentry-ruby", "sentry-rails"],
+      "excludes": ["rollbar"]
+    },
+    {
+      "path": "app/controllers/posts_controller.rb",
+      "contains": ["Sentry"],
+      "excludes": ["Rollbar"]
+    }
+  ],
+  "should_not_exist": [
+    "config/initializers/rollbar.rb"
+  ],
+  "soft_assertions": [
+    { "criterion": "The agent replaced Rollbar.error/warning/info calls with Sentry equivalents like Sentry.capture_exception or Sentry.capture_message" }
+  ],
+  "negative_assertions": []
+}
