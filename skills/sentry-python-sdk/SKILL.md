@@ -215,7 +215,7 @@ Most integrations activate automatically when their package is installed — no 
 | Django, Flask, FastAPI, Starlette, AIOHTTP, Tornado, Quart, Falcon, Pyramid, Sanic, Bottle | `DramatiqIntegration` |
 | Celery, RQ, Huey, ARQ | `GRPCIntegration` |
 | SQLAlchemy, Redis, asyncpg, pymongo | `StrawberryIntegration` |
-| Requests, HTTPX, aiohttp-client | `AsyncioIntegration` |
+| Requests, HTTPX, httpx2, aiohttp-client | `AsyncioIntegration` |
 | OpenAI, Anthropic, LangChain, Pydantic AI, MCP | `OpenTelemetryIntegration` |
 | Python `logging`, Loguru | `WSGIIntegration` / `ASGIIntegration` |
 

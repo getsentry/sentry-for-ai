@@ -25,6 +25,8 @@ Configure Sentry to track LLM calls, agent executions, tool usage, and token con
 
 AI monitoring requires **tracing enabled** (`tracesSampleRate > 0`).
 
+If the app has multi-turn chats, set a conversation ID by default anywhere it makes sense to identify a chat session. Sentry uses `gen_ai.conversation.id` to group related AI spans into Conversations. Some integrations infer it automatically, but many setups need to set it explicitly.
+
 ## Data Capture Warning
 
 **Prompt and output recording captures user content that is likely PII.** Before enabling send-default-PII (`sendDefaultPii: true` in JavaScript or `send_default_pii=True` in Python) or per-integration prompt/output capture (`recordInputs`/`recordOutputs` in JS, `include_prompts` in Python), confirm:
@@ -306,6 +308,8 @@ After configuring, make an LLM call and check the Sentry Traces dashboard. AI sp
 ## Conversations
 
 Conversations gives a readable, chat-style view of past sessions with your AI agent. It groups spans by `gen_ai.conversation.id` — so whether a user talked across multiple traces or multiple conversations happened inside one trace, you get a timeline of every message, tool call, and response.
+
+When the user asks for AI monitoring setup, proactively mention this requirement if the app has multi-turn chats. Without a conversation ID, the agent-monitoring spans still work, but the Conversations view cannot group the session correctly.
 
 Find it at **Explore > Conversations** in Sentry.
 

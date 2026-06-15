@@ -1,0 +1,13 @@
+{
+  "name": "sentry-plugin-marketplace",
+  "owner": {
+    "name": "Sentry"
+  },
+  "plugins": [
+    {
+      "name": "sentry",
+      "source": "./",
+      "description": "Tools for debugging application issues using Sentry. Includes MCP functionality, skills, and commands."
+    }
+  ]
+}
