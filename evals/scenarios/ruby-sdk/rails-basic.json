@@ -1,0 +1,36 @@
+{
+  "name": "rails-basic",
+  "given": "A Rails 8 application with Puma and SQLite, no existing monitoring",
+  "prompt": "Set up Sentry for this Rails application. Add error monitoring, tracing, and logging. Use the SENTRY_DSN environment variable.",
+  "fixture": "rails-basic",
+  "files": [
+    {
+      "path": "config/initializers/sentry.rb",
+      "contains": [
+        "Sentry.init",
+        "config.dsn",
+        "SENTRY_DSN",
+        "traces_sample_rate",
+        "enable_logs",
+        "breadcrumbs_logger",
+        "send_default_pii"
+      ],
+      "excludes": ["otlp"]
+    },
+    {
+      "path": "Gemfile",
+      "contains": ["sentry-ruby", "sentry-rails"],
+      "excludes": ["sentry-sidekiq", "sentry-opentelemetry"]
+    }
+  ],
+  "should_not_exist": [
+    "config/initializers/rollbar.rb",
+    "config/initializers/honeybadger.rb"
+  ],
+  "soft_assertions": [
+    { "criterion": "The agent detected Rails as the framework and chose sentry-rails (not just sentry-ruby alone)" }
+  ],
+  "negative_assertions": [
+    { "criterion": "The agent should not suggest installing sentry-sidekiq since there is no Sidekiq in the project" }
+  ]
+}
