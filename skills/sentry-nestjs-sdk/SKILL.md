@@ -162,13 +162,10 @@ Sentry.init({
 
   // Data collection (SDK ≥ 10.54.0 — replaces deprecated sendDefaultPii)
   dataCollection: {
-    userInfo: true,           // Include IP addresses and user context
-    httpHeaders: {            // Capture request/response headers
-      request: true,
-      response: true,
-    },
-    cookies: true,            // Capture cookies
-    queryParams: true,        // Capture URL query parameters
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/nestjs/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
 
   // Legacy: sendDefaultPii: true, (deprecated — use dataCollection instead)
@@ -199,10 +196,10 @@ Sentry.init({
   environment: config.sentry.environment ?? "production",
   release: config.sentry.release,
   dataCollection: config.sentry.dataCollection ?? {
-    userInfo: true,
-    httpHeaders: { request: true, response: true },
-    cookies: true,
-    queryParams: true,
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/nestjs/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
   tracesSampleRate: config.sentry.tracesSampleRate ?? 1.0,
   profileSessionSampleRate: config.sentry.profilesSampleRate ?? 1.0,
