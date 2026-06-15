@@ -1,0 +1,30 @@
+{
+  "name": "rails-otel",
+  "given": "A Rails 8 application with OpenTelemetry SDK and instrumentations already configured",
+  "prompt": "Set up Sentry for this Rails application. Use the SENTRY_DSN environment variable.",
+  "fixture": "rails-otel",
+  "files": [
+    {
+      "path": "config/initializers/sentry.rb",
+      "contains": [
+        "Sentry.init",
+        "config.dsn",
+        "SENTRY_DSN",
+        "config.otlp",
+        "config.enable_logs",
+        "config.send_default_pii"
+      ],
+      "excludes": ["config.traces_sample_rate"]
+    },
+    {
+      "path": "Gemfile",
+      "contains": ["sentry-ruby", "sentry-rails", "sentry-opentelemetry"],
+      "excludes": []
+    }
+  ],
+  "should_not_exist": [],
+  "soft_assertions": [
+    { "criterion": "The agent detected OpenTelemetry in the project and chose the OTLP integration path instead of native tracing" }
+  ],
+  "negative_assertions": []
+}
