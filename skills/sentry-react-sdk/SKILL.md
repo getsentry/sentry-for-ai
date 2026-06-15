@@ -380,12 +380,12 @@ Fine-grained control over what data the SDK collects. Replaces the simple `sendD
 
 | Field | Type | Default | Notes |
 |-------|------|---------|-------|
-| `userInfo` | `boolean` | `false` | Collect user IP and headers (equivalent to `sendDefaultPii: true`) |
+| `userInfo` | `boolean` | `true` | Collect user IP and headers (equivalent to `sendDefaultPii: true`) |
 | `cookies` | `boolean \| { allow: string[] } \| { deny: string[] }` | `true` | Cookie collection and filtering; `true` = all cookies (sensitive keys filtered) |
 | `httpHeaders.request` | `boolean \| { allow: string[] } \| { deny: string[] }` | `true` | HTTP request header collection |
 | `httpHeaders.response` | `boolean \| { allow: string[] } \| { deny: string[] }` | `true` | HTTP response header collection |
 | `queryParams` | `boolean \| { allow: string[] } \| { deny: string[] }` | `true` | Query parameter collection and filtering |
-| `httpBodies` | `HttpBodyCollectionTarget[]` | `[]` | Collect request/response bodies; options: `'incomingRequest'`, `'outgoingRequest'`, `'incomingResponse'`, `'outgoingResponse'` |
+| `httpBodies` | `HttpBodyCollectionTarget[]` | `["incomingRequest", "outgoingRequest", "incomingResponse", "outgoingResponse"]` | Collect request/response bodies; options: `'incomingRequest'`, `'outgoingRequest'`, `'incomingResponse'`, `'outgoingResponse'` |
 | `genAI.inputs` | `boolean` | `true` | Record AI model inputs (for AI monitoring) |
 | `genAI.outputs` | `boolean` | `true` | Record AI model outputs (for AI monitoring) |
 | `stackFrameVariables` | `boolean` | `true` | Capture local variable values in stack frames |
@@ -396,7 +396,6 @@ Fine-grained control over what data the SDK collects. Replaces the simple `sendD
 ```typescript
 Sentry.init({
   dataCollection: {
-    userInfo: true,
     cookies: { allow: ['session', 'user_id'] },
     httpHeaders: {
       request: { allow: ['authorization', 'x-request-id'] },
