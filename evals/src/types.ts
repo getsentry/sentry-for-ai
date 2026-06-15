@@ -24,8 +24,8 @@ export const ScenarioSchema = z.object({
 
 /** Judge response schema — used by safeParse to validate LLM output. */
 export const JudgeResponseSchema = z.object({
-  assertions: z.array(z.object({ met: z.boolean(), reasoning: z.string() })),
-  negative_assertions: z.array(z.object({ met: z.boolean(), reasoning: z.string() })),
+  assertions: z.array(z.object({ met: z.boolean(), reasoning: z.string() })).default([]),
+  negative_assertions: z.array(z.object({ met: z.boolean(), reasoning: z.string() })).default([]),
 });
 
 export type FileCheck = z.infer<typeof FileCheckSchema>;

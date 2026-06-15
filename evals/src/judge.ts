@@ -95,7 +95,13 @@ export function createSoftJudge(apiKey: string) {
         }
 
         const jsonStr = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-        const parsed = JudgeResponseSchema.safeParse(JSON.parse(jsonStr));
+        let raw: unknown;
+        try {
+          raw = JSON.parse(jsonStr);
+        } catch {
+          return { score: 0, metadata: { rationale: `Judge returned unparsable JSON: ${jsonStr.slice(0, 200)}` } };
+        }
+        const parsed = JudgeResponseSchema.safeParse(raw);
         if (!parsed.success) {
           return { score: 0, metadata: { rationale: `Judge returned invalid JSON: ${parsed.error.message}` } };
         }
