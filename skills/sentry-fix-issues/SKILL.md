@@ -42,7 +42,7 @@ The primary, default mode is **interactive**: a human points the skill at a bug 
 - Skip every confirmation step; if a precondition fails (dirty tree, no `gh` auth, no qualifying issue), exit cleanly with the parseable summary in Phase 8 instead of asking.
 - Never widen the selection criteria to force a match. "Nothing qualified" is a valid, safe outcome.
 
-In interactive mode, keep the user in the loop: confirm the issue before fixing and the fix before opening a PR.
+In interactive mode, keep the user in the loop: confirm the issue before fixing and the fix before opening a PR. **Only prompt (`AskUserQuestion`) when a human is unambiguously present** — if there's any doubt the run is interactive (any scheduled/non-interactive context), treat it as autonomous and never prompt, so a cron run can't hang on an unanswered question.
 
 ## Security Constraints
 
@@ -59,12 +59,14 @@ In interactive mode, keep the user in the loop: confirm the issue before fixing 
 
 Use Sentry MCP to find issues. In interactive mode, confirm with the user which issue(s) to fix before proceeding. In autonomous mode, pull a candidate pool and score it (below) to auto-select one.
 
+`search_issues` accepts **either** a `naturalLanguageQuery` or a literal Sentry-syntax `query` — `sort` is always a **separate** parameter (`date`/`freq`/`new`/`user`), never embedded in the query string.
+
 | Search Type | MCP Tool | Key Parameters |
 |-------------|----------|----------------|
 | Recent unresolved | `search_issues` | `naturalLanguageQuery: "unresolved issues"` |
 | Specific error type | `search_issues` | `naturalLanguageQuery: "unresolved TypeError errors"` |
-| Raw Sentry syntax | `list_issues` | `query: "is:unresolved error.type:TypeError"` |
-| Fixable candidate pool | `search_issues` | `query: "is:unresolved is:unassigned has:stack sort:freq"`, `limit: 10` |
+| Raw Sentry syntax | `search_issues` | `query: "is:unresolved error.type:TypeError"` (literal syntax) |
+| Fixable candidate pool | `search_issues` | `query: "is:unresolved is:unassigned has:stack"`, `sort: "freq"`, `limit: 10` |
 | By ID or URL | `get_issue_details` | `issueId: "PROJECT-123"` or `issueUrl: "<url>"` |
 | AI root cause analysis | `analyze_issue_with_seer` | `issueId: "PROJECT-123"` — returns code-level fix recommendations |
 
@@ -82,6 +84,12 @@ Before committing to a fix — and always in autonomous mode — score each cand
 Assign each candidate a fixability score (1–5) and a `fixable` boolean with one-line reasoning and suspected files. **Read enough of the actual code to judge — a surface read of the message and stack trace is not enough.** Many errors that look environmental (e.g. "file is not a database", "permission denied") turn out to be code bugs once you see how the failing code is called.
 
 **Selection:** pick the single issue that is `fixable`, scores **≥4**, and has at least one suspected file that exists locally (verify with `test -f`). If none qualify, report why each was skipped and stop — never lower the bar to force a match.
+
+**Branch preflight (do this before editing any code).** For the chosen issue, let `BRANCH = claude/sentry-fix-<issue-short-id-lowercased>` and check it now — *before* Phases 4–6 touch the repo — so you never edit files and then abandon the work with a dirty tree:
+
+- `git show-ref --verify --quiet refs/heads/${BRANCH}` — if the branch exists, run `gh pr list --head ${BRANCH} --state all --json url,state`. If a PR already exists, this issue is already handled: in **autonomous mode skip it and select the next-best candidate**; in interactive mode report the PR and stop.
+- If the branch exists with **no** PR (orphaned): in **autonomous mode, skip this issue and move to the next candidate** (do not halt the run — halting would make every future run pick the same issue and stop again). In interactive mode, tell the user to delete it (`git branch -D ${BRANCH}`) and stop. Never auto-delete a branch.
+- If the branch does not exist, proceed.
 
 ## Phase 2: Deep Issue Analysis
 
@@ -135,7 +143,7 @@ Before writing code, confirm your fix will:
 
 **Stay scoped.** Keep the change contained to the root cause — aim for one or two files. If a clean fix appears to require sprawling edits across many files or a broad refactor, **stop and flag it as too broad** (in autonomous mode, abort this candidate and report) rather than forcing the change.
 
-**Add tests** reproducing the error conditions from Sentry. Use generalized/synthetic test data — do not embed actual values from event payloads (URLs, user data, tokens) in test fixtures. Run the relevant tests before and after your change so you can show the failure is fixed and nothing else regressed.
+**Add a regression test** reproducing the error conditions from Sentry, **kept within the scoped change** — in autonomous mode, only add or extend a test that fits the ~1–2 file scope above; if a proper test would require broad new scaffolding, note it as a follow-up in the PR rather than expanding scope. Use generalized/synthetic test data — never embed actual values from event payloads (URLs, user data, tokens) in fixtures. Run the relevant tests before and after your change to show the failure is fixed and nothing else regressed.
 
 ## Phase 6: Verification Audit
 
@@ -152,7 +160,7 @@ Complete before declaring fixed:
 
 When the fix lands as a PR (always in autonomous mode; in interactive mode, after the user approves the fix):
 
-1. **Branch safety.** Work on a dedicated branch named `claude/sentry-fix-<issue-short-id-lowercased>`. Never commit the fix onto `main`/`master`. Before creating it, check whether the branch already exists (`git show-ref --verify --quiet refs/heads/<branch>`) — if it does, look for an existing PR (`gh pr list --head <branch> --state all`); skip the issue if a PR is already open, and stop with a clear message (never auto-delete) if the branch is orphaned.
+1. **Branch safety.** Create and work on `claude/sentry-fix-<issue-short-id-lowercased>` (the branch preflight in Phase 1 already confirmed it's free). Never commit the fix onto `main`/`master`.
 2. **Commit.** Make a single focused commit for the fix. Never use `git push --force` or `--no-verify`.
 3. **Open a draft PR** with `gh pr create --draft`. The body must include: a link to the Sentry issue, a short root-cause explanation, what changed and why, and the test plan (commands run + result).
 4. **Update Sentry, don't resolve.** Call `update_issue` to assign the issue to yourself (the authenticated user). **Never resolve the issue from this skill** — resolution happens when the PR merges. **If the MCP is read-only** (no `update_issue` tool available), skip this assignment and the marker in step 5, and note in the Phase 8 summary that the issue could not be assigned (read-only MCP). The draft PR itself is unaffected — it uses `gh`, not the MCP.

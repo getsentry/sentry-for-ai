@@ -29,7 +29,7 @@ Summarize what changed in an issue landscape since the last look: the top new is
 
 ## Configuration
 
-Resolve once from explicit arguments, then environment, then — **only when interactive** — a single confirmation prompt. In an autonomous run, never prompt; if a required value is missing, abort cleanly into the digest with one error.
+Resolve once from explicit arguments, then environment, then — **only when a human is unambiguously present** — a single confirmation prompt. If there is any doubt the run is interactive, treat it as autonomous and never prompt (a scheduled run would hang on an unanswered prompt). When a required value is missing in an autonomous run, abort cleanly into the digest with one error.
 
 | Value | Source | Default |
 |-------|--------|---------|
@@ -61,13 +61,15 @@ Call `find_projects` for `ORG_SLUG`. On failure or 403, append one `errors[]` en
 
 ## Gather (read-only)
 
-Run these independent queries; each feeds one section. Cap each at `TOP_N`.
+Run these independent queries; each feeds one section. Cap each at `TOP_N`. Pass `organizationSlug: ORG_SLUG` on every call, and `projectSlugOrId: PROJECT_SLUG` whenever it is set — otherwise the digest summarizes the whole org while reporting a single project name.
 
 | Section | Query (via `search_issues`, literal `query`) | Sort | Extract |
 |---------|----------------------------------------------|------|---------|
 | **New issues** | `is:unresolved firstSeen:>${WINDOW_CUTOFF_ISO}` | `freq` | short_id, title, event count, users affected |
-| **New regressions** | `is:unresolved is:regressed` | `date` | short_id, title, when it regressed |
-| **Biggest movers** | `is:unresolved lastSeen:>${WINDOW_CUTOFF_ISO}` | `freq` | short_id, title, event count in window |
+| **New regressions** | `is:unresolved is:regressed lastSeen:>${WINDOW_CUTOFF_ISO}` | `date` | short_id, title, when it regressed |
+| **Most active in window** | `is:unresolved lastSeen:>${WINDOW_CUTOFF_ISO}` | `freq` | short_id, title, event count in window |
+
+(The "most active" section ranks by event volume within the window, not by a true period-over-period delta — it surfaces what's loudest now, which is what a daily/weekly scan wants.)
 
 **Date filters must use the absolute ISO cutoff with a comparator** (`firstSeen:>${WINDOW_CUTOFF_ISO}`), never a bare relative duration like `firstSeen:-${WINDOW}`. Some MCP query layers rewrite a bare `-14d` into an invalid `>=-14d`, failing with HTTP 400; the absolute form is unambiguous and reliable. (`statsPeriod` below is a separate parameter and may stay relative.)
 
@@ -91,7 +93,7 @@ Org: <ORG_SLUG>  Project: <PROJECT_SLUG or "all">
 ## New regressions (<count>)
 - <SHORT-ID> <title> — regressed <relative time>
 
-## Biggest movers (<count>)
+## Most active in window (<count>)
 - <SHORT-ID> <title> — <N> events in window
 
 ## Release health (<count>)

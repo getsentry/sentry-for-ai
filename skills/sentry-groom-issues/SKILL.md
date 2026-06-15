@@ -18,9 +18,11 @@ Keep an issue backlog honest with two passes that use only the Sentry MCP — no
 
 ## Invoke This Skill When
 
-- User asks to "groom Sentry", "clean up the Sentry backlog", or "run weekly Sentry triage"
-- User wants stale issues archived or regressed issues re-opened
+- User asks to "groom Sentry", "groom the backlog", or "clean up the stale/aged backlog"
+- User wants long-stale issues archived or regressed issues re-opened
 - A scheduled routine or cron job invokes the skill autonomously
+
+For triaging the **fresh new-issue queue** (archiving noise as it arrives), use `sentry-triage-issues` instead.
 
 ## Prerequisites
 
@@ -30,7 +32,7 @@ Keep an issue backlog honest with two passes that use only the Sentry MCP — no
 
 ## Configuration
 
-Resolve these once at the start, in this order: explicit arguments, then environment, then a single confirmation prompt **only when running interactively**. In an autonomous run, never prompt — if a required value is missing, abort cleanly into the digest with one error.
+Resolve these once at the start, in this order: explicit arguments, then environment, then a single confirmation prompt **only when a human is unambiguously present**. If there is any doubt the run is interactive, treat it as autonomous and never prompt (a scheduled run would hang on an unanswered prompt). In an autonomous run, if a required value is missing, abort cleanly into the digest with one error.
 
 | Value | Source | Default |
 |-------|--------|---------|
@@ -38,6 +40,7 @@ Resolve these once at the start, in this order: explicit arguments, then environ
 | `PROJECT_SLUG` | argument / env | optional — omit to groom the whole org |
 | `STALE_AGE_DAYS` | argument / env | `30` |
 | `MIN_REGRESSION_EVENTS` | argument / env | `5` |
+| `REGRESSION_WINDOW_DAYS` | argument / env | `7` (Pass 2 only re-opens regressions seen within this window) |
 | `DRY_RUN` | `--dry-run` present in arguments | `false` |
 
 ## Security Constraints
@@ -54,7 +57,7 @@ Calculate these at the start of the run and reuse them in every pass. Maintain t
 
 - `STALE_CUTOFF_ISO` = (now − `STALE_AGE_DAYS` days), formatted `YYYY-MM-DDTHH:MM:SS` (no trailing `Z`)
 - `FIRST_SEEN_CUTOFF_ISO` = (now − 60 days), same format
-- `REGRESSION_CUTOFF_ISO` = (now − 7 days), same format
+- `REGRESSION_CUTOFF_ISO` = (now − `REGRESSION_WINDOW_DAYS` days), same format
 - `RUN_DATE_ISO` = today, `YYYY-MM-DD`
 
 **A note on Sentry date syntax:** Sentry's date filters accept either a relative `-duration` (e.g. `-30d` = "within the last 30 days") or an absolute ISO 8601 timestamp with `<` / `>`. There is **no** `+duration` shorthand for "older than." **Always use the absolute ISO form with a comparator in every pass** — not a bare relative duration. Some MCP query layers rewrite a bare `-7d` into an invalid `>=-7d`, failing with HTTP 400; the absolute form is unambiguous and reliable.
@@ -73,33 +76,37 @@ Find unresolved issues whose most recent event is older than `STALE_AGE_DAYS` an
 
 Call `search_issues` with:
 
-- `query`: `is:unresolved lastSeen:<${STALE_CUTOFF_ISO} firstSeen:<${FIRST_SEEN_CUTOFF_ISO}`
+- `organizationSlug`: `ORG_SLUG`; `projectSlugOrId`: `PROJECT_SLUG` (pass it whenever set, so the run only touches the configured project — otherwise it searches and mutates org-wide)
+- `query`: `is:unresolved is:unassigned lastSeen:<${STALE_CUTOFF_ISO} firstSeen:<${FIRST_SEEN_CUTOFF_ISO}`
 - `sort`: `date`
 - `limit`: `50`
+
+The `is:unassigned` filter is required: never auto-close an issue a human has taken ownership of — leave assigned issues for their owner.
 
 For each result:
 
 1. **Confirm it is actually quiet.** Call `search_events` (`dataset: errors`, `query: issue:<short_id>`, `statsPeriod: ${STALE_AGE_DAYS}d`, `fields: ["count()"]`, `limit: 1`) and read `count()`. If it is **not** zero, the search index lagged between calls — skip the issue and append to `errors[]` (`reason: unexpected-activity`). This is the high-evidence check that protects against closing a live issue.
-2. If `DRY_RUN`, append `<short_id>` to `closed[]` marked `(dry-run; skipped)` and do not write.
+2. If `DRY_RUN` **or** `READ_ONLY`, append `<short_id>` to `closed[]` marked `(dry-run; skipped)` and do not write.
 3. Otherwise call `update_issue` (`issueId: <short_id>`, `status: ignored`, `ignoreMode: untilEscalating`, `reason: "Auto-closed by groom-issues: no events in ${STALE_AGE_DAYS}d, first seen >60d ago"`). **Always archive `untilEscalating`** — a stale-closed issue then auto-resurfaces if it escalates again, so a wrong close is self-correcting. On error append to `errors[]` and continue; on success append to `closed[]`.
 
 ## Pass 2 — Re-open Regressions
 
-Find resolved issues whose most recent event is *within* the last 7 days — i.e. events arrived **after** the resolution, which is the regression signal.
+Find resolved issues whose most recent event is *within* the regression window — i.e. events arrived **after** the resolution, which is the regression signal.
 
 Call `search_issues` with:
 
+- `organizationSlug`: `ORG_SLUG`; `projectSlugOrId`: `PROJECT_SLUG` (whenever set)
 - `query`: `is:resolved lastSeen:>${REGRESSION_CUTOFF_ISO}`
 - `sort`: `date`
 - `limit`: `50`
 
-(Note the comparator direction: Pass 2 wants issues seen *since* the cutoff (`lastSeen:>`), the opposite of Pass 1's "not seen since" (`lastSeen:<`). Both use an absolute ISO cutoff.)
+(Note the comparator direction: Pass 2 wants issues seen *since* the cutoff (`lastSeen:>`), the opposite of Pass 1's "not seen since" (`lastSeen:<`). Both use an absolute ISO cutoff.) By design this only re-opens issues that regressed within `REGRESSION_WINDOW_DAYS`; a regression whose last event predates the window is left for the next run or a human. Widen `REGRESSION_WINDOW_DAYS` to look back further.
 
 For each result:
 
 1. Find the regression baseline. Call `get_issue_activity` for the issue and take the most recent resolution event's timestamp as `RESOLVE_TIME`. If there is no resolution timestamp, append to `errors[]` (`reason: no-resolve-timestamp`) and skip.
 2. **Confirm the regression is real.** Call `search_events` (`dataset: errors`, `query: issue:<short_id> timestamp:>${RESOLVE_TIME}`, `statsPeriod: 30d`, `fields: ["count()"]`, `limit: 1`) and read `count()`. If it is below `MIN_REGRESSION_EVENTS`, skip — too few events to call a regression (not an error). Pin `statsPeriod` to `30d` so a shorter default window doesn't pre-trim the absolute timestamp filter.
-3. If `DRY_RUN`, append to `reopened[]` marked `(dry-run; skipped)`.
+3. If `DRY_RUN` **or** `READ_ONLY`, append to `reopened[]` marked `(dry-run; skipped)`.
 4. Otherwise call `update_issue` (`issueId: <short_id>`, `status: unresolved`, `reason: "Auto-reopened by groom-issues: <N> events since resolve at <RESOLVE_TIME>"`). On error append to `errors[]` and continue; on success append to `reopened[]`.
 
 ## Idempotency
@@ -112,7 +119,7 @@ Print this exact structure. Every section is always present, even when empty, so
 
 ```
 # Sentry grooming digest — <RUN_DATE_ISO>
-Org: <ORG_SLUG>  Project: <PROJECT_SLUG or "all">  Dry-run: <true|false>
+Org: <ORG_SLUG>  Project: <PROJECT_SLUG or "all">  Mode: <live | dry-run | read-only>
 
 ## Closed as stale (<count>)
 - <SHORT-ID> <title> — last seen <relative time>[ (dry-run; skipped)]

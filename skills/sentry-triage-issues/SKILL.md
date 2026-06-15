@@ -51,8 +51,10 @@ Resolve once from explicit arguments, then environment, then — **only when int
 
 ## Mode Selection
 
-- **Autonomous** (default in a non-interactive/scheduled run, or with `--auto`): classify, auto-archive the clear-noise set, leave `needs-human` and `skip` untouched, print the digest. Never prompt. Safe unattended because every archive is `untilEscalating` and self-corrects.
-- **Interactive** (default in a human session): build the full plan table, then wait for `apply` / `apply 1,3` / `cancel` before any write.
+**Default to autonomous, and never prompt unless a human is unambiguously present and waiting.** A scheduled/cron run has no one to answer an `AskUserQuestion`, so prompting there would hang the job forever. If you are ever unsure whether the run is interactive, treat it as autonomous.
+
+- **Autonomous** (the default; also forced by `--auto`): classify, auto-archive the clear-noise set, leave `needs-human` and `skip` untouched, print the digest. **Never call `AskUserQuestion`.** Safe unattended because every archive is `untilEscalating` and self-corrects.
+- **Interactive** (only when a human directly invoked the skill in a live session): build the full numbered plan table, then wait for `apply` / `apply 1,3` / `cancel` before any write.
 
 ## Security Constraints
 
@@ -98,14 +100,14 @@ For each remaining issue, produce one decision using the taxonomy below. Weight 
 1. **Top non-SDK stack frame.** If the top in-app frame is in a dependency/vendor path, a browser extension, or `<unknown>`, that is a strong archive signal.
 2. **Title pattern.** Many categories are recognizable from the title alone.
 3. **Volume is not a veto.** A high-volume issue can still be archive-worthy if the top frame is third-party; high volume alone never forces archive, and low volume never forces it either.
-4. **Recency.** A single-event issue older than 30 days with no recurrence is usually noise.
+4. **Recency.** A single event that has not recurred since it was first seen (firstSeen ≈ lastSeen, no later events in the window) is likely a fluke.
 5. **Customer-org spread.** Events from a single customer subdomain only often indicate customer-environment noise.
 
 ### Generic noise taxonomy (platform-agnostic)
 
 | # | Category | Signals | Reason voice |
 |---|----------|---------|--------------|
-| 1 | **Single-event fluke** | `events ≤ 2`, `users ≤ 1`, firstSeen≈lastSeen, no recurrence in 30+ days | `Single-event fluke — N event(s), N user(s), no recurrence.` |
+| 1 | **Single-event fluke** | `events ≤ 2`, `users ≤ 1`, firstSeen ≈ lastSeen, no recurrence since first seen | `Single-event fluke — N event(s), N user(s), no recurrence.` |
 | 2 | **Test / synthetic / security-probe** | title contains `test`, `smoke test`, `XSS`, `SSRF`, `SSTI`, `CSP test`, `<script`, `<img src=x`, `{{7*7}}`; often a trailing epoch timestamp; low volume | `Test/synthetic event — synthetic traffic from a smoke test or security probe.` |
 | 3 | **Wrong-project / mis-routed** | stack/culprit shape doesn't match the project's platform (e.g. a backend stack in a frontend project) | `Wrong project — non-matching platform error mis-routed here.` |
 | 4 | **Third-party-frame noise** | top in-app frame is inside a dependency/vendor package, not our code; or title references a third-party/extension global | `Third-party noise — <dependency>; not actionable in our code.` |
@@ -122,7 +124,8 @@ For platform-specific recognition (e.g. JS library names, extension globals, fra
 | Third-party / vendor | yes | any | `archive` |
 | Third-party / vendor | no | any | `needs-human` |
 | Our application code | — | any | `skip` |
-| `<unknown>` | n/a | low (≤ 50 events) | `archive` (zero-impact) |
+| `<unknown>`, `users == 0` | n/a | low (≤ 50 events) | `archive` (zero-impact) |
+| `<unknown>`, `users > 0` | n/a | any | `needs-human` (real users affected) |
 | `<unknown>` | n/a | high (≥ 1000 events) | `needs-human` |
 | Synthetic / proxy / backend-5xx | yes | low–medium | `archive` |
 | Backend-5xx, single endpoint | yes | very high | `needs-human` (possible real regression) |
@@ -136,19 +139,27 @@ For platform-specific recognition (e.g. JS library names, extension globals, fra
 
 ## Pass 3 — Plan / apply
 
-**Interactive mode:** print the plan table (see Output), then:
+**Interactive mode:** print a **numbered plan table** — one row per classified issue, with a stable index the user can reference in `apply 1,3` — then the prompt line:
 
 ```
-Reply `apply` to archive the issues marked archive, `apply 1,3` for a subset, or `cancel`.
+## Triage plan — <ORG_SLUG>/<PROJECT_SLUG> (<N> candidates)
+
+| # | Issue | Title | Volume | Decision | Category | Reason |
+|---|-------|-------|--------|----------|----------|--------|
+| 1 | <SHORT-ID> | <title> | <events>e/<users>u | archive | <category> | <reason> |
+| 2 | <SHORT-ID> | <title> | <events>e/<users>u | needs-human | — | <why> |
+| 3 | <SHORT-ID> | <title> | <events>e/<users>u | skip | — | <why> |
+
+Reply `apply` to archive all rows marked `archive`, `apply 1,3` for a subset (by #), or `cancel`.
 ```
 
-On `apply`/`apply <subset>`, archive the approved set. On `cancel` or edits, do not write (rebuild the plan if edited).
+On `apply`/`apply <subset>`, archive the approved `archive` rows (the numbers index this table). On `cancel` or edits, do not write (rebuild the plan if edited).
 
-**Autonomous mode:** archive every issue classified `archive` directly (subject to `--dry-run`).
+**Autonomous mode:** archive every issue classified `archive` directly.
 
 For each issue to archive:
 
-- If `DRY_RUN`, append to `archived[]` marked `(dry-run; skipped)` and do not write.
+- If `DRY_RUN` **or** `READ_ONLY`, append to `archived[]` marked `(dry-run; skipped)` and do not write.
 - Otherwise call `update_issue(organizationSlug=ORG_SLUG, issueId=<short_id>, status="ignored", ignoreMode="untilEscalating", reason=<category-tagged reason>)`. Run sequentially. On error append to `errors[]` and continue; on success append to `archived[]`. Optionally emit a `needs_review`/`triaged_noise` `sentry-agent-activity/v1` marker for auditability.
 
 ## Final — Print Digest
@@ -156,7 +167,7 @@ For each issue to archive:
 Print this exact structure. Every section is always present, even when empty.
 
 ```
-# Sentry triage — <ORG_SLUG>/<PROJECT_SLUG> (window: <WINDOW>, dry-run: <true|false>)
+# Sentry triage — <ORG_SLUG>/<PROJECT_SLUG> (window: <WINDOW>, mode: <live | dry-run | read-only>)
 
 ## Archived (<count>)
 - <SHORT-ID> <title> — <events>e/<users>u — <category>: <reason>[ (dry-run; skipped)]
