@@ -106,5 +106,3 @@ If a list is empty, render its heading with `(0)` and a single line `_None._` un
 ## Quick Reference
 
 **MCP tools (read-only):** `find_projects`, `search_issues`, `search_events`, `find_releases`.
-
-**Cadence:** `WINDOW=24h` for a daily standup digest, `WINDOW=7d` for a weekly report. Output is a single payload suitable for one Slack thread post.

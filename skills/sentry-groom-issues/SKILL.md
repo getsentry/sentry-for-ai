@@ -97,12 +97,10 @@ Call `search_issues` with:
 
 For each result:
 
-1. Find the regression baseline. Call `get_issue_details` for the issue and inspect its activity feed for the most recent resolution event; take that timestamp as `RESOLVE_TIME`. If there is no resolution timestamp, append to `errors[]` (`reason: no-resolve-timestamp`) and skip.
+1. Find the regression baseline. Call `get_issue_activity` for the issue and take the most recent resolution event's timestamp as `RESOLVE_TIME`. If there is no resolution timestamp, append to `errors[]` (`reason: no-resolve-timestamp`) and skip.
 2. **Confirm the regression is real.** Call `search_events` (`dataset: errors`, `query: issue:<short_id> timestamp:>${RESOLVE_TIME}`, `statsPeriod: 30d`, `fields: ["count()"]`, `limit: 1`) and read `count()`. If it is below `MIN_REGRESSION_EVENTS`, skip — too few events to call a regression (not an error). Pin `statsPeriod` to `30d` so a shorter default window doesn't pre-trim the absolute timestamp filter.
 3. If `DRY_RUN`, append to `reopened[]` marked `(dry-run; skipped)`.
 4. Otherwise call `update_issue` (`issueId: <short_id>`, `status: unresolved`, `reason: "Auto-reopened by groom-issues: <N> events since resolve at <RESOLVE_TIME>"`). On error append to `errors[]` and continue; on success append to `reopened[]`.
-
-Do not assign the re-opened issue to anyone — assignment is out of scope and the MCP has no member-lookup tool.
 
 ## Idempotency
 

@@ -199,5 +199,3 @@ no-fix: <reason each candidate was skipped>
 ## Quick Reference
 
 **MCP Tools:** `search_issues` (AI search), `list_issues` (raw Sentry syntax), `get_issue_details`, `search_issue_events`, `get_issue_tag_values`, `get_trace_details`, `get_event_attachment`, `analyze_issue_with_seer`, `find_projects`, `find_releases`, `update_issue`
-
-**Common Patterns:** TypeError (check data flow, API responses, race conditions) • Promise Rejection (trace async, error boundaries) • Network Error (breadcrumbs, CORS, timeouts) • ChunkLoadError (deployment, caching, splitting) • Rate Limit (trace patterns, throttling) • Memory/Performance (trace spans, N+1 queries)
