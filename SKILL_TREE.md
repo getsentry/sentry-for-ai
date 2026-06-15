@@ -99,10 +99,11 @@ Debug production issues and maintain code quality with Sentry context.
 |---|---|---|
 | Analyze and resolve Sentry comments on GitHub Pull Requests | [`sentry-code-review`](skills/sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
 | Find and fix issues from Sentry using MCP, optionally opening a draft pull request | [`sentry-fix-issues`](skills/sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
-| Groom a Sentry issue backlog by closing stale unresolved issues and re-opening resolved issues that regressed | [`sentry-groom-issues`](skills/sentry-groom-issues/SKILL.md) | `sentry-groom-issues/SKILL.md` |
+| Groom an aged Sentry backlog by closing long-stale unresolved issues and re-opening resolved issues that regressed | [`sentry-groom-issues`](skills/sentry-groom-issues/SKILL.md) | `sentry-groom-issues/SKILL.md` |
 | Produce a read-only digest of what changed in a Sentry issue landscape — top new issues, new regressions, biggest movers, and optional release health | [`sentry-issue-digest`](skills/sentry-issue-digest/SKILL.md) | `sentry-issue-digest/SKILL.md` |
 | Review a project's PRs to check for issues detected in code review by Seer Bug Prediction | [`sentry-pr-code-review`](skills/sentry-pr-code-review/SKILL.md) | `sentry-pr-code-review/SKILL.md` |
 | Upgrade the Sentry JavaScript SDK across major versions | [`sentry-sdk-upgrade`](skills/sentry-sdk-upgrade/SKILL.md) | `sentry-sdk-upgrade/SKILL.md` |
+| Triage the live new-issue queue by archiving non-actionable noise and flagging ambiguous issues for human review | [`sentry-triage-issues`](skills/sentry-triage-issues/SKILL.md) | `sentry-triage-issues/SKILL.md` |
 
 ## Feature Setup
 

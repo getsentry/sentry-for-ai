@@ -1,6 +1,6 @@
 ---
 name: sentry-groom-issues
-description: Groom a Sentry issue backlog by closing stale unresolved issues and re-opening resolved issues that regressed. Use when asked to "groom Sentry", "clean up Sentry issues", "run weekly Sentry triage", "archive stale issues", or when invoked autonomously from a scheduled routine. Two-pass, MCP-only, safe for unattended runs.
+description: Groom an aged Sentry backlog by closing long-stale unresolved issues and re-opening resolved issues that regressed. Use when asked to "groom Sentry", "groom the backlog", "clean up the stale backlog", "archive stale issues", "re-open regressions", or when invoked autonomously from a scheduled routine. Two-pass, MCP-only, safe for unattended runs. For the fresh new-issue queue see sentry-triage-issues.
 license: Apache-2.0
 allowed-tools: Read, Bash, Grep, Glob, AskUserQuestion
 category: workflow
