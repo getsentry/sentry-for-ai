@@ -53,9 +53,10 @@ Calculate these at the start of the run and reuse them in every pass. Maintain t
 
 - `STALE_CUTOFF_ISO` = (now − `STALE_AGE_DAYS` days), formatted `YYYY-MM-DDTHH:MM:SS` (no trailing `Z`)
 - `FIRST_SEEN_CUTOFF_ISO` = (now − 60 days), same format
+- `REGRESSION_CUTOFF_ISO` = (now − 7 days), same format
 - `RUN_DATE_ISO` = today, `YYYY-MM-DD`
 
-**A note on Sentry date syntax:** Sentry's date filters accept either a relative `-duration` (e.g. `-30d` = "within the last 30 days") or an absolute ISO 8601 timestamp with `<` / `>`. There is **no** `+duration` shorthand for "older than." To find issues that have *not* been seen recently, you must use an absolute ISO timestamp with `<`.
+**A note on Sentry date syntax:** Sentry's date filters accept either a relative `-duration` (e.g. `-30d` = "within the last 30 days") or an absolute ISO 8601 timestamp with `<` / `>`. There is **no** `+duration` shorthand for "older than." **Always use the absolute ISO form with a comparator in every pass** — not a bare relative duration. Some MCP query layers rewrite a bare `-7d` into an invalid `>=-7d`, failing with HTTP 400; the absolute form is unambiguous and reliable.
 
 ## Pass 0 — Preflight
 
@@ -86,11 +87,11 @@ Find resolved issues whose most recent event is *within* the last 7 days — i.e
 
 Call `search_issues` with:
 
-- `query`: `is:resolved lastSeen:-7d`
+- `query`: `is:resolved lastSeen:>${REGRESSION_CUTOFF_ISO}`
 - `sort`: `date`
 - `limit`: `50`
 
-(The relative `-7d` is correct here: Pass 2 wants issues *with* recent events, the opposite of Pass 1, which is why Pass 1 uses an absolute cutoff and Pass 2 uses a relative one.)
+(Note the comparator direction: Pass 2 wants issues seen *since* the cutoff (`lastSeen:>`), the opposite of Pass 1's "not seen since" (`lastSeen:<`). Both use an absolute ISO cutoff.)
 
 For each result:
 
@@ -138,4 +139,4 @@ If a list is empty, render its heading with `(0)` and a single line `_None._` un
 
 **MCP tools:** `find_projects`, `search_issues` (literal Sentry-syntax `query`), `get_issue_details`, `search_events` (event counts), `update_issue`.
 
-**Pass cheat-sheet:** Pass 1 = `is:unresolved lastSeen:<ISO firstSeen:<ISO` → `status: ignored` (`untilEscalating`). Pass 2 = `is:resolved lastSeen:-7d` → confirm ≥`MIN_REGRESSION_EVENTS` since resolve → `status: unresolved`.
+**Pass cheat-sheet:** Pass 1 = `is:unresolved lastSeen:<ISO firstSeen:<ISO` → `status: ignored` (`untilEscalating`). Pass 2 = `is:resolved lastSeen:>ISO` → confirm ≥`MIN_REGRESSION_EVENTS` since resolve → `status: unresolved`.

@@ -65,9 +65,11 @@ Run these independent queries; each feeds one section. Cap each at `TOP_N`.
 
 | Section | Query (via `search_issues`, literal `query`) | Sort | Extract |
 |---------|----------------------------------------------|------|---------|
-| **New issues** | `is:unresolved firstSeen:-${WINDOW}` | `freq` | short_id, title, event count, users affected |
-| **New regressions** | `is:unresolved is:regressed firstSeen:-${WINDOW}` (fall back to `regressed_in:-${WINDOW}` if unsupported) | `date` | short_id, title, when it regressed |
-| **Biggest movers** | `is:unresolved lastSeen:-${WINDOW}` | `freq` | short_id, title, event count in window |
+| **New issues** | `is:unresolved firstSeen:>${WINDOW_CUTOFF_ISO}` | `freq` | short_id, title, event count, users affected |
+| **New regressions** | `is:unresolved is:regressed` | `date` | short_id, title, when it regressed |
+| **Biggest movers** | `is:unresolved lastSeen:>${WINDOW_CUTOFF_ISO}` | `freq` | short_id, title, event count in window |
+
+**Date filters must use the absolute ISO cutoff with a comparator** (`firstSeen:>${WINDOW_CUTOFF_ISO}`), never a bare relative duration like `firstSeen:-${WINDOW}`. Some MCP query layers rewrite a bare `-14d` into an invalid `>=-14d`, failing with HTTP 400; the absolute form is unambiguous and reliable. (`statsPeriod` below is a separate parameter and may stay relative.)
 
 For each row, pull counts with `search_events` (`dataset: errors`, `query: issue:<short_id>`, `statsPeriod: ${WINDOW}`, `fields: ["count()", "count_unique(user)"]`, `limit: 1`) when the issue list does not already carry them. Do not exceed `TOP_N` lookups per section.
 

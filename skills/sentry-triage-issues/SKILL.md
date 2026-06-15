@@ -63,7 +63,7 @@ Archiving a real bug hides it. Apply a high evidence bar: archive only when an i
 
 ## Compute Once
 
-- `WINDOW_CUTOFF` = relative `-${WINDOW}` for the search query
+- `WINDOW_CUTOFF_ISO` = (now − `WINDOW`), formatted `YYYY-MM-DDTHH:MM:SS` (no trailing `Z`) — use this absolute timestamp in the search query, never a bare relative `-${WINDOW}` (some MCP query layers rewrite `-14d` into an invalid `>=-14d` and the search fails with HTTP 400).
 - `RUN_DATE_ISO` = today, `YYYY-MM-DD`
 - Accumulators: `archived[]`, `needs_human[]`, `skipped[]`, `errors[]`.
 
@@ -78,7 +78,7 @@ Archiving a real bug hides it. Apply a high evidence bar: archive only when an i
 Call `search_issues` with:
 
 - `organizationSlug`: `ORG_SLUG`, `projectSlugOrId`: `PROJECT_SLUG`
-- `query`: `is:unresolved is:unassigned firstSeen:-${WINDOW}`
+- `query`: `is:unresolved is:unassigned firstSeen:>${WINDOW_CUTOFF_ISO}`
 - `sort`: `new`, `limit`: `50`
 
 Then call `get_issue_details` per result to get culprit, top stack frame, assignee, substatus, and volume (the search response omits some fields).
@@ -176,7 +176,7 @@ If a list is empty, render its heading with `(0)` and a single line `_None._` un
 - **Archive only**, always `ignoreMode: untilEscalating`, always with a category-tagged `reason`. Never resolve, unresolve, assign, or delete.
 - **Skip assigned issues** and anything not `is:unresolved`.
 - **When in doubt, skip.** If it could be a real bug in our code, do not archive.
-- **Scope to the fresh queue** (`firstSeen:-${WINDOW}`) so triage never double-acts with `sentry-groom-issues` (aged backlog).
+- **Scope to the fresh queue** (`firstSeen:>${WINDOW_CUTOFF_ISO}`) so triage never double-acts with `sentry-groom-issues` (aged backlog).
 - **Cap candidates at 50.** Note in the digest if the cap was hit.
 - **`--dry-run` is checked at each write site**, not once at the top.
 - **On a per-issue failure, append to `errors[]` and continue.**
