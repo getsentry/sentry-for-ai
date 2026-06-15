@@ -145,9 +145,10 @@ import { HydratedRouter } from "react-router/dom";
 Sentry.init({
   dsn: "___PUBLIC_DSN___",
   dataCollection: {
-    userInfo: true,
-    cookies: true,
-    httpHeaders: { request: true, response: true },
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/react-router/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
   integrations: [
     Sentry.reactRouterTracingIntegration(),
@@ -180,9 +181,10 @@ import { nodeProfilingIntegration } from "@sentry/profiling-node";
 Sentry.init({
   dsn: "___PUBLIC_DSN___",
   dataCollection: {
-    userInfo: true,
-    cookies: true,
-    httpHeaders: { request: true, response: true },
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/react-router/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
   enableLogs: true,
   integrations: [nodeProfilingIntegration()],
