@@ -160,7 +160,7 @@ Sentry.init({
   environment: process.env.SENTRY_ENVIRONMENT ?? "production",
   release: process.env.SENTRY_RELEASE,
 
-  // Data collection (SDK ≥ 10.54.0 — replaces deprecated sendDefaultPii)
+  // Data collection (SDK ≥ 10.57.0 — replaces deprecated sendDefaultPii)
   dataCollection: {
     // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
     // https://docs.sentry.io/platforms/javascript/guides/nestjs/configuration/options/#dataCollection
