@@ -423,7 +423,7 @@ globalScope.setTag("app.version", "1.0.0");
 ## Best Practices
 
 - Export `handleError = Sentry.handleErrorWithSentry()` from **both** hook files in SvelteKit — server errors are missed if only one is set
-- User context is auto-populated by default via `dataCollection.userInfo` (SDK ≥10.56.0)
+- User context is auto-populated by default via `dataCollection.userInfo` (SDK ≥10.57.0)
 - Use `Sentry.withScope()` for one-off context, `Sentry.getIsolationScope()` / `Sentry.getGlobalScope()` for persistent context
 - Scrub PII in `beforeSend` or use `dataCollection` options to control what data is collected
 - Set `debug: true` during development to verify events are being captured
