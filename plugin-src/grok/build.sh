@@ -3,8 +3,9 @@
 # build.sh — Build the Grok distribution of the Sentry plugin.
 #
 # Grok plugins put their components at the repo ROOT (skills/, commands/, and a
-# `.mcp.json` file Grok auto-discovers) with an optional root `plugin.json`
-# manifest. Self-install works via a marketplace catalog at
+# `.mcp.json` file Grok auto-discovers). The plugin manifest lives at
+# `.grok-plugin/plugin.json` — that is where the xAI plugin marketplace scanner
+# (generate-plugin-index.py) looks for it. A marketplace catalog also lives at
 # `.grok-plugin/marketplace.json` whose `source: "./"` points back at this same
 # root. This differs from Claude (`.claude-plugin/`) and Codex (`plugins/sentry/`).
 # No skill mutation is needed; skills ship as-authored.
@@ -22,7 +23,7 @@ cd "$REPO_ROOT"
 
 mkdir -p "$TARGET_DIR/.grok-plugin"
 
-cp "$SRC_DIR/plugin.json" "$TARGET_DIR/plugin.json"
+cp "$SRC_DIR/plugin.json" "$TARGET_DIR/.grok-plugin/plugin.json"
 cp "$SRC_DIR/marketplace.json" "$TARGET_DIR/.grok-plugin/marketplace.json"
 rsync -a skills/ "$TARGET_DIR/skills/"
 rsync -a commands/ "$TARGET_DIR/commands/"
