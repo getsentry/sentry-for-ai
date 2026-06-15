@@ -503,7 +503,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `dsn`                        | `string`                | —              | SDK disabled if empty; env: `SENTRY_DSN`                                                         |
 | `environment`                | `string`                | `"production"` | e.g., `"staging"`; env: `SENTRY_ENVIRONMENT`                                                     |
 | `release`                    | `string`                | —              | e.g., `"myapp@1.0.0"`; env: `SENTRY_RELEASE`                                                     |
-| `dataCollection`             | `object`                | See below      | Controls what data the SDK collects (SDK ≥ 10.54.0)                                              |
+| `dataCollection`             | `object`                | See below      | Controls what data the SDK collects (SDK ≥ 10.57.0)                                              |
 | `dataCollection.userInfo`    | `boolean`               | `true`        | Include IP addresses and user context                                                            |
 | `dataCollection.httpHeaders` | `object`                | See below      | Capture HTTP headers for requests/responses                                                      |
 | `dataCollection.cookies`     | `boolean\|object`       | `true`         | Capture cookies; use `{allow: [...]}` or `{deny: [...]}` for filtering                           |
