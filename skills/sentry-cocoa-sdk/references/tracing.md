@@ -166,7 +166,7 @@ Child spans produced (sequential):
 | Application Init | SDK startup → `didFinishLaunchingNotification` |
 | Initial Frame Render | `didFinishLaunchingNotification` → first CADisplayLink callback (v9+) |
 
-> Warning: If more than **5 seconds** elapse between transaction start and app-start end, app start spans are **not attached** to avoid misassociation. This limit is skipped when standalone app start tracing is enabled.
+> Warning: If more than **180 seconds** (3 minutes) elapse between transaction start and app-start end, app start spans are **not attached** to avoid misassociation. This limit is skipped when standalone app start tracing is enabled.
 
 #### Standalone App Start Tracing (Experimental, 9.15.0+)
 
@@ -488,7 +488,7 @@ SentrySDK.start { options in
 |-------|----------|
 | No transactions appearing | Ensure `tracesSampleRate > 0` or `tracesSampler` returns `> 0` |
 | Spans missing from transactions | Ensure `span.finish()` is called; check `bindToScope: true` for cross-function spans |
-| App start spans not attached | Gap between transaction start and app-start end exceeded 5 seconds; check slow initialization |
+| App start spans not attached | Gap between transaction start and app-start end exceeded 180 seconds; check slow initialization or enable standalone app start tracing |
 | UIViewController tracing missing | Verify `enableSwizzling = true`; check class is not in `swizzleClassNameExcludes` |
 | Network spans not appearing | Requires active scope-bound transaction; verify `enableNetworkTracking = true` and `enableSwizzling = true` |
 | Distributed trace not linking to backend | Propagate both `sentry-trace` AND `baggage` headers; add them to CORS allowlist |
