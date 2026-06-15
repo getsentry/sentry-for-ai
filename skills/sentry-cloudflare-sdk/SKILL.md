@@ -503,7 +503,7 @@ Sentry.withSentry(
       queryParams: { mode: "denyList" },
 
       // User info: auto-populate user fields (id, email, username, ip)
-      userInfo: false, // default: false
+      userInfo: true, // default: true
 
       // GenAI: capture AI prompts and completions
       genAI: {
