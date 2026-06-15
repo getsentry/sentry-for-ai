@@ -27,7 +27,12 @@ import * as Sentry from "@sentry/sveltekit";
 
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
-  dataCollection: { userInfo: true },
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/sveltekit/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
 });
 
 // Sentry captures first; your handler runs after
