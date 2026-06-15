@@ -282,16 +282,20 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `:after_send_event` | `(event, result -> any) \| {m, f}` | `nil` | Hook called after event is sent |
 | `:filter` | `module` | `Sentry.DefaultEventFilter` | Module implementing `Sentry.EventFilter` |
 | `:max_breadcrumbs` | `integer` | `100` | Max breadcrumbs per process |
+| `:max_stacktrace_arg_length` | `integer` | `10000` | Max length (in graphemes) of each inspected function argument in stacktrace vars (v13.2.0+) |
 | `:dedup_events` | `boolean` | `true` | Deduplicate identical events within ~30 seconds |
 | `:tags` | `map` | `%{}` | Global tags sent with every event |
 | `:traces_sample_rate` | `float \| nil` | `nil` | Non-nil enables tracing (requires OTel setup) |
 | `:traces_sampler` | `fn \| {m, f} \| nil` | `nil` | Custom per-transaction sampling |
 | `:enable_logs` | `boolean` | `false` | Enable Sentry Logs Protocol (v12.0.0+) |
+| `:scrubber` | `keyword` | `[]` | Scrubber config (v13.1.1+); keys: `:conn_private_allow_list` (list of atoms kept from `Plug.Conn.private`) |
 | `:test_mode` | `boolean` | `false` | Capture events in-memory for testing |
 
 ### Default PII Guidance
 
 Most Sentry SDKs expose a send-default-PII option. As of sentry v12, the Elixir SDK does not expose a `send_default_pii` config option in its documented option list or current config schema, so do **not** add a non-existent option. For richer user context, use `Sentry.PlugContext` and explicitly set allowed fields with `Sentry.Context.set_user_context/1`, then scrub with `:before_send` if needed. If a future Elixir SDK release adds `send_default_pii`, recommend setting it.
+
+**Automatic PII Scrubbing:** As of v13.1.0, stacktrace frame variables and `FunctionClauseError`/`Phoenix.ActionClauseError` arguments are automatically scrubbed for sensitive data using the same scrubber rules as HTTP request data. Use `:scrubber` config to customize which `Plug.Conn.private` keys are retained.
 
 ### Environment Variables
 
@@ -361,6 +365,6 @@ Connecting Phoenix backend and JavaScript frontend with linked Sentry projects e
 | Source code context missing in production | Run `mix sentry.package_source_code` before building your OTP release |
 | Context not appearing on async events | `Sentry.Context.*` is process-scoped; pass values explicitly or propagate Logger metadata across processes |
 | Oban integration not reporting crons | Requires Oban v2.17.6+ or Oban Pro; cron jobs must have `"cron" => true` in job meta |
-| Duplicate events from Cowboy crashes | Set `excluded_domains: [:cowboy]` in `LoggerHandler` config (this is the default) |
+| Duplicate events from Cowboy/Bandit crashes | Set `excluded_domains: [:cowboy, :bandit]` in `LoggerHandler` config (both excluded by default as of v13.1.0) |
 | `finch` not starting | Ensure `{:finch, "~> 0.21"}` is in deps; Finch is the default HTTP client since v12.0.0 |
 | JSON encoding error | Add `{:jason, "~> 1.4"}` and set `json_library: Jason` for Elixir < 1.18 |
