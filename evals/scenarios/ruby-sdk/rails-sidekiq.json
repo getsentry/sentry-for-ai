@@ -1,0 +1,35 @@
+{
+  "name": "rails-sidekiq",
+  "given": "A Rails 8 application with Puma, SQLite, and Sidekiq for background jobs, no existing monitoring",
+  "prompt": "Set up Sentry for this Rails application with full monitoring including background jobs. Use the SENTRY_DSN environment variable.",
+  "fixture": "rails-sidekiq",
+  "files": [
+    {
+      "path": "config/initializers/sentry.rb",
+      "contains": [
+        "Sentry.init",
+        "config.dsn",
+        "SENTRY_DSN",
+        "traces_sample_rate",
+        "enable_logs",
+        "breadcrumbs_logger",
+        "send_default_pii"
+      ],
+      "excludes": ["otlp"]
+    },
+    {
+      "path": "Gemfile",
+      "contains": ["sentry-ruby", "sentry-rails", "sentry-sidekiq"],
+      "excludes": ["sentry-opentelemetry"]
+    }
+  ],
+  "should_not_exist": [
+    "config/initializers/rollbar.rb",
+    "config/initializers/honeybadger.rb"
+  ],
+  "soft_assertions": [
+    { "criterion": "The agent detected Sidekiq in the project and recommended sentry-sidekiq" },
+    { "criterion": "The agent detected Rails as the framework and chose sentry-rails" }
+  ],
+  "negative_assertions": []
+}
