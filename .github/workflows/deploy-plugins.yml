@@ -1,0 +1,104 @@
+# Deploy per-agent plugin distributions to their own repositories.
+#
+# This repository is the single source of truth (skills + routing metadata,
+# feeding skills.sentry.dev). Each AI assistant needs the plugin in a different
+# shape, so this workflow builds each one and deploys it to a dedicated
+# repository whose ROOT is exactly that agent's plugin:
+#
+#   claude -> getsentry/plugin-claude
+#   cursor -> getsentry/plugin-cursor
+#   codex  -> getsentry/plugin-codex
+#   grok   -> getsentry/plugin-grok
+#
+# Marketplaces consume `getsentry/plugin-<agent>` by git ref. Each job builds its
+# agent's tree from this repo, then commits it onto the target repo's `main`,
+# replacing the previous contents. The four jobs target four different repos,
+# so they run in parallel without contention.
+#
+# Cross-repo writes use a GitHub App token scoped per-job to a single plugin
+# repo; the default GITHUB_TOKEN cannot push to other repositories. The app must
+# be installed on the org with contents:write on the three plugin repos, its ID
+# stored as the PLUGIN_DEPLOY_APP_ID variable and its private key as the
+# PLUGIN_DEPLOY_KEY secret. Each target repo must already exist with `main` as
+# its default branch.
+
+name: Deploy plugins
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "skills/**"
+      - "commands/**"
+      - "assets/**"
+      - "SKILL_TREE.md"
+      - "LICENSE"
+      - "*.json"
+      - "plugin-src/**"
+      - ".github/workflows/deploy-plugins.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: [claude, cursor, codex, grok]
+    concurrency:
+      group: deploy-plugin-${{ matrix.agent }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Mint deploy token
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.PLUGIN_DEPLOY_APP_ID }}
+          private-key: ${{ secrets.PLUGIN_DEPLOY_KEY }}
+          owner: getsentry
+          repositories: plugin-${{ matrix.agent }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+
+      - name: Build and deploy plugin-${{ matrix.agent }}
+        env:
+          AGENT: ${{ matrix.agent }}
+          SRC_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          TARGET_REPO="plugin-${AGENT}"
+          WORKTREE="$(mktemp -d)/dist"
+
+          # Clone the target repo (lands on its default branch, `main`).
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/getsentry/${TARGET_REPO}.git" "$WORKTREE"
+          git -C "$WORKTREE" config user.name "github-actions[bot]"
+          git -C "$WORKTREE" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Rewrite the whole tree: clear tracked content (preserve the .git
+          # dir), then repopulate from source via the agent's build script.
+          git -C "$WORKTREE" rm -rfq --ignore-unmatch .
+          "plugin-src/${AGENT}/build.sh" "$WORKTREE"
+
+          # Validate the built tree against the agent's schema/validator before
+          # it can be deployed.
+          "plugin-src/${AGENT}/validate.sh" "$WORKTREE"
+
+          # Commit only if something changed.
+          git -C "$WORKTREE" add -A
+          if git -C "$WORKTREE" diff --cached --quiet; then
+            echo "::notice::${TARGET_REPO} unchanged; nothing to deploy"
+            exit 0
+          fi
+          git -C "$WORKTREE" commit -m "build: deploy from getsentry/sentry-for-ai@${SRC_SHA}"
+          git -C "$WORKTREE" push origin main
+          echo "::notice::deployed ${TARGET_REPO}"

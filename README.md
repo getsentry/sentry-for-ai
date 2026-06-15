@@ -4,7 +4,7 @@ Your AI coding assistant already knows how to write code. This plugin teaches it
 
 Whether you're adding Sentry to a new project, debugging a spike in errors, or configuring alerts, just ask. The plugin gives your assistant the context it needs to do it right.
 
-Supports **Claude Code** and **Cursor**.
+Supports **Claude Code**, **Cursor**, **Codex**, and **Grok**.
 
 ## What You Can Do
 
@@ -38,36 +38,40 @@ Monitor my OpenAI calls with Sentry
 Set up OTel Collector with Sentry exporter
 ```
 
-## Installation
+## Distribution
 
-### Claude Code
+This repository is the single source of truth for all skills, but it is not
+itself an installable plugin. Each assistant needs the plugin in a slightly
+different shape, so the per-agent plugins are **built** from it by the build
+scripts under `plugin-src/<agent>/build.sh`. CI runs these on every push and
+deploys each result to its own **distribution repository**, whose root is
+exactly that agent's plugin:
 
-```bash
-/install-plugin sentry
-```
+| Agent       | Distribution repository                                                  |
+| ----------- | ------------------------------------------------------------------------ |
+| Claude Code | [`getsentry/plugin-claude`](https://github.com/getsentry/plugin-claude)  |
+| Cursor      | [`getsentry/plugin-cursor`](https://github.com/getsentry/plugin-cursor)  |
+| Codex       | [`getsentry/plugin-codex`](https://github.com/getsentry/plugin-codex)    |
+| Grok        | [`getsentry/plugin-grok`](https://github.com/getsentry/plugin-grok)      |
 
-Restart Claude Code to activate, then verify:
+These repositories are generated; do not edit them. Each one's README has the
+install instructions for that agent.
 
-```bash
-/help           # Should show /seer command
-/mcp            # Should show sentry MCP server
-```
+### Build it yourself
 
-### Cursor
-
-Search for **Sentry** in Cursor Settings > Plugins and install.
-
-### From Source
+Each `plugin-src/<agent>/build.sh` takes an output directory and writes that
+agent's plugin into it (the Codex build moves the plugin under `plugins/sentry/`
+and swaps the skill tree's `disable-model-invocation` flags for Codex's
+`agents/openai.yaml` policy):
 
 ```bash
 git clone https://github.com/getsentry/sentry-for-ai.git
-
-# Claude Code
-/install-plugin file:///path/to/sentry-for-ai
-
-# Cursor
-ln -s /path/to/sentry-for-ai ~/.cursor/plugins/local/sentry-for-ai
+cd sentry-for-ai
+plugin-src/codex/build.sh /tmp/sentry-codex   # or plugin-src/{claude,cursor,grok}
 ```
+
+To build any target locally, run `plugin-src/<agent>/build.sh <output-dir>`
+(`claude`, `cursor`, `codex`, or `grok`).
 
 ## Skills
 
