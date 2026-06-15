@@ -304,7 +304,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 |--------|------|---------|-------|
 | `dsn` | `string` | — | Required; SDK disabled when empty |
 | `dataCollection` | `object` | — | Controls what data is collected (userInfo, cookies, httpHeaders, etc.) |
-| `dataCollection.userInfo` | `boolean` | `false` | Includes IP-derived user context |
+| `dataCollection.userInfo` | `boolean` | `true` | Includes IP-derived user context |
 | `dataCollection.cookies` | `CollectBehavior` | `true` | Controls cookie collection and filtering |
 | `dataCollection.httpHeaders` | `object` | `{ request: true, response: true }` | Controls HTTP header collection |
 | `sendDefaultPii` | `boolean` | `false` | **Deprecated:** Use `dataCollection` instead; removed in v11 |
