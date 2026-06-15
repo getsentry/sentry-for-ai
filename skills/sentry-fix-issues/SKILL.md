@@ -31,6 +31,7 @@ For *bulk backlog hygiene* — closing stale issues or re-opening regressions wi
 - Sentry MCP server configured and connected
 - Access to the Sentry project/organization
 - For opening a pull request (Phase 7): `gh` CLI authenticated (`gh auth status`) and a clean working tree
+- The fix and draft PR work on any MCP connection. Assigning the issue back in Sentry (Phase 7) additionally needs **issue-write enabled**; on a read-only connection that step is skipped and noted, and the PR is unaffected.
 
 ## Autonomous Mode
 
@@ -154,8 +155,8 @@ When the fix lands as a PR (always in autonomous mode; in interactive mode, afte
 1. **Branch safety.** Work on a dedicated branch named `claude/sentry-fix-<issue-short-id-lowercased>`. Never commit the fix onto `main`/`master`. Before creating it, check whether the branch already exists (`git show-ref --verify --quiet refs/heads/<branch>`) — if it does, look for an existing PR (`gh pr list --head <branch> --state all`); skip the issue if a PR is already open, and stop with a clear message (never auto-delete) if the branch is orphaned.
 2. **Commit.** Make a single focused commit for the fix. Never use `git push --force` or `--no-verify`.
 3. **Open a draft PR** with `gh pr create --draft`. The body must include: a link to the Sentry issue, a short root-cause explanation, what changed and why, and the test plan (commands run + result).
-4. **Update Sentry, don't resolve.** Call `update_issue` to assign the issue to yourself (the authenticated user). **Never resolve the issue from this skill** — resolution happens when the PR merges.
-5. **Record an agent-activity marker.** Leave a compact `sentry-agent-activity/v1` record so later automated runs and humans can audit what the agent did on this issue. Write it as an issue comment with a sentinel block `<!-- sentry-agent-activity:v1 {…} -->` if a comment tool is available, otherwise fold it into the `update_issue` reason. Fields:
+4. **Update Sentry, don't resolve.** Call `update_issue` to assign the issue to yourself (the authenticated user). **Never resolve the issue from this skill** — resolution happens when the PR merges. **If the MCP is read-only** (no `update_issue` tool available), skip this assignment and the marker in step 5, and note in the Phase 8 summary that the issue could not be assigned (read-only MCP). The draft PR itself is unaffected — it uses `gh`, not the MCP.
+5. **Record an agent-activity marker.** Leave a compact `sentry-agent-activity/v1` record so later automated runs and humans can audit what the agent did on this issue. Write it as an issue comment with a sentinel block `<!-- sentry-agent-activity:v1 {…} -->` if a comment tool is available, otherwise fold it into the `update_issue` reason. Skip if the MCP is read-only. Fields:
 
 ```json
 { "schema": "sentry-agent-activity/v1", "actor_name": "sentry-fix-issues",

@@ -26,6 +26,7 @@ Keep an issue backlog honest with two passes that use only the Sentry MCP — no
 
 - Sentry MCP server configured and connected
 - Access to the target Sentry organization (and project, if scoping to one)
+- **Issue-write enabled** to apply changes (an `update_issue`/mutation tool). Read-only connections are fully supported — the skill detects them and runs in report-only mode (it classifies and reports, but makes no changes).
 
 ## Configuration
 
@@ -64,6 +65,7 @@ Before touching any data:
 
 1. Verify the MCP connection and access by calling `find_projects` for `ORG_SLUG`. If it fails or returns a 403, abort the run cleanly: append one entry to `errors[]` (`reason: no-org-access`), print the digest, and stop. Do not proceed to a partial run.
 2. If `PROJECT_SLUG` is set, confirm it appears in the `find_projects` result. If not, abort the same way (`reason: unknown-project`).
+3. **Check write capability.** Confirm the issue-mutation tool (`update_issue`) is available in this MCP session. If it is **not** (the connection is read-only), set `READ_ONLY = true` and treat the whole run as `DRY_RUN`: do every read and classification as normal, skip every write, and add this banner under the digest header — `Sentry MCP is read-only — no changes made. Reconnect with an issue-write–scoped token to enable writes.`
 
 ## Pass 1 — Close Stale Issues
 

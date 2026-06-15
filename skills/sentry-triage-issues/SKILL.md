@@ -34,6 +34,7 @@ For **fixing a specific bug** (writing code, opening a PR) use `sentry-fix-issue
 
 - Sentry MCP server configured and connected
 - Access to the target Sentry organization and project
+- **Issue-write enabled** to archive issues (an `update_issue`/mutation tool). Read-only connections are fully supported — the skill detects them and runs in report-only mode (it builds the triage plan but archives nothing).
 
 ## Configuration
 
@@ -71,7 +72,8 @@ Archiving a real bug hides it. Apply a high evidence bar: archive only when an i
 
 1. Call `find_projects` for `ORG_SLUG`; on failure/403, append one `errors[]` entry, print the digest, and stop.
 2. Confirm `PROJECT_SLUG` appears in the result; otherwise abort the same way (`reason: unknown-project`).
-3. If `PLATFORM_PROFILE` is set (or the project is clearly a JS/browser project), read the matching profile in `references/`.
+3. **Check write capability.** Confirm the issue-mutation tool (`update_issue`) is available in this MCP session. If it is **not** (the connection is read-only), set `READ_ONLY = true` and treat the run as `DRY_RUN`: classify and build the full plan, archive nothing, and add this banner under the digest header — `Sentry MCP is read-only — no changes made. Reconnect with an issue-write–scoped token to enable archiving.`
+4. If `PLATFORM_PROFILE` is set (or the project is clearly a JS/browser project), read the matching profile in `references/`.
 
 ## Pass 1 — Load the fresh queue
 
