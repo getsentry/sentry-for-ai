@@ -1,6 +1,6 @@
 ---
 name: sentry-fix-issues
-description: Find and fix a specific issue from Sentry using MCP, optionally opening a draft pull request. Use when asked to fix Sentry errors, debug production issues, investigate exceptions, resolve bugs reported in Sentry, or fix a specific bug from a Sentry issue. Methodically analyzes stack traces, breadcrumbs, traces, and context to find root causes, and scores candidates to recommend the most fixable one.
+description: Find and fix issues from Sentry using MCP, optionally opening a draft pull request. Use when asked to fix Sentry errors, debug production issues, investigate exceptions, or resolve bugs reported in Sentry. Methodically analyzes stack traces, breadcrumbs, traces, and context to find root causes, and scores candidates to recommend which to fix.
 license: Apache-2.0
 allowed-tools: Read, Edit, Write, Bash, Grep, Glob, AskUserQuestion
 category: workflow
@@ -14,7 +14,7 @@ disable-model-invocation: true
 
 Discover, analyze, and fix production issues using Sentry's full debugging capabilities.
 
-> **On-demand** — point it at a specific bug, or pick one from your Sentry queue, and it investigates the root cause, fixes it, and optionally opens a draft PR. A human stays in the loop. Opening a PR needs a clean working tree and `gh` auth.
+> **On-demand** — point it at a bug, or work through your Sentry queue; it investigates the root cause, fixes it, and optionally opens a draft PR, with a human in the loop. (It fixes one issue at a time, each on its own branch/PR.) Opening a PR needs a clean working tree and `gh` auth.
 
 ## Prerequisites
 
@@ -36,7 +36,7 @@ Discover, analyze, and fix production issues using Sentry's full debugging capab
 
 ## Phase 1: Issue Discovery & Candidate Selection
 
-Use Sentry MCP to find issues, then confirm with the user which issue to fix before proceeding. When the user hasn't named a specific issue, pull a candidate pool and score it (below) to recommend the most fixable one for them to confirm.
+Use Sentry MCP to find issues, then confirm with the user which issue(s) to fix before proceeding. When the user hasn't named one, pull a candidate pool and score it (below) to recommend which to fix. Fix one issue at a time — each gets its own branch and PR.
 
 `search_issues` accepts **either** a `naturalLanguageQuery` or a literal Sentry-syntax `query` — `sort` is always a **separate** parameter (`date`/`freq`/`new`/`user`), never embedded in the query string.
 
