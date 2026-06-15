@@ -633,6 +633,7 @@ Sentry.init({
 | Option | Type | Purpose |
 |--------|------|---------|
 | `enableLogs` | `boolean` | Enable `Sentry.logger.*` API |
+| `enableAutoConsoleLogs` | `boolean` | Auto-capture `console.*` calls when `enableLogs: true`. Set `false` to use only manual `Sentry.logger.*` (SDK ≥8.14.0, default: `true`) |
 | `beforeSendLog` | `function` | Filter/modify logs before sending |
 | `logsOrigin` | `'native' \| 'js' \| 'all'` | Filter log source (SDK ≥7.7.0) |
 

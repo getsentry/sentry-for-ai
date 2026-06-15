@@ -156,10 +156,16 @@ Sentry.withScope(async (scope) => {
 
 Automatically forwards `console.log`, `console.warn`, and `console.error` calls to Sentry as structured logs. Requires SDK ≥7.0.0.
 
+**SDK ≥8.14.0:** Console capture is enabled by default when `enableLogs: true`. Set `enableAutoConsoleLogs: false` to disable automatic console capture and use only manual `Sentry.logger.*` calls.
+
 ```typescript
 Sentry.init({
   dsn: "YOUR_DSN",
   enableLogs: true,
+  // SDK ≥8.14.0: console capture is automatic. To disable:
+  // enableAutoConsoleLogs: false,
+  
+  // SDK <8.14.0: add consoleLoggingIntegration manually:
   integrations: [
     Sentry.consoleLoggingIntegration({
       levels: ["log", "warn", "error"],  // default — adjust as needed
@@ -176,7 +182,7 @@ console.warn("Memory pressure detected", memoryUsage);
 console.error("Fetch failed:", error.message);
 ```
 
-> **React Native note:** All `console.*` calls in React Native go through the JS bridge. In development, the `consoleLoggingIntegration` will forward them all — use `beforeSendLog` to filter out noise before it reaches Sentry.
+> **React Native note:** All `console.*` calls in React Native go through the JS bridge. In development, the console capture will forward them all — use `beforeSendLog` to filter out noise before it reaches Sentry.
 
 ---
 
@@ -378,6 +384,7 @@ function checkoutMiddleware(store) {
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `enableLogs` | `boolean` | `false` | Master switch — must be `true` for all logging features |
+| `enableAutoConsoleLogs` | `boolean` | `true` | When `enableLogs: true`, automatically capture `console.*` calls. Set `false` to disable auto-capture and use only manual `Sentry.logger.*` (SDK ≥8.14.0) |
 | `beforeSendLog` | `(log) => log \| null` | `undefined` | Filter/mutate logs before transmission |
 | `consoleLoggingIntegration` | integration | not added | Capture `console.*` calls as structured logs |
 

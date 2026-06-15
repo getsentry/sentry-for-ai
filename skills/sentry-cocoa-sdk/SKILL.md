@@ -171,6 +171,27 @@ Sentry plans to stop publishing CocoaPods releases at the end of June 2026; use 
 
 > **Known issue (Xcode 14+):** Sandbox `rsync.samba` error → Target Settings → "Enable User Script Sandbox" → `NO`.
 
+**Option 4 — SentryObjC (for pure Objective-C/C++ projects):**
+
+For pure Objective-C or Objective-C++ projects that **cannot enable Clang modules** (e.g., `-fmodules=NO`), use the SentryObjC wrapper SDK. It provides the same functionality as the main SDK but with pure Objective-C headers that don't require Swift module imports.
+
+**SPM:**
+```swift
+.package(url: "https://github.com/getsentry/sentry-cocoa", from: "9.17.1"),
+
+// In your target's dependencies:
+.product(name: "SentryObjC", package: "sentry-cocoa")
+```
+
+Or download `SentryObjC-Dynamic.xcframework.zip` from the [releases page](https://github.com/getsentry/sentry-cocoa/releases).
+
+**Migration from regular Sentry to SentryObjC:**
+- Change `#import <Sentry/Sentry.h>` to `#import <SentryObjC/SentryObjC.h>`
+- Rename `Sentry`-prefixed types to `SentryObjC` (e.g., `SentrySDK` → `SentryObjCSDK`, `SentryOptions` → `SentryObjCOptions`)
+- The API surface is otherwise identical
+
+Most users should use the standard `Sentry` product (Option 2). Only use `SentryObjC` if you have a specific requirement preventing Clang modules.
+
 ---
 
 ### Quick Start — Recommended Init
