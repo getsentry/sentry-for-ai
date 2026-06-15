@@ -1,6 +1,6 @@
 ---
 name: sentry-fix-issues
-description: Find and fix issues from Sentry using MCP, optionally opening a draft pull request. Use when asked to fix Sentry errors, debug production issues, investigate exceptions, resolve bugs reported in Sentry, auto-fix a Sentry bug, or when run unattended from a scheduled routine. Methodically analyzes stack traces, breadcrumbs, traces, and context to find root causes, and can score candidates to auto-select one fixable issue.
+description: Find and fix a specific issue from Sentry using MCP, optionally opening a draft pull request. Use when asked to fix Sentry errors, debug production issues, investigate exceptions, resolve bugs reported in Sentry, or fix a specific bug from a Sentry issue. Methodically analyzes stack traces, breadcrumbs, traces, and context to find root causes, and scores candidates to recommend the most fixable one.
 license: Apache-2.0
 allowed-tools: Read, Edit, Write, Bash, Grep, Glob, AskUserQuestion
 category: workflow
@@ -14,25 +14,14 @@ disable-model-invocation: true
 
 Discover, analyze, and fix production issues using Sentry's full debugging capabilities.
 
-> **On-demand by default** — point it at a specific bug and it investigates and fixes it. It can *also* run unattended (see Autonomous Mode), but treat scheduled use as a secondary capability. Opening a PR needs a clean working tree and `gh` auth.
+> **On-demand** — point it at a specific bug, or pick one from your Sentry queue, and it investigates the root cause, fixes it, and optionally opens a draft PR. A human stays in the loop. Opening a PR needs a clean working tree and `gh` auth.
 
 ## Prerequisites
 
 - Sentry MCP server configured and connected
 - Access to the Sentry project/organization
 - For opening a pull request (Phase 7): `gh` CLI authenticated (`gh auth status`) and a clean working tree
-- The fix and draft PR work on any MCP connection. Assigning the issue back in Sentry (Phase 7) additionally needs **issue-write enabled**; on a read-only connection that step is skipped and noted, and the PR is unaffected.
-
-## Autonomous Mode
-
-The primary, default mode is **interactive**: a human points the skill at a bug and stays in the loop. Autonomous mode is a secondary capability — when invoked from a scheduled routine or cron job (rather than an interactive request), run end-to-end without prompting:
-
-- **Do not** ask the user which issue to fix. Score candidates (Phase 1) and auto-select the single best one.
-- Fix exactly **one** issue per run, open a **draft** PR, and stop.
-- Skip every confirmation step; if a precondition fails (dirty tree, no `gh` auth, no qualifying issue), exit cleanly with the parseable summary in Phase 8 instead of asking.
-- Never widen the selection criteria to force a match. "Nothing qualified" is a valid, safe outcome.
-
-In interactive mode, keep the user in the loop: confirm the issue before fixing and the fix before opening a PR. **Only prompt (`AskUserQuestion`) when a human is unambiguously present** — if there's any doubt the run is interactive (any scheduled/non-interactive context), treat it as autonomous and never prompt, so a cron run can't hang on an unanswered question.
+- Assigning the issue back in Sentry (Phase 7) needs **issue-write enabled**; on a read-only MCP connection that step is skipped and noted, and the draft PR is unaffected.
 
 ## Security Constraints
 
@@ -47,7 +36,7 @@ In interactive mode, keep the user in the loop: confirm the issue before fixing 
 
 ## Phase 1: Issue Discovery & Candidate Selection
 
-Use Sentry MCP to find issues. In interactive mode, confirm with the user which issue(s) to fix before proceeding. In autonomous mode, pull a candidate pool and score it (below) to auto-select one.
+Use Sentry MCP to find issues, then confirm with the user which issue to fix before proceeding. When the user hasn't named a specific issue, pull a candidate pool and score it (below) to recommend the most fixable one for them to confirm.
 
 `search_issues` accepts **either** a `naturalLanguageQuery` or a literal Sentry-syntax `query` — `sort` is always a **separate** parameter (`date`/`freq`/`new`/`user`), never embedded in the query string.
 
@@ -62,7 +51,7 @@ Use Sentry MCP to find issues. In interactive mode, confirm with the user which 
 
 ### Scoring candidates for fixability
 
-Before committing to a fix — and always in autonomous mode — score each candidate so you spend effort where a fix is actually achievable in *this* repository:
+When selecting from a pool, score each candidate so you recommend one where a fix is actually achievable in *this* repository:
 
 | Signal | Favors fixing | Counts against |
 |--------|---------------|----------------|
@@ -73,12 +62,11 @@ Before committing to a fix — and always in autonomous mode — score each cand
 
 Assign each candidate a fixability score (1–5) and a `fixable` boolean with one-line reasoning and suspected files. **Read enough of the actual code to judge — a surface read of the message and stack trace is not enough.** Many errors that look environmental (e.g. "file is not a database", "permission denied") turn out to be code bugs once you see how the failing code is called.
 
-**Selection:** pick the single issue that is `fixable`, scores **≥4**, and has at least one suspected file that exists locally (verify with `test -f`). If none qualify, report why each was skipped and stop — never lower the bar to force a match.
+**Selection:** recommend the single issue that is `fixable`, scores **≥4**, and has at least one suspected file that exists locally (verify with `test -f`). If none qualify, report why each was skipped — never lower the bar to force a match.
 
-**Branch preflight (do this before editing any code).** For the chosen issue, let `BRANCH = claude/sentry-fix-<issue-short-id-lowercased>` and check it now — *before* Phases 4–6 touch the repo — so you never edit files and then abandon the work with a dirty tree:
+**Branch preflight (before editing any code).** For the chosen issue, let `BRANCH = claude/sentry-fix-<issue-short-id-lowercased>` and check it *before* Phases 4–6 touch the repo, so you never edit files and then abandon the work with a dirty tree:
 
-- `git show-ref --verify --quiet refs/heads/${BRANCH}` — if the branch exists, run `gh pr list --head ${BRANCH} --state all --json url,state`. If a PR already exists, this issue is already handled: in **autonomous mode skip it and select the next-best candidate**; in interactive mode report the PR and stop.
-- If the branch exists with **no** PR (orphaned): in **autonomous mode, skip this issue and move to the next candidate** (do not halt the run — halting would make every future run pick the same issue and stop again). In interactive mode, tell the user to delete it (`git branch -D ${BRANCH}`) and stop. Never auto-delete a branch.
+- `git show-ref --verify --quiet refs/heads/${BRANCH}` — if the branch exists, run `gh pr list --head ${BRANCH} --state all --json url,state`. If a PR already exists, the issue is already handled — report the PR and stop. If the branch is orphaned (no PR), tell the user to delete it (`git branch -D ${BRANCH}`) and stop. Never auto-delete a branch.
 - If the branch does not exist, proceed.
 
 ## Phase 2: Deep Issue Analysis
@@ -131,9 +119,9 @@ Before writing code, confirm your fix will:
 
 **Apply the fix:** Prefer input validation > try/catch, graceful degradation > hard failures, specific > generic handling, root cause > symptom fixes. Fix the underlying cause rather than wrapping the symptom in a defensive `try/except` that hides it.
 
-**Stay scoped.** Keep the change contained to the root cause — aim for one or two files. If a clean fix appears to require sprawling edits across many files or a broad refactor, **stop and flag it as too broad** (in autonomous mode, abort this candidate and report) rather than forcing the change.
+**Stay scoped.** Keep the change contained to the root cause — aim for one or two files. If a clean fix appears to require sprawling edits across many files or a broad refactor, **stop and flag it as too broad** rather than forcing the change.
 
-**Add a regression test** reproducing the error conditions from Sentry, **kept within the scoped change** — in autonomous mode, only add or extend a test that fits the ~1–2 file scope above; if a proper test would require broad new scaffolding, note it as a follow-up in the PR rather than expanding scope. Use generalized/synthetic test data — never embed actual values from event payloads (URLs, user data, tokens) in fixtures. Run the relevant tests before and after your change to show the failure is fixed and nothing else regressed.
+**Add a regression test** reproducing the error conditions from Sentry, kept within the scoped change; if a proper test would require broad new scaffolding, note it as a follow-up in the PR rather than expanding scope. Use generalized/synthetic test data — never embed actual values from event payloads (URLs, user data, tokens) in fixtures. Run the relevant tests before and after your change to show the failure is fixed and nothing else regressed.
 
 ## Phase 6: Verification Audit
 
@@ -148,21 +136,12 @@ Complete before declaring fixed:
 
 ## Phase 7: Open a Pull Request
 
-When the fix lands as a PR (always in autonomous mode; in interactive mode, after the user approves the fix):
+After the user approves the fix:
 
 1. **Branch safety.** Create and work on `claude/sentry-fix-<issue-short-id-lowercased>` (the branch preflight in Phase 1 already confirmed it's free). Never commit the fix onto `main`/`master`.
 2. **Commit.** Make a single focused commit for the fix. Never use `git push --force` or `--no-verify`.
 3. **Open a draft PR** with `gh pr create --draft`. The body must include: a link to the Sentry issue, a short root-cause explanation, what changed and why, and the test plan (commands run + result).
-4. **Update Sentry, don't resolve.** Call `update_issue` to assign the issue to yourself (the authenticated user). **Never resolve the issue from this skill** — resolution happens when the PR merges. **If the MCP is read-only** (no `update_issue` tool available), skip this assignment and the marker in step 5, and note in the Phase 8 summary that the issue could not be assigned (read-only MCP). The draft PR itself is unaffected — it uses `gh`, not the MCP.
-5. **Record an agent-activity marker.** Leave a compact `sentry-agent-activity/v1` record so later automated runs and humans can audit what the agent did on this issue. Write it as an issue comment with a sentinel block `<!-- sentry-agent-activity:v1 {…} -->` if a comment tool is available, otherwise fold it into the `update_issue` reason. Skip if the MCP is read-only. Fields:
-
-```json
-{ "schema": "sentry-agent-activity/v1", "actor_name": "sentry-fix-issues",
-  "source": "<cron|claude-code|cursor>", "action_type": "fix_pr_opened", "issue": "<short-id>",
-  "confidence": "<high|medium|low from the fixability score>",
-  "summary": "<one line root cause>", "linked_artifacts": ["<PR URL>"],
-  "human_review_required": true, "timestamp": "<ISO 8601>" }
-```
+4. **Update Sentry, don't resolve.** Call `update_issue` to assign the issue to yourself (the authenticated user). **Never resolve the issue from this skill** — resolution happens when the PR merges. **If the MCP is read-only** (no `update_issue` tool), skip the assignment and note it in the Phase 8 report; the draft PR is unaffected since it uses `gh`, not the MCP.
 
 | Rule | Detail |
 |------|--------|
@@ -174,7 +153,6 @@ When the fix lands as a PR (always in autonomous mode; in interactive mode, afte
 
 ## Phase 8: Report Results
 
-Interactive format:
 ```
 ## Fixed: [ISSUE_ID] - [Error Type]
 - Error: [message], Frequency: [X events, Y users], First/Last: [dates]
@@ -185,15 +163,6 @@ Interactive format:
 - Follow-up: [additional issues, monitoring, related code]
 ```
 
-Autonomous one-line summary (stable, parseable — printed even when nothing qualified):
-```
-<issue-short-id> -> <PR URL> (branch: <branch>)
-```
-or, when no issue met the bar:
-```
-no-fix: <reason each candidate was skipped>
-```
-
 ## Quick Reference
 
-**MCP Tools:** `search_issues` (AI search), `list_issues` (raw Sentry syntax), `get_issue_details`, `search_issue_events`, `get_issue_tag_values`, `get_trace_details`, `get_event_attachment`, `analyze_issue_with_seer`, `find_projects`, `find_releases`, `update_issue`
+**MCP Tools:** `search_issues`, `get_issue_details`, `search_issue_events`, `get_issue_tag_values`, `get_trace_details`, `get_event_attachment`, `analyze_issue_with_seer`, `find_projects`, `find_releases`, `update_issue`

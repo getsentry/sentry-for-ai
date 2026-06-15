@@ -154,7 +154,7 @@ On `apply`/`apply <subset>`, archive the approved `archive` rows (the numbers in
 For each issue to archive:
 
 - If `DRY_RUN` **or** `READ_ONLY`, append to `archived[]` marked `(dry-run; skipped)` and do not write.
-- Otherwise call `update_issue(organizationSlug=ORG_SLUG, issueId=<short_id>, status="ignored", ignoreMode="untilEscalating", reason=<category-tagged reason>)`. Run sequentially. On error append to `errors[]` and continue; on success append to `archived[]`. Optionally emit a `needs_review`/`triaged_noise` `sentry-agent-activity/v1` marker for auditability.
+- Otherwise call `update_issue(organizationSlug=ORG_SLUG, issueId=<short_id>, status="ignored", ignoreMode="untilEscalating", reason=<category-tagged reason>)`. Run sequentially. On error append to `errors[]` and continue; on success append to `archived[]`. The category-tagged `reason` is the audit trail for each archive.
 
 ## Final — Print Digest
 

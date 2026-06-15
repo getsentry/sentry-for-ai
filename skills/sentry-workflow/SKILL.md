@@ -25,11 +25,10 @@ Append the path from the `Path` column in the table below to `https://skills.sen
 
 1. If the user mentions **fixing a specific bug, debugging exceptions, or investigating production issues** → `sentry-fix-issues`
 2. If the user mentions **triaging the new-issue queue or archiving non-actionable noise** → `sentry-triage-issues`
-3. If the user mentions **grooming the aged backlog, closing long-stale issues, or re-opening regressions** → `sentry-groom-issues`
-4. If the user mentions **a Sentry digest/summary, "what got worse", a standup or on-call handoff report** → `sentry-issue-digest`
-5. If the user mentions **Sentry bot comments or `sentry[bot]` on a PR** → `sentry-code-review`
-6. If the user mentions **Seer, bug prediction, or reviewing PRs for predicted issues** → `sentry-pr-code-review`
-7. If the user mentions **upgrading Sentry, migrating SDK versions, or fixing deprecated APIs** → `sentry-sdk-upgrade`
+3. If the user mentions **a Sentry digest/summary, "what got worse", a standup or on-call handoff report** → `sentry-issue-digest`
+4. If the user mentions **Sentry bot comments or `sentry[bot]` on a PR** → `sentry-code-review`
+5. If the user mentions **Seer, bug prediction, or reviewing PRs for predicted issues** → `sentry-pr-code-review`
+6. If the user mentions **upgrading Sentry, migrating SDK versions, or fixing deprecated APIs** → `sentry-sdk-upgrade`
 
 When unclear, **ask the user** whether the task involves live production issues, PR review comments, or SDK upgrades. Do not guess.
 
@@ -41,7 +40,6 @@ When unclear, **ask the user** whether the task involves live production issues,
 |---|---|---|
 | Fixing a specific bug — stack traces, breadcrumbs, event data, opening a PR | [`sentry-fix-issues`](../sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
 | Triaging the new-issue queue — archiving non-actionable noise, flagging needs-human | [`sentry-triage-issues`](../sentry-triage-issues/SKILL.md) | `sentry-triage-issues/SKILL.md` |
-| Grooming the aged backlog — closing long-stale issues, re-opening regressions | [`sentry-groom-issues`](../sentry-groom-issues/SKILL.md) | `sentry-groom-issues/SKILL.md` |
 | A read-only digest of what changed — top new issues, regressions, movers, release health | [`sentry-issue-digest`](../sentry-issue-digest/SKILL.md) | `sentry-issue-digest/SKILL.md` |
 | Resolving comments from `sentry[bot]` on GitHub PRs | [`sentry-code-review`](../sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
 | Fixing issues detected by Seer Bug Prediction in PR reviews | [`sentry-pr-code-review`](../sentry-pr-code-review/SKILL.md) | `sentry-pr-code-review/SKILL.md` |
