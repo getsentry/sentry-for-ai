@@ -40,7 +40,7 @@ When unclear, **ask the user** whether the task involves live production issues,
 |---|---|---|
 | Fixing a specific bug — stack traces, breadcrumbs, event data, opening a PR | [`sentry-fix-issues`](../sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
 | Triaging the new-issue queue — archiving non-actionable noise, flagging needs-human | [`sentry-triage-issues`](../sentry-triage-issues/SKILL.md) | `sentry-triage-issues/SKILL.md` |
-| A read-only digest of what changed — top new issues, regressions, movers, release health | [`sentry-issue-digest`](../sentry-issue-digest/SKILL.md) | `sentry-issue-digest/SKILL.md` |
+| A read-only digest of what changed — new issues, regressions, movers, release health, correlated in-repo to the commits that likely caused them | [`sentry-issue-digest`](../sentry-issue-digest/SKILL.md) | `sentry-issue-digest/SKILL.md` |
 | Resolving comments from `sentry[bot]` on GitHub PRs | [`sentry-code-review`](../sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
 | Fixing issues detected by Seer Bug Prediction in PR reviews | [`sentry-pr-code-review`](../sentry-pr-code-review/SKILL.md) | `sentry-pr-code-review/SKILL.md` |
 | Upgrading the Sentry JavaScript SDK — migration guides, breaking changes, deprecated APIs | [`sentry-sdk-upgrade`](../sentry-sdk-upgrade/SKILL.md) | `sentry-sdk-upgrade/SKILL.md` |
