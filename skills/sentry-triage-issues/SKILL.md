@@ -22,13 +22,7 @@ Reduce the **live new-issue queue**: classify each fresh issue as **archive** (n
 |--------------------------|------|
 | classify issues in a JavaScript/browser/frontend project (echarts, extensions, `Failed to fetch`, React internals, Prisma mis-route) | `references/triage-js-profile.md` |
 
-## Invoke This Skill When
-
-- User asks to "triage Sentry issues", "triage the new-issue queue", or "archive noise"
-- User wants the fresh/unresolved queue classified and noise archived
-- A scheduled routine invokes the skill autonomously to keep the queue clean
-
-For **fixing a specific bug** (writing code, opening a PR) use `sentry-fix-issues`. For **aged backlog hygiene** (closing long-stale issues, re-opening regressions) use `sentry-groom-issues`. This skill only triages the *fresh* queue and only archives.
+This skill only triages the *fresh* new-issue queue, and its only action is archiving noise (with `untilEscalating`).
 
 ## Prerequisites
 
@@ -90,7 +84,7 @@ Then call `get_issue_details` per result to get culprit, top stack frame, assign
 **Skip immediately** (do not classify or archive) when any of these hold:
 
 - `status` is not `unresolved` (already archived, resolved, or reprocessing).
-- The issue has a **human assignee** — someone owns it (this is also what keeps triage from colliding with `sentry-fix-issues`, which assigns the issue it works on).
+- The issue has a **human assignee** — someone already owns it; leave it for them.
 - The issue is assigned to a team other than yours and looks team-specific — let that team triage it.
 
 ## Pass 2 — Classify each candidate
@@ -189,7 +183,7 @@ If a list is empty, render its heading with `(0)` and a single line `_None._` un
 - **Archive only**, always `ignoreMode: untilEscalating`, always with a category-tagged `reason`. Never resolve, unresolve, assign, or delete.
 - **Skip assigned issues** and anything not `is:unresolved`.
 - **When in doubt, skip.** If it could be a real bug in our code, do not archive.
-- **Scope to the fresh queue** (`firstSeen:>${WINDOW_CUTOFF_ISO}`) so triage never double-acts with `sentry-groom-issues` (aged backlog).
+- **Scope to the fresh queue** (`firstSeen:>${WINDOW_CUTOFF_ISO}`) — only triage recently-arrived issues, never the aged backlog.
 - **Cap candidates at 50.** Note in the digest if the cap was hit.
 - **`--dry-run` is checked at each write site**, not once at the top.
 - **On a per-issue failure, append to `errors[]` and continue.**
@@ -202,5 +196,3 @@ Triage classifies by pattern, which is judgment-ier than a mechanical staleness 
 ## Quick Reference
 
 **MCP tools:** `find_projects`, `search_issues` (literal Sentry-syntax `query`), `get_issue_details`, `update_issue` (archive only, `untilEscalating`).
-
-**Pipeline:** runs before `sentry-fix-issues` — triage clears noise from the fresh queue, then fix picks one fixable issue from what remains.

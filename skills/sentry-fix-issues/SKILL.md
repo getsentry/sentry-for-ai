@@ -14,17 +14,7 @@ disable-model-invocation: true
 
 Discover, analyze, and fix production issues using Sentry's full debugging capabilities.
 
-> **On-demand by default** — point it at a specific bug and it investigates and fixes it. It can *also* run unattended (see Autonomous Mode), but treat scheduled use as a secondary capability; for recurring queue hygiene reach for `sentry-triage-issues` or `sentry-groom-issues` instead. Opening a PR needs a clean working tree and `gh` auth.
-
-## Invoke This Skill When
-
-- User asks to "fix Sentry issues" or "resolve Sentry errors"
-- User wants to "debug production bugs" or "investigate exceptions"
-- User mentions issue IDs, error messages, or asks about recent failures
-- User wants to write a code fix for a specific bug and (optionally) open a PR for it
-- A scheduled routine invokes the skill to auto-fix one issue unattended
-
-For *bulk backlog hygiene* — closing stale issues or re-opening regressions without writing code — use `sentry-groom-issues` instead.
+> **On-demand by default** — point it at a specific bug and it investigates and fixes it. It can *also* run unattended (see Autonomous Mode), but treat scheduled use as a secondary capability. Opening a PR needs a clean working tree and `gh` auth.
 
 ## Prerequisites
 

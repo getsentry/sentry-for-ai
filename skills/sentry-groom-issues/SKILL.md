@@ -1,6 +1,6 @@
 ---
 name: sentry-groom-issues
-description: Groom an aged Sentry backlog by closing long-stale unresolved issues and re-opening resolved issues that regressed. Use when asked to "groom Sentry", "groom the backlog", "clean up the stale backlog", "archive stale issues", "re-open regressions", or when invoked autonomously from a scheduled routine. Two-pass, MCP-only, safe for unattended runs. For the fresh new-issue queue see sentry-triage-issues.
+description: Groom an aged Sentry backlog by closing long-stale unresolved issues and re-opening resolved issues that regressed. Use when asked to "groom Sentry", "groom the backlog", "clean up the stale backlog", "archive stale issues", or "re-open regressions", or when invoked autonomously from a scheduled routine. Two-pass, MCP-only, safe for unattended runs.
 license: Apache-2.0
 allowed-tools: Read, Bash, Grep, Glob, AskUserQuestion
 category: workflow
@@ -15,14 +15,6 @@ disable-model-invocation: true
 Keep an issue backlog honest with two passes that use only the Sentry MCP — no git, no PRs. Pass 1 closes issues that have gone quiet; Pass 2 re-opens resolved issues that started erroring again. Designed to run unattended on a schedule, so the default path never blocks on input and every run prints a stable, parseable digest.
 
 > **Can be used as** a weekly cron/coroutine job.
-
-## Invoke This Skill When
-
-- User asks to "groom Sentry", "groom the backlog", or "clean up the stale/aged backlog"
-- User wants long-stale issues archived or regressed issues re-opened
-- A scheduled routine or cron job invokes the skill autonomously
-
-For triaging the **fresh new-issue queue** (archiving noise as it arrives), use `sentry-triage-issues` instead.
 
 ## Prerequisites
 

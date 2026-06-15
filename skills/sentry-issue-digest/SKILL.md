@@ -16,12 +16,6 @@ Summarize what changed in an issue landscape since the last look: the top new is
 
 > **Can be used as** a daily or weekly cron/coroutine job.
 
-## Invoke This Skill When
-
-- User asks for a "Sentry digest", "Sentry summary", or "what got worse in Sentry"
-- User wants a daily/weekly standup or on-call handoff report from Sentry
-- A scheduled routine invokes the skill autonomously each morning or week
-
 ## Prerequisites
 
 - Sentry MCP server configured and connected
