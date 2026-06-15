@@ -462,7 +462,7 @@ Deploy and trigger the route, then check your [Sentry Issues dashboard](https://
 | `dsn` | `string` | — | Required. Read from `env.SENTRY_DSN` automatically if not set |
 | `tracesSampleRate` | `number` | — | 0–1; 1.0 in dev, lower in prod recommended |
 | `tracesSampler` | `function` | — | Dynamic sampling function; mutually exclusive with `tracesSampleRate` |
-| `dataCollection` | `object` | `{}` | **New in v10.54.0.** Granular control over captured data. Cloudflare default: cookies OFF (unlike other SDKs). Options: `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `userInfo`, `genAI`, `stackFrameVariables`, `frameContextLines`. See [Data Collection Reference](#data-collection-reference) |
+| `dataCollection` | `object` | `{}` | **New in v10.57.0.** Granular control over captured data. Cloudflare default: cookies OFF (unlike other SDKs). Options: `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `userInfo`, `genAI`, `stackFrameVariables`, `frameContextLines`. See [Data Collection Reference](#data-collection-reference) |
 | `sendDefaultPii` | `boolean` | `false` | **Legacy.** Enables `dataCollection.cookies` and related options. Use `dataCollection` instead for granular control |
 | `enableLogs` | `boolean` | `false` | Enable Sentry Logs product |
 | `environment` | `string` | auto | Read from `env.SENTRY_ENVIRONMENT` if not set |
@@ -478,7 +478,7 @@ Deploy and trigger the route, then check your [Sentry Issues dashboard](https://
 
 ### Data Collection Reference
 
-**New in v10.54.0:** The `dataCollection` option provides fine-grained control over what data the SDK captures. This replaces the legacy `sendDefaultPii` boolean.
+**New in v10.57.0:** The `dataCollection` option provides fine-grained control over what data the SDK captures. This replaces the legacy `sendDefaultPii` boolean.
 
 **Cloudflare-specific behavior:** Unlike other SDKs, Cloudflare defaults to cookies **OFF** to preserve historical behavior. Explicitly enable `dataCollection.cookies` to capture them.
 
@@ -529,7 +529,7 @@ Sentry.withSentry(
 
 **Migration from `sendDefaultPii`:**
 
-| Old (legacy) | New (v10.54.0+) |
+| Old (legacy) | New (v10.57.0+) |
 |--------------|-----------------|
 | `sendDefaultPii: true` | `dataCollection: { cookies: true }` |
 | `sendDefaultPii: false` | `dataCollection: { cookies: false }` (Cloudflare default) |
