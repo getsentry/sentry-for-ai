@@ -1,7 +1,7 @@
 # Agent Instructions
 
 ## Project Overview
-Sentry plugin for AI coding assistants (Claude Code, Cursor). Provides MCP server integration, slash commands, and skills.
+Sentry plugin for AI coding assistants (Claude Code, Cursor, Codex, and Grok). Provides MCP server integration, slash commands, and skills.
 
 ## Commit Attribution
 AI commits MUST include:
@@ -50,6 +50,9 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 |-------|-------------|
 | `sentry-setup-ai-monitoring` | Instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI |
 | `sentry-otel-exporter-setup` | Setup OTel Collector with Sentry Exporter |
+| `sentry-span-streaming-js` | Migrate JavaScript SDK from transaction-based to streamed span delivery |
+| `sentry-span-streaming-python` | Migrate Python SDK from transaction-based to streamed span delivery |
+| `sentry-instrumentation-guide` | Decide which signal to reach for — error vs span vs log vs metric |
 
 ### Workflow Skills
 | Skill | Description |
@@ -71,9 +74,7 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 | `/seer <query>` | Natural language Sentry environment queries |
 
 ## MCP Server
-Sentry MCP server configured at `https://mcp.sentry.dev/mcp`. Two config files exist:
-- `.mcp.json` — Claude Code format
-- `mcp.json` — Cursor format
+Sentry MCP server configured at `https://mcp.sentry.dev/mcp`. The source of truth is `mcp.json`: Cursor consumes it as-is at the plugin root, while the Codex and Grok builds emit it as `.mcp.json` (Codex's validator requires the dotted name; Grok auto-discovers it). Claude declares the server inline in its `plugin.json` (`mcpServers`), so the Claude build ships no MCP file. The root `.mcp.json` is a backwards-compat copy (identical to `mcp.json`) retained for existing installs that consumed the plugin from this repo's root; keep the two in sync until the root compat surface is removed.
 
 ## Key Conventions
 - All setup skills must **detect platform/SDK before suggesting configuration** — never assume
