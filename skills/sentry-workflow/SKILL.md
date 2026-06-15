@@ -24,9 +24,11 @@ Append the path from the `Path` column in the table below to `https://skills.sen
 **Do not skip this section.** Do not assume which workflow the user needs. Ask first.
 
 1. If the user mentions **fixing errors, debugging exceptions, or investigating production issues** → `sentry-fix-issues`
-2. If the user mentions **Sentry bot comments or `sentry[bot]` on a PR** → `sentry-code-review`
-3. If the user mentions **Seer, bug prediction, or reviewing PRs for predicted issues** → `sentry-pr-code-review`
-4. If the user mentions **upgrading Sentry, migrating SDK versions, or fixing deprecated APIs** → `sentry-sdk-upgrade`
+2. If the user mentions **grooming, cleaning up the backlog, archiving stale issues, or weekly triage** → `sentry-groom-issues`
+3. If the user mentions **a Sentry digest/summary, "what got worse", a standup or on-call handoff report** → `sentry-issue-digest`
+4. If the user mentions **Sentry bot comments or `sentry[bot]` on a PR** → `sentry-code-review`
+5. If the user mentions **Seer, bug prediction, or reviewing PRs for predicted issues** → `sentry-pr-code-review`
+6. If the user mentions **upgrading Sentry, migrating SDK versions, or fixing deprecated APIs** → `sentry-sdk-upgrade`
 
 When unclear, **ask the user** whether the task involves live production issues, PR review comments, or SDK upgrades. Do not guess.
 
@@ -37,6 +39,8 @@ When unclear, **ask the user** whether the task involves live production issues,
 | Use when | Skill | Path |
 |---|---|---|
 | Finding and fixing production issues — stack traces, breadcrumbs, event data | [`sentry-fix-issues`](../sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
+| Grooming the backlog — closing stale issues, re-opening regressions, weekly triage | [`sentry-groom-issues`](../sentry-groom-issues/SKILL.md) | `sentry-groom-issues/SKILL.md` |
+| A read-only digest of what changed — top new issues, regressions, movers, release health | [`sentry-issue-digest`](../sentry-issue-digest/SKILL.md) | `sentry-issue-digest/SKILL.md` |
 | Resolving comments from `sentry[bot]` on GitHub PRs | [`sentry-code-review`](../sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
 | Fixing issues detected by Seer Bug Prediction in PR reviews | [`sentry-pr-code-review`](../sentry-pr-code-review/SKILL.md) | `sentry-pr-code-review/SKILL.md` |
 | Upgrading the Sentry JavaScript SDK — migration guides, breaking changes, deprecated APIs | [`sentry-sdk-upgrade`](../sentry-sdk-upgrade/SKILL.md) | `sentry-sdk-upgrade/SKILL.md` |
