@@ -12,8 +12,16 @@ server, code review with Sentry context, and monitoring configuration.
 
 ## Install
 
+Inside Claude Code, run:
+
+```
+/plugins install sentry@claude-plugins-official
+```
+
+Or from your terminal:
+
 ```bash
-claude plugin install sentry
+claude plugin install sentry@claude-plugins-official
 ```
 
 ## What's included
