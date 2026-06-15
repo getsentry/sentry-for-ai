@@ -36,7 +36,10 @@ export default Sentry.withSentry(
   (env: Env) => ({
     dsn: env.SENTRY_DSN,
     dataCollection: {
-      cookies: true, // Include cookies (off by default for Cloudflare)
+      // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+      // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#dataCollection
+      // userInfo: false,
+      // httpBodies: [],
     },
   }),
   {
@@ -74,7 +77,10 @@ import * as Sentry from "@sentry/cloudflare";
 export const onRequest = Sentry.sentryPagesPlugin((context) => ({
   dsn: context.env.SENTRY_DSN,
   dataCollection: {
-    cookies: true, // Include cookies (off by default for Cloudflare)
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
 }));
 ```

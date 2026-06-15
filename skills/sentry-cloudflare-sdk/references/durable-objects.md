@@ -53,7 +53,10 @@ export const MyDurableObject = Sentry.instrumentDurableObjectWithSentry(
     dsn: env.SENTRY_DSN,
     tracesSampleRate: 1.0,
     dataCollection: {
-      cookies: true, // Include cookies (off by default for Cloudflare)
+      // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+      // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#dataCollection
+      // userInfo: false,
+      // httpBodies: [],
     },
   }),
   MyDurableObjectBase,

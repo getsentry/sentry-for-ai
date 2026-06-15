@@ -183,9 +183,11 @@ export default Sentry.withSentry(
     dsn: env.SENTRY_DSN,
     tracesSampleRate: 1.0,
     enableLogs: true,
-    // New in v10.54.0: dataCollection provides granular control over captured data
     dataCollection: {
-      cookies: true, // Include cookies in events (off by default for Cloudflare)
+      // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+      // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#dataCollection
+      // userInfo: false,
+      // httpBodies: [],
     },
   }),
   {
@@ -214,7 +216,10 @@ export const onRequest = Sentry.sentryPagesPlugin((context) => ({
   tracesSampleRate: 1.0,
   enableLogs: true,
   dataCollection: {
-    cookies: true, // Include cookies in events (off by default for Cloudflare)
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
 }));
 ```
