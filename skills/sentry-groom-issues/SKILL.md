@@ -78,7 +78,7 @@ For each result:
 
 1. **Confirm it is actually quiet.** Call `search_events` (`dataset: errors`, `query: issue:<short_id>`, `statsPeriod: ${STALE_AGE_DAYS}d`, `fields: ["count()"]`, `limit: 1`) and read `count()`. If it is **not** zero, the search index lagged between calls — skip the issue and append to `errors[]` (`reason: unexpected-activity`). This is the high-evidence check that protects against closing a live issue.
 2. If `DRY_RUN`, append `<short_id>` to `closed[]` marked `(dry-run; skipped)` and do not write.
-3. Otherwise call `update_issue` (`issueId: <short_id>`, `status: ignored`, `reason: "Auto-closed by groom-issues: no events in ${STALE_AGE_DAYS}d, first seen >60d ago"`). On error append to `errors[]` and continue; on success append to `closed[]`.
+3. Otherwise call `update_issue` (`issueId: <short_id>`, `status: ignored`, `ignoreMode: untilEscalating`, `reason: "Auto-closed by groom-issues: no events in ${STALE_AGE_DAYS}d, first seen >60d ago"`). **Always archive `untilEscalating`** — a stale-closed issue then auto-resurfaces if it escalates again, so a wrong close is self-correcting. On error append to `errors[]` and continue; on success append to `closed[]`.
 
 ## Pass 2 — Re-open Regressions
 
@@ -127,7 +127,7 @@ If a list is empty, render its heading with `(0)` and a single line `_None._` un
 
 ## Hard Rules
 
-- **Never delete issues.** `update_issue` to `ignored` is the strongest action this skill takes.
+- **Never delete issues.** `update_issue` to `ignored` (always `ignoreMode: untilEscalating`) is the strongest action this skill takes — and it self-corrects, since the issue reopens on escalation.
 - **Cap each pass at 50 issues**, enforced via `limit: 50`. If a pass hits the cap, note it in the digest so a silent backlog isn't mistaken for a clean one.
 - **`--dry-run` checks happen at each write call site**, not once at the top — so the digest is identical to a real run, minus the writes.
 - **On a per-issue failure, append to `errors[]` and continue.** A pass-level fatal error (e.g. 403 on the initial `search_issues`) ends that pass; later passes still run.
@@ -138,4 +138,4 @@ If a list is empty, render its heading with `(0)` and a single line `_None._` un
 
 **MCP tools:** `find_projects`, `search_issues` (literal Sentry-syntax `query`), `get_issue_details`, `search_events` (event counts), `update_issue`.
 
-**Pass cheat-sheet:** Pass 1 = `is:unresolved lastSeen:<ISO firstSeen:<ISO` → `status: ignored`. Pass 2 = `is:resolved lastSeen:-7d` → confirm ≥`MIN_REGRESSION_EVENTS` since resolve → `status: unresolved`.
+**Pass cheat-sheet:** Pass 1 = `is:unresolved lastSeen:<ISO firstSeen:<ISO` → `status: ignored` (`untilEscalating`). Pass 2 = `is:resolved lastSeen:-7d` → confirm ≥`MIN_REGRESSION_EVENTS` since resolve → `status: unresolved`.
