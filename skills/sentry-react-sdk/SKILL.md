@@ -127,9 +127,11 @@ Sentry.init({
   environment: import.meta.env.MODE,
   release: import.meta.env.VITE_APP_VERSION, // inject at build time
 
-  // Data collection (recommended; replaces sendDefaultPii)
   dataCollection: {
-    userInfo: true,  // Collect user IP and headers
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/react/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
 
   integrations: [
