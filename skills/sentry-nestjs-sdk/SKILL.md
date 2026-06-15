@@ -168,8 +168,6 @@ Sentry.init({
     // httpBodies: [],
   },
 
-  // Legacy: sendDefaultPii: true, (deprecated — use dataCollection instead)
-
   // Tracing — lower to 0.1–0.2 in high-traffic production
   tracesSampleRate: 1.0,
 
@@ -528,6 +526,8 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 
 **`dataCollection` defaults:**
 - `httpHeaders: { request: true, response: true }`
+- `httpBodies: ["incomingRequest", "outgoingRequest", "incomingResponse", "outgoingResponse"]`
+- `userInfo: true`
 - `genAI: { inputs: true, outputs: true }`
 
 ### Environment Variables
