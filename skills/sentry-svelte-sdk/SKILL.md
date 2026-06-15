@@ -362,7 +362,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `dataCollection.userInfo` | `boolean` | `true` | Auto-populate `user.*` fields from instrumentation |
 | `dataCollection.cookies` | `boolean\|object` | `true` | Cookie collection and filtering |
 | `dataCollection.httpHeaders` | `object` | `{request: true, response: true}` | HTTP header collection for requests/responses |
-| `dataCollection.httpBodies` | `string[]` | `['incomingRequest', ...]` | Which HTTP body types to collect |
+| `dataCollection.httpBodies` | `string[]` | `["incomingRequest", "outgoingRequest", "incomingResponse", "outgoingResponse"]` | Which HTTP body types to collect |
 | `dataCollection.queryParams` | `boolean\|object` | `true` | Query parameter collection and filtering |
 | `tracesSampleRate` | `number` | — | 0–1; use `1.0` in dev, `0.1–0.2` in prod |
 | `tracesSampler` | `function` | — | Per-transaction sampling; overrides `tracesSampleRate` |
