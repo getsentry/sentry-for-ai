@@ -183,15 +183,12 @@ Sentry.init({
   environment: import.meta.env.MODE,
   release: import.meta.env.VITE_APP_VERSION, // inject at build time
 
-  // Data collection (v10.54+) — replaces sendDefaultPii
   dataCollection: {
     // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
     // https://docs.sentry.io/platforms/javascript/configuration/options/#dataCollection
     // userInfo: false,
     // httpBodies: [],
   },
-  // Or use legacy option (will be deprecated in v11):
-  // sendDefaultPii: true,
 
   integrations: [
     Sentry.browserTracingIntegration(),
