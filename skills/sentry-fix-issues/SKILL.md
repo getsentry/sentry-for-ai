@@ -14,7 +14,7 @@ disable-model-invocation: true
 
 Discover, analyze, and fix production issues using Sentry's full debugging capabilities.
 
-> **Can be used as** a daily cron/coroutine job (needs a clean working tree and `gh` auth).
+> **On-demand by default** — point it at a specific bug and it investigates and fixes it. It can *also* run unattended (see Autonomous Mode), but treat scheduled use as a secondary capability; for recurring queue hygiene reach for `sentry-triage-issues` or `sentry-groom-issues` instead. Opening a PR needs a clean working tree and `gh` auth.
 
 ## Invoke This Skill When
 
@@ -34,7 +34,7 @@ For *bulk backlog hygiene* — closing stale issues or re-opening regressions wi
 
 ## Autonomous Mode
 
-When invoked from a scheduled routine or cron job (rather than an interactive request), run end-to-end without prompting:
+The primary, default mode is **interactive**: a human points the skill at a bug and stays in the loop. Autonomous mode is a secondary capability — when invoked from a scheduled routine or cron job (rather than an interactive request), run end-to-end without prompting:
 
 - **Do not** ask the user which issue to fix. Score candidates (Phase 1) and auto-select the single best one.
 - Fix exactly **one** issue per run, open a **draft** PR, and stop.
