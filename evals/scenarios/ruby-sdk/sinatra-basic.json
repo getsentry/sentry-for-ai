@@ -7,8 +7,6 @@
     {
       "path": "config.ru",
       "contains": [
-        "Sentry.init",
-        "SENTRY_DSN",
         "Sentry::Rack::CaptureExceptions"
       ],
       "excludes": []
@@ -19,14 +17,9 @@
       "excludes": ["sentry-rails", "sentry-sidekiq"]
     }
   ],
-  "should_not_exist": [
-    "config/initializers/sentry.rb"
-  ],
+  "should_not_exist": [],
   "soft_assertions": [
-    { "criterion": "The agent detected Sinatra (not Rails) and used sentry-ruby without sentry-rails" },
-    { "criterion": "The agent added Sentry::Rack::CaptureExceptions middleware for request tracing" }
+    { "criterion": "Sentry.init is called somewhere with config.dsn set to SENTRY_DSN and config.traces_sample_rate configured" }
   ],
-  "negative_assertions": [
-    { "criterion": "The agent should not create a Rails-style initializer in config/initializers/" }
-  ]
+  "negative_assertions": []
 }

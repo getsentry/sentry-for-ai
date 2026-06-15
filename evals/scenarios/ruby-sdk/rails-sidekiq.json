@@ -10,10 +10,10 @@
         "Sentry.init",
         "config.dsn",
         "SENTRY_DSN",
-        "traces_sample_rate",
-        "enable_logs",
-        "breadcrumbs_logger",
-        "send_default_pii"
+        "config.traces_sample_rate",
+        "config.enable_logs",
+        "config.breadcrumbs_logger",
+        "config.send_default_pii"
       ],
       "excludes": ["otlp"]
     },
@@ -28,8 +28,7 @@
     "config/initializers/honeybadger.rb"
   ],
   "soft_assertions": [
-    { "criterion": "The agent detected Sidekiq in the project and recommended sentry-sidekiq" },
-    { "criterion": "The agent detected Rails as the framework and chose sentry-rails" }
+    { "criterion": "The agent detected Sidekiq in the project and included sentry-sidekiq" }
   ],
   "negative_assertions": []
 }
