@@ -39,7 +39,7 @@ Each scenario makes real Claude API calls 💸.
 Claude may produce slightly different output each run; different comments, different ordering, different phrasing. Assertions must be resilient to valid variations:
 
 - Use substring checks (`contains`), not exact file matches
-- Check for config keys (`traces_sample_rate`), not exact values (`traces_sample_rate = 1.0`)
+- Check for config keys (`config.traces_sample_rate`), not exact values (`config.traces_sample_rate = 1.0`)
 - Use `excludes` for things that should never appear, not for things that are merely optional
 - Reserve `soft_assertions` for semantic criteria that substring checks can't capture
 
@@ -75,7 +75,7 @@ scenarios/ruby-sdk/rails-sidekiq.json
 ```json
 {
   "name": "rails-sidekiq",
-  "given": "A Rails 7.1 app with Sidekiq for background jobs",
+  "given": "A Rails 8 app with Sidekiq for background jobs",
   "prompt": "Set up Sentry for this Rails application with full monitoring.",
   "fixture": "rails-sidekiq",
   "files": [
@@ -86,7 +86,7 @@ scenarios/ruby-sdk/rails-sidekiq.json
     },
     {
       "path": "config/initializers/sentry.rb",
-      "contains": ["Sentry.init", "enable_logs"],
+      "contains": ["Sentry.init", "config.enable_logs"],
       "excludes": []
     }
   ],
@@ -116,6 +116,26 @@ ANTHROPIC_API_KEY=sk-... npm run evals -- -t "rails-sidekiq"
 | `should_not_exist` | Paths that must NOT be created |
 | `soft_assertions` | LLM-judged criteria (e.g., "detected the framework correctly") |
 | `negative_assertions` | Things that must NOT be true (judged by LLM) |
+
+## Writing good assertions
+
+### General principles
+
+Put as much as possible into deterministic `files` checks. They're fast, free, and reproducible. Reserve `soft_assertions` for criteria that no substring can express — typically detection behavior ("the agent detected X and chose Y"). Aim for one soft assertion per scenario at most.
+
+- `contains`: prove the string is in the file. Pick substrings specific enough to avoid false positives but loose enough to tolerate formatting differences
+- `excludes`: things that must never appear. Only for genuine incompatibilities, not optional extras
+- `should_not_exist`: files the agent must not create (e.g. a competing SDK's config)
+- `negative_assertions`: avoid unless you need the LLM to judge a "should not" that substring checks can't capture
+
+### SDK install evals
+
+These assertions verify that the agent wired up the SDK correctly in a project fixture.
+
+- Prefix config keys with their accessor: `config.traces_sample_rate` not `traces_sample_rate` — proves it's a real config line, not a comment
+- Check env var names as substrings: `SENTRY_DSN` — tolerates `ENV[]` vs `ENV.fetch` vs framework credentials
+- Check gem/package names in dependency files: `sentry-rails`, `@sentry/node`
+- Some frameworks have canonical init locations (Rails: `config/initializers/`), others don't — the agent may extract init to a separate file. Assert on content, not path, unless the path is framework-mandated
 
 ## Validating assertions with a real app
 
