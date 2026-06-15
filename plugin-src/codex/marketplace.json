@@ -1,0 +1,20 @@
+{
+  "name": "sentry-plugin-marketplace",
+  "interface": {
+    "displayName": "Sentry Plugins"
+  },
+  "plugins": [
+    {
+      "name": "sentry",
+      "source": {
+        "source": "local",
+        "path": "./plugins/sentry"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

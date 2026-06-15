@@ -158,7 +158,7 @@ sentry_sdk.init(dsn="...", traces_sampler=traces_sampler)
 | SQLAlchemy | ✅ | All queries as spans + breadcrumbs |
 | Redis | ✅ | All commands as spans + breadcrumbs |
 | PyMongo | ✅ | All queries (covers mongoengine, Motor) |
-| requests / httpx | ✅ | Outbound HTTP calls with trace propagation |
+| requests / httpx / httpx2 | ✅ | Outbound HTTP calls with trace propagation |
 
 ### Database auto-instrumentation
 
