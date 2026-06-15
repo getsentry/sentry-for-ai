@@ -4,9 +4,9 @@
 #
 # Grok has no published JSON Schema. We always run structural checks (the two
 # manifests are valid JSON and the marketplace catalog is present), and when the
-# `grok` CLI is available (local dev) we additionally run its native
-# `grok plugin validate`. CI runners do not have the grok CLI, so the structural
-# checks are the gate there.
+# `grok` CLI is available we additionally run its native `grok plugin validate`.
+# The deploy CI now provisions the grok CLI for every build, so the full validate
+# (including `grok plugin validate`) runs there as well as in local dev.
 #
 # Usage: validate.sh <TARGET_DIR>   (a tree produced by build.sh)
 
@@ -14,7 +14,7 @@ set -euo pipefail
 
 TARGET_DIR="${1:?usage: validate.sh <TARGET_DIR>}"
 
-for f in "$TARGET_DIR/plugin.json" "$TARGET_DIR/.grok-plugin/marketplace.json"; do
+for f in "$TARGET_DIR/.grok-plugin/plugin.json" "$TARGET_DIR/.grok-plugin/marketplace.json"; do
     [ -f "$f" ] || { echo "missing required file: $f" >&2; exit 1; }
     jq empty "$f"
 done
