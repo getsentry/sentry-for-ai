@@ -374,7 +374,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `debug` | `boolean` | `false` | Verbose SDK output to console |
 | `tunnel` | `string` | — | Proxy URL to bypass ad blockers |
 
-### `dataCollection` Options (SDK ≥10.55.0)
+### `dataCollection` Options (SDK ≥10.57.0)
 
 Fine-grained control over what data the SDK collects. Replaces the simple `sendDefaultPii` boolean with per-feature toggles:
 
