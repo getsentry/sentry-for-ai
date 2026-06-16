@@ -135,7 +135,9 @@ Complete before declaring fixed:
 
 ## Phase 7: Open a Pull Request
 
-After the user approves the fix:
+**Stop and confirm first — this phase is optional and outward-facing.** After Phase 6, present the fix and its diff to the user and ask whether to open a draft PR. Do **not** commit, push, or open a PR automatically on the heels of verification. Proceed only on explicit approval; if the user declines (or wants no PR), stop and report via Phase 8 as "Fix ready (no PR)".
+
+Once approved:
 
 1. **Branch safety.** Create and work on `claude/sentry-fix-<issue-short-id-lowercased>` (the branch preflight in Phase 1 already confirmed it's free). Never commit the fix onto `main`/`master`.
 2. **Commit, then push.** Make a single focused commit for the fix, then push the branch (`git push -u origin <branch>`) so the PR has a remote to open against. Never use `git push --force` or `--no-verify`.
