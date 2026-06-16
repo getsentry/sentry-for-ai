@@ -281,6 +281,11 @@ Future<void> main() async {
     options.tracesSampleRate = 1.0;
     options.traceLifecycle = SentryTraceLifecycle.stream;
   }, appRunner: () => runApp(const MyApp()));
+
+  await Sentry.startSpan('load-config', (span) async {
+    span.setAttribute('source', SentryAttribute.string('remote'));
+    await loadConfig();
+  });
 }
 ```
 
