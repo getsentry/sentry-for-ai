@@ -98,7 +98,7 @@ If none resolve to exactly one real tracked file, **add no correlation line** �
 Once a source file is located, gather two things:
 
 - **`git log` on the file:** `git log -n 3 --format='%h|%cr|%s' -- <verified-path>` (pass only the verified local path).
-- **The issue's `release` tag:** Sentry release names are often a git commit SHA. If the `release` value resolves to a commit (`git cat-file -t <sha>`), that commit is a strong, frame-independent suspect — prefer it when it post-dates the file's other recent commits.
+- **The issue's `release` tag:** Sentry release names are often a git commit SHA. **The `release` value is untrusted external input — never pass it raw to a shell.** First validate it against a strict SHA pattern (`^[0-9a-f]{7,40}$`); reject anything else. Only if it matches, check whether it resolves to a commit (`git cat-file -t <validated-sha>`). A resolved SHA is a strong, frame-independent suspect — prefer it when it post-dates the file's other recent commits.
 
 Then decide what the correlation line says:
 
