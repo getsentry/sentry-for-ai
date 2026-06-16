@@ -526,8 +526,8 @@ Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the err
 | `HttpProxy` | `string` | — | — | Proxy URL for Sentry requests |
 | `EnableBackpressureHandling` | `bool` | `true` | — | Auto-reduce sample rates on delivery failures |
 | `TraceIgnoreStatusCodes` | `IList<HttpStatusCodeRange>` | `[]` | — | Drop transactions whose HTTP response status matches any range; e.g., `[404]` or `[(500, 599)]` |
-| `StrictTraceContinuation` | `bool` | `false` | — | When `true`, starts a new trace if the incoming `sentry-org_id` baggage is absent or mismatches the SDK's org ID (requires ≥6.6.0) |
-| `OrgId` | `string` | auto | — | Organization ID for trace validation; auto-parsed from DSN subdomain (e.g., `o123.ingest.sentry.io` → `"123"`). Override for self-hosted Sentry, local Relay, or custom domains (requires ≥6.6.0) |
+| `StrictTraceContinuation` | `bool` | `false` | — | When `true`, starts a new trace if exactly one side (SDK or incoming `sentry-org_id` baggage) has an org ID. A full mismatch (both present but different) always starts a new trace regardless of this setting. (requires ≥6.6.0) |
+| `OrgId` | `string` | auto | — | Organization ID for trace validation; auto-parsed from DSN subdomain (e.g., `o123.ingest.sentry.io` → `"123"`). Recommended to set explicitly for self-hosted Sentry, local Relay, or custom domains (requires ≥6.6.0) |
 
 ### ASP.NET Core Extended Options (`SentryAspNetCoreOptions`)
 
