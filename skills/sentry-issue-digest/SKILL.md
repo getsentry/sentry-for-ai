@@ -16,7 +16,7 @@ Summarize what changed in an issue landscape since the last look: the top new is
 
 > **Can be used as** a daily or weekly cron/coroutine job.
 
-**What sets this apart from a static digest email:** it runs inside your coding agent, so when a repo is checked out it correlates new and regressed issues to the recent commits and files that likely introduced them — turning "what got worse" into "what got worse, and the change that probably caused it." It also runs on any window you ask for (e.g. *"since my last push"*), scoped to the project you're working in. When no repo is present (a headless cron pointed only at an org), it degrades cleanly to the plain digest.
+Runs on any `WINDOW` you ask for (e.g. *"since my last push"*), scoped to one project or the whole org. When a repo is checked out it adds commit correlation (see below); with no repo it degrades cleanly to the plain digest.
 
 ## Prerequisites
 
@@ -43,7 +43,7 @@ Resolve once from explicit arguments, then environment, then — **only when a h
 - **Never write.** Do not call `update_issue` or any mutating tool. This skill only reads.
 - **Cap every section at `TOP_N`.** If a section is truncated, say so in the digest so a quiet section isn't mistaken for a complete one.
 - **Never prompt in an autonomous run.** Missing config aborts cleanly into the digest.
-- **One run = one digest.** Always print exactly one digest. Keep it concise: print the headline plus only the sections that have content. Omit empty sections entirely — never pad the output with empty headings. When nothing changed, the digest is a single "all quiet" line.
+- **One run = one digest.** Always emit exactly one digest, even when every section is empty (see *Final — Print Digest* for the concise format).
 
 ## Compute Once
 
