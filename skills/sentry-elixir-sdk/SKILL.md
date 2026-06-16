@@ -20,7 +20,7 @@ Opinionated wizard that scans your Elixir project and guides you through complet
 - User mentions `sentry` hex package, `getsentry/sentry-elixir`, or Elixir Sentry SDK
 - User wants to monitor exceptions, Plug errors, LiveView errors, or scheduled jobs
 
-> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry v12.0.2, requires Elixir ~> 1.13).
+> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry v13.2.0, requires Elixir ~> 1.13).
 > Always verify against [docs.sentry.io/platforms/elixir/](https://docs.sentry.io/platforms/elixir/) before implementing.
 
 ---
@@ -125,7 +125,7 @@ Add to `mix.exs` dependencies:
 # mix.exs
 defp deps do
   [
-    {:sentry, "~> 12.0"},
+    {:sentry, "~> 13.0"},
     {:finch, "~> 0.21"}
     # Add jason if using Elixir < 1.18:
     # {:jason, "~> 1.4"},
