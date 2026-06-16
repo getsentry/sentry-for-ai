@@ -237,7 +237,12 @@ await Sentry.startSpan({
   const outputMessages = [
     {
       role: "assistant",
-      parts: [{ type: "text", content: result.text }],
+      parts: [
+        // Thinking/reasoning content goes in a `reasoning` part, NOT a `text` part.
+        // Sentry surfaces it separately and filters it out of the Conversations view.
+        { type: "reasoning", content: result.reasoning },
+        { type: "text", content: result.text },
+      ],
       finish_reason: result.finishReason,
     },
   ];
@@ -262,8 +267,10 @@ await Sentry.startSpan({
 
 | Attribute | Description |
 |-----------|-------------|
-| `gen_ai.input.messages` | JSON-stringified array of input messages. Each item uses `{role, parts}` where `parts` is `[{type, content}]`; `role` is `"user"`, `"assistant"`, `"tool"`, or `"system"` |
+| `gen_ai.input.messages` | JSON-stringified array of input messages. Each item uses `{role, parts}` where `parts` is `[{type, content}]`; `role` is `"user"`, `"assistant"`, `"tool"`, or `"system"`. Common part `type`s: `"text"`, `"reasoning"`, `"tool_call"`, `"tool_call_response"` |
 | `gen_ai.output.messages` | JSON-stringified array of response messages (text + tool calls), same shape as inputs |
+
+**Thinking / reasoning messages:** Models with extended thinking (Anthropic `thinking` blocks, Gemini `thought`, DeepSeek `reasoning_content`) produce internal reasoning that isn't part of the user-visible reply. Represent it as a `reasoning` part inside the assistant message — `{"type": "reasoning", "content": "..."}` — alongside the user-facing `text` part. Sentry surfaces reasoning parts separately and filters them out of the user-facing Conversations view, so do **not** fold thinking into a `text` part. When previous thinking is fed back into a multi-turn request, include the same `reasoning` parts in the assistant messages within `gen_ai.input.messages`. Record reasoning token counts via `gen_ai.usage.output_tokens.reasoning` (a subset of `gen_ai.usage.output_tokens`).
 | `gen_ai.system_instructions` | System prompt passed to the model |
 | `gen_ai.tool.definitions` | JSON-stringified list of tools available to the model |
 
