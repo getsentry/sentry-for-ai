@@ -462,8 +462,8 @@ Deploy and trigger the route, then check your [Sentry Issues dashboard](https://
 | `dsn` | `string` | — | Required. Read from `env.SENTRY_DSN` automatically if not set |
 | `tracesSampleRate` | `number` | — | 0–1; 1.0 in dev, lower in prod recommended |
 | `tracesSampler` | `function` | — | Dynamic sampling function; mutually exclusive with `tracesSampleRate` |
-| `dataCollection` | `object` | `{}` | **New in v10.57.0.** Granular control over captured data. Cloudflare default: cookies OFF (unlike other SDKs). Options: `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `userInfo`, `genAI`, `stackFrameVariables`, `frameContextLines`. See [Data Collection Reference](#data-collection-reference) |
-| `sendDefaultPii` | `boolean` | `false` | **Legacy.** Enables `dataCollection.cookies` and related options. Use `dataCollection` instead for granular control |
+| `dataCollection` | `object` | `{}` | Controls what data the SDK captures (`userInfo`, `httpBodies`, etc.). See [Data Collection Reference](#data-collection-reference) |
+| `sendDefaultPii` | `boolean` | `false` | Legacy. Prefer `dataCollection` for control over captured data |
 | `enableLogs` | `boolean` | `false` | Enable Sentry Logs product |
 | `environment` | `string` | auto | Read from `env.SENTRY_ENVIRONMENT` if not set |
 | `release` | `string` | auto | Detected from `CF_VERSION_METADATA.id` or `SENTRY_RELEASE` |
@@ -478,61 +478,14 @@ Deploy and trigger the route, then check your [Sentry Issues dashboard](https://
 
 ### Data Collection Reference
 
-**New in v10.57.0:** The `dataCollection` option provides fine-grained control over what data the SDK captures. This replaces the legacy `sendDefaultPii` boolean.
-
-**Cloudflare-specific behavior:** Unlike other SDKs, Cloudflare defaults to cookies **OFF** to preserve historical behavior. Explicitly enable `dataCollection.cookies` to capture them.
-
 ```typescript
-Sentry.withSentry(
-  (env: Env) => ({
-    dsn: env.SENTRY_DSN,
-    dataCollection: {
-      // Cookies: off by default for Cloudflare (unlike other SDKs)
-      cookies: true, // or { mode: "denyList" } for filtered capture
-
-      // HTTP headers: captures request/response headers (default: denyList mode)
-      httpHeaders: {
-        request: { mode: "denyList" }, // Redact sensitive header values
-        response: { mode: "denyList" },
-      },
-
-      // HTTP bodies: specify which bodies to capture
-      httpBodies: ["incomingRequest"], // ["incomingRequest", "outgoingRequest", "incomingResponse", "outgoingResponse"]
-
-      // Query params: capture URL query strings (default: denyList mode)
-      queryParams: { mode: "denyList" },
-
-      // User info: auto-populate user fields (id, email, username, ip)
-      userInfo: true, // default: true
-
-      // GenAI: capture AI prompts and completions
-      genAI: {
-        inputs: true, // default: true
-        outputs: true, // default: true
-      },
-
-      // Stack frame variables: include local vars in stack traces
-      stackFrameVariables: true, // default: true
-
-      // Frame context lines: source code lines around stack frames
-      frameContextLines: 5, // default: 5 (or false to disable)
-    },
-  }),
-  handler,
-);
+dataCollection: {
+  // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+  // https://docs.sentry.io/platforms/javascript/configuration/options/#dataCollection
+  // userInfo: false,
+  // httpBodies: [],
+},
 ```
-
-**Key-Value Collection Modes:**
-- `"off"` — No collection
-- `"denyList"` (default) — Collect all; redact sensitive terms (passwords, tokens, etc.)
-- `"allowList"` — Only specified terms send real values; others become `"[Filtered]"`
-
-**Migration from `sendDefaultPii`:**
-
-| Old (legacy) | New (v10.57.0+) |
-|--------------|-----------------|
-| `sendDefaultPii: true` | `dataCollection: { cookies: true }` |
-| `sendDefaultPii: false` | `dataCollection: { cookies: false }` (Cloudflare default) |
 
 ### Environment Variables (Read from `env`)
 
