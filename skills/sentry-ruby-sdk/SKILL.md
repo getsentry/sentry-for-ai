@@ -21,7 +21,7 @@ Opinionated wizard that scans the project and guides through complete Sentry set
 - User is migrating from AppSignal, Honeybadger, Bugsnag, Rollbar, or Airbrake to Sentry
 - User wants to monitor exceptions, HTTP requests, or background jobs in Rails/Sinatra
 
-> **Note:** SDK APIs below reflect sentry-ruby v6.4.1.
+> **Note:** SDK APIs below reflect sentry-ruby v6.6.2.
 > Always verify against [docs.sentry.io/platforms/ruby/](https://docs.sentry.io/platforms/ruby/) before implementing.
 
 ---
