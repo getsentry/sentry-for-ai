@@ -22,8 +22,6 @@ Reduce the **live new-issue queue**: classify each fresh issue as **archive** (n
 |--------------------------|------|
 | classify issues in a JavaScript/browser/frontend project (echarts, extensions, `Failed to fetch`, React internals, Prisma mis-route) | `references/triage-js-profile.md` |
 
-This skill only triages the *fresh* new-issue queue, and its only action is archiving noise (with `untilEscalating`).
-
 ## Prerequisites
 
 - Sentry MCP server configured and connected
@@ -48,7 +46,7 @@ Resolve once from explicit arguments, then environment, then — **only when int
 The mode is decided by `--auto`, not by guesswork, so a human-invoked run always gets the confirmation gate and a scheduled run never hangs on a prompt:
 
 - **Interactive (the default — any run without `--auto`):** classify, build the full numbered plan table, then wait for `apply` / `apply 1,3` / `cancel` before any write. Archiving never happens without explicit confirmation.
-- **Autonomous (only when `--auto` is passed — the cron/coroutine path):** classify, auto-archive the clear-noise set, leave `needs-human` and `skip` untouched, print the digest. **Never call `AskUserQuestion`** (a scheduled run has no one to answer it). Unattended archiving is bounded because each archive uses archive-until-escalating, which self-corrects **when the mutation tool supports that mode** — see Pass 0 step 3 and Pass 3, which refuse to archive rather than fall back to a permanent ignore.
+- **Autonomous (only when `--auto` is passed — the cron/coroutine path):** classify, auto-archive the clear-noise set, leave `needs-human` and `skip` untouched, print the digest. **Never call `AskUserQuestion`** (a scheduled run has no one to answer it). Unattended archiving is bounded because each archive uses archive-until-escalating, which self-corrects **when the mutation tool supports that mode** (enforced in Pass 0 step 3 and Pass 3).
 
 If you cannot tell whether `--auto` was passed, treat the run as interactive (build the plan, do not auto-archive).
 
