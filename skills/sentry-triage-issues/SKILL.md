@@ -191,7 +191,7 @@ If a list is empty, render its heading with `(0)` and a single line `_None._` un
 - **Scope to the fresh queue** (`firstSeen:>${WINDOW_CUTOFF_ISO}`) — only triage recently-arrived issues, never the aged backlog.
 - **Cap candidates at 50.** Note in the digest if the cap was hit.
 - **`--dry-run` is checked at each write site**, not once at the top.
-- **On a per-issue failure, append to `errors[]` and continue.**
+- **On an ordinary per-issue failure, append to `errors[]` and continue.** The one exception: if verification shows an archive landed as a **permanent** ignore instead of until-escalating, append to `errors[]` and **stop archiving the rest** (the mode is misbehaving — continuing would issue more permanent ignores).
 - **Never prompt in an autonomous run.** Missing config aborts cleanly into the digest.
 
 ## Recommended Rollout
