@@ -75,7 +75,7 @@ For each row, pull counts with `search_events` (`dataset: errors`, `query: issue
 
 If releases are in use, call `find_releases` (most recent first, capped at a few). For each, report the release version and, **if available**, the crash-free session/user rate. Crash-free data may not exist for every SDK/platform — if it is unavailable, render the row as `crash-free: n/a` rather than omitting the release.
 
-## Pass R — Repo correlation (best-effort, read-only)
+## Repo correlation (best-effort, read-only)
 
 This is the differentiator: tie what changed to the change that likely caused it. **Entirely optional and best-effort — never let it block or fail the digest.**
 
@@ -138,7 +138,7 @@ The TL;DR is one line: section counts joined by `·`, then the single loudest it
 - <release> — crash-free <rate or "n/a">
 ```
 
-- The `↳` correlation line appears **only** when Pass R resolved a source location for that row — `likely from <sha> …` when a recent commit is a plausible cause, or `re-occurrence — …` for a regressed issue whose root cause is an old, unchanged line. Omit it otherwise — no empty arrow, no "unknown."
+- The `↳` correlation line appears **only** when correlation resolved a source location for that row — `likely from <sha> …` when a recent commit is a plausible cause, or `re-occurrence — …` for a regressed issue whose root cause is an old, unchanged line. Omit it otherwise — no empty arrow, no "unknown."
 - Omit any section whose count is 0 — do not render its heading.
 - If a section was capped at `TOP_N`, append ` _(top <TOP_N>)_` to its heading.
 - Surface failures only when present, as a final `## Errors (<count>)` section with one line per failure (`<step> — <reason>`). Omit it entirely on a clean run.
@@ -147,4 +147,4 @@ The TL;DR is one line: section counts joined by `·`, then the single loudest it
 ## Quick Reference
 
 **MCP tools (read-only):** `find_projects`, `search_issues`, `search_events`, `get_issue_details`, `find_releases`.
-**Repo correlation (Pass R, best-effort):** `git rev-parse`, `git log`, `git cat-file` via `Bash`; `Glob`/`Grep`/`test -f` to resolve source via Seer root cause, stack frames, or error-string grep. Skipped silently when no repo is present.
+**Repo correlation (best-effort):** `git rev-parse`, `git log`, `git cat-file` via `Bash`; `Glob`/`Grep`/`test -f` to resolve source via Seer root cause, stack frames, or error-string grep. Skipped silently when no repo is present.
