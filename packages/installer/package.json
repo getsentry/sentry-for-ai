@@ -1,0 +1,42 @@
+{
+  "name": "@sentry/ai",
+  "version": "0.1.0",
+  "description": "Install the Sentry plugin for your AI coding assistants",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/getsentry/sentry-for-ai.git",
+    "directory": "packages/installer"
+  },
+  "homepage": "https://github.com/getsentry/sentry-for-ai#readme",
+  "author": "Sentry",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "bin": {
+    "sentry-ai": "dist/index.js"
+  },
+  "scripts": {
+    "build": "rolldown --config rolldown.config.mjs",
+    "dev": "ts-node src/index.ts",
+    "test": "vitest run",
+    "format": "oxfmt --write src",
+    "format:check": "oxfmt --check src"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.5.2",
+    "@listr2/prompt-adapter-inquirer": "^4.2.4",
+    "@sentry/node": "^10.57.0",
+    "citty": "^0.1.6",
+    "listr2": "^10.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "oxfmt": "^0.54.0",
+    "rolldown": "^1.1.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.8"
+  }
+}
