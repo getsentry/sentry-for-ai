@@ -153,8 +153,11 @@ After the user approves the fix:
 
 ## Phase 8: Report Results
 
+Title the report for the state the workflow actually reached — a draft PR awaiting review, **not** a resolved issue (Phase 7 deliberately leaves the Sentry issue unresolved until the PR merges). Use "Fix proposed" when a draft PR was opened, or "Fix ready (no PR)" when stopping before Phase 7.
+
 ```
-## Fixed: [ISSUE_ID] - [Error Type]
+## Fix proposed: [ISSUE_ID] - [Error Type]
+- Status: Draft PR opened ([PR link]) — Sentry issue left unresolved pending review/merge
 - Error: [message], Frequency: [X events, Y users], First/Last: [dates]
 - Root Cause: [one paragraph]
 - Evidence: Stack trace [key frames], breadcrumbs [actions], context [data]

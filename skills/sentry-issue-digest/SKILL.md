@@ -53,19 +53,19 @@ Resolve once from explicit arguments, then environment, then — **only when a h
 
 ## Pass 0 — Preflight
 
-Call `find_projects` for `ORG_SLUG`. On failure or 403, append one `errors[]` entry, print the digest with empty sections, and stop. If `PROJECT_SLUG` is set, confirm it appears in the result; otherwise abort the same way.
+Call `find_projects` for `ORG_SLUG`. On failure or 403, append one `errors[]` entry, print the digest with empty sections, and stop. **Only when `PROJECT_SLUG` is set**, confirm it appears in the result and abort the same way if it does not. An unset `PROJECT_SLUG` is valid — it means an org-wide digest, so do not abort for a missing project.
 
 ## Gather (read-only)
 
-Run these independent queries; each feeds one section. Cap each at `TOP_N`. Pass `organizationSlug: ORG_SLUG` on every call, and `projectSlugOrId: PROJECT_SLUG` whenever it is set — otherwise the digest summarizes the whole org while reporting a single project name.
+Run these independent queries; each feeds one section. Cap each at `TOP_N`. Pass `organizationSlug: ORG_SLUG` on every call. Pass `projectSlugOrId: PROJECT_SLUG` **only when it is set**; when it is unset the queries run org-wide, and the header must then read `Project: all` so the scope label matches the data (never label an org-wide digest with a single project name).
 
 | Section | Query (via `search_issues`, literal `query`) | Sort | Extract |
 |---------|----------------------------------------------|------|---------|
 | **New issues** | `is:unresolved firstSeen:>${WINDOW_CUTOFF_ISO}` | `freq` | short_id, title, event count, users affected |
-| **New regressions** | `is:unresolved is:regressed lastSeen:>${WINDOW_CUTOFF_ISO}` | `date` | short_id, title, when it regressed |
+| **Active regressions** | `is:unresolved is:regressed lastSeen:>${WINDOW_CUTOFF_ISO}` | `date` | short_id, title, last seen |
 | **Most active in window** | `is:unresolved lastSeen:>${WINDOW_CUTOFF_ISO}` | `freq` | short_id, title, event count in window |
 
-(The "most active" section ranks by event volume within the window, not by a true period-over-period delta — it surfaces what's loudest now, which is what a daily/weekly scan wants.)
+(Both of the last two sections filter on `lastSeen`, so they surface what's **currently active in the window**, not a true period-over-period delta. The regressions section lists issues in the regressed state that were seen in the window — a long-running regression will keep appearing each run until it's resolved, which is intended for an at-a-glance scan. Do not present it as "newly regressed in the last `WINDOW`"; Sentry search has no reliable "regressed-since" filter, so the heading is **Active regressions**, not "New regressions".)
 
 **Date filters must use the absolute ISO cutoff with a comparator** (`firstSeen:>${WINDOW_CUTOFF_ISO}`), never a bare relative duration like `firstSeen:-${WINDOW}`. Some MCP query layers rewrite a bare `-14d` into an invalid `>=-14d`, failing with HTTP 400; the absolute form is unambiguous and reliable. (`statsPeriod` below is a separate parameter and may stay relative.)
 
@@ -127,8 +127,8 @@ The TL;DR is one line: section counts joined by `·`, then the single loudest it
 - <SHORT-ID> <title> — <N> events, <U> users
   ↳ likely from <short-sha> "<commit subject>" (<relative date>)
 
-## Regressed (<count>)
-- <SHORT-ID> <title> — regressed <relative time>
+## Active regressions (<count>)
+- <SHORT-ID> <title> — last seen <relative time>
   ↳ re-occurrence — root cause at <path> (last changed <sha>, <relative date>); not a recent code change
 
 ## Most active (<count>)

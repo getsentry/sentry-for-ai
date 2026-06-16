@@ -45,10 +45,12 @@ Resolve once from explicit arguments, then environment, then — **only when int
 
 ## Mode Selection
 
-**Default to autonomous, and never prompt unless a human is unambiguously present and waiting.** A scheduled/cron run has no one to answer an `AskUserQuestion`, so prompting there would hang the job forever. If you are ever unsure whether the run is interactive, treat it as autonomous.
+The mode is decided by `--auto`, not by guesswork, so a human-invoked run always gets the confirmation gate and a scheduled run never hangs on a prompt:
 
-- **Autonomous** (the default; also forced by `--auto`): classify, auto-archive the clear-noise set, leave `needs-human` and `skip` untouched, print the digest. **Never call `AskUserQuestion`.** Safe unattended because every archive is `untilEscalating` and self-corrects.
-- **Interactive** (only when a human directly invoked the skill in a live session): build the full numbered plan table, then wait for `apply` / `apply 1,3` / `cancel` before any write.
+- **Interactive (the default — any run without `--auto`):** classify, build the full numbered plan table, then wait for `apply` / `apply 1,3` / `cancel` before any write. Archiving never happens without explicit confirmation.
+- **Autonomous (only when `--auto` is passed — the cron/coroutine path):** classify, auto-archive the clear-noise set, leave `needs-human` and `skip` untouched, print the digest. **Never call `AskUserQuestion`** (a scheduled run has no one to answer it). Unattended archiving is bounded because each archive uses archive-until-escalating, which self-corrects **when the mutation tool supports that mode** — see Pass 0 step 3 and Pass 3, which refuse to archive rather than fall back to a permanent ignore.
+
+If you cannot tell whether `--auto` was passed, treat the run as interactive (build the plan, do not auto-archive).
 
 ## Security Constraints
 
@@ -67,8 +69,8 @@ Archiving a real bug hides it. Apply a high evidence bar: archive only when an i
 ## Pass 0 — Preflight
 
 1. Call `find_projects` for `ORG_SLUG`; on failure/403, append one `errors[]` entry, print the digest, and stop.
-2. Confirm `PROJECT_SLUG` appears in the result; otherwise abort the same way (`reason: unknown-project`).
-3. **Check write capability.** Confirm the issue-mutation tool (`update_issue`) is available in this MCP session. If it is **not** (the connection is read-only), set `READ_ONLY = true` and treat the run as `DRY_RUN`: classify and build the full plan, archive nothing, and add this banner under the digest header — `Sentry MCP is read-only — no changes made. Reconnect with an issue-write–scoped token to enable archiving.`
+2. Confirm `PROJECT_SLUG` appears in the result; otherwise abort the same way (`reason: unknown-project`). (`PROJECT_SLUG` is required for triage, so it is always set.)
+3. **Check write capability — including archive-until-escalating.** Inspect the available issue-mutation tool (`update_issue` or equivalent). Set `READ_ONLY = true` if **either** is true: (a) no mutation tool is exposed, or (b) the tool offers no way to archive *until escalating* (e.g. only a plain `status: ignored` that ignores permanently). **Never substitute a permanent ignore for archive-until-escalating** — a permanent archive does not self-correct and can bury a real, escalating bug. When `READ_ONLY` is set, classify and build the full plan, archive nothing, and add this banner under the digest header — `Sentry MCP cannot archive-until-escalating here — no changes made. Reconnect with an issue-write–scoped token that supports archive-until-escalating to enable archiving.` `READ_ONLY` is distinct from `--dry-run`: report it as mode `read-only`, not `dry-run`.
 4. If `PLATFORM_PROFILE` is set (or the project is clearly a JS/browser project), read the matching profile in `references/`.
 
 ## Pass 1 — Load the fresh queue
@@ -151,10 +153,13 @@ On `apply`/`apply <subset>`, archive the approved `archive` rows (the numbers in
 
 **Autonomous mode:** archive every issue classified `archive` directly.
 
+**Always populate every accumulator, not just `archived[]`:** as you finalize each issue, append it to `archived[]`, `needs_human[]`, or `skipped[]` according to its decision, so the digest's "Needs human" and "Skipped" sections are complete.
+
 For each issue to archive:
 
-- If `DRY_RUN` **or** `READ_ONLY`, append to `archived[]` marked `(dry-run; skipped)` and do not write.
-- Otherwise call `update_issue(organizationSlug=ORG_SLUG, issueId=<short_id>, status="ignored", ignoreMode="untilEscalating", reason=<category-tagged reason>)`. Run sequentially. On error append to `errors[]` and continue; on success append to `archived[]`. The category-tagged `reason` is the audit trail for each archive.
+- If `READ_ONLY`, append to `archived[]` marked `(read-only; skipped)` and do not write. If `DRY_RUN`, append marked `(dry-run; skipped)` and do not write. (These are distinct tags — read-only means the tool can't archive-until-escalating; dry-run means you chose not to write.)
+- Otherwise archive the issue **using the mutation tool's archive-until-escalating mode**, passing the category-tagged `reason` as the audit trail. Use the exact parameter the available `update_issue` tool exposes for that mode — do not assume a parameter name; Pass 0 step 3 already confirmed the mode exists, or this run is `READ_ONLY`. Run sequentially.
+- **Verify each archive landed as until-escalating, not permanent.** If the tool's response (or a follow-up read) shows the issue was ignored permanently rather than archived-until-escalating, treat it as a failure: append to `errors[]` (`reason: archived permanently, not until-escalating`) and stop archiving the rest, since the mode is not behaving as required. On a clean until-escalating archive, append to `archived[]`.
 
 ## Final — Print Digest
 
@@ -164,7 +169,7 @@ Print this exact structure. Every section is always present, even when empty.
 # Sentry triage — <ORG_SLUG>/<PROJECT_SLUG> (window: <WINDOW>, mode: <live | dry-run | read-only>)
 
 ## Archived (<count>)
-- <SHORT-ID> <title> — <events>e/<users>u — <category>: <reason>[ (dry-run; skipped)]
+- <SHORT-ID> <title> — <events>e/<users>u — <category>: <reason>[ (dry-run; skipped) | (read-only; skipped)]
 
 ## Needs human (<count>)
 - <SHORT-ID> <title> — <events>e/<users>u — <why>
@@ -180,7 +185,7 @@ If a list is empty, render its heading with `(0)` and a single line `_None._` un
 
 ## Hard Rules
 
-- **Archive only**, always `ignoreMode: untilEscalating`, always with a category-tagged `reason`. Never resolve, unresolve, assign, or delete.
+- **Archive only**, always **archive-until-escalating** (never a permanent ignore), always with a category-tagged `reason`. If the mutation tool can't express until-escalating, run read-only and archive nothing (Pass 0 step 3). Never resolve, unresolve, assign, or delete.
 - **Skip assigned issues** and anything not `is:unresolved`.
 - **When in doubt, skip.** If it could be a real bug in our code, do not archive.
 - **Scope to the fresh queue** (`firstSeen:>${WINDOW_CUTOFF_ISO}`) — only triage recently-arrived issues, never the aged backlog.
@@ -195,4 +200,4 @@ Triage classifies by pattern, which is judgment-ier than a mechanical staleness 
 
 ## Quick Reference
 
-**MCP tools:** `find_projects`, `search_issues` (literal Sentry-syntax `query`), `get_issue_details`, `update_issue` (archive only, `untilEscalating`).
+**MCP tools:** `find_projects`, `search_issues` (literal Sentry-syntax `query`), `get_issue_details`, `update_issue` (archive-until-escalating only; verify it didn't land as a permanent ignore).
