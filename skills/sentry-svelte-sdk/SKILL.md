@@ -154,7 +154,12 @@ Sentry.init({
   environment: process.env.SENTRY_ENVIRONMENT,
   release: process.env.SENTRY_RELEASE,
 
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/sveltekit/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
   tracesSampleRate: 1.0,    // lower to 0.1–0.2 in production
   enableLogs: true,
 });
@@ -169,7 +174,12 @@ Sentry.init({
   dsn: import.meta.env.PUBLIC_SENTRY_DSN ?? import.meta.env.VITE_SENTRY_DSN,
   environment: import.meta.env.MODE,
 
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/sveltekit/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
   tracesSampleRate: 1.0,
 
   integrations: [
@@ -271,7 +281,12 @@ Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
   environment: import.meta.env.MODE,
 
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/sveltekit/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
 
   integrations: [
     Sentry.browserTracingIntegration(),
@@ -343,7 +358,12 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `dsn` | `string` | — | **Required.** Use env var; SDK is disabled when empty |
 | `environment` | `string` | `"production"` | e.g., `"staging"`, `"development"` |
 | `release` | `string` | — | e.g., `"my-app@1.2.3"` or git SHA |
-| `sendDefaultPii` | `boolean` | `false` | Includes IP addresses and request headers |
+| `dataCollection` | `object` | — | Control what data is collected (userInfo, cookies, headers, etc.) |
+| `dataCollection.userInfo` | `boolean` | `true` | Auto-populate `user.*` fields from instrumentation |
+| `dataCollection.cookies` | `boolean\|object` | `true` | Cookie collection and filtering |
+| `dataCollection.httpHeaders` | `object` | `{request: true, response: true}` | HTTP header collection for requests/responses |
+| `dataCollection.httpBodies` | `string[]` | `["incomingRequest", "outgoingRequest", "incomingResponse", "outgoingResponse"]` | Which HTTP body types to collect |
+| `dataCollection.queryParams` | `boolean\|object` | `true` | Query parameter collection and filtering |
 | `tracesSampleRate` | `number` | — | 0–1; use `1.0` in dev, `0.1–0.2` in prod |
 | `tracesSampler` | `function` | — | Per-transaction sampling; overrides `tracesSampleRate` |
 | `tracePropagationTargets` | `(string\|RegExp)[]` | — | URLs that receive distributed tracing headers |

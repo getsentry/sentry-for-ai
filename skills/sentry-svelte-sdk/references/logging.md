@@ -226,7 +226,7 @@ The SDK adds these to every log without any developer action:
 | `release` | `Sentry.init({ release })` | — |
 | `sdk.name`, `sdk.version` | SDK internals | — |
 | `browser.name`, `browser.version` | User-Agent | Client-side only |
-| `user.id`, `user.name`, `user.email` | `Sentry.setUser()` | When `sendDefaultPii: true` |
+| `user.id`, `user.name`, `user.email` | `Sentry.setUser()` | When `dataCollection.userInfo: true` (default in SDK ≥10.57.0) |
 | `sentry.trace.parent_span_id` | Active tracing span | If tracing is enabled |
 | `sentry.replay_id` | Active replay session | If Session Replay is enabled |
 | `message.template`, `message.parameter.X` | `logger.fmt` usage | — |
