@@ -1,6 +1,6 @@
 ---
 name: sentry-issue-digest
-description: Produce a read-only digest of what changed in a Sentry issue landscape — top new issues, new regressions, biggest movers, and optional release health. When run inside a code repository, correlates new and regressed issues to the recent commits and files that likely caused them. Use when asked for a "Sentry digest", "what got worse in Sentry", "daily/weekly Sentry summary", "Sentry standup report", "on-call handoff summary", or when invoked autonomously from a scheduled routine. Never changes issue state.
+description: Produce a read-only digest of what changed in a Sentry issue landscape — top new issues, active regressions, biggest movers, and optional release health. When run inside a code repository, correlates new and regressed issues to the recent commits and files that likely caused them. Use when asked for a "Sentry digest", "what got worse in Sentry", "daily/weekly Sentry summary", "Sentry standup report", "on-call handoff summary", or when invoked autonomously from a scheduled routine. Never changes issue state.
 license: Apache-2.0
 allowed-tools: Read, Bash, Grep, Glob, AskUserQuestion
 category: workflow
@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 # Sentry Issue Digest
 
-Summarize what changed in an issue landscape since the last look: the top new issues, fresh regressions, the biggest movers, and (optionally) release health. **Read-only — this skill never changes issue state.** Built to run unattended on a schedule and emit one short, glanceable digest sized for a single Slack thread post. **Conciseness is the goal** — lead with a one-line summary, show only sections that have content, and keep rows terse.
+Summarize what changed in an issue landscape since the last look: the top new issues, active regressions, the biggest movers, and (optionally) release health. **Read-only — this skill never changes issue state.** Built to run unattended on a schedule and emit one short, glanceable digest sized for a single Slack thread post. **Conciseness is the goal** — lead with a one-line summary, show only sections that have content, and keep rows terse.
 
 > **Can be used as** a daily or weekly cron/coroutine job.
 

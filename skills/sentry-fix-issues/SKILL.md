@@ -138,8 +138,8 @@ Complete before declaring fixed:
 After the user approves the fix:
 
 1. **Branch safety.** Create and work on `claude/sentry-fix-<issue-short-id-lowercased>` (the branch preflight in Phase 1 already confirmed it's free). Never commit the fix onto `main`/`master`.
-2. **Commit.** Make a single focused commit for the fix. Never use `git push --force` or `--no-verify`.
-3. **Open a draft PR** with `gh pr create --draft`. The body must include: a link to the Sentry issue, a short root-cause explanation, what changed and why, and the test plan (commands run + result).
+2. **Commit, then push.** Make a single focused commit for the fix, then push the branch (`git push -u origin <branch>`) so the PR has a remote to open against. Never use `git push --force` or `--no-verify`.
+3. **Open a draft PR** with `gh pr create --draft` (the branch is now pushed). The body must include: a link to the Sentry issue, a short root-cause explanation, what changed and why, and the test plan (commands run + result).
 4. **Update Sentry, don't resolve.** Assignment is **best-effort and optional**. `update_issue` needs an explicit user ID (`user:<id>`); it has no `me`/`self` keyword. Only attempt assignment if you can obtain the authenticated user's ID from an available tool (e.g. a `whoami`/user-lookup tool) — **never guess or hallucinate an ID.** If no such tool is available, or the MCP is read-only (no `update_issue`), **skip assignment** and note it in the Phase 8 report. **Never resolve the issue from this skill** — resolution happens when the PR merges. The draft PR is unaffected by skipped assignment since it uses `gh`, not the MCP.
 
 | Rule | Detail |

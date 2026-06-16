@@ -118,9 +118,9 @@ For platform-specific recognition (e.g. JS library names, extension globals, fra
 | Third-party / vendor | yes | any | `archive` |
 | Third-party / vendor | no | any | `needs-human` |
 | Our application code | — | any | `skip` |
-| `<unknown>`, `users == 0` | n/a | low (≤ 50 events) | `archive` (zero-impact) |
+| `<unknown>`, `users == 0` | n/a | < 1000 events | `archive` (zero-impact) |
 | `<unknown>`, `users > 0` | n/a | any | `needs-human` (real users affected) |
-| `<unknown>` | n/a | high (≥ 1000 events) | `needs-human` |
+| `<unknown>`, `users == 0` | n/a | high (≥ 1000 events) | `needs-human` (volume warrants a look) |
 | Synthetic / proxy / backend-5xx | yes | low–medium | `archive` |
 | Backend-5xx, single endpoint | yes | very high | `needs-human` (possible real regression) |
 
@@ -151,7 +151,7 @@ On `apply`/`apply <subset>`, archive the approved `archive` rows (the numbers in
 
 **Autonomous mode:** archive every issue classified `archive` directly.
 
-**Always populate every accumulator, not just `archived[]`:** as you finalize each issue, append it to `archived[]`, `needs_human[]`, or `skipped[]` according to its decision, so the digest's "Needs human" and "Skipped" sections are complete.
+**Populate the `needs_human[]` and `skipped[]` accumulators** as you finalize each non-archive decision, so the digest's "Needs human" and "Skipped" sections are complete. **Do not append `archive` decisions here** — `archived[]` is filled only by the archive loop below, so a row is never listed twice (and never shown as archived before an interactive `apply`).
 
 For each issue to archive:
 
