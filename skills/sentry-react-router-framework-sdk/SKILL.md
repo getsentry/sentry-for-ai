@@ -144,7 +144,12 @@ import { HydratedRouter } from "react-router/dom";
 
 Sentry.init({
   dsn: "___PUBLIC_DSN___",
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/react-router/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
   integrations: [
     Sentry.reactRouterTracingIntegration(),
     Sentry.replayIntegration(),
@@ -175,7 +180,12 @@ import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
 Sentry.init({
   dsn: "___PUBLIC_DSN___",
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/react-router/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
   enableLogs: true,
   integrations: [nodeProfilingIntegration()],
   tracesSampleRate: 1.0,
@@ -293,7 +303,11 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | Option | Type | Default | Notes |
 |--------|------|---------|-------|
 | `dsn` | `string` | — | Required; SDK disabled when empty |
-| `sendDefaultPii` | `boolean` | `false` | Includes headers/IP-derived user context |
+| `dataCollection` | `object` | — | Controls what data is collected (userInfo, cookies, httpHeaders, etc.) |
+| `dataCollection.userInfo` | `boolean` | `true` | Includes IP-derived user context |
+| `dataCollection.cookies` | `CollectBehavior` | `true` | Controls cookie collection and filtering |
+| `dataCollection.httpHeaders` | `object` | `{ request: true, response: true }` | Controls HTTP header collection |
+| `sendDefaultPii` | `boolean` | `false` | **Deprecated:** Use `dataCollection` instead; removed in v11 |
 | `integrations` | `Integration[]` | SDK defaults | Add tracing/replay/feedback/profiling integrations |
 | `enableLogs` | `boolean` | `false` | Enables `Sentry.logger.*` ingestion |
 | `tracesSampleRate` | `number` | — | Usually `1.0` in testing, lower in production |
