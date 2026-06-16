@@ -246,7 +246,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `dsn` | `str` | `None` | SDK disabled if empty; env: `SENTRY_DSN` |
 | `environment` | `str` | `"production"` | e.g., `"staging"`; env: `SENTRY_ENVIRONMENT` |
 | `release` | `str` | `None` | e.g., `"myapp@1.0.0"`; env: `SENTRY_RELEASE` |
-| `send_default_pii` | `bool` | `False` | Include IP, headers, cookies, auth user |
+| `send_default_pii` | `bool` | `False` | Include IP, headers, cookies, auth user, query strings (ASGI frameworks) |
 | `traces_sample_rate` | `float` | `None` | Transaction sample rate; `None` disables tracing |
 | `traces_sampler` | `Callable` | `None` | Custom per-transaction sampling (overrides rate) |
 | `profile_session_sample_rate` | `float` | `None` | Continuous profiling session rate |
@@ -344,4 +344,5 @@ If a frontend exists without Sentry, suggest the matching skill:
 | `enable_logs` not working | Requires SDK ≥ 2.35.0; for direct structured logs use `sentry_sdk.logger`; for stdlib bridging use `LoggingIntegration(sentry_logs_level=...)` |
 | Too many transactions | Lower `traces_sample_rate` or use `traces_sampler` to drop health checks |
 | Cross-request data leaking | Don't use `get_global_scope()` for per-request data — use `get_isolation_scope()` |
+| Query strings not captured (ASGI) | Query strings and client IP in ASGI frameworks (FastAPI, Starlette, etc.) require `send_default_pii=True` |
 | RQ worker not reporting | Pass `--sentry-dsn=""` to disable RQ's own Sentry shortcut; init via settings file instead |
