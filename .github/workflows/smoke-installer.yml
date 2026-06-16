@@ -1,0 +1,95 @@
+# End-to-end smoke test of the installer across Linux, macOS, and Windows.
+#
+# Installs the real agent CLIs, then runs the installer in non-interactive mode
+# (--no-interactive) so it installs the Sentry plugin for every detected agent
+# without a prompt, and verifies each plugin actually landed.
+#
+# Claude Code and Codex ship cross-platform npm CLIs, so they get a real
+# install against their default marketplaces. Cursor has no headless CLI to
+# install in CI, but our Cursor install is only a `git clone` of the public
+# plugin repo into ~/.cursor/plugins/local/sentry — so we put a `cursor` stub on
+# PATH to satisfy detection and verify the real clone (this is what exercises
+# the per-OS path handling, including Windows).
+
+name: Smoke installer
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/installer/**"
+      - ".github/workflows/smoke-installer.yml"
+  pull_request:
+    paths:
+      - "packages/installer/**"
+      - ".github/workflows/smoke-installer.yml"
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  smoke:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      SENTRY_DSN: "" # don't report CI smoke runs to Sentry
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: pnpm/action-setup@a15d269cd4658e1107c09f1fabf4cbd7bd1f308a # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm --filter @sentry/ai build
+
+      - name: Install Claude Code and Codex CLIs
+        run: npm install -g @anthropic-ai/claude-code @openai/codex
+
+      - name: Put a Cursor stub on PATH
+        run: |
+          dir="$RUNNER_TEMP/cursor-bin"
+          mkdir -p "$dir"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            printf '@exit /b 0\r\n' > "$dir/cursor.cmd"
+          else
+            printf '#!/bin/sh\nexit 0\n' > "$dir/cursor"
+            chmod +x "$dir/cursor"
+          fi
+          echo "$dir" >> "$GITHUB_PATH"
+
+      - name: Run installer (non-interactive)
+        # No working-directory: on Windows the bash shell mangles the
+        # backslashes in a `cd` to the workspace path, so run from the root.
+        run: node packages/installer/dist/index.js install --no-interactive
+
+      - name: Verify the Sentry plugin installed for each agent
+        run: |
+          set -euo pipefail
+
+          echo "== claude =="
+          claude plugin list
+          claude plugin list | grep -iq sentry || { echo "claude: sentry plugin missing"; exit 1; }
+
+          echo "== codex =="
+          codex plugin list
+          codex plugin list | grep -iq sentry || { echo "codex: sentry plugin missing"; exit 1; }
+
+          echo "== cursor =="
+          node -e "const p=require('path').join(require('os').homedir(),'.cursor','plugins','local','sentry'); if(!require('fs').existsSync(p)){console.error('cursor: plugin dir missing at '+p);process.exit(1)} console.log(p)"
+
+          echo "All agents have the Sentry plugin."
