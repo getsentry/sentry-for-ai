@@ -20,7 +20,7 @@ Discover, analyze, and fix production issues using Sentry's full debugging capab
 
 - Sentry MCP server configured and connected
 - Access to the Sentry project/organization
-- For opening a pull request (Phase 7): `gh` CLI authenticated (`gh auth status`) and a clean working tree
+- `gh` CLI authenticated (`gh auth status`): used in the Phase 1 branch preflight (to check for an existing PR) and required in Phase 7 to open the draft PR (which also needs a clean working tree). If `gh` is unavailable, the preflight degrades gracefully (see Phase 1) and Phase 7 cannot run.
 - Assigning the issue back in Sentry (Phase 7) needs **issue-write enabled**; on a read-only MCP connection that step is skipped and noted, and the draft PR is unaffected.
 
 ## Security Constraints
@@ -66,7 +66,8 @@ Assign each candidate a fixability score (1–5) and a `fixable` boolean with on
 
 **Branch preflight (before editing any code).** For the chosen issue, let `BRANCH = claude/sentry-fix-<issue-short-id-lowercased>` and check it *before* Phases 4–6 touch the repo, so you never edit files and then abandon the work with a dirty tree:
 
-- `git show-ref --verify --quiet refs/heads/${BRANCH}` — if the branch exists, run `gh pr list --head ${BRANCH} --state all --json url,state`. If a PR already exists, the issue is already handled — report the PR and stop. If the branch is orphaned (no PR), tell the user to delete it (`git branch -D ${BRANCH}`) and stop. Never auto-delete a branch.
+- `git show-ref --verify --quiet refs/heads/${BRANCH}` — if the branch exists, run `gh pr list --head ${BRANCH} --state all --json url,state` to check for an existing PR. If a PR already exists, the issue is already handled — report the PR and stop. If the branch exists with **no** PR, tell the user it's an orphaned branch and to delete it (`git branch -D ${BRANCH}`) and stop. Never auto-delete a branch.
+- **If `gh` is missing or `gh pr list` errors**, do not infer the branch is orphaned (a failed lookup is not "no PR"). Report that the PR-existence check couldn't run, ask the user to resolve the existing branch manually, and stop — never recommend deleting a branch based on a failed or unavailable check.
 - If the branch does not exist, proceed.
 
 ## Phase 2: Deep Issue Analysis
@@ -141,14 +142,14 @@ After the user approves the fix:
 1. **Branch safety.** Create and work on `claude/sentry-fix-<issue-short-id-lowercased>` (the branch preflight in Phase 1 already confirmed it's free). Never commit the fix onto `main`/`master`.
 2. **Commit.** Make a single focused commit for the fix. Never use `git push --force` or `--no-verify`.
 3. **Open a draft PR** with `gh pr create --draft`. The body must include: a link to the Sentry issue, a short root-cause explanation, what changed and why, and the test plan (commands run + result).
-4. **Update Sentry, don't resolve.** Call `update_issue` to assign the issue to yourself (the authenticated user). **Never resolve the issue from this skill** — resolution happens when the PR merges. **If the MCP is read-only** (no `update_issue` tool), skip the assignment and note it in the Phase 8 report; the draft PR is unaffected since it uses `gh`, not the MCP.
+4. **Update Sentry, don't resolve.** Assignment is **best-effort and optional**. `update_issue` needs an explicit user ID (`user:<id>`); it has no `me`/`self` keyword. Only attempt assignment if you can obtain the authenticated user's ID from an available tool (e.g. a `whoami`/user-lookup tool) — **never guess or hallucinate an ID.** If no such tool is available, or the MCP is read-only (no `update_issue`), **skip assignment** and note it in the Phase 8 report. **Never resolve the issue from this skill** — resolution happens when the PR merges. The draft PR is unaffected by skipped assignment since it uses `gh`, not the MCP.
 
 | Rule | Detail |
 |------|--------|
 | **Branch prefix** | Only ever push to a `claude/`-prefixed branch |
 | **No force / no verify** | Never `git push --force`, never `--no-verify` |
 | **Draft only** | Open PRs as drafts so a human reviews before merge |
-| **Assign, never resolve** | `update_issue` to assign; resolution is for the merge |
+| **Assign, never resolve** | Assign only with a real user ID from a tool (best-effort; skip if unavailable). Resolution is for the merge |
 | **Out-of-repo frames** | If the stack trace references files outside this repo, mark unfixable and stop — never invent file paths |
 
 ## Phase 8: Report Results
