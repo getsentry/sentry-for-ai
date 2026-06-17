@@ -1,0 +1,6 @@
+{
+  "name": "sentry-for-ai",
+  "private": true,
+  "packageManager": "pnpm@11.0.2",
+  "pnpm": {}
+}
