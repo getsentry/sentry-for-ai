@@ -1,3 +1,5 @@
+import type { OutputSink } from "../system";
+
 /**
  * Result of an install or update attempt.
  */
@@ -46,15 +48,17 @@ export interface Harness {
    * vendor's "official" plugin that would shadow this one). Runs first during
    * install; optional because not every harness has anything to clean up.
    * Returns a short description of what was removed (surfaced in the UI), or null
-   * when there was nothing to clean up.
+   * when there was nothing to clean up. Streams command output to `output`.
    */
-  cleanup?(): Promise<string | null>;
+  cleanup?(output?: OutputSink): Promise<string | null>;
   /**
-   * Install the plugin, assuming it is absent.
+   * Install the plugin, assuming it is absent. Streams command output to
+   * `output` when provided.
    */
-  install(): Promise<InstallOutcome>;
+  install(output?: OutputSink): Promise<InstallOutcome>;
   /**
-   * Update the plugin, assuming it is already present.
+   * Update the plugin, assuming it is already present. Streams command output to
+   * `output` when provided.
    */
-  update(): Promise<InstallOutcome>;
+  update(output?: OutputSink): Promise<InstallOutcome>;
 }

@@ -1,4 +1,4 @@
-import { realSystem, type SystemDeps } from "../system";
+import { realSystem, type OutputSink, type SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
 import { detectOnPath, runInstallCommand, runJson } from "./shell";
 
@@ -48,7 +48,7 @@ export function createGrok(system: SystemDeps): Harness {
 
     canInstall: async () => ({ ok: true }),
 
-    cleanup: async () => {
+    cleanup: async (output) => {
       // A sentry plugin installed from a marketplace (e.g. "xAI Official")
       // shadows ours. Uninstall it so our direct-repo install is the one that
       // resolves; ours (no marketplace) is left untouched.
@@ -60,20 +60,20 @@ export function createGrok(system: SystemDeps): Harness {
         return null;
       }
 
-      await runInstallCommand(system, UNINSTALL_COMMAND);
+      await runInstallCommand(system, UNINSTALL_COMMAND, output);
       const via = foreign.marketplace ? ` (installed via ${foreign.marketplace})` : "";
       return `Removed conflicting sentry plugin${via}`;
     },
 
-    install: async (): Promise<InstallOutcome> => {
-      await runInstallCommand(system, INSTALL_COMMAND);
+    install: async (output): Promise<InstallOutcome> => {
+      await runInstallCommand(system, INSTALL_COMMAND, output);
       return { kind: "done", command: INSTALL_COMMAND };
     },
 
     // `grok plugin install` errors on an already-installed repo, so update in
     // place instead of reinstalling.
-    update: async (): Promise<InstallOutcome> => {
-      await runInstallCommand(system, UPDATE_COMMAND);
+    update: async (output): Promise<InstallOutcome> => {
+      await runInstallCommand(system, UPDATE_COMMAND, output);
       return { kind: "done", command: UPDATE_COMMAND };
     },
   };

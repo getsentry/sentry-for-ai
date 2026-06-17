@@ -1,4 +1,4 @@
-import { realSystem, type SystemDeps } from "../system";
+import { realSystem, type OutputSink, type SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
 import { detectOnPath, runInstallCommand, runJson } from "./shell";
 
@@ -33,13 +33,14 @@ async function isMarketplaceRegistered(system: SystemDeps): Promise<boolean> {
 // A fresh CLI has no marketplaces registered, so register the official one if it
 // is missing; otherwise refresh its index so the plugin resolves. Required by
 // both install and update.
-async function ensureMarketplace(system: SystemDeps): Promise<void> {
+async function ensureMarketplace(system: SystemDeps, output?: OutputSink): Promise<void> {
   const registered = await isMarketplaceRegistered(system);
   await runInstallCommand(
     system,
     registered
       ? `claude plugin marketplace update ${MARKETPLACE}`
       : `claude plugin marketplace add ${MARKETPLACE_SOURCE}`,
+    output,
   );
 }
 
@@ -54,15 +55,15 @@ export function createClaude(system: SystemDeps): Harness {
 
     canInstall: async () => ({ ok: true }),
 
-    install: async (): Promise<InstallOutcome> => {
-      await ensureMarketplace(system);
-      await runInstallCommand(system, INSTALL_COMMAND);
+    install: async (output): Promise<InstallOutcome> => {
+      await ensureMarketplace(system, output);
+      await runInstallCommand(system, INSTALL_COMMAND, output);
       return { kind: "done", command: INSTALL_COMMAND };
     },
 
-    update: async (): Promise<InstallOutcome> => {
-      await ensureMarketplace(system);
-      await runInstallCommand(system, UPDATE_COMMAND);
+    update: async (output): Promise<InstallOutcome> => {
+      await ensureMarketplace(system, output);
+      await runInstallCommand(system, UPDATE_COMMAND, output);
       return { kind: "done", command: UPDATE_COMMAND };
     },
   };

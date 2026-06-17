@@ -1,12 +1,19 @@
-import type { SystemDeps } from "../system";
+import type { OutputSink, SystemDeps } from "../system";
 
 export async function detectOnPath(system: SystemDeps, binary: string): Promise<boolean> {
   const locator = system.platform === "win32" ? "where" : "which";
   return (await system.run(`${locator} ${binary}`)).ok;
 }
 
-export async function runInstallCommand(system: SystemDeps, command: string): Promise<void> {
-  const result = await system.run(command);
+// Runs a mutating command, streaming its output to `output` when given. Only the
+// sink is forwarded when present, so non-streaming callers (and tests) still see
+// a single-argument call.
+export async function runInstallCommand(
+  system: SystemDeps,
+  command: string,
+  output?: OutputSink,
+): Promise<void> {
+  const result = output ? await system.run(command, output) : await system.run(command);
 
   if (result.ok) {
     return;
