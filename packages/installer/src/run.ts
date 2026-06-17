@@ -1,3 +1,4 @@
+import type { OutputSink } from "./system";
 import type { Harness } from "./harnesses/types";
 
 export interface Detection {
@@ -30,7 +31,10 @@ export async function detectHarnesses(harnesses: Harness[]): Promise<Detection[]
 // Install (or reinstall) a single harness. A blocked prerequisite short-circuits
 // before install runs; a thrown install is captured as a `failed` result so a
 // concurrent batch can keep going instead of rejecting the whole run.
-export async function installHarness(detection: Detection): Promise<InstallResult> {
+export async function installHarness(
+  detection: Detection,
+  output?: OutputSink,
+): Promise<InstallResult> {
   const readiness = await detection.harness.canInstall();
   if (!readiness.ok) {
     return { kind: "blocked", reason: readiness.reason };
@@ -39,14 +43,14 @@ export async function installHarness(detection: Detection): Promise<InstallResul
   try {
     // Clear out conflicting/legacy Sentry plugins first so ours is the one that
     // resolves, then install or update based on what detection already found.
-    // InstallOutcome (done | manual) is a subset of InstallResult, so a clean
-    // run passes straight through; only blocked/failed and the cleanup note are
-    // added here.
-    const cleaned = (await detection.harness.cleanup?.()) ?? undefined;
+    // Command output streams to `output` as it runs. InstallOutcome (done |
+    // manual) is a subset of InstallResult, so a clean run passes straight
+    // through; only blocked/failed and the cleanup note are added here.
+    const cleaned = (await detection.harness.cleanup?.(output)) ?? undefined;
 
     const outcome = detection.installed
-      ? await detection.harness.update()
-      : await detection.harness.install();
+      ? await detection.harness.update(output)
+      : await detection.harness.install(output);
 
     return cleaned ? { ...outcome, cleaned } : outcome;
   } catch (err) {

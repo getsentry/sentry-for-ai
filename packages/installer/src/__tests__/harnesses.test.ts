@@ -117,6 +117,16 @@ describe("claude harness", () => {
     );
   });
 
+  it("forwards the output sink to streamed commands", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const sink = {} as NodeJS.WritableStream;
+    await createClaude(system).install(sink);
+    expect(system.run).toHaveBeenCalledWith(
+      "claude plugin install sentry@claude-plugins-official",
+      sink,
+    );
+  });
+
   it("surfaces stderr when install fails", async () => {
     const harness = createClaude(
       fakeSystem({ run: () => ({ ok: false, stderr: "boom", message: "exit 1" }) }),
@@ -410,15 +420,5 @@ describe("cursor harness", () => {
 
     expect(outcome.kind).toBe("done");
     expect(system.run).toHaveBeenCalledWith(`git -C "${target}" pull`);
-  });
-
-  it("includes a restart note in the done outcome", async () => {
-    const system = fakeSystem({ homedir: "/home/user" });
-    const outcome = await createCursor(system).install();
-
-    expect(outcome.kind).toBe("done");
-    if (outcome.kind === "done") {
-      expect(outcome.note).toContain("Restart Cursor");
-    }
   });
 });

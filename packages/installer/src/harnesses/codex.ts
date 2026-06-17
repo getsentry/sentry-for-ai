@@ -1,4 +1,4 @@
-import { realSystem, type SystemDeps } from "../system";
+import { realSystem, type OutputSink, type SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
 import { detectOnPath, runInstallCommand, runJson } from "./shell";
 
@@ -50,22 +50,23 @@ async function isMarketplaceRegistered(system: SystemDeps): Promise<boolean> {
 // The Sentry plugin lives in its own marketplace, not a Codex default, so
 // register it if missing; otherwise refresh its snapshot so it resolves.
 // Required by both install and update.
-async function ensureMarketplace(system: SystemDeps): Promise<void> {
+async function ensureMarketplace(system: SystemDeps, output?: OutputSink): Promise<void> {
   const registered = await isMarketplaceRegistered(system);
   await runInstallCommand(
     system,
     registered
       ? `codex plugin marketplace upgrade ${MARKETPLACE}`
       : `codex plugin marketplace add ${MARKETPLACE_SOURCE}`,
+    output,
   );
 }
 
 // Codex has no plugin update command; `add` is idempotent and re-points an
 // already-installed plugin at the refreshed snapshot, so install and update
 // share this single path.
-async function addPlugin(system: SystemDeps): Promise<InstallOutcome> {
-  await ensureMarketplace(system);
-  await runInstallCommand(system, INSTALL_COMMAND);
+async function addPlugin(system: SystemDeps, output?: OutputSink): Promise<InstallOutcome> {
+  await ensureMarketplace(system, output);
+  await runInstallCommand(system, INSTALL_COMMAND, output);
   return { kind: "done", command: INSTALL_COMMAND };
 }
 
@@ -80,18 +81,18 @@ export function createCodex(system: SystemDeps): Harness {
 
     canInstall: async () => ({ ok: true }),
 
-    cleanup: async () => {
+    cleanup: async (output) => {
       if (!(await hasPlugin(system, LEGACY_PLUGIN_ID))) {
         return null;
       }
 
-      await runInstallCommand(system, `codex plugin remove ${LEGACY_PLUGIN_ID}`);
+      await runInstallCommand(system, `codex plugin remove ${LEGACY_PLUGIN_ID}`, output);
       return `Removed conflicting plugin ${LEGACY_PLUGIN_ID}`;
     },
 
-    install: async () => addPlugin(system),
+    install: async (output) => addPlugin(system, output),
 
-    update: async () => addPlugin(system),
+    update: async (output) => addPlugin(system, output),
   };
 }
 

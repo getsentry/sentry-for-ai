@@ -1,10 +1,9 @@
 import { join } from "node:path";
-import { realSystem, type SystemDeps } from "../system";
+import { realSystem, type OutputSink, type SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
 import { detectOnPath, runInstallCommand } from "./shell";
 
 const PLUGIN_REPO = "https://github.com/getsentry/plugin-cursor.git";
-const RESTART_NOTE = 'Restart Cursor or run "Developer: Reload Window" to activate the plugin.';
 
 function pluginDir(system: SystemDeps): string {
   return join(system.homedir, ".cursor", "plugins", "local", "sentry");
@@ -45,17 +44,17 @@ export function createCursor(system: SystemDeps): Harness {
         ? { ok: true }
         : { ok: false, reason: "git is required to clone the Cursor plugin" },
 
-    install: async (): Promise<InstallOutcome> => {
+    install: async (output): Promise<InstallOutcome> => {
       // Quote the target: Windows home paths routinely contain spaces.
       const command = `git clone ${PLUGIN_REPO} "${pluginDir(system)}"`;
-      await runInstallCommand(system, command);
-      return { kind: "done", command, note: RESTART_NOTE };
+      await runInstallCommand(system, command, output);
+      return { kind: "done", command };
     },
 
-    update: async (): Promise<InstallOutcome> => {
+    update: async (output): Promise<InstallOutcome> => {
       const command = `git -C "${pluginDir(system)}" pull`;
-      await runInstallCommand(system, command);
-      return { kind: "done", command, note: RESTART_NOTE };
+      await runInstallCommand(system, command, output);
+      return { kind: "done", command };
     },
   };
 }

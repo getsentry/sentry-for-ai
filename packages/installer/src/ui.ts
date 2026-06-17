@@ -1,6 +1,14 @@
 import { checkbox } from "@inquirer/prompts";
 import { ListrInquirerPromptAdapter } from "@listr2/prompt-adapter-inquirer";
-import { Listr, type ListrTask, type ListrTaskWrapper } from "listr2";
+import {
+  color,
+  createWritable,
+  Listr,
+  ListrDefaultRendererLogLevels,
+  Spinner,
+  type ListrTask,
+  type ListrTaskWrapper,
+} from "listr2";
 import type { Harness } from "./harnesses/types";
 import {
   detectHarnesses,
@@ -57,6 +65,11 @@ interface Ctx {
 // "Claude Code", "Claude Code and Codex", "Claude Code, Codex, and Grok".
 const listFormatter = new Intl.ListFormat("en", { style: "long", type: "conjunction" });
 
+// A diamond that pulses small-to-large for the in-progress spinner.
+class DiamondSpinner extends Spinner {
+  protected readonly spinner = ["◇", "◈", "◆", "◈"];
+}
+
 type TaskWrapper = ListrTaskWrapper<Ctx, any, any>;
 
 // inquirer raises ExitPromptError when the user hits Ctrl-C / Esc at the
@@ -76,6 +89,19 @@ async function promptForAgents(detected: Detection[], task: TaskWrapper): Promis
       value: detection.harness.id,
       checked: true,
     })),
+    // The cursor must stay one column wide: inquirer pads inactive rows with a
+    // single hardcoded space, so a wider cursor would shift the active row's
+    // checkbox out of alignment. Put the gap after the arrow on the checkbox
+    // icons instead, so every row reserves the same two columns before the box.
+    theme: {
+      // Hollow diamond in place of the default "?" prompt prefix.
+      prefix: color.blue("◇"),
+      icon: {
+        cursor: "→",
+        checked: ` ${color.green("◉")}`,
+        unchecked: " ◯",
+      },
+    },
   });
 
   return detected.filter((detection) => selectedIds.includes(detection.harness.id));
@@ -87,24 +113,45 @@ function installTask(ctx: Ctx, detection: Detection): ListrTask<Ctx> {
 
   return {
     title: installed ? `${harness.name} (reinstall)` : harness.name,
-    // Keep output (cleanup notes, manual steps, restart hints) visible after the
-    // task settles instead of letting it clear on completion.
-    rendererOptions: { persistentOutput: true },
+    // outputBar shows every streamed line of the running commands; persistentOutput
+    // keeps it (and the trailing notes below) on screen after the task settles.
+    rendererOptions: { persistentOutput: true, outputBar: Infinity },
     task: async (_ctx, task: TaskWrapper) => {
-      const result = await installHarness(detection);
+      // Stream the install/cleanup command output live under this task's row,
+      // grayed (the renderer's color map only tints the icon, so gray the body
+      // through a createWritable transform). Trailing notes go to the raw sink so
+      // their text stays full color and reads as ours, not command noise.
+      const raw = task.stdout();
+      // Gray per line, leaving blank lines genuinely empty — otherwise the gray
+      // escapes make them non-empty and defeat the renderer's removeEmptyLines.
+      const out = createWritable((chunk) =>
+        raw.write(
+          chunk
+            .toString()
+            .split("\n")
+            .map((line: string) => (line ? color.gray(line) : line))
+            .join("\n"),
+        ),
+      );
+      const result = await installHarness(detection, out);
       ctx.results.push(result);
 
+      // Trailing notes (what cleanup removed, manual steps, restart hints) are not
+      // command output, so append them to the raw stream rather than overwriting it.
+      const writeTail = (...lines: (string | undefined)[]) => {
+        const tail = lines.filter(Boolean).join("\n");
+        if (tail) raw.write(`\n${tail}\n`);
+      };
+
       switch (result.kind) {
-        case "done": {
+        case "done":
           task.title = `${harness.name} — ${result.command}`;
-          const output = [result.cleaned, result.note].filter(Boolean).join("\n");
-          if (output) task.output = output;
+          writeTail(result.cleaned, result.note);
           ctx.installed.push(harness.name);
           return;
-        }
         case "manual":
           task.title = `${harness.name} — manual steps required`;
-          task.output = [result.cleaned, result.instructions].filter(Boolean).join("\n");
+          writeTail(result.cleaned, result.instructions);
           ctx.installed.push(harness.name);
           return;
         case "blocked":
@@ -190,6 +237,20 @@ export async function runInstaller(
       concurrent: false,
       exitOnError: true,
       silentRendererCondition: !!process.env.VITEST,
+      rendererOptions: {
+        // Render streamed command output (the OUTPUT log level) in gray so it
+        // reads as secondary to the task titles.
+        color: { [ListrDefaultRendererLogLevels.OUTPUT]: (text) => color.gray(text ?? "") },
+        spinner: new DiamondSpinner(),
+        // Diamond-themed icons in place of listr's defaults.
+        icon: {
+          [ListrDefaultRendererLogLevels.COMPLETED]: "◆",
+          [ListrDefaultRendererLogLevels.OUTPUT]: "◦",
+          [ListrDefaultRendererLogLevels.OUTPUT_WITH_BOTTOMBAR]: "◦",
+          [ListrDefaultRendererLogLevels.SKIPPED_WITH_COLLAPSE]: "◇",
+          [ListrDefaultRendererLogLevels.FAILED]: "✕",
+        },
+      },
     },
   );
 
