@@ -36,15 +36,27 @@ function runStreaming(command: string, output: OutputSink): Promise<ShellResult>
   return new Promise((resolve) => {
     const child = spawn(command, { shell: true });
 
+    // Tee stderr: pipe it to the live view AND buffer it, so a failure can throw
+    // the command's actual error text rather than a generic exit-code message.
+    // Decode as UTF-8 so a multibyte char split across chunks isn't corrupted.
+    let stderr = "";
+    child.stderr?.setEncoding("utf8");
     child.stdout?.pipe(output, { end: false });
     child.stderr?.pipe(output, { end: false });
+    child.stderr?.on("data", (chunk) => {
+      stderr += chunk;
+    });
 
     child.on("error", (err) => resolve({ ok: false, message: err.message }));
     child.on("close", (code) =>
       resolve(
         code === 0
           ? { ok: true }
-          : { ok: false, message: `Command failed with exit code ${code}: ${command}` },
+          : {
+              ok: false,
+              stderr: stderr.trim(),
+              message: `Command failed with exit code ${code}: ${command}`,
+            },
       ),
     );
   });
