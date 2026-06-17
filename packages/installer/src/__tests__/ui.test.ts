@@ -39,7 +39,8 @@ describe("runInstaller (non-interactive)", () => {
 
     await runInstaller([claude, grok], { interactive: false });
 
-    expect(log).toHaveBeenCalledWith("\nRestart Claude Code and Grok to use Sentry with AI.");
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("Restart Claude Code and Grok. "));
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("Your agents now speak Sentry."));
     log.mockRestore();
   });
 

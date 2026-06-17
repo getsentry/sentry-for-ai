@@ -3,6 +3,7 @@ import { ListrInquirerPromptAdapter } from "@listr2/prompt-adapter-inquirer";
 import {
   color,
   createWritable,
+  DefaultRenderer,
   Listr,
   ListrDefaultRendererLogLevels,
   Spinner,
@@ -10,6 +11,7 @@ import {
   type ListrTaskWrapper,
 } from "listr2";
 import type { Harness } from "./harnesses/types";
+import { SHIMMER_INTERVAL_MS, shimmer, shimmerRest } from "./text-shimmer";
 import {
   detectHarnesses,
   installHarness,
@@ -46,6 +48,28 @@ const TEXT_LINES = BANNER_LINES.map(
 
 const BANNER = `\n${[PAD_TOP, ...TEXT_LINES, PAD_BOTTOM].join("\n")}\n`;
 
+// Tagline shown under the banner while the install runs. "speak Sentry"
+// shimmers — a bright band sweeps across it — painted as a header by
+// ShimmerRenderer each frame (see runInstaller). It settles to a calm static
+// line when the work finishes, and stays static off a color TTY.
+const INTRO_PREFIX = "Teaching your agents to ";
+const INTRO_WORD = "speak Sentry";
+const INTRO_SUFFIX = ". This won't take long…";
+
+// The tagline. With no `phase` it renders at rest; pass a phase for a shimmer
+// frame. Off a color TTY the word stays plain so piped output carries no escapes.
+function introTitle(colored: boolean, phase?: number): string {
+  const prefix = color.dim(INTRO_PREFIX);
+  const suffix = color.dim(INTRO_SUFFIX);
+
+  if (!colored) {
+    return `${prefix}${INTRO_WORD}${suffix}`;
+  }
+
+  const word = phase === undefined ? shimmerRest(INTRO_WORD) : shimmer(INTRO_WORD, phase);
+  return `${prefix}${word}${suffix}`;
+}
+
 export interface RunOptions {
   // When false, skip the selector and install every detected agent (CI smoke
   // tests, unattended runs). The selection task is disabled in this mode.
@@ -65,12 +89,25 @@ interface Ctx {
 // "Claude Code", "Claude Code and Codex", "Claude Code, Codex, and Grok".
 const listFormatter = new Intl.ListFormat("en", { style: "long", type: "conjunction" });
 
-// A diamond that pulses small-to-large for the in-progress spinner.
+// A diamond that pulses small-to-large for the in-progress spinner. A faster
+// tick than listr's 100ms default keeps the header shimmer smooth, since the
+// renderer repaints on each spin.
 class DiamondSpinner extends Spinner {
   protected readonly spinner = ["◇", "◈", "◆", "◈"];
+
+  start(cb: () => void, interval = 80): void {
+    super.start(cb, interval);
+  }
 }
 
 type TaskWrapper = ListrTaskWrapper<Ctx, any, any>;
+
+// The slice of a listr Task that ShimmerRenderer reads to tell whether work is
+// still in flight (the base renderer keeps its task list private).
+interface TaskState {
+  isPending(): boolean;
+  isStarted(): boolean;
+}
 
 // inquirer raises ExitPromptError when the user hits Ctrl-C / Esc at the
 // prompt. We treat that as a clean cancellation rather than a crash.
@@ -170,89 +207,127 @@ export async function runInstaller(
 ): Promise<boolean> {
   const interactive = options.interactive ?? true;
 
+  // The header shimmer is painted by ShimmerRenderer, which only runs on a TTY.
+  // colored gates truecolor; animate gates the sweep (off under test).
+  const isTTY = !!process.stdout.isTTY;
+  const colored = isTTY && !process.env.NO_COLOR && !process.env.CI;
+  const animate = colored && !process.env.VITEST;
+
   if (!process.env.VITEST) {
     console.log(BANNER);
+    // Off a TTY the renderer falls back to a plain logger with no header, so
+    // print the tagline once up front to keep it in the output.
+    if (!isTTY) {
+      console.log(`${introTitle(colored)}\n`);
+    }
   }
 
-  const tasks = new Listr<Ctx>(
-    [
-      {
-        title: "Detecting AI coding tools",
-        task: async (ctx, task) => {
-          ctx.detections = await detectHarnesses(harnesses);
-
-          const found = ctx.detections.filter((d) => d.detected).map((d) => d.harness.name);
-          task.title = found.length ? `Detected ${found.join(", ")}` : "No AI coding tools found";
-        },
-      },
-      {
-        title: "Select agents",
-        // Skip the prompt unless we are interactive and actually found something
-        // to install — an empty checkbox is pointless.
-        enabled: (ctx) => interactive && ctx.detections.some((d) => d.detected),
-        task: async (ctx, task) => {
-          const detected = ctx.detections.filter((d) => d.detected);
-          try {
-            ctx.selected = await promptForAgents(detected, task);
-          } catch (err) {
-            if (!isCancel(err)) throw err;
-            ctx.cancelled = true;
-            task.skip("Cancelled");
-          }
-        },
-      },
-      {
-        title: "Installing plugins",
-        // Interactive runs install the user's selection; non-interactive runs
-        // skip the prompt and install every detected agent.
-        enabled: (ctx) => !ctx.cancelled,
-        task: (ctx, task) => {
-          const selected = interactive ? ctx.selected : ctx.detections.filter((d) => d.detected);
-
-          if (selected.length === 0) {
-            task.skip("No agents selected");
-            return;
-          }
-
-          // exitOnError: false so one agent failing does not abort the rest;
-          // each subtask records its own result and the batch still settles.
-          // collapseSubtasks: false keeps the per-agent rows (and their command
-          // and cleanup output) on screen after the group finishes instead of
-          // folding them back into the parent line.
-          return task.newListr(
-            selected.map((detection) => installTask(ctx, detection)),
-            {
-              concurrent: true,
-              exitOnError: false,
-              rendererOptions: { collapseSubtasks: false },
-            },
-          );
-        },
-      },
-    ],
-    // exitOnError aborts the run if a task throws unexpectedly (e.g. the prompt
-    // erroring); install failures are contained by the inner list above. Under
-    // vitest we silence the renderer so test runs do not paint the terminal.
+  // The actual install steps. They run nested under the shimmering tagline so
+  // the tagline stays on screen, animating, for the whole run.
+  const steps: ListrTask<Ctx>[] = [
     {
-      concurrent: false,
-      exitOnError: true,
-      silentRendererCondition: !!process.env.VITEST,
-      rendererOptions: {
-        // Render streamed command output (the OUTPUT log level) in gray so it
-        // reads as secondary to the task titles.
-        color: { [ListrDefaultRendererLogLevels.OUTPUT]: (text) => color.gray(text ?? "") },
-        spinner: new DiamondSpinner(),
-        // Diamond-themed icons in place of listr's defaults.
-        icon: {
-          [ListrDefaultRendererLogLevels.COMPLETED]: "◆",
-          [ListrDefaultRendererLogLevels.OUTPUT]: "◦",
-          [ListrDefaultRendererLogLevels.OUTPUT_WITH_BOTTOMBAR]: "◦",
-          [ListrDefaultRendererLogLevels.SKIPPED_WITH_COLLAPSE]: "◇",
-          [ListrDefaultRendererLogLevels.FAILED]: "✕",
-        },
+      title: "Detecting AI coding tools",
+      task: async (ctx, task) => {
+        ctx.detections = await detectHarnesses(harnesses);
+
+        const found = ctx.detections.filter((d) => d.detected).map((d) => d.harness.name);
+        task.title = found.length ? `Detected ${found.join(", ")}` : "No AI coding tools found";
       },
     },
-  );
+    {
+      title: "Select agents",
+      // Skip the prompt unless we are interactive and actually found something
+      // to install — an empty checkbox is pointless.
+      enabled: (ctx) => interactive && ctx.detections.some((d) => d.detected),
+      task: async (ctx, task) => {
+        const detected = ctx.detections.filter((d) => d.detected);
+        try {
+          ctx.selected = await promptForAgents(detected, task);
+        } catch (err) {
+          if (!isCancel(err)) throw err;
+          ctx.cancelled = true;
+          task.skip("Cancelled");
+        }
+      },
+    },
+    {
+      title: "Installing plugins",
+      // Interactive runs install the user's selection; non-interactive runs
+      // skip the prompt and install every detected agent.
+      enabled: (ctx) => !ctx.cancelled,
+      task: (ctx, task) => {
+        const selected = interactive ? ctx.selected : ctx.detections.filter((d) => d.detected);
+
+        if (selected.length === 0) {
+          task.skip("No agents selected");
+          return;
+        }
+
+        // exitOnError: false so one agent failing does not abort the rest;
+        // each subtask records its own result and the batch still settles.
+        // collapseSubtasks: false keeps the per-agent rows (and their command
+        // and cleanup output) on screen after the group finishes instead of
+        // folding them back into the parent line.
+        return task.newListr(
+          selected.map((detection) => installTask(ctx, detection)),
+          {
+            concurrent: true,
+            exitOnError: false,
+            rendererOptions: { collapseSubtasks: false },
+          },
+        );
+      },
+    },
+  ];
+
+  // Paint the shimmering tagline as a header above the task list every frame.
+  // The header is not a task, so it carries no spinner icon, and the steps
+  // render as a normal flat list beneath a blank line.
+  class ShimmerRenderer extends DefaultRenderer {
+    // Wall-clock origin for a frame-rate-independent shimmer phase.
+    private readonly startedAt = Date.now();
+
+    create(options?: Parameters<DefaultRenderer["create"]>[0]): string {
+      const body = super.create(options);
+
+      // Animate only while work is in flight; once every task has settled the
+      // header rests, so the final painted frame is calm. `tasks` is private on
+      // the base renderer, so reach it through a narrowed cast.
+      const tasks = (this as unknown as { tasks: TaskState[] }).tasks;
+      const running = tasks.some((task) => task.isPending() || task.isStarted());
+      const phase =
+        animate && running
+          ? Math.floor((Date.now() - this.startedAt) / SHIMMER_INTERVAL_MS)
+          : undefined;
+      const header = introTitle(colored, phase);
+
+      return body.length > 0 ? `${header}\n\n${body}` : header;
+    }
+  }
+
+  const tasks = new Listr<Ctx, typeof ShimmerRenderer>(steps, {
+    // Steps run sequentially; install failures are contained by the inner list.
+    // exitOnError aborts on an unexpected throw (e.g. the prompt erroring).
+    // Under vitest we silence the renderer so test runs do not paint.
+    concurrent: false,
+    exitOnError: true,
+    renderer: ShimmerRenderer,
+    silentRendererCondition: !!process.env.VITEST,
+    rendererOptions: {
+      // Render streamed command output (the OUTPUT log level) in gray so it
+      // reads as secondary to the task titles.
+      color: { [ListrDefaultRendererLogLevels.OUTPUT]: (text) => color.gray(text ?? "") },
+      spinner: new DiamondSpinner(),
+      // Diamond-themed icons in place of listr's defaults.
+      icon: {
+        [ListrDefaultRendererLogLevels.COMPLETED]: "◆",
+        [ListrDefaultRendererLogLevels.OUTPUT]: "◦",
+        [ListrDefaultRendererLogLevels.OUTPUT_WITH_BOTTOMBAR]: "◦",
+        [ListrDefaultRendererLogLevels.SKIPPED_WITH_COLLAPSE]: "◇",
+        [ListrDefaultRendererLogLevels.FAILED]: "✕",
+      },
+    },
+  });
 
   const ctx: Ctx = {
     detections: [],
@@ -278,7 +353,10 @@ export async function runInstaller(
   }
 
   if (ctx.installed.length > 0) {
-    console.log(`\nRestart ${listFormatter.format(ctx.installed)} to use Sentry with AI.`);
+    const speak = ctx.installed.length === 1 ? "agent now speaks" : "agents now speak";
+    console.log(
+      `\nDone. Restart ${listFormatter.format(ctx.installed)}. ${color.dim(`Your ${speak} Sentry.`)}`,
+    );
   }
 
   return ctx.results.every(installSucceeded);
