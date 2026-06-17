@@ -46,13 +46,14 @@ export function createCursor(system: SystemDeps): Harness {
         : { ok: false, reason: "git is required to clone the Cursor plugin" },
 
     install: async (): Promise<InstallOutcome> => {
-      const target = pluginDir(system);
-
       // Quote the target: Windows home paths routinely contain spaces.
-      const command = system.exists(target)
-        ? `git -C "${target}" pull`
-        : `git clone ${PLUGIN_REPO} "${target}"`;
+      const command = `git clone ${PLUGIN_REPO} "${pluginDir(system)}"`;
+      await runInstallCommand(system, command);
+      return { kind: "done", command, note: RESTART_NOTE };
+    },
 
+    update: async (): Promise<InstallOutcome> => {
+      const command = `git -C "${pluginDir(system)}" pull`;
       await runInstallCommand(system, command);
       return { kind: "done", command, note: RESTART_NOTE };
     },

@@ -15,13 +15,19 @@ export async function runInstallCommand(system: SystemDeps, command: string): Pr
   throw new Error(result.stderr || result.message || `Command failed: ${command}`);
 }
 
-// True when `command` succeeds and its output contains `needle` (case-insensitive).
-// Used to probe plugin/marketplace listings for an already-present entry.
-export async function outputIncludes(
-  system: SystemDeps,
-  command: string,
-  needle: string,
-): Promise<boolean> {
+// Run a command expected to emit JSON and return the parsed value. Returns null
+// when the command fails or its output is not valid JSON, so a missing or broken
+// listing reads as "nothing installed" rather than crashing the installer.
+export async function runJson<T>(system: SystemDeps, command: string): Promise<T | null> {
   const result = await system.run(command);
-  return result.ok && (result.stdout?.toLowerCase().includes(needle) ?? false);
+
+  if (!result.ok || !result.stdout) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(result.stdout) as T;
+  } catch {
+    return null;
+  }
 }

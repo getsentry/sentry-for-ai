@@ -10,8 +10,8 @@ export interface Detection {
 // `blocked`/`failed` are failures the caller surfaces and counts toward a
 // non-zero exit. installHarness never throws — every path maps to one of these.
 export type InstallResult =
-  | { kind: "done"; command: string; note?: string }
-  | { kind: "manual"; instructions: string }
+  | { kind: "done"; command: string; note?: string; cleaned?: string }
+  | { kind: "manual"; instructions: string; cleaned?: string }
   | { kind: "blocked"; reason: string }
   | { kind: "failed"; message: string };
 
@@ -37,9 +37,18 @@ export async function installHarness(detection: Detection): Promise<InstallResul
   }
 
   try {
+    // Clear out conflicting/legacy Sentry plugins first so ours is the one that
+    // resolves, then install or update based on what detection already found.
     // InstallOutcome (done | manual) is a subset of InstallResult, so a clean
-    // install passes straight through; only blocked/failed are added here.
-    return await detection.harness.install();
+    // run passes straight through; only blocked/failed and the cleanup note are
+    // added here.
+    const cleaned = (await detection.harness.cleanup?.()) ?? undefined;
+
+    const outcome = detection.installed
+      ? await detection.harness.update()
+      : await detection.harness.install();
+
+    return cleaned ? { ...outcome, cleaned } : outcome;
   } catch (err) {
     return { kind: "failed", message: err instanceof Error ? err.message : String(err) };
   }
