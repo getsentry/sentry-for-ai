@@ -10,8 +10,8 @@ the MCP server records this on spans as `app.utm_source:plugin`. Query the `sent
 project to measure plugin-driven adoption, tool usage, and error rates.
 
 The installer package (`npx @sentry/ai`) reports to a separate Sentry project
-(id `4511570959335425`). That surface is diagnostic only — it captures crashes and
-uncaught errors, not install counts or per-agent outcomes.
+(`sentry/sentry-for-ai-installer`). That surface is diagnostic only — it captures crashes
+and uncaught errors, not install counts or per-agent outcomes.
 
 **Attribution gap:** Claude's plugin (`plugin-claude`) declares the MCP server inline in its
 `plugin.json` without the `utm_source` query parameter, so Claude-originated MCP traffic does
@@ -26,7 +26,7 @@ not appear under `app.utm_source:plugin`. Cursor, Codex, and Grok all include
 | Tool failure or slow Sentry operation | `sentry/mcp-server`, spans and issues | `app.utm_source:plugin`, `gen_ai.tool.name`, `trace_id` | Which plugin-attributed tool call failed or was slow | Open trace; inspect child spans |
 | HTTP status or error rate | `sentry/mcp-server`, spans | `app.utm_source:plugin`, `http.response.status_code` | 4xx/5xx mix for plugin traffic vs overall | Compare with baseline MCP metrics |
 | Client or harness identification | `sentry/mcp-server`, spans | `app.client.family`, `user_agent.original` | Approximate Cursor/Codex/Grok bucket split | Note: Claude is not attributed |
-| Installer crash or error | installer project `4511570959335425`, issues | `event_id`, `trace_id`, exception | CLI crashes and uncaught installer errors | Inspect issue event and trace |
+| Installer crash or error | `sentry/sentry-for-ai-installer`, issues | `event_id`, `trace_id`, exception | CLI crashes and uncaught installer errors | Inspect issue event and trace |
 
 ## Investigation Pivots
 
@@ -49,7 +49,7 @@ not appear under `app.utm_source:plugin`. Cursor, Codex, and Grok all include
 | `app.transport` | MCP transport (`http`, `sse`, `stdio`) | spans | transport-specific behavior |
 | `app.server.version` | MCP server package version | spans | version-specific behavior |
 
-### Installer (`4511570959335425`)
+### Installer (`sentry/sentry-for-ai-installer`)
 
 | Pivot | Meaning | Found In | First Query |
 | --- | --- | --- | --- |
@@ -152,7 +152,7 @@ fields=timestamp,level,message,trace_id,span_id,http.route,http.response.status_
 sort=timestamp
 ```
 
-Unresolved installer crashes (project `4511570959335425`).
+Unresolved installer crashes (`sentry/sentry-for-ai-installer`).
 
 ```text
 dataset=issues query='is:unresolved'
@@ -202,7 +202,7 @@ Attributes: `gen_ai.tool.name`, `mcp.tool.name`, `mcp.session.id`, `user.id`,
 
 ### Installer CLI
 
-The `npx @sentry/ai install` CLI reports to project `4511570959335425`.
+The `npx @sentry/ai install` CLI reports to `sentry/sentry-for-ai-installer`.
 Currently only default `@sentry/node` auto-instrumentation is active.
 
 Use for: diagnosing installer crashes and unhandled errors.
@@ -246,7 +246,7 @@ Sentry.init({
 
 | Setting | Controls | Default |
 | --- | --- | --- |
-| `SENTRY_DSN` | installer Sentry project override | hardcoded project `4511570959335425` |
+| `SENTRY_DSN` | installer Sentry project override | `sentry/sentry-for-ai-installer` (hardcoded DSN) |
 
 ## Attribute Notes
 
