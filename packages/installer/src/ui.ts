@@ -48,8 +48,14 @@ interface Ctx {
   detections: Detection[];
   selected: Detection[];
   results: InstallResult[];
+  // Names of agents that actually received the plugin, for the closing restart
+  // hint. Blocked/failed agents are excluded — nothing to restart for those.
+  installed: string[];
   cancelled: boolean;
 }
+
+// "Claude Code", "Claude Code and Codex", "Claude Code, Codex, and Grok".
+const listFormatter = new Intl.ListFormat("en", { style: "long", type: "conjunction" });
 
 type TaskWrapper = ListrTaskWrapper<Ctx, any, any>;
 
@@ -93,11 +99,13 @@ function installTask(ctx: Ctx, detection: Detection): ListrTask<Ctx> {
           task.title = `${harness.name} — ${result.command}`;
           const output = [result.cleaned, result.note].filter(Boolean).join("\n");
           if (output) task.output = output;
+          ctx.installed.push(harness.name);
           return;
         }
         case "manual":
           task.title = `${harness.name} — manual steps required`;
           task.output = [result.cleaned, result.instructions].filter(Boolean).join("\n");
+          ctx.installed.push(harness.name);
           return;
         case "blocked":
           task.skip(`${harness.name} — ${result.reason}`);
@@ -178,7 +186,13 @@ export async function runInstaller(
     },
   );
 
-  const ctx: Ctx = { detections: [], selected: [], results: [], cancelled: false };
+  const ctx: Ctx = {
+    detections: [],
+    selected: [],
+    results: [],
+    installed: [],
+    cancelled: false,
+  };
 
   try {
     await tasks.run(ctx);
@@ -195,8 +209,8 @@ export async function runInstaller(
     return false;
   }
 
-  if (ctx.results.length > 0) {
-    console.log("\nRestart your AI tools to load the Sentry plugin.");
+  if (ctx.installed.length > 0) {
+    console.log(`\nRestart ${listFormatter.format(ctx.installed)} to use Sentry with AI.`);
   }
 
   return ctx.results.every(installSucceeded);
