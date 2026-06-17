@@ -181,9 +181,14 @@ import * as Sentry from "@sentry/cloudflare";
 export default Sentry.withSentry(
   (env: Env) => ({
     dsn: env.SENTRY_DSN,
-    sendDefaultPii: true,
     tracesSampleRate: 1.0,
     enableLogs: true,
+    dataCollection: {
+      // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+      // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#dataCollection
+      // userInfo: false,
+      // httpBodies: [],
+    },
   }),
   {
     async fetch(request, env, ctx) {
@@ -208,9 +213,14 @@ import * as Sentry from "@sentry/cloudflare";
 
 export const onRequest = Sentry.sentryPagesPlugin((context) => ({
   dsn: context.env.SENTRY_DSN,
-  sendDefaultPii: true,
   tracesSampleRate: 1.0,
   enableLogs: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
 }));
 ```
 
@@ -452,7 +462,8 @@ Deploy and trigger the route, then check your [Sentry Issues dashboard](https://
 | `dsn` | `string` | — | Required. Read from `env.SENTRY_DSN` automatically if not set |
 | `tracesSampleRate` | `number` | — | 0–1; 1.0 in dev, lower in prod recommended |
 | `tracesSampler` | `function` | — | Dynamic sampling function; mutually exclusive with `tracesSampleRate` |
-| `sendDefaultPii` | `boolean` | `false` | Include request headers and cookies in events |
+| `dataCollection` | `object` | `{}` | Controls what data the SDK captures (`userInfo`, `httpBodies`, etc.). See [Data Collection Reference](#data-collection-reference) |
+| `sendDefaultPii` | `boolean` | `false` | Legacy. Prefer `dataCollection` for control over captured data |
 | `enableLogs` | `boolean` | `false` | Enable Sentry Logs product |
 | `environment` | `string` | auto | Read from `env.SENTRY_ENVIRONMENT` if not set |
 | `release` | `string` | auto | Detected from `CF_VERSION_METADATA.id` or `SENTRY_RELEASE` |
@@ -464,6 +475,17 @@ Deploy and trigger the route, then check your [Sentry Issues dashboard](https://
 | `tracePropagationTargets` | `(string\|RegExp)[]` | all URLs | Control which outbound requests get trace headers |
 | `skipOpenTelemetrySetup` | `boolean` | `false` | Opt-out of OpenTelemetry compatibility tracer |
 | `instrumentPrototypeMethods` | `boolean \| string[]` | `false` | Durable Object: instrument prototype methods for RPC spans |
+
+### Data Collection Reference
+
+```typescript
+dataCollection: {
+  // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+  // https://docs.sentry.io/platforms/javascript/configuration/options/#dataCollection
+  // userInfo: false,
+  // httpBodies: [],
+},
+```
 
 ### Environment Variables (Read from `env`)
 

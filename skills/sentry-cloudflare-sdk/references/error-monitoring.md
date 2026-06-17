@@ -35,7 +35,12 @@ import * as Sentry from "@sentry/cloudflare";
 export default Sentry.withSentry(
   (env: Env) => ({
     dsn: env.SENTRY_DSN,
-    sendDefaultPii: true,
+    dataCollection: {
+      // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+      // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#dataCollection
+      // userInfo: false,
+      // httpBodies: [],
+    },
   }),
   {
     async fetch(request, env, ctx) {
@@ -71,7 +76,12 @@ import * as Sentry from "@sentry/cloudflare";
 
 export const onRequest = Sentry.sentryPagesPlugin((context) => ({
   dsn: context.env.SENTRY_DSN,
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
 }));
 ```
 
@@ -145,7 +155,7 @@ Sentry.setUser({
 Sentry.setUser(null);
 ```
 
-> **PII note:** Set `sendDefaultPii: true` in init options to automatically include request headers and cookies. Without it, the SDK strips headers and cookies from request data.
+> **PII note:** Use `dataCollection.cookies: true` in init options to include cookies (off by default for Cloudflare). Headers are captured by default with sensitive values redacted. For more control, configure `dataCollection.httpHeaders` and `dataCollection.httpBodies`.
 
 ### Extra Data
 
@@ -271,7 +281,7 @@ The SDK automatically captures Cloudflare-specific request data when `request.cf
 - **Timezone** — set as `culture` context from `request.cf.timezone`
 - **HTTP protocol** — set as `network.protocol.name` span attribute from `request.cf.httpProtocol`
 - **Cloud provider** — always set as `cloud.provider: "cloudflare"` in `cloud_resource` context
-- **Request data** — URL, method, headers (respects `sendDefaultPii`)
+- **Request data** — URL, method, headers (respects `dataCollection.httpHeaders` and `dataCollection.cookies`)
 - **Content-Length** — captured as `http.request.body.size` span attribute
 - **User-Agent** — captured as `user_agent.original` span attribute
 
@@ -283,7 +293,7 @@ The SDK automatically captures Cloudflare-specific request data when `request.cf
 
 2. **Store DSN as a secret** — use `wrangler secret put SENTRY_DSN`, not environment variables in `wrangler.toml` (which are visible in source control).
 
-3. **Use `sendDefaultPii: true` thoughtfully** — it includes request headers and cookies. Required for meaningful user context but may have privacy implications.
+3. **Configure `dataCollection` thoughtfully** — use `dataCollection.cookies: true` to include cookies for user context. Headers are captured with sensitive values redacted by default. Consider privacy implications when enabling additional data collection.
 
 4. **Set `tracesSampleRate` lower in production** — `1.0` is fine for development; use `0.1`–`0.5` for production to manage costs.
 
@@ -297,6 +307,6 @@ The SDK automatically captures Cloudflare-specific request data when `request.cf
 |-------|----------|
 | Events not appearing | Verify `SENTRY_DSN` is set; add `debug: true` to init options; check worker logs for SDK output |
 | Duplicate events | Ensure handler is wrapped only once; don't nest `withSentry` calls |
-| Missing request data | Set `sendDefaultPii: true` to include headers and cookies |
+| Missing request data | Set `dataCollection.cookies: true` to include cookies. Headers are captured by default with sensitive values redacted |
 | Events cut off mid-request | Ensure `withSentry`/`sentryPagesPlugin` is used — they handle `ctx.waitUntil()` for flushing |
 | `captureException` returns undefined | Verify SDK is initialized — `Sentry.isInitialized()` should return `true` inside a handler |
