@@ -81,18 +81,23 @@ function installTask(ctx: Ctx, detection: Detection): ListrTask<Ctx> {
 
   return {
     title: installed ? `${harness.name} (reinstall)` : harness.name,
+    // Keep output (cleanup notes, manual steps, restart hints) visible after the
+    // task settles instead of letting it clear on completion.
+    rendererOptions: { persistentOutput: true },
     task: async (_ctx, task: TaskWrapper) => {
       const result = await installHarness(detection);
       ctx.results.push(result);
 
       switch (result.kind) {
-        case "done":
+        case "done": {
           task.title = `${harness.name} — ${result.command}`;
-          if (result.note) task.output = result.note;
+          const output = [result.cleaned, result.note].filter(Boolean).join("\n");
+          if (output) task.output = output;
           return;
+        }
         case "manual":
           task.title = `${harness.name} — manual steps required`;
-          task.output = result.instructions;
+          task.output = [result.cleaned, result.instructions].filter(Boolean).join("\n");
           return;
         case "blocked":
           task.skip(`${harness.name} — ${result.reason}`);

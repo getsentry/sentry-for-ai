@@ -37,6 +37,36 @@ describe("installHarness", () => {
     expect(claude.install).toHaveBeenCalledOnce();
   });
 
+  it("updates instead of installing when the plugin is already present", async () => {
+    const claude = fakeHarness({ id: "claude", installed: true });
+
+    const result = await installHarness({ harness: claude, detected: true, installed: true });
+
+    expect(result).toEqual({ kind: "done", command: "claude update", note: undefined });
+    expect(claude.update).toHaveBeenCalledOnce();
+    expect(claude.install).not.toHaveBeenCalled();
+  });
+
+  it("runs cleanup before installing and surfaces what it removed", async () => {
+    const codex = fakeHarness({ id: "codex", cleaned: "Removed sentry@openai-curated" });
+
+    const result = await installHarness({ harness: codex, detected: true, installed: false });
+
+    expect(result).toMatchObject({ kind: "done", cleaned: "Removed sentry@openai-curated" });
+    expect(codex.cleanup).toHaveBeenCalledOnce();
+    const cleanupOrder = (codex.cleanup as any).mock.invocationCallOrder[0];
+    const installOrder = (codex.install as any).mock.invocationCallOrder[0];
+    expect(cleanupOrder).toBeLessThan(installOrder);
+  });
+
+  it("omits cleaned when cleanup found nothing to remove", async () => {
+    const codex = fakeHarness({ id: "codex", cleaned: "" });
+
+    const result = await installHarness({ harness: codex, detected: true, installed: false });
+
+    expect(result).toEqual({ kind: "done", command: "codex install" });
+  });
+
   it("passes the note through on a done outcome", async () => {
     const cursor = fakeHarness({
       id: "cursor",

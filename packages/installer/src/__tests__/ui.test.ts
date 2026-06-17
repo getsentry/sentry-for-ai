@@ -18,6 +18,20 @@ describe("runInstaller (non-interactive)", () => {
     expect(codex.install).not.toHaveBeenCalled();
   });
 
+  it("runs cleanup before installing a detected agent", async () => {
+    const codex = fakeHarness({
+      id: "codex",
+      detected: true,
+      cleaned: "Removed conflicting plugin sentry@openai-curated",
+    });
+
+    const ok = await runInstaller([codex], { interactive: false });
+
+    expect(ok).toBe(true);
+    expect(codex.cleanup).toHaveBeenCalledOnce();
+    expect(codex.install).toHaveBeenCalledOnce();
+  });
+
   it("returns false when an install fails but still installs the others", async () => {
     const claude = fakeHarness({ id: "claude", detected: true, error: new Error("boom") });
     const codex = fakeHarness({ id: "codex", detected: true });
