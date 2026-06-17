@@ -169,9 +169,16 @@ export async function runInstaller(
 
           // exitOnError: false so one agent failing does not abort the rest;
           // each subtask records its own result and the batch still settles.
+          // collapseSubtasks: false keeps the per-agent rows (and their command
+          // and cleanup output) on screen after the group finishes instead of
+          // folding them back into the parent line.
           return task.newListr(
             selected.map((detection) => installTask(ctx, detection)),
-            { concurrent: true, exitOnError: false },
+            {
+              concurrent: true,
+              exitOnError: false,
+              rendererOptions: { collapseSubtasks: false },
+            },
           );
         },
       },
