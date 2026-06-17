@@ -32,6 +32,27 @@ describe("runInstaller (non-interactive)", () => {
     expect(codex.install).toHaveBeenCalledOnce();
   });
 
+  it("closes by naming the agents to restart", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const claude = fakeHarness({ id: "claude", name: "Claude Code", detected: true });
+    const grok = fakeHarness({ id: "grok", name: "Grok", detected: true });
+
+    await runInstaller([claude, grok], { interactive: false });
+
+    expect(log).toHaveBeenCalledWith("\nRestart Claude Code and Grok to use Sentry with AI.");
+    log.mockRestore();
+  });
+
+  it("omits the restart hint when nothing was installed", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const claude = fakeHarness({ id: "claude", detected: false });
+
+    await runInstaller([claude], { interactive: false });
+
+    expect(log).not.toHaveBeenCalledWith(expect.stringContaining("Restart"));
+    log.mockRestore();
+  });
+
   it("returns false when an install fails but still installs the others", async () => {
     const claude = fakeHarness({ id: "claude", detected: true, error: new Error("boom") });
     const codex = fakeHarness({ id: "codex", detected: true });
