@@ -2,6 +2,9 @@
 minVersion: "2.21.0"
 # Single segment only -- craft splits the branch name on the first "/".
 releaseBranchPrefix: release-installer
+# The default bump targets the root package.json, which is private and
+# unversioned -- bump packages/installer (the published package) instead.
+preReleaseCommand: bash scripts/bump-version.sh
 changelog:
   filePath: packages/installer/CHANGELOG.md
   policy: simple
