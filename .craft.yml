@@ -1,0 +1,17 @@
+# Releases packages/installer to npm as @sentry/ai via craft.
+minVersion: "2.21.0"
+# Single segment only -- craft splits the branch name on the first "/".
+releaseBranchPrefix: release-installer
+changelog:
+  filePath: packages/installer/CHANGELOG.md
+  policy: simple
+
+# No github target, so no git tags or GitHub releases.
+targets:
+  - name: npm
+    id: "@sentry/ai"
+    access: public
+    includeNames: /^sentry-ai-\d.*\.tgz$/
+
+requireNames:
+  - /^sentry-ai-\d.*\.tgz$/

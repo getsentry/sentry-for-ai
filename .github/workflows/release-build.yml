@@ -1,0 +1,41 @@
+# Packs the installer tarball on release branches. Artifact name must be the
+# commit SHA -- that's what craft downloads at publish time.
+name: Release Build
+
+on:
+  push:
+    branches:
+      - release-installer/**
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: pnpm/action-setup@a15d269cd4658e1107c09f1fabf4cbd7bd1f308a # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm --filter @sentry/ai build
+
+      - name: Pack tarball
+        working-directory: packages/installer
+        run: pnpm pack --pack-destination "${{ github.workspace }}"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ github.sha }}
+          path: "*.tgz"
+          if-no-files-found: error
