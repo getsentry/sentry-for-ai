@@ -9,8 +9,10 @@ import { runInstaller } from "./ui";
 // are captured. We pre-scan raw argv for --no-telemetry ourselves here because
 // citty has not run yet. DO_NOT_TRACK=1 (https://consoledonottrack.com) also
 // disables telemetry.
+const DO_NOT_TRACK_VALUES = new Set(["1", "true", "yes"]);
+
 const telemetryEnabled =
-  process.env.DO_NOT_TRACK !== "1" &&
+  !DO_NOT_TRACK_VALUES.has((process.env.DO_NOT_TRACK ?? "").toLowerCase()) &&
   !process.argv.slice(2).includes("--no-telemetry");
 
 initTelemetry(telemetryEnabled);
