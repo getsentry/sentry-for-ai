@@ -470,36 +470,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 
 ---
 
-## Verification
-
-After wizard or manual setup, add a test throw and remove it after verifying:
-
-```csharp
-// ASP.NET Core: add a temporary endpoint
-app.MapGet("/sentry-test", () =>
-{
-    throw new Exception("Sentry test error — delete me");
-});
-
-// Or capture explicitly anywhere
-SentrySdk.CaptureException(new Exception("Sentry test error — delete me"));
-```
-
-Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should appear within ~30 seconds.
-
-**Verification checklist:**
-
-| Check | How |
-|-------|-----|
-| Exceptions captured | Throw a test exception, verify in Sentry Issues |
-| Stack traces readable | Check that file names and line numbers appear |
-| Tracing active | Check Performance tab for transactions |
-| Logging wired | Log an error via `ILogger`, check it appears as Sentry breadcrumb |
-| Symbol upload working | Stack trace shows `Controllers/HomeController.cs:42` not `<unknown>` |
-
----
-
-## Config Reference
+## Configuration Reference
 
 ### Core `SentryOptions`
 
@@ -575,6 +546,35 @@ export Sentry__TracesSampleRate="0.1"
 | `SentryCreateRelease` | `bool` | `false` | Auto-create a Sentry release during build |
 | `SentrySetCommits` | `bool` | `false` | Associate git commits with the release |
 | `SentryUrl` | `string` | — | Self-hosted Sentry URL |
+
+---
+
+## Verification
+
+After wizard or manual setup, add a test throw and remove it after verifying:
+
+```csharp
+// ASP.NET Core: add a temporary endpoint
+app.MapGet("/sentry-test", () =>
+{
+    throw new Exception("Sentry test error — delete me");
+});
+
+// Or capture explicitly anywhere
+SentrySdk.CaptureException(new Exception("Sentry test error — delete me"));
+```
+
+Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should appear within ~30 seconds.
+
+**Verification checklist:**
+
+| Check | How |
+|-------|-----|
+| Exceptions captured | Throw a test exception, verify in Sentry Issues |
+| Stack traces readable | Check that file names and line numbers appear |
+| Tracing active | Check Performance tab for transactions |
+| Logging wired | Log an error via `ILogger`, check it appears as Sentry breadcrumb |
+| Symbol upload working | Stack trace shows `Controllers/HomeController.cs:42` not `<unknown>` |
 
 ---
 

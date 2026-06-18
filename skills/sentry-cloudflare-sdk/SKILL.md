@@ -420,40 +420,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 
 ---
 
-## Verification
-
-After setup, verify Sentry is working:
-
-```typescript
-// Add temporarily to your fetch handler, then remove
-export default Sentry.withSentry(
-  (env: Env) => ({
-    dsn: env.SENTRY_DSN,
-    tracesSampleRate: 1.0,
-  }),
-  {
-    async fetch(request, env, ctx) {
-      throw new Error("Sentry test error — delete me");
-    },
-  } satisfies ExportedHandler<Env>,
-);
-```
-
-Deploy and trigger the route, then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should appear within ~30 seconds.
-
-**Verification checklist:**
-
-| Check | How |
-|-------|-----|
-| Errors captured | Throw in a fetch handler, verify in Sentry |
-| Tracing working | Check Performance tab for HTTP spans |
-| Source maps working | Check stack trace shows readable file/line names |
-| D1 spans (if configured) | Run a D1 query, check for `db.query` spans |
-| Scheduled monitoring (if configured) | Trigger a cron, check Crons dashboard |
-
----
-
-## Config Reference
+## Configuration Reference
 
 ### `Sentry.init()` Options
 
@@ -515,6 +482,39 @@ These are registered automatically by `getDefaultIntegrations()`:
 | `honoIntegration` | **Deprecated in v10.55.0** — use `@sentry/hono` package instead. Auto-capture Hono `onError` exceptions |
 | `requestDataIntegration` | Attach request data to events |
 | `consoleIntegration` | Capture `console.*` calls as breadcrumbs |
+
+---
+
+## Verification
+
+After setup, verify Sentry is working:
+
+```typescript
+// Add temporarily to your fetch handler, then remove
+export default Sentry.withSentry(
+  (env: Env) => ({
+    dsn: env.SENTRY_DSN,
+    tracesSampleRate: 1.0,
+  }),
+  {
+    async fetch(request, env, ctx) {
+      throw new Error("Sentry test error — delete me");
+    },
+  } satisfies ExportedHandler<Env>,
+);
+```
+
+Deploy and trigger the route, then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should appear within ~30 seconds.
+
+**Verification checklist:**
+
+| Check | How |
+|-------|-----|
+| Errors captured | Throw in a fetch handler, verify in Sentry |
+| Tracing working | Check Performance tab for HTTP spans |
+| Source maps working | Check stack trace shows readable file/line names |
+| D1 spans (if configured) | Run a D1 query, check for `db.query` spans |
+| Scheduled monitoring (if configured) | Trigger a cron, check Crons dashboard |
 
 ---
 

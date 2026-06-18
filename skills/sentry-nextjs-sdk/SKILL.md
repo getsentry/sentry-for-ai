@@ -382,34 +382,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 
 ---
 
-## Verification
-
-After wizard or manual setup, verify Sentry is working:
-
-```typescript
-// Add temporarily to a server action or API route, then remove
-import * as Sentry from "@sentry/nextjs";
-
-throw new Error("Sentry test error — delete me");
-// or
-Sentry.captureException(new Error("Sentry test error — delete me"));
-```
-
-Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should appear within ~30 seconds.
-
-**Verification checklist:**
-
-| Check | How |
-|-------|-----|
-| Client errors captured | Throw in a client component, verify in Sentry |
-| Server errors captured | Throw in a server action or API route |
-| Edge errors captured | Throw in middleware or edge route handler |
-| Source maps working | Check stack trace shows readable file names |
-| Session Replay working | Check Replays tab in Sentry dashboard |
-
----
-
-## Config Reference
+## Configuration Reference
 
 ### `Sentry.init()` Options
 
@@ -449,6 +422,33 @@ Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the err
 | `SENTRY_PROJECT` | Build | Project slug (alternative to `project` in config) |
 | `SENTRY_RELEASE` | Server | Release version string (auto-detected from git) |
 | `NEXT_RUNTIME` | Server / Edge | `"nodejs"` or `"edge"` (set by Next.js internally) |
+
+---
+
+## Verification
+
+After wizard or manual setup, verify Sentry is working:
+
+```typescript
+// Add temporarily to a server action or API route, then remove
+import * as Sentry from "@sentry/nextjs";
+
+throw new Error("Sentry test error — delete me");
+// or
+Sentry.captureException(new Error("Sentry test error — delete me"));
+```
+
+Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should appear within ~30 seconds.
+
+**Verification checklist:**
+
+| Check | How |
+|-------|-----|
+| Client errors captured | Throw in a client component, verify in Sentry |
+| Server errors captured | Throw in a server action or API route |
+| Edge errors captured | Throw in middleware or edge route handler |
+| Source maps working | Check stack trace shows readable file names |
+| Session Replay working | Check Replays tab in Sentry dashboard |
 
 ---
 

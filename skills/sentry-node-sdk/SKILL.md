@@ -697,38 +697,7 @@ Metrics collected: same as Node.js except no event loop delay percentiles (unava
 
 ---
 
-## Verification
-
-After setup, verify Sentry is receiving events:
-
-```javascript
-// Add temporarily to your entry file or a test route, then remove
-import * as Sentry from "@sentry/node"; // or @sentry/bun / @sentry/deno
-
-Sentry.captureException(new Error("Sentry test error — delete me"));
-```
-
-Or trigger an unhandled exception:
-
-```javascript
-// In a route handler or startup — will be captured automatically
-throw new Error("Sentry test error — delete me");
-```
-
-Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should appear within ~30 seconds.
-
-**Verification checklist:**
-
-| Check | How |
-|-------|-----|
-| Error captured | Throw in a handler, verify in Sentry Issues |
-| Tracing working | Check Performance tab — should show HTTP spans |
-| `includeLocalVariables` working | Stack frame in Sentry should show variable values |
-| Source maps working | Stack trace shows readable file names, not minified |
-
----
-
-## Config Reference
+## Configuration Reference
 
 ### `Sentry.init()` Core Options
 
@@ -824,6 +793,37 @@ Add upload step to your build:
   }
 }
 ```
+
+---
+
+## Verification
+
+After setup, verify Sentry is receiving events:
+
+```javascript
+// Add temporarily to your entry file or a test route, then remove
+import * as Sentry from "@sentry/node"; // or @sentry/bun / @sentry/deno
+
+Sentry.captureException(new Error("Sentry test error — delete me"));
+```
+
+Or trigger an unhandled exception:
+
+```javascript
+// In a route handler or startup — will be captured automatically
+throw new Error("Sentry test error — delete me");
+```
+
+Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should appear within ~30 seconds.
+
+**Verification checklist:**
+
+| Check | How |
+|-------|-----|
+| Error captured | Throw in a handler, verify in Sentry Issues |
+| Tracing working | Check Performance tab — should show HTTP spans |
+| `includeLocalVariables` working | Stack frame in Sentry should show variable values |
+| Source maps working | Stack trace shows readable file names, not minified |
 
 ---
 
