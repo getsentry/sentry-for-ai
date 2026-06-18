@@ -422,13 +422,7 @@ public class MvcApplication : HttpApplication
 
 ### Symbol Upload (Readable Stack Traces)
 
-Without debug symbols, stack traces show only method names — no file names or line numbers. Upload PDB files to unlock full source context.
-
-**Step 1: Create a Sentry auth token**
-
-Go to [sentry.io/settings/auth-tokens/](https://sentry.io/settings/auth-tokens/) and create a token with `project:releases` and `org:read` scopes.
-
-**Step 2: Add MSBuild properties to `.csproj` or `Directory.Build.props`:**
+Without debug symbols, stack traces show only method names — no file names or line numbers. The SDK uploads PDB files (and optionally sources) via MSBuild properties on Release builds:
 
 ```xml
 <PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -441,15 +435,7 @@ Go to [sentry.io/settings/auth-tokens/](https://sentry.io/settings/auth-tokens/)
 </PropertyGroup>
 ```
 
-**Step 3: Set `SENTRY_AUTH_TOKEN` in CI:**
-
-```yaml
-# GitHub Actions
-- name: Build & upload symbols
-  run: dotnet build -c Release
-  env:
-    SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-```
+Upload needs a `SENTRY_AUTH_TOKEN` set in CI (a secret). For creating the token and the CI wiring, see [`sentry-source-maps`](../sentry-source-maps/SKILL.md). The `SentryCreateRelease` / `SentrySetCommits` properties also create a release with suspect commits — see [`sentry-releases`](../sentry-releases/SKILL.md).
 
 ---
 
