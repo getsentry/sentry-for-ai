@@ -6,18 +6,14 @@ The plugin teaches your assistant Sentry — how to set it up in any project, ho
 
 Supports **Claude Code**, **Codex**, **Cursor**, and **Grok**.
 
+```bash
+npx @sentry/ai install
+```
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/demo-dark.gif">
   <img src="assets/demo-light.gif" alt="Installing the Sentry plugin with npx @sentry/ai install">
 </picture>
-
-## Usage
-
-Run it with `npx`, no install required:
-
-```bash
-npx @sentry/ai install
-```
 
 This detects the AI coding tools on your machine, lets you choose which ones to set up, and installs the Sentry plugin into each. Already have it installed? The same command updates it to the latest version.
 
