@@ -21,6 +21,11 @@ Append the path from the `Path` column in the table below to `https://skills.sen
 
 ## Start Here — Read This Before Doing Anything
 
+> **Prompting tip:** When presenting the choices below, use your harness's built-in interactive
+> prompt or multiple-choice tool if one is available (for example a question/selection UI) — it
+> gives the user a clearer, faster way to choose than free-form text. Otherwise, list the options
+> plainly and wait for their reply.
+
 **Do not skip this section.** Do not assume which SDK the user needs based on their project files. Do not start installing packages or creating config files until you have confirmed the user's intent.
 
 1. **Detect the platform** from project files (`package.json`, `go.mod`, `requirements.txt`, `Gemfile`, `*.csproj`, `build.gradle`, etc.).
@@ -28,6 +33,24 @@ Append the path from the `Path` column in the table below to `https://skills.sen
 3. **Wait for confirmation** before fetching the skill and proceeding.
 
 Each SDK skill contains its own detection logic, prerequisites, and step-by-step configuration. Trust the skill — read it carefully and follow it. Do not improvise or take shortcuts.
+
+### Scope: first error first
+
+For initial setup, enter the SDK skill **scoped to first-error capture** — install + `init` +
+error monitoring only. **Defer tracing, logging, profiling, etc. unless the user explicitly asks
+for them.** Adding those later is the job of [`sentry-add-signal`](../sentry-add-signal/SKILL.md).
+
+### New to Sentry — creating a project
+
+If the user has no project yet, you can create one via the MCP `create_project` tool, which mints
+the project **and** a DSN in one call (no manual dashboard trip). Propose it and create on a yes —
+never silently, since it's mutating.
+
+### Close the loop
+
+After instrumenting, **don't stop at "check your dashboard."** Hand off to
+[`sentry-verify-instrumentation`](../sentry-verify-instrumentation/SKILL.md) to trigger a real
+error and confirm it landed via the MCP.
 
 ---
 

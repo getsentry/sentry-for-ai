@@ -116,8 +116,10 @@ TOTAL_SKILLS=${#ALL_SKILLS[@]}
 
 ROUTERS=()
 SKILLS_SDK_SETUP=()
+SKILLS_ADD_SIGNAL=()
+SKILLS_IMPROVE_SETUP=()
 SKILLS_WORKFLOW=()
-SKILLS_FEATURE_SETUP=()
+SKILLS_MONITORS=()
 
 for name in "${ALL_SKILLS[@]}"; do
   role="$(skill_get "$name" role)"
@@ -128,8 +130,10 @@ for name in "${ALL_SKILLS[@]}"; do
   else
     case "$cat" in
       sdk-setup)     SKILLS_SDK_SETUP+=("$name") ;;
+      add-signal)    SKILLS_ADD_SIGNAL+=("$name") ;;
+      improve-setup) SKILLS_IMPROVE_SETUP+=("$name") ;;
       workflow)      SKILLS_WORKFLOW+=("$name") ;;
-      feature-setup) SKILLS_FEATURE_SETUP+=("$name") ;;
+      monitors)      SKILLS_MONITORS+=("$name") ;;
       internal)      ;; # validated but not shown in public skill tree
     esac
   fi
@@ -166,8 +170,10 @@ get_column_value() {
 column_header() {
   case "$1" in
     sdk-setup)     echo "Platform" ;;
+    add-signal)    echo "Signal" ;;
+    improve-setup) echo "Improvement" ;;
     workflow)      echo "Use when" ;;
-    feature-setup) echo "Feature" ;;
+    monitors)      echo "Monitor / Alert" ;;
     internal)      echo "Purpose" ;;
     *)             echo "Notes" ;;
   esac
@@ -285,11 +291,11 @@ Do not guess or shorten URLs. Use exact paths from the tables.
 **Do not skip this section.** Do not assume what the user needs based on their project files. Do not start installing packages, creating files, or running commands until you have confirmed the user's intent.
 
 1. **Ask first.** Greet the user and ask what they'd like help with. Present these options:
-   - **Set up Sentry** — Add error monitoring, performance tracing, and session replay to a project
-   - **Debug a production issue** — Investigate errors and exceptions using Sentry data
-   - **Configure a feature** — AI/LLM monitoring, alerts, OpenTelemetry pipelines
-   - **Review code** — Resolve Sentry bot comments or check for predicted bugs
-   - **Upgrade Sentry SDK** — Migrate to a new major version
+   - **Start monitoring** — First-time setup: install the SDK, capture an error, and confirm it lands (`sentry-sdk-setup`)
+   - **Add a signal** — Tracing, logging, metrics, crons, profiling, session replay, user feedback, AI/LLM monitoring (`sentry-add-signal`)
+   - **Fix something** — Investigate and fix production issues, or resolve Sentry bot / Seer PR comments (`sentry-workflow`)
+   - **Improve my setup** — Source maps, releases, data scrubbing, quota, AI code review, upgrades, migrations (`sentry-improve-setup`)
+   - **Monitors & alerts** — Alert rules, uptime, metric alerts, dashboards (`sentry-monitors`)
 
 2. **Wait for their answer.** Do not proceed until the user tells you what they want.
 
@@ -333,6 +339,36 @@ When multiple SDKs could match, prefer the more specific one:
 - **No match** → direct user to [Sentry Docs](https://docs.sentry.io/platforms/)
 SDK_ROUTING
 
+  # Add a Signal
+  local col_as col_is col_mon
+  col_as="$(column_header add-signal)"
+  cat <<'AS_HEADER'
+
+## Add a Signal
+
+Add telemetry to a project that already reports errors: tracing, logging, metrics, crons,
+profiling, session replay, user feedback, and AI/LLM monitoring. The concept skills cover the
+WHAT/WHY; the platform SDK skill handles the HOW.
+
+AS_HEADER
+  printf "| %s | Skill | Path |\n" "$col_as"
+  printf "|---|---|---|\n"
+  build_table_rows "add-signal" ${SKILLS_ADD_SIGNAL[@]+"${SKILLS_ADD_SIGNAL[@]}"}
+
+  # Improve My Setup
+  col_is="$(column_header improve-setup)"
+  cat <<'IS_HEADER'
+
+## Improve My Setup
+
+Make an existing Sentry setup better, cleaner, cheaper, safer, or more current: source maps,
+releases, data scrubbing, quota, AI code review, upgrades, and migrations.
+
+IS_HEADER
+  printf "| %s | Skill | Path |\n" "$col_is"
+  printf "|---|---|---|\n"
+  build_table_rows "improve-setup" ${SKILLS_IMPROVE_SETUP[@]+"${SKILLS_IMPROVE_SETUP[@]}"}
+
   # Workflows
   col_wf="$(column_header workflow)"
   cat <<'WF_HEADER'
@@ -346,18 +382,19 @@ WF_HEADER
   printf "|---|---|---|\n"
   build_table_rows "workflow" ${SKILLS_WORKFLOW[@]+"${SKILLS_WORKFLOW[@]}"}
 
-  # Feature Setup
-  col_fs="$(column_header feature-setup)"
-  cat <<'FS_HEADER'
+  # Monitors & Alerts
+  col_mon="$(column_header monitors)"
+  cat <<'MON_HEADER'
 
-## Feature Setup
+## Monitors & Alerts
 
-Configure specific Sentry capabilities beyond basic SDK setup.
+Get notified and watch availability: alert rules and notifications, uptime, metric alerts, and
+dashboards.
 
-FS_HEADER
-  printf "| %s | Skill | Path |\n" "$col_fs"
+MON_HEADER
+  printf "| %s | Skill | Path |\n" "$col_mon"
   printf "|---|---|---|\n"
-  build_table_rows "feature-setup" ${SKILLS_FEATURE_SETUP[@]+"${SKILLS_FEATURE_SETUP[@]}"}
+  build_table_rows "monitors" ${SKILLS_MONITORS[@]+"${SKILLS_MONITORS[@]}"}
 
   # Quick Lookup section
   cat <<'LOOKUP_HEADER'
@@ -378,7 +415,7 @@ LOOKUP_HEADER
 # SECTION 5: Validate
 # ============================================================
 
-KNOWN_CATEGORIES=("sdk-setup" "workflow" "feature-setup" "internal")
+KNOWN_CATEGORIES=("sdk-setup" "add-signal" "improve-setup" "workflow" "monitors" "internal")
 
 validate() {
   for name in "${ALL_SKILLS[@]}"; do

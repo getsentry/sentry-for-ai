@@ -1,6 +1,7 @@
 ---
 name: sentry-code-review
-description: Analyze and resolve Sentry comments on GitHub Pull Requests. Use this when asked to review or fix issues identified by Sentry in PR comments. Can review specific PRs by number or automatically find recent PRs with Sentry feedback.
+description: Analyze and resolve Sentry's bot comments on GitHub Pull Requests — both sentry[bot] review comments and Seer Bug Prediction (seer-by-sentry[bot]) findings. Use when asked to review or fix issues Sentry flagged on a PR, or to find recent PRs with unresolved Sentry feedback.
+license: Apache-2.0
 allowed-tools: Read, Edit, Write, Bash, Grep, Glob, WebFetch, AskUserQuestion
 category: workflow
 parent: sentry-workflow
@@ -11,179 +12,115 @@ disable-model-invocation: true
 
 # Sentry Code Review
 
-You are a specialized skill for analyzing and resolving issues identified by **Sentry** in GitHub Pull Request review comments.
+Resolve issues Sentry flagged in GitHub Pull Request review comments. Two bot sources, same
+comment format and workflow:
 
-## Sentry PR Review Comment Format
+| Source | Bot login | What it is |
+|---|---|---|
+| Sentry PR review | `sentry[bot]` | Line-specific review comments |
+| Seer Bug Prediction | `seer-by-sentry[bot]` | Predicted-bug findings (the [Seer by Sentry](https://github.com/apps/seer-by-sentry) GitHub App) |
 
-Sentry posts **line-specific review comments** on code changes in PRs. Each comment includes:
+**Only process those two logins.** Ignore `cursor[bot]` or other bots. Note `seer-by-sentry[bot]`
+is distinct from `sentry[bot]` — match both explicitly (a `startswith("sentry")` filter misses
+Seer).
 
-### Comment Metadata (from API)
-- `author`: The bot username (e.g., "sentry[bot]")
-- `file`: The specific file being commented on (e.g., "src/sentry/seer/explorer/tools.py")
-- `line`: The line number in the code (can be `null` for file-level comments)
-- `body`: The full comment content (markdown with HTML details tags)
+## Invoke This Skill When
 
-### Body Structure
-The `body` field contains markdown with collapsible sections:
+- User asks to "review/fix Sentry comments" or "address Seer findings" on a PR
+- User shares a PR URL/number mentioning Sentry or Seer feedback
+- User wants to find PRs with unresolved Sentry/Seer comments
 
-**Header:**
-```
-**Bug:** [Issue description]
-<sub>Severity: CRITICAL | Confidence: 1.00</sub>
-```
+## Prerequisites
 
-**Analysis Section (in `<details>` tag):**
-```html
-<details>
-<summary>🔍 <b>Detailed Analysis</b></summary>
-Explains the technical problem and consequences
-</details>
-```
+- `gh` CLI installed and authenticated.
+- For Seer findings: the Seer by Sentry GitHub App installed on the repo.
 
-**Fix Section (in `<details>` tag):**
-```html
-<details>
-<summary>💡 <b>Suggested Fix</b></summary>
-Proposes a concrete solution
-</details>
-```
+**Important:** The comment body format below reflects current output, not an API contract — verify
+the actual structure. SDK/code samples in comments are illustrative; confirm before applying.
 
-**AI Agent Prompt (in `<details>` tag):**
-```html
-<details>
-<summary>🤖 <b>Prompt for AI Agent</b></summary>
-Specific instructions for reviewing and fixing the issue
-Includes: Location (file#line), Potential issue description
-</details>
-```
+## Phase 1 — Fetch comments
 
-### Example Issues
+Given a PR number, fetch line comments from both bots:
 
-1. **TypeError from None values**
-   - Functions returning None when list expected
-   - Missing null checks before iterating
-
-2. **Validation Issues**
-   - Too permissive input validation
-   - Allowing invalid data to pass through
-
-3. **Error Handling Gaps**
-   - Errors logged but not re-thrown
-   - Silent failures in critical paths
-
-## Your Workflow
-
-### 1. Fetch PR Comments
-
-When given a PR number or URL:
 ```bash
-# Get PR review comments (line-by-line code comments) using GitHub API
-gh api repos/{owner}/{repo}/pulls/<PR_NUMBER>/comments --jq '.[] | select(.user.login | startswith("sentry")) | {author: .user.login, file: .path, line: .line, body: .body}'
+gh api repos/{owner}/{repo}/pulls/<PR_NUMBER>/comments --paginate \
+  --jq '.[] | select(.user.login == "sentry[bot]" or .user.login == "seer-by-sentry[bot]")
+        | {author: .user.login, file: .path, line: .line, body: .body}'
 ```
 
-Or fetch from the PR URL directly using WebFetch.
+Or fetch from the PR URL with WebFetch.
 
-### 2. Parse Sentry Comments
+If no PR number is given, find recent PRs with such comments:
 
-- **ONLY** process comments from Sentry (username starts with "sentry", e.g., "sentry[bot]")
-- **IGNORE** comments from "cursor[bot]" or other bots
-- Extract from each comment:
-  - `file`: The file path being commented on
-  - `line`: The specific line number (if available)
-  - `body`: Parse the markdown/HTML body to extract:
-    - Bug description (from header line starting with "**Bug:**")
-    - Severity level (from `<sub>Severity: X` tag)
-    - Confidence score (from `Confidence: X.XX` in sub tag)
-    - Detailed analysis (text inside `<summary>🔍 <b>Detailed Analysis</b></summary>` details block)
-    - Suggested fix (text inside `<summary>💡 <b>Suggested Fix</b></summary>` details block)
-    - AI Agent prompt (text inside `<summary>🤖 <b>Prompt for AI Agent</b></summary>` details block)
+```bash
+gh pr list --state open --json number --limit 20 | jq -r '.[].number' | while read pr; do
+  count=$(gh api "repos/{owner}/{repo}/pulls/$pr/comments" --paginate \
+    --jq '[.[] | select(.user.login == "sentry[bot]" or .user.login == "seer-by-sentry[bot]")] | length')
+  [ "$count" -gt 0 ] && echo "PR #$pr: $count Sentry/Seer comments"
+done
+```
 
-### 3. Analyze Each Issue
+## Phase 2 — Parse each comment
 
-For each Sentry comment:
-1. Note the `file` and `line` from the comment metadata - this tells you exactly where to look
-2. Read the specific file mentioned in the comment
-3. Navigate to the line number to see the problematic code
-4. Read the "🤖 Prompt for AI Agent" section for specific context about the issue
-5. Verify if the issue is still present in the current code
-6. Understand the root cause from the Detailed Analysis
-7. Evaluate the Suggested Fix
+Both bots post the same markdown body with collapsible sections. Extract:
 
-### 4. Implement Fixes
+- **Bug description** — line starting with `**Bug:**`
+- **Severity / Confidence** — `<sub>Severity: X | Confidence: X.XX</sub>`
+- **Detailed Analysis** — inside the `🔍 <b>Detailed Analysis</b>` `<details>` block
+- **Suggested Fix** — inside the `💡 <b>Suggested Fix</b>` block
+- **AI Agent Prompt** — inside the `🤖 <b>Prompt for AI Agent</b>` block (location + issue context)
 
-For each verified issue:
-1. Read the affected file(s)
-2. Implement the suggested fix or your own solution
-3. Ensure the fix addresses the root cause
-4. Consider edge cases and side effects
-5. Use Edit tool to make precise changes
+Keep the `file` and `line` from the comment metadata — that's exactly where to look.
 
-### 5. Provide Summary
+## Phase 3 — Verify & fix
 
-After analyzing and fixing issues, provide a report:
+For each comment:
+
+1. Read the file at the specified line.
+2. **Confirm the issue still exists** in current code (not already fixed in a later commit).
+3. Assess whether it's real or a false positive — review surrounding code.
+4. Implement the fix (use the suggested fix as a starting point, or your own); address the root
+   cause, consider edge cases and regression risk.
+5. Always Read before Edit. If unsure about a fix, ask the user (AskUserQuestion).
+
+## Phase 4 — Report
 
 ```markdown
-## Sentry Code Review Summary
+## Sentry Code Review: PR #[number]
 
-**PR:** #[number] - [title]
-**Sentry Comments Found:** [count]
+### Resolved
+| File:Line | Issue | Severity | Source | Fix Applied |
+|-----------|-------|----------|--------|-------------|
 
-### Issues Resolved
+### Skipped (false positive or already fixed)
+| File:Line | Issue | Reason |
+|-----------|-------|--------|
 
-#### 1. [Issue Title] - [SEVERITY]
-- **Confidence:** [score]
-- **Location:** [file:line]
-- **Problem:** [brief description]
-- **Fix Applied:** [what you did]
-- **Status:** Resolved
-
-#### 2. [Issue Title] - [SEVERITY]
-- **Confidence:** [score]
-- **Location:** [file:line]
-- **Problem:** [brief description]
-- **Fix Applied:** [what you did]
-- **Status:** Resolved
-
-### Issues Requiring Manual Review
-
-#### 1. [Issue Title] - [SEVERITY]
-- **Reason:** [why manual review is needed]
-- **Recommendation:** [suggested approach]
-
-### Summary
-- **Total Issues:** [count]
-- **Resolved:** [count]
-- **Manual Review Required:** [count]
+**Summary:** X resolved, Y skipped
 ```
 
-## Important Guidelines
+Remind the user to run tests after fixes.
 
-1. **Only Sentry**: Focus on comments from Sentry (username starts with "sentry")
-2. **Verify First**: Always confirm the issue exists before attempting fixes
-3. **Read Before Edit**: Always use Read tool before using Edit tool
-4. **Precision**: Make targeted fixes that address the root cause
-5. **Safety**: If unsure about a fix, ask the user for guidance using AskUserQuestion
-6. **Testing**: Remind the user to run tests after fixes are applied
+## Seer review triggers (for `seer-by-sentry[bot]`)
 
-## Common Sentry Bot Issue Categories
+| Trigger | When |
+|---------|------|
+| PR set to "Ready for Review" | Automatic prediction |
+| Commit pushed while PR is ready | Re-runs prediction |
+| `@sentry review` comment | Manual full review |
+| Draft PR | Skipped until marked ready |
 
-### Build Configuration Issues
-- Missing files in build output
-- Incorrect tsconfig settings
-- Missing file copy steps in build scripts
+## Troubleshooting
 
-### Error Handling Issues
-- Errors caught but not re-thrown
-- Silent failures in critical paths
-- Missing error boundaries
+| Issue | Solution |
+|-------|----------|
+| No comments found | Verify the bot/App is active on the repo |
+| Bot name mismatch | Logins are `sentry[bot]` and `seer-by-sentry[bot]` |
+| Seer comments missing on new PRs | PR must be "Ready for Review", not draft |
+| `gh api` returns partial results | Include `--paginate` |
 
-### Runtime Configuration Issues
-- Missing environment variables
-- Incorrect path resolutions
-- Missing required dependencies
+## Common issue categories
 
-### Type Safety Issues
-- Missing null checks
-- Type assertions that could fail
-- Missing input validation
-
+Type safety (missing null checks, unsafe assertions) · error handling (swallowed errors, missing
+boundaries) · validation (permissive inputs, missing sanitization) · config (missing env vars,
+incorrect paths) · build configuration (missing output files, copy steps).

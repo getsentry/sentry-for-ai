@@ -21,14 +21,25 @@ Append the path from the `Path` column in the table below to `https://skills.sen
 
 ## Start Here — Read This Before Doing Anything
 
+> **Prompting tip:** When presenting the choices below, use your harness's built-in interactive
+> prompt or multiple-choice tool if one is available (for example a question/selection UI) — it
+> gives the user a clearer, faster way to choose than free-form text. Otherwise, list the options
+> plainly and wait for their reply.
+
 **Do not skip this section.** Do not assume which workflow the user needs. Ask first.
 
 1. If the user mentions **fixing errors, debugging exceptions, or investigating production issues** → `sentry-fix-issues`
-2. If the user mentions **Sentry bot comments or `sentry[bot]` on a PR** → `sentry-code-review`
-3. If the user mentions **Seer, bug prediction, or reviewing PRs for predicted issues** → `sentry-pr-code-review`
-4. If the user mentions **upgrading Sentry, migrating SDK versions, or fixing deprecated APIs** → `sentry-sdk-upgrade`
+2. If the user mentions **Sentry/Seer bot comments on a PR** (`sentry[bot]` or `seer-by-sentry[bot]` / bug prediction) → `sentry-code-review`
 
-When unclear, **ask the user** whether the task involves live production issues, PR review comments, or SDK upgrades. Do not guess.
+If the user has **no specific problem** and just wants to understand what the agent can do to help
+debug & fix with Sentry, briefly explain the options here (Seer root-cause/autofix, issue triage,
+`/seer` environment queries, automated PR review) and point them back when they hit something.
+
+Upgrading the SDK or migrating APIs is no longer here — see
+[`sentry-improve-setup`](../sentry-improve-setup/SKILL.md).
+
+When unclear, **ask the user** whether the task involves live production issues or PR review
+comments. Do not guess.
 
 ---
 
@@ -37,9 +48,7 @@ When unclear, **ask the user** whether the task involves live production issues,
 | Use when | Skill | Path |
 |---|---|---|
 | Finding and fixing production issues — stack traces, breadcrumbs, event data | [`sentry-fix-issues`](../sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
-| Resolving comments from `sentry[bot]` on GitHub PRs | [`sentry-code-review`](../sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
-| Fixing issues detected by Seer Bug Prediction in PR reviews | [`sentry-pr-code-review`](../sentry-pr-code-review/SKILL.md) | `sentry-pr-code-review/SKILL.md` |
-| Upgrading the Sentry JavaScript SDK — migration guides, breaking changes, deprecated APIs | [`sentry-sdk-upgrade`](../sentry-sdk-upgrade/SKILL.md) | `sentry-sdk-upgrade/SKILL.md` |
+| Resolving Sentry/Seer bot comments on GitHub PRs (`sentry[bot]` and `seer-by-sentry[bot]`) | [`sentry-code-review`](../sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
 
 Each skill contains its own detection logic, prerequisites, and step-by-step instructions. Trust the skill — read it carefully and follow it. Do not improvise or take shortcuts.
 
