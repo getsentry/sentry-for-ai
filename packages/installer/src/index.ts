@@ -1,9 +1,19 @@
-import "./instrument";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { defineCommand, runMain } from "citty";
 import { harnesses } from "./harnesses";
+import { initTelemetry } from "./instrument";
 import { runInstaller } from "./ui";
+
+// Initialize telemetry before citty parses arguments so that any startup errors
+// are captured. We pre-scan raw argv for --no-telemetry ourselves here because
+// citty has not run yet. DO_NOT_TRACK=1 (https://consoledonottrack.com) also
+// disables telemetry.
+const telemetryEnabled =
+  process.env.DO_NOT_TRACK !== "1" &&
+  !process.argv.slice(2).includes("--no-telemetry");
+
+initTelemetry(telemetryEnabled);
 
 const { version, description } = JSON.parse(
   readFileSync(join(__dirname, "../package.json"), "utf8"),
@@ -28,6 +38,12 @@ const install = defineCommand({
       alias: "y",
       description: "Alias for --no-interactive",
       default: false,
+    },
+    telemetry: {
+      type: "boolean",
+      description:
+        "Send crash reports to Sentry (default: on). Pass --no-telemetry or set DO_NOT_TRACK=1 to disable.",
+      default: true,
     },
   },
   async run({ args }) {
