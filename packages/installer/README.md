@@ -6,6 +6,11 @@ The plugin teaches your assistant Sentry — how to set it up in any project, ho
 
 Supports **Claude Code**, **Codex**, **Cursor**, and **Grok**.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/demo-dark.gif">
+  <img src="assets/demo-light.gif" alt="Installing the Sentry plugin with npx @sentry/ai install">
+</picture>
+
 ## Usage
 
 Run it with `npx`, no install required:
