@@ -2,12 +2,12 @@
 name: sentry-create-alert
 description: Create Sentry alerts using the workflow engine API. Use when asked to create alerts, set up notifications, configure issue priority alerts, or build workflow automations. Supports email, Slack, PagerDuty, Discord, and other notification actions.
 license: Apache-2.0
-category: feature-setup
-parent: sentry-feature-setup
+category: monitors
+parent: sentry-monitors
 disable-model-invocation: true
 ---
 
-> [All Skills](../../SKILL_TREE.md) > [Feature Setup](../sentry-feature-setup/SKILL.md) > Create Alert
+> [All Skills](../../SKILL_TREE.md) > [Monitors & Alerts](../sentry-monitors/SKILL.md) > Create Alert
 
 # Create Sentry Alert
 

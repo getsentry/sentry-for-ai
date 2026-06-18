@@ -2,13 +2,13 @@
 name: sentry-span-streaming-python
 description: Migrate Python SDK to Sentry span streaming (span-first trace lifecycle). Use when asked to "enable span streaming", "migrate to span streaming", "use trace_lifecycle stream", or switch from transaction-based to streamed span delivery in a Python project.
 license: Apache-2.0
-category: feature-setup
-parent: sentry-feature-setup
+category: improve-setup
+parent: sentry-improve-setup
 disable-model-invocation: true
 allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 ---
 
-> [All Skills](../../SKILL_TREE.md) > [Feature Setup](../sentry-feature-setup/SKILL.md) > Span Streaming (Python)
+> [All Skills](../../SKILL_TREE.md) > [Improve My Setup](../sentry-improve-setup/SKILL.md) > Span Streaming (Python)
 
 # Sentry Span Streaming Migration (Python)
 

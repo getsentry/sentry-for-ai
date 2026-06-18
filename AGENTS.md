@@ -45,32 +45,58 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 | `sentry-ruby-sdk` | Full setup wizard for Ruby (Rails, Sinatra, Sidekiq) |
 | `sentry-svelte-sdk` | Full setup wizard for Svelte/SvelteKit |
 
-### Setup Skills
+### Add a Signal Skills (router: `sentry-add-signal`)
+Concept skills are platform-agnostic WHAT/WHY + best practices; the SDK skill is the HOW. The
+"which signal" decision framework lives inline in the `sentry-add-signal` router (with references
+under `sentry-add-signal/references/`).
 | Skill | Description |
 |-------|-------------|
+| `sentry-tracing` | Tracing/performance concepts and best practices |
+| `sentry-logging` | Structured logging concepts and best practices |
+| `sentry-metrics` | Application metrics concepts and best practices |
+| `sentry-crons` | Cron/recurring-job monitoring concepts and best practices |
+| `sentry-profiling` | Profiling concepts and best practices |
+| `sentry-session-replay` | Session Replay concepts and best practices |
+| `sentry-user-feedback` | User Feedback concepts and best practices |
 | `sentry-setup-ai-monitoring` | Instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI |
-| `sentry-otel-exporter-setup` | Setup OTel Collector with Sentry Exporter |
-| `sentry-span-streaming-js` | Migrate JavaScript SDK from transaction-based to streamed span delivery |
-| `sentry-span-streaming-python` | Migrate Python SDK from transaction-based to streamed span delivery |
-| `sentry-instrumentation-guide` | Decide which signal to reach for — error vs span vs log vs metric |
 
-### Workflow Skills
+### Improve Setup Skills (router: `sentry-improve-setup`)
 | Skill | Description |
 |-------|-------------|
-| `sentry-code-review` | Analyze and resolve Sentry bot comments on GitHub PRs |
-| `sentry-pr-code-review` | Review PRs for issues detected by Seer Bug Prediction |
-| `sentry-fix-issues` | Find and fix Sentry issues using MCP |
+| `sentry-source-maps` | Make stack traces readable (source maps / debug files) |
+| `sentry-releases` | Releases with suspect commits and deploy tracking |
+| `sentry-data-scrubbing` | Data scrubbing / PII handling |
+| `sentry-reduce-volume` | Reduce event volume / manage quota |
+| `sentry-enable-ai-review` | Turn on Sentry's AI code review & bug prediction |
 | `sentry-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
-| `sentry-create-alert` | Create Sentry alerts using the workflow engine API |
+| `sentry-otel-exporter-setup` | Setup OTel Collector with Sentry Exporter |
+| `sentry-span-streaming-js` | Migrate JavaScript SDK to streamed span delivery |
+| `sentry-span-streaming-python` | Migrate Python SDK to streamed span delivery |
 
-### Authoring Skills
+### Workflow Skills (router: `sentry-workflow`)
 | Skill | Description |
 |-------|-------------|
+| `sentry-code-review` | Resolve Sentry/Seer bot comments on GitHub PRs (sentry[bot] + seer-by-sentry[bot]) |
+| `sentry-fix-issues` | Find and fix Sentry issues using MCP |
+
+### Monitors & Alerts Skills (router: `sentry-monitors`)
+| Skill | Description |
+|-------|-------------|
+| `sentry-create-alert` | Create Sentry alerts using the workflow engine API |
+| `sentry-uptime` | Uptime monitoring for a URL (largely UI today) |
+| `sentry-metric-alerts` | Metric alerts (thresholds, anomaly detection) |
+| `sentry-dashboards` | Dashboards to visualize errors, spans, logs, releases |
+
+### Internal / Utility Skills (no router)
+| Skill | Description |
+|-------|-------------|
+| `sentry-verify-instrumentation` | Confirm an event landed via MCP; invoked at the end of every setup |
 | `sentry-sdk-skill-creator` | Create a complete SDK skill bundle for any new platform |
 
 ## Commands
 | Command | Description |
 |---------|-------------|
+| `/sentry-get-started` | Guided entry point — orients the user and routes into the right skill |
 | `/seer <query>` | Natural language Sentry environment queries |
 
 ## MCP Server
@@ -85,17 +111,20 @@ Sentry MCP server configured at `https://mcp.sentry.dev/mcp`. The source of trut
 ## Skill Tree Navigation
 
 **How it works:**
-- 3 router skills (always visible in agent metadata): `sentry-sdk-setup`, `sentry-workflow`, `sentry-feature-setup`
+- 5 router skills (always visible in agent metadata): `sentry-sdk-setup`, `sentry-add-signal`, `sentry-improve-setup`, `sentry-workflow`, `sentry-monitors`
+- `/sentry-get-started` is a slash command (a thin concierge) that orients the user and routes into these routers — it is not a router itself
 - All other skills are hidden with `disable-model-invocation: true` — loaded on-demand when a router points to them
 - `SKILL_TREE.md` at repo root is the flat sitemap listing every skill
-- This keeps startup metadata at ~300 tokens instead of ~1,600+ as the library grows
+- This keeps startup metadata small as the library grows
 - Tools that don't support `disable-model-invocation` simply see all skills (same as before)
 
 **Categories:**
 - `sdk-setup` — platform/language SDK setup wizards (router: `sentry-sdk-setup`)
+- `add-signal` — add telemetry to an existing install; concept skills + AI monitoring (router: `sentry-add-signal`)
+- `improve-setup` — source maps, releases, scrubbing, quota, AI review, upgrades, migrations (router: `sentry-improve-setup`)
 - `workflow` — debugging, code review, issue management (router: `sentry-workflow`)
-- `feature-setup` — specific feature configuration (router: `sentry-feature-setup`)
-- `internal` — contributor tools, no router
+- `monitors` — alerts, uptime, metric alerts, dashboards (router: `sentry-monitors`)
+- `internal` — contributor tools and shared utilities (e.g. `sentry-verify-instrumentation`), no router
 
 **Adding a new skill:**
 1. Create `skills/<skill-name>/SKILL.md` with standard frontmatter
