@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { defineCommand, runMain } from "citty";
 import { harnesses } from "./harnesses";
-import { initTelemetry } from "./instrument";
+import { captureAndFlush, initTelemetry } from "./instrument";
 import { runInstaller } from "./ui";
 
 // Initialize telemetry before citty parses arguments so that any startup errors
@@ -50,8 +50,15 @@ const install = defineCommand({
   },
   async run({ args }) {
     const interactive = args.interactive && !args.yes;
-    const ok = await runInstaller(harnesses, { interactive });
-    process.exit(ok ? 0 : 1);
+    try {
+      const ok = await runInstaller(harnesses, { interactive });
+      process.exit(ok ? 0 : 1);
+    } catch (err) {
+      // Unexpected error outside the Listr runner: capture and flush before exit
+      // so crashes during the command execution path are not silently dropped.
+      await captureAndFlush(err);
+      throw err;
+    }
   },
 });
 
