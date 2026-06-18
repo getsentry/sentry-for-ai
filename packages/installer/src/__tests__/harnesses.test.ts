@@ -127,6 +127,20 @@ describe("claude harness", () => {
     );
   });
 
+  it("removes via the uninstall command, leaving the marketplace registered", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const outcome = await createClaude(system).remove();
+
+    expect(outcome).toMatchObject({
+      kind: "done",
+      command: "claude plugin uninstall sentry@claude-plugins-official",
+    });
+    expect(system.run).toHaveBeenCalledWith(
+      "claude plugin uninstall sentry@claude-plugins-official",
+    );
+    expect(system.run).not.toHaveBeenCalledWith(expect.stringContaining("marketplace remove"));
+  });
+
   it("surfaces stderr when install fails", async () => {
     const harness = createClaude(
       fakeSystem({ run: () => ({ ok: false, stderr: "boom", message: "exit 1" }) }),
@@ -221,6 +235,17 @@ describe("codex harness", () => {
     expect(system.run).toHaveBeenCalledWith(
       "codex plugin marketplace upgrade sentry-plugin-marketplace",
     );
+  });
+
+  it("removes our plugin via plugin remove", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const outcome = await createCodex(system).remove();
+
+    expect(outcome).toMatchObject({
+      kind: "done",
+      command: "codex plugin remove sentry@sentry-plugin-marketplace",
+    });
+    expect(system.run).toHaveBeenCalledWith("codex plugin remove sentry@sentry-plugin-marketplace");
   });
 
   it("throws when the install fails", async () => {
@@ -322,6 +347,14 @@ describe("grok harness", () => {
     expect(system.run).toHaveBeenCalledWith("grok plugin update sentry");
   });
 
+  it("removes via the uninstall command", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const outcome = await createGrok(system).remove();
+
+    expect(outcome).toMatchObject({ kind: "done", command: "grok plugin uninstall sentry" });
+    expect(system.run).toHaveBeenCalledWith("grok plugin uninstall sentry");
+  });
+
   it("throws when the install fails", async () => {
     const harness = createGrok(fakeSystem({ run: () => ({ ok: false, stderr: "nope" }) }));
     await expect(harness.install()).rejects.toThrow("nope");
@@ -420,5 +453,23 @@ describe("cursor harness", () => {
 
     expect(outcome.kind).toBe("done");
     expect(system.run).toHaveBeenCalledWith(`git -C "${target}" pull`);
+  });
+
+  it("deletes the plugin directory on remove", async () => {
+    const target = "/home/user/.cursor/plugins/local/sentry";
+    const system = fakeSystem({ homedir: "/home/user", existing: [target] });
+    const outcome = await createCursor(system).remove();
+
+    expect(outcome.kind).toBe("done");
+    expect(system.run).toHaveBeenCalledWith(`rm -rf "${target}"`);
+  });
+
+  it("uses the native recursive remove on Windows", async () => {
+    const homedir = "C:\\Users\\user";
+    const target = join(homedir, ".cursor", "plugins", "local", "sentry");
+    const system = fakeSystem({ homedir, platform: "win32" });
+    await createCursor(system).remove();
+
+    expect(system.run).toHaveBeenCalledWith(`rmdir /s /q "${target}"`);
   });
 });

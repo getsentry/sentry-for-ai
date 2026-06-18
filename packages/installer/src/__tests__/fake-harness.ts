@@ -9,6 +9,7 @@ export interface FakeHarnessOptions {
   readiness?: InstallReadiness;
   outcome?: InstallOutcome;
   updateOutcome?: InstallOutcome;
+  removeOutcome?: InstallOutcome;
   error?: Error;
   // When set, the harness exposes a cleanup spy resolving to this description so
   // tests can assert it runs (and that it runs before install/update). Pass an
@@ -34,6 +35,12 @@ export function fakeHarness(options: FakeHarnessOptions): Harness {
         throw options.error;
       }
       return options.updateOutcome ?? { kind: "done", command: `${options.id} update` };
+    }),
+    remove: vi.fn(async () => {
+      if (options.error) {
+        throw options.error;
+      }
+      return options.removeOutcome ?? { kind: "done", command: `${options.id} remove` };
     }),
   };
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { runInstaller } from "../ui";
+import { runInstaller, runRemover } from "../ui";
 import { fakeHarness } from "./fake-harness";
 
 // These cover the non-interactive path, which skips the prompt and installs
@@ -109,5 +109,64 @@ describe("runInstaller (non-interactive)", () => {
 
     expect(ok).toBe(true);
     expect(peak).toBeGreaterThan(1);
+  });
+});
+
+describe("runRemover (non-interactive)", () => {
+  it("removes only detected agents that have the plugin installed", async () => {
+    const claude = fakeHarness({ id: "claude", detected: true, installed: true });
+    const codex = fakeHarness({ id: "codex", detected: true, installed: false });
+    const grok = fakeHarness({ id: "grok", detected: false });
+
+    const ok = await runRemover([claude, codex, grok], { interactive: false });
+
+    expect(ok).toBe(true);
+    expect(claude.remove).toHaveBeenCalledOnce();
+    expect(codex.remove).not.toHaveBeenCalled();
+    expect(grok.remove).not.toHaveBeenCalled();
+  });
+
+  it("closes with the neuralyzer line naming the agents to restart", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const claude = fakeHarness({
+      id: "claude",
+      name: "Claude Code",
+      detected: true,
+      installed: true,
+    });
+    const grok = fakeHarness({ id: "grok", name: "Grok", detected: true, installed: true });
+
+    await runRemover([claude, grok], { interactive: false });
+
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("Restart Claude Code and Grok. "));
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("They won't remember a thing."));
+    log.mockRestore();
+  });
+
+  it("omits the restart hint when nothing was installed to remove", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const claude = fakeHarness({ id: "claude", detected: true, installed: false });
+
+    const ok = await runRemover([claude], { interactive: false });
+
+    expect(ok).toBe(true);
+    expect(claude.remove).not.toHaveBeenCalled();
+    expect(log).not.toHaveBeenCalledWith(expect.stringContaining("Restart"));
+    log.mockRestore();
+  });
+
+  it("returns false when a remove fails but still removes the others", async () => {
+    const claude = fakeHarness({
+      id: "claude",
+      detected: true,
+      installed: true,
+      error: new Error("boom"),
+    });
+    const codex = fakeHarness({ id: "codex", detected: true, installed: true });
+
+    const ok = await runRemover([claude, codex], { interactive: false });
+
+    expect(ok).toBe(false);
+    expect(codex.remove).toHaveBeenCalledOnce();
   });
 });

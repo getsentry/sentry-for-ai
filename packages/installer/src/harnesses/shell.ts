@@ -5,10 +5,11 @@ export async function detectOnPath(system: SystemDeps, binary: string): Promise<
   return (await system.run(`${locator} ${binary}`)).ok;
 }
 
-// Runs a mutating command, streaming its output to `output` when given. Only the
-// sink is forwarded when present, so non-streaming callers (and tests) still see
-// a single-argument call.
-export async function runInstallCommand(
+// Runs a mutating command (install, update, remove, cleanup), throwing on a
+// non-zero exit so callers can treat failure as an exception. Streams its output
+// to `output` when given. Only the sink is forwarded when present, so
+// non-streaming callers (and tests) still see a single-argument call.
+export async function runCommand(
   system: SystemDeps,
   command: string,
   output?: OutputSink,

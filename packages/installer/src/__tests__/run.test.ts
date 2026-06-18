@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectHarnesses, installHarness, installSucceeded } from "../run";
+import { detectHarnesses, installHarness, installSucceeded, removeHarness } from "../run";
 import { fakeHarness } from "./fake-harness";
 
 describe("detectHarnesses", () => {
@@ -111,6 +111,36 @@ describe("installHarness", () => {
     const result = await installHarness({ harness: claude, detected: true, installed: false });
 
     expect(result).toEqual({ kind: "failed", message: "boom" });
+  });
+});
+
+describe("removeHarness", () => {
+  it("returns the harness remove outcome", async () => {
+    const claude = fakeHarness({ id: "claude", installed: true });
+
+    const result = await removeHarness({ harness: claude, detected: true, installed: true });
+
+    expect(result).toEqual({ kind: "done", command: "claude remove" });
+    expect(claude.remove).toHaveBeenCalledOnce();
+    expect(claude.install).not.toHaveBeenCalled();
+  });
+
+  it("captures a thrown remove as a failed result", async () => {
+    const claude = fakeHarness({ id: "claude", installed: true, error: new Error("boom") });
+
+    const result = await removeHarness({ harness: claude, detected: true, installed: true });
+
+    expect(result).toEqual({ kind: "failed", message: "boom" });
+  });
+
+  it("does not run cleanup or a readiness gate before removing", async () => {
+    const codex = fakeHarness({ id: "codex", installed: true, cleaned: "should not run" });
+
+    await removeHarness({ harness: codex, detected: true, installed: true });
+
+    expect(codex.cleanup).not.toHaveBeenCalled();
+    expect(codex.canInstall).not.toHaveBeenCalled();
+    expect(codex.remove).toHaveBeenCalledOnce();
   });
 });
 

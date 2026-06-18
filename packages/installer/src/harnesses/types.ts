@@ -1,7 +1,7 @@
 import type { OutputSink } from "../system";
 
 /**
- * Result of an install or update attempt.
+ * Result of an install, update, or remove attempt.
  */
 export type InstallOutcome =
   /**
@@ -61,4 +61,11 @@ export interface Harness {
    * `output` when provided.
    */
   update(output?: OutputSink): Promise<InstallOutcome>;
+  /**
+   * Remove the plugin, assuming it is present. Streams command output to
+   * `output` when provided. Only our own plugin is taken out — any marketplace
+   * we registered is left in place (it may be a shared/official one), and
+   * `cleanup` does not run for removal.
+   */
+  remove(output?: OutputSink): Promise<InstallOutcome>;
 }

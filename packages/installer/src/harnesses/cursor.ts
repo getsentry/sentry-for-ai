@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { realSystem, type OutputSink, type SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
-import { detectOnPath, runInstallCommand } from "./shell";
+import { detectOnPath, runCommand } from "./shell";
 
 const PLUGIN_REPO = "https://github.com/getsentry/plugin-cursor.git";
 
@@ -47,13 +47,22 @@ export function createCursor(system: SystemDeps): Harness {
     install: async (output): Promise<InstallOutcome> => {
       // Quote the target: Windows home paths routinely contain spaces.
       const command = `git clone ${PLUGIN_REPO} "${pluginDir(system)}"`;
-      await runInstallCommand(system, command, output);
+      await runCommand(system, command, output);
       return { kind: "done", command };
     },
 
     update: async (output): Promise<InstallOutcome> => {
       const command = `git -C "${pluginDir(system)}" pull`;
-      await runInstallCommand(system, command, output);
+      await runCommand(system, command, output);
+      return { kind: "done", command };
+    },
+
+    remove: async (output): Promise<InstallOutcome> => {
+      // The plugin is just a checkout, so removal is a recursive directory
+      // delete. Windows has no `rm`, so use its native recursive remove.
+      const dir = pluginDir(system);
+      const command = system.platform === "win32" ? `rmdir /s /q "${dir}"` : `rm -rf "${dir}"`;
+      await runCommand(system, command, output);
       return { kind: "done", command };
     },
   };

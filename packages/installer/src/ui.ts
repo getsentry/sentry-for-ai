@@ -16,9 +16,11 @@ import {
   detectHarnesses,
   installHarness,
   installSucceeded,
+  removeHarness,
   type Detection,
   type InstallResult,
 } from "./run";
+import type { OutputSink } from "./system";
 
 const BANNER_LINES = [
   "█▀ █▀▀ █▄░█ ▀█▀ █▀█ █▄█   █▀▀ █▀█ █▀█   ▄▀█ █",
@@ -70,6 +72,14 @@ function introTitle(colored: boolean, phase?: number): string {
   return `${prefix}${word}${suffix}`;
 }
 
+// The remove flow's tagline. A flat Men-in-Black riff that stays static — there
+// is nothing to teach, so the line does not shimmer (the `phase` is ignored).
+const NEURALYZE_TITLE = "Neuralyzing your agents of Sentry.";
+
+function neuralyzeTitle(_colored: boolean): string {
+  return color.dim(NEURALYZE_TITLE);
+}
+
 export interface RunOptions {
   // When false, skip the selector and install every detected agent (CI smoke
   // tests, unattended runs). The selection task is disabled in this mode.
@@ -80,10 +90,58 @@ interface Ctx {
   detections: Detection[];
   selected: Detection[];
   results: InstallResult[];
-  // Names of agents that actually received the plugin, for the closing restart
-  // hint. Blocked/failed agents are excluded — nothing to restart for those.
-  installed: string[];
+  // Names of agents the flow actually acted on (installed or removed), for the
+  // closing restart hint. Blocked/failed agents are excluded — nothing to
+  // restart for those.
+  affected: string[];
   cancelled: boolean;
+}
+
+/**
+ * The parts of the flow that differ between install and remove. Detection and
+ * selection are shared; everything below tailors the tagline, the prompt, the
+ * per-agent action, and the closing line to one direction.
+ */
+interface FlowMode {
+  /**
+   * Tagline painted above the task list. `phase` drives the shimmer; a static
+   * mode (remove) ignores it and always renders at rest.
+   */
+  header(colored: boolean, phase?: number): string;
+  /**
+   * Whether the tagline shimmers while work is in flight.
+   */
+  animate: boolean;
+  /**
+   * Which detections this flow can act on. Install targets every detected agent;
+   * remove targets only those that actually have our plugin.
+   */
+  eligible(detection: Detection): boolean;
+  /**
+   * Message shown above the agent checkbox.
+   */
+  selectMessage: string;
+  /**
+   * Per-agent label in the checkbox and the task list.
+   */
+  label(detection: Detection): string;
+  /**
+   * Title of the action group.
+   */
+  actionTitle: string;
+  /**
+   * Skip line shown when nothing is eligible to act on.
+   */
+  emptyMessage: string;
+  /**
+   * Act on one harness — install/update or remove.
+   */
+  act(detection: Detection, output: OutputSink): Promise<InstallResult>;
+  /**
+   * Closing line printed when at least one agent was acted on; `names` are the
+   * affected agents to restart.
+   */
+  closing(names: string[]): string;
 }
 
 // "Claude Code", "Claude Code and Codex", "Claude Code, Codex, and Grok".
@@ -115,14 +173,18 @@ function isCancel(err: unknown): boolean {
   return err instanceof Error && err.name === "ExitPromptError";
 }
 
-// Only agents found on the machine are offered: installing into an undetected
-// agent just runs shell commands that fail with confusing errors. Everything is
-// pre-checked since the whole list is installable; the user deselects to skip.
-async function promptForAgents(detected: Detection[], task: TaskWrapper): Promise<Detection[]> {
+// Only eligible agents are offered: acting on an agent the flow cannot touch
+// just runs shell commands that fail with confusing errors. Everything is
+// pre-checked since the whole list is actionable; the user deselects to skip.
+async function promptForAgents(
+  eligible: Detection[],
+  mode: FlowMode,
+  task: TaskWrapper,
+): Promise<Detection[]> {
   const selectedIds = await task.prompt(ListrInquirerPromptAdapter).run(checkbox, {
-    message: "Select the agents to install the Sentry plugin for",
-    choices: detected.map((detection) => ({
-      name: detection.installed ? `${detection.harness.name} (reinstall)` : detection.harness.name,
+    message: mode.selectMessage,
+    choices: eligible.map((detection) => ({
+      name: mode.label(detection),
       value: detection.harness.id,
       checked: true,
     })),
@@ -141,23 +203,24 @@ async function promptForAgents(detected: Detection[], task: TaskWrapper): Promis
     },
   });
 
-  return detected.filter((detection) => selectedIds.includes(detection.harness.id));
+  return eligible.filter((detection) => selectedIds.includes(detection.harness.id));
 }
 
-// Translate one install result into Listr task display state.
-function installTask(ctx: Ctx, detection: Detection): ListrTask<Ctx> {
-  const { harness, installed } = detection;
+// Translate one harness action (install/update or remove) into Listr task
+// display state.
+function actionTask(ctx: Ctx, detection: Detection, mode: FlowMode): ListrTask<Ctx> {
+  const { harness } = detection;
 
   return {
-    title: installed ? `${harness.name} (reinstall)` : harness.name,
+    title: mode.label(detection),
     // outputBar shows every streamed line of the running commands; persistentOutput
     // keeps it (and the trailing notes below) on screen after the task settles.
     rendererOptions: { persistentOutput: true, outputBar: Infinity },
     task: async (_ctx, task: TaskWrapper) => {
-      // Stream the install/cleanup command output live under this task's row,
-      // grayed (the renderer's color map only tints the icon, so gray the body
-      // through a createWritable transform). Trailing notes go to the raw sink so
-      // their text stays full color and reads as ours, not command noise.
+      // Stream the command output live under this task's row, grayed (the
+      // renderer's color map only tints the icon, so gray the body through a
+      // createWritable transform). Trailing notes go to the raw sink so their
+      // text stays full color and reads as ours, not command noise.
       const raw = task.stdout();
       // Gray per line, leaving blank lines genuinely empty — otherwise the gray
       // escapes make them non-empty and defeat the renderer's removeEmptyLines.
@@ -170,7 +233,7 @@ function installTask(ctx: Ctx, detection: Detection): ListrTask<Ctx> {
             .join("\n"),
         ),
       );
-      const result = await installHarness(detection, out);
+      const result = await mode.act(detection, out);
       ctx.results.push(result);
 
       // Trailing notes (what cleanup removed, manual steps, restart hints) are not
@@ -184,12 +247,12 @@ function installTask(ctx: Ctx, detection: Detection): ListrTask<Ctx> {
         case "done":
           task.title = `${harness.name} — ${result.command}`;
           writeTail(result.cleaned, result.note);
-          ctx.installed.push(harness.name);
+          ctx.affected.push(harness.name);
           return;
         case "manual":
           task.title = `${harness.name} — manual steps required`;
           writeTail(result.cleaned, result.instructions);
-          ctx.installed.push(harness.name);
+          ctx.affected.push(harness.name);
           return;
         case "blocked":
           task.skip(`${harness.name} — ${result.reason}`);
@@ -201,29 +264,71 @@ function installTask(ctx: Ctx, detection: Detection): ListrTask<Ctx> {
   };
 }
 
-export async function runInstaller(
+// Install (and update) targets every detected agent, with a shimmering tagline.
+const installMode: FlowMode = {
+  header: introTitle,
+  animate: true,
+  eligible: (detection) => detection.detected,
+  selectMessage: "Select the agents to install the Sentry plugin for",
+  label: (detection) =>
+    detection.installed ? `${detection.harness.name} (reinstall)` : detection.harness.name,
+  actionTitle: "Installing plugins",
+  emptyMessage: "No agents selected",
+  act: (detection, output) => installHarness(detection, output),
+  closing: (names) => {
+    const speak = names.length === 1 ? "agent now speaks" : "agents now speak";
+    return `\nDone. Restart ${listFormatter.format(names)}. ${color.dim(`Your ${speak} Sentry.`)}`;
+  },
+};
+
+// Remove targets only agents that actually have our plugin, with a static
+// tagline.
+const removeMode: FlowMode = {
+  header: neuralyzeTitle,
+  animate: false,
+  eligible: (detection) => detection.detected && detection.installed,
+  selectMessage: "Select the agents to remove the Sentry plugin from",
+  label: (detection) => detection.harness.name,
+  actionTitle: "Removing plugins",
+  emptyMessage: "No agents to remove",
+  act: (detection, output) => removeHarness(detection, output),
+  closing: (names) =>
+    `\nDone. Restart ${listFormatter.format(names)}. ${color.dim("They won't remember a thing.")}`,
+};
+
+export function runInstaller(harnesses: Harness[], options: RunOptions = {}): Promise<boolean> {
+  return runFlow(harnesses, installMode, options);
+}
+
+export function runRemover(harnesses: Harness[], options: RunOptions = {}): Promise<boolean> {
+  return runFlow(harnesses, removeMode, options);
+}
+
+async function runFlow(
   harnesses: Harness[],
+  mode: FlowMode,
   options: RunOptions = {},
 ): Promise<boolean> {
   const interactive = options.interactive ?? true;
 
   // The header shimmer is painted by ShimmerRenderer, which only runs on a TTY.
-  // colored gates truecolor; animate gates the sweep (off under test).
+  // colored gates truecolor; animate gates the sweep (off under test, and off
+  // entirely for modes whose tagline stays static).
   const isTTY = !!process.stdout.isTTY;
   const colored = isTTY && !process.env.NO_COLOR && !process.env.CI;
-  const animate = colored && !process.env.VITEST;
+  const animate = mode.animate && colored && !process.env.VITEST;
 
   if (!process.env.VITEST) {
     console.log(BANNER);
     // Off a TTY the renderer falls back to a plain logger with no header, so
     // print the tagline once up front to keep it in the output.
     if (!isTTY) {
-      console.log(`${introTitle(colored)}\n`);
+      console.log(`${mode.header(colored)}\n`);
     }
   }
 
-  // The actual install steps. They run nested under the shimmering tagline so
-  // the tagline stays on screen, animating, for the whole run.
+  // The actual steps. They run nested under the tagline so it stays on screen
+  // for the whole run.
   const steps: ListrTask<Ctx>[] = [
     {
       title: "Detecting AI coding tools",
@@ -237,12 +342,12 @@ export async function runInstaller(
     {
       title: "Select agents",
       // Skip the prompt unless we are interactive and actually found something
-      // to install — an empty checkbox is pointless.
-      enabled: (ctx) => interactive && ctx.detections.some((d) => d.detected),
+      // to act on — an empty checkbox is pointless.
+      enabled: (ctx) => interactive && ctx.detections.some(mode.eligible),
       task: async (ctx, task) => {
-        const detected = ctx.detections.filter((d) => d.detected);
+        const eligible = ctx.detections.filter(mode.eligible);
         try {
-          ctx.selected = await promptForAgents(detected, task);
+          ctx.selected = await promptForAgents(eligible, mode, task);
         } catch (err) {
           if (!isCancel(err)) throw err;
           ctx.cancelled = true;
@@ -251,15 +356,15 @@ export async function runInstaller(
       },
     },
     {
-      title: "Installing plugins",
-      // Interactive runs install the user's selection; non-interactive runs
-      // skip the prompt and install every detected agent.
+      title: mode.actionTitle,
+      // Interactive runs act on the user's selection; non-interactive runs skip
+      // the prompt and act on every eligible agent.
       enabled: (ctx) => !ctx.cancelled,
       task: (ctx, task) => {
-        const selected = interactive ? ctx.selected : ctx.detections.filter((d) => d.detected);
+        const selected = interactive ? ctx.selected : ctx.detections.filter(mode.eligible);
 
         if (selected.length === 0) {
-          task.skip("No agents selected");
+          task.skip(mode.emptyMessage);
           return;
         }
 
@@ -269,7 +374,7 @@ export async function runInstaller(
         // and cleanup output) on screen after the group finishes instead of
         // folding them back into the parent line.
         return task.newListr(
-          selected.map((detection) => installTask(ctx, detection)),
+          selected.map((detection) => actionTask(ctx, detection, mode)),
           {
             concurrent: true,
             exitOnError: false,
@@ -280,9 +385,9 @@ export async function runInstaller(
     },
   ];
 
-  // Paint the shimmering tagline as a header above the task list every frame.
-  // The header is not a task, so it carries no spinner icon, and the steps
-  // render as a normal flat list beneath a blank line.
+  // Paint the tagline as a header above the task list every frame. The header is
+  // not a task, so it carries no spinner icon, and the steps render as a normal
+  // flat list beneath a blank line.
   class ShimmerRenderer extends DefaultRenderer {
     // Wall-clock origin for a frame-rate-independent shimmer phase.
     private readonly startedAt = Date.now();
@@ -299,14 +404,14 @@ export async function runInstaller(
         animate && running
           ? Math.floor((Date.now() - this.startedAt) / SHIMMER_INTERVAL_MS)
           : undefined;
-      const header = introTitle(colored, phase);
+      const header = mode.header(colored, phase);
 
       return body.length > 0 ? `${header}\n\n${body}` : header;
     }
   }
 
   const tasks = new Listr<Ctx, typeof ShimmerRenderer>(steps, {
-    // Steps run sequentially; install failures are contained by the inner list.
+    // Steps run sequentially; per-agent failures are contained by the inner list.
     // exitOnError aborts on an unexpected throw (e.g. the prompt erroring).
     // Under vitest we silence the renderer so test runs do not paint.
     concurrent: false,
@@ -333,7 +438,7 @@ export async function runInstaller(
     detections: [],
     selected: [],
     results: [],
-    installed: [],
+    affected: [],
     cancelled: false,
   };
 
@@ -346,17 +451,14 @@ export async function runInstaller(
     return false;
   }
 
-  // A cancelled prompt installed nothing — report failure so the exit code
-  // distinguishes an aborted run from a clean install.
+  // A cancelled prompt did nothing — report failure so the exit code
+  // distinguishes an aborted run from a clean one.
   if (ctx.cancelled) {
     return false;
   }
 
-  if (ctx.installed.length > 0) {
-    const speak = ctx.installed.length === 1 ? "agent now speaks" : "agents now speak";
-    console.log(
-      `\nDone. Restart ${listFormatter.format(ctx.installed)}. ${color.dim(`Your ${speak} Sentry.`)}`,
-    );
+  if (ctx.affected.length > 0) {
+    console.log(mode.closing(ctx.affected));
   }
 
   return ctx.results.every(installSucceeded);
