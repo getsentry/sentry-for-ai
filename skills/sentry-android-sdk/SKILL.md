@@ -504,59 +504,9 @@ Walk through features one at a time. Load the reference file for each, follow it
 | Logging | `${SKILL_ROOT}/references/logging.md` | Structured logging / log-to-trace correlation |
 | Metrics | `${SKILL_ROOT}/references/metrics.md` | Custom metric tracking (SDK ≥ 8.30.0) |
 | Crons | `${SKILL_ROOT}/references/crons.md` | Scheduled jobs, WorkManager check-ins |
+| Integration Reference | `${SKILL_ROOT}/references/integrations.md` | Built-in, optional, and Gradle bytecode integrations |
 
 For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exactly, verify it works.
-
----
-
-## Integration Reference
-
-### Built-in (Auto-Enabled)
-
-These integrations activate automatically when `SentryAndroid.init()` is called:
-
-| Integration | What it does |
-|-------------|-------------|
-| `UncaughtExceptionHandlerIntegration` | Captures all uncaught Java/Kotlin exceptions |
-| `AnrIntegration` | ANR detection via watchdog thread (5s) + ApplicationExitInfo (API 30+) |
-| `NdkIntegration` | Native (C/C++) crash capture via `sentry-native` |
-| `ActivityLifecycleIntegration` | Auto-instruments Activity create/resume/pause for TTID/TTFD |
-| `AppStartMetrics` | Measures cold/warm/hot app start time |
-| `NetworkBreadcrumbsIntegration` | Records connectivity changes as breadcrumbs |
-| `SystemEventsBreadcrumbsIntegration` | Records battery, screen on/off, etc. |
-| `AppLifecycleIntegration` | Records foreground/background transitions |
-| `UserInteractionIntegration` | Breadcrumbs for taps, swipes, input events |
-| `CurrentActivityIntegration` | Tracks active Activity for context |
-
-### Optional Integrations
-
-Add the artifact to your `dependencies {}` block (versions managed by BOM):
-
-| Integration | Artifact | When to add |
-|-------------|---------|-------------|
-| **Timber** | `io.sentry:sentry-android-timber` | App uses Timber for logging |
-| **Fragment** | `io.sentry:sentry-android-fragment` | App uses Jetpack Fragments (lifecycle tracing) |
-| **Compose** | `io.sentry:sentry-compose-android` | App uses Jetpack Compose (navigation + masking) |
-| **Navigation** | `io.sentry:sentry-android-navigation` | App uses Jetpack Navigation Component |
-| **OkHttp** | `io.sentry:sentry-okhttp` | App uses OkHttp or Retrofit |
-| **Room/SQLite** | `io.sentry:sentry-android-sqlite` | App uses Room or raw SQLite |
-| **Apollo 3** | `io.sentry:sentry-apollo-3` | App uses Apollo GraphQL v3 |
-| **Apollo 4** | `io.sentry:sentry-apollo-4` | App uses Apollo GraphQL v4 |
-| **Kotlin Extensions** | `io.sentry:sentry-kotlin-extensions` | Kotlin coroutines context propagation |
-| **Ktor Client** | `io.sentry:sentry-ktor-client` | App uses Ktor HTTP client |
-| **LaunchDarkly** | `io.sentry:sentry-launchdarkly-android` | App uses LaunchDarkly feature flags |
-
-### Gradle Plugin Bytecode Instrumentation
-
-The plugin can inject instrumentation automatically (no source changes):
-
-| Feature | Instruments | Enable via |
-|---------|-------------|-----------|
-| `DATABASE` | Room DAO, SupportSQLiteOpenHelper | `tracingInstrumentation.features` |
-| `FILE_IO` | FileInputStream, FileOutputStream | `tracingInstrumentation.features` |
-| `OKHTTP` | OkHttpClient.Builder automatically | `tracingInstrumentation.features` |
-| `COMPOSE` | NavHostController auto-instrumentation | `tracingInstrumentation.features` |
-| `LOGCAT` | `android.util.Log` capturing | `tracingInstrumentation.features` |
 
 ---
 
@@ -633,9 +583,7 @@ The plugin can inject instrumentation automatically (no source changes):
 | `isEnabled` | `Boolean` | `false` | Enable `Sentry.logger()` API (SDK ≥ 8.12.0) |
 | `setBeforeSend` | `BeforeSendLogCallback` | — | Filter/modify log entries before sending |
 
----
-
-## Environment Variables
+### Environment Variables
 
 | Variable | Purpose | Notes |
 |----------|---------|-------|

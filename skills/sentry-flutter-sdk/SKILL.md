@@ -422,6 +422,7 @@ Walk through features one at a time. Load the reference file for each, follow it
 | Profiling | `${SKILL_ROOT}/references/profiling.md` | iOS/macOS performance-sensitive apps |
 | Logging | `${SKILL_ROOT}/references/logging.md` | Structured logging / log-trace correlation |
 | Metrics | `${SKILL_ROOT}/references/metrics.md` | Custom business metrics |
+| Ecosystem Integrations | `${SKILL_ROOT}/references/ecosystem-integrations.md` | HTTP clients, databases, GraphQL, state management |
 
 For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exactly, verify it works.
 
@@ -533,9 +534,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `beforeBreadcrumb` | `(Breadcrumb, Hint) → Breadcrumb?` | Process breadcrumbs before storage |
 | `beforeSendLog` | `(SentryLog) → SentryLog?` | Filter structured logs before sending |
 
----
-
-## Environment Variables
+### Environment Variables
 
 Pass via `--dart-define` at build time:
 
@@ -564,82 +563,7 @@ options.dsn = const String.fromEnvironment('SENTRY_DSN');
 options.environment = const String.fromEnvironment('SENTRY_ENVIRONMENT', defaultValue: 'development');
 ```
 
----
-
-## Ecosystem Integrations
-
-Add these packages alongside `sentry_flutter` for deeper instrumentation:
-
-### HTTP Clients
-
-**Standard `http` package** — built into `sentry_flutter`, no extra install:
-
-```dart
-import 'package:sentry/sentry.dart';
-
-// Wrap your http client
-final client = SentryHttpClient(
-  captureFailedRequests: true,
-  failedRequestStatusCodes: [SentryStatusCode.range(400, 599)],
-);
-try {
-  final response = await client.get(Uri.parse('https://api.example.com/users'));
-} finally {
-  client.close();
-}
-```
-
-**Dio** — install `sentry_dio`:
-
-```bash
-flutter pub add sentry_dio
-```
-
-```dart
-import 'package:dio/dio.dart';
-import 'package:sentry_dio/sentry_dio.dart';
-
-final dio = Dio();
-// Add your interceptors first, THEN addSentry() last
-dio.addSentry(
-  captureFailedRequests: true,
-  failedRequestStatusCodes: [SentryStatusCode.range(400, 599)],
-);
-```
-
-### Databases
-
-| Package | Install | Setup |
-|---------|---------|-------|
-| `sentry_sqflite` | `flutter pub add sentry_sqflite` | `databaseFactory = SentrySqfliteDatabaseFactory();` |
-| `sentry_drift` | `flutter pub add sentry_drift` | `.interceptWith(SentryQueryInterceptor(databaseName: 'db'))` |
-| `sentry_hive` | `flutter pub add sentry_hive` | Use `SentryHive` instead of `Hive` |
-| `sentry_isar` | `flutter pub add sentry_isar` | Use `SentryIsar.open()` instead of `Isar.open()` |
-
-### Other
-
-| Package | Install | Purpose |
-|---------|---------|---------|
-| `sentry_logging` | `flutter pub add sentry_logging` | Dart `logging` package → Sentry breadcrumbs/events |
-| `sentry_link` | `flutter pub add sentry_link` | GraphQL (gql, graphql_flutter, ferry) tracing |
-| `sentry_supabase` | `flutter pub add sentry_supabase` | Supabase query tracing (SDK ≥9.9.0) |
-| `sentry_firebase_remote_config` | `flutter pub add sentry_firebase_remote_config` | Feature flag tracking |
-| `sentry_file` | `flutter pub add sentry_file` | File I/O tracing via `.sentryTrace()` extension |
-
-### State Management Patterns
-
-No official packages — wire Sentry via observer APIs:
-
-| Framework | Hook point | Pattern |
-|-----------|-----------|---------|
-| **BLoC/Cubit** | `BlocObserver.onError` | `Sentry.captureException(error, stackTrace: stackTrace)` inside `onError`; set `Bloc.observer = SentryBlocObserver()` before init |
-| **Riverpod** | `ProviderObserver.providerDidFail` | Fires for `FutureProvider`/`StreamProvider` failures; wrap app with `ProviderScope(observers: [SentryProviderObserver()])` |
-| **Provider/ChangeNotifier** | `try/catch` in `notifyListeners` callers | Manually call `Sentry.captureException(e, stackTrace: stack)` in catch blocks |
-| **GetX** | `GetMaterialApp.onError` | `GetMaterialApp(onError: (details) => Sentry.captureException(...))` |
-
----
-
-## Production Settings
+### Production Settings
 
 Lower sample rates and harden config before shipping:
 
@@ -669,6 +593,25 @@ Future<void> main() async {
   );
 }
 ```
+
+### Default Auto-Enabled Integrations
+
+These are active with no extra config when you call `SentryFlutter.init()`:
+
+| Integration | What it does |
+|-------------|-------------|
+| `FlutterErrorIntegration` | Captures `FlutterError.onError` framework errors |
+| `RunZonedGuardedIntegration` | Catches unhandled Dart exceptions in runZonedGuarded |
+| `NativeAppStartIntegration` | App start timing (iOS/Android) |
+| `FramesTrackingIntegration` | Slow/frozen frames (iOS/Android/macOS) |
+| `NativeUserInteractionIntegration` | User interaction breadcrumbs from native layer |
+| `UserInteractionIntegration` | Dart-layer tap/click transactions (requires `SentryWidget`) |
+| `DeviceContextIntegration` | Device model, OS version, screen resolution |
+| `AppContextIntegration` | App version, build number, bundle ID |
+| `ConnectivityIntegration` | Network connectivity change breadcrumbs |
+| `HttpClientIntegration` | Auto-instrument Dart `http` requests |
+| `SdkIntegration` | SDK metadata tagging |
+| `ReleaseIntegration` | Auto-set release on iOS/Android from package info |
 
 ---
 
@@ -712,27 +655,6 @@ ElevatedButton(
 > - Native crashes, session replay, slow/frozen frames, and app start metrics only fully work in release builds on iOS/Android
 > - Run `flutter run --release` or use a real device/emulator to test native features
 > - Debug mode uses the Dart VM with JIT compilation — some native integrations behave differently
-
----
-
-## Default Auto-Enabled Integrations
-
-These are active with no extra config when you call `SentryFlutter.init()`:
-
-| Integration | What it does |
-|-------------|-------------|
-| `FlutterErrorIntegration` | Captures `FlutterError.onError` framework errors |
-| `RunZonedGuardedIntegration` | Catches unhandled Dart exceptions in runZonedGuarded |
-| `NativeAppStartIntegration` | App start timing (iOS/Android) |
-| `FramesTrackingIntegration` | Slow/frozen frames (iOS/Android/macOS) |
-| `NativeUserInteractionIntegration` | User interaction breadcrumbs from native layer |
-| `UserInteractionIntegration` | Dart-layer tap/click transactions (requires `SentryWidget`) |
-| `DeviceContextIntegration` | Device model, OS version, screen resolution |
-| `AppContextIntegration` | App version, build number, bundle ID |
-| `ConnectivityIntegration` | Network connectivity change breadcrumbs |
-| `HttpClientIntegration` | Auto-instrument Dart `http` requests |
-| `SdkIntegration` | SDK metadata tagging |
-| `ReleaseIntegration` | Auto-set release on iOS/Android from package info |
 
 ---
 

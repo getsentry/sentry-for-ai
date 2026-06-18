@@ -336,19 +336,6 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 
 ---
 
-## SvelteKit File Summary
-
-| File | Purpose | Modern | Legacy |
-|------|---------|--------|--------|
-| `src/instrumentation.server.ts` | Server `Sentry.init()` — runs once at startup | ✅ Required | ❌ |
-| `src/hooks.client.ts` | Client `Sentry.init()` + `handleError` | ✅ Required | ✅ Required |
-| `src/hooks.server.ts` | `handleError` + `sentryHandle()` (no init) | ✅ Required | ✅ Init goes here |
-| `svelte.config.js` | Enable `experimental.instrumentation.server` | ✅ Required | ❌ |
-| `vite.config.ts` | `sentrySvelteKit()` plugin for source maps | ✅ Recommended | ✅ Recommended |
-| `.env` | `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | ✅ For source maps | ✅ For source maps |
-
----
-
 ## Configuration Reference
 
 ### Key `Sentry.init()` Options
@@ -389,6 +376,17 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `@sveltejs/adapter-node` | ✅ Full |
 | `@sveltejs/adapter-cloudflare` | ⚠️ Partial — requires extra setup |
 | Vercel Edge Runtime | ❌ Not supported |
+
+### SvelteKit File Summary
+
+| File | Purpose | Modern | Legacy |
+|------|---------|--------|--------|
+| `src/instrumentation.server.ts` | Server `Sentry.init()` — runs once at startup | ✅ Required | ❌ |
+| `src/hooks.client.ts` | Client `Sentry.init()` + `handleError` | ✅ Required | ✅ Required |
+| `src/hooks.server.ts` | `handleError` + `sentryHandle()` (no init) | ✅ Required | ✅ Init goes here |
+| `svelte.config.js` | Enable `experimental.instrumentation.server` | ✅ Required | ❌ |
+| `vite.config.ts` | `sentrySvelteKit()` plugin for source maps | ✅ Recommended | ✅ Recommended |
+| `.env` | `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | ✅ For source maps | ✅ For source maps |
 
 ---
 
