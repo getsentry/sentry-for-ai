@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- Lead the README with the install command and add a demo to the npm package
+  page.
+
 ## 0.1.2
 
 - Add `--no-telemetry` flag and `DO_NOT_TRACK=1` env var support to opt out
