@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Add `--no-telemetry` flag and `DO_NOT_TRACK=1` env var support to opt out
+  of crash reporting telemetry.
+- Give the install banner brand voice.
+
 ## 0.1.1
 
 - Detect installed agents via their JSON config and clean up conflicting
