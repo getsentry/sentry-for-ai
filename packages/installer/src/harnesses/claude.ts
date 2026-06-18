@@ -1,12 +1,13 @@
 import { realSystem, type OutputSink, type SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
-import { detectOnPath, runInstallCommand, runJson } from "./shell";
+import { detectOnPath, runCommand, runJson } from "./shell";
 
 const MARKETPLACE = "claude-plugins-official";
 const MARKETPLACE_SOURCE = "anthropics/claude-plugins-official";
 const PLUGIN_ID = `sentry@${MARKETPLACE}`;
 const INSTALL_COMMAND = `claude plugin install ${PLUGIN_ID}`;
 const UPDATE_COMMAND = `claude plugin update ${PLUGIN_ID}`;
+const UNINSTALL_COMMAND = `claude plugin uninstall ${PLUGIN_ID}`;
 
 // `claude plugin list --json` emits an array of installed plugins. We only care
 // about the marketplace-qualified id of each entry.
@@ -35,7 +36,7 @@ async function isMarketplaceRegistered(system: SystemDeps): Promise<boolean> {
 // both install and update.
 async function ensureMarketplace(system: SystemDeps, output?: OutputSink): Promise<void> {
   const registered = await isMarketplaceRegistered(system);
-  await runInstallCommand(
+  await runCommand(
     system,
     registered
       ? `claude plugin marketplace update ${MARKETPLACE}`
@@ -57,14 +58,19 @@ export function createClaude(system: SystemDeps): Harness {
 
     install: async (output): Promise<InstallOutcome> => {
       await ensureMarketplace(system, output);
-      await runInstallCommand(system, INSTALL_COMMAND, output);
+      await runCommand(system, INSTALL_COMMAND, output);
       return { kind: "done", command: INSTALL_COMMAND };
     },
 
     update: async (output): Promise<InstallOutcome> => {
       await ensureMarketplace(system, output);
-      await runInstallCommand(system, UPDATE_COMMAND, output);
+      await runCommand(system, UPDATE_COMMAND, output);
       return { kind: "done", command: UPDATE_COMMAND };
+    },
+
+    remove: async (output): Promise<InstallOutcome> => {
+      await runCommand(system, UNINSTALL_COMMAND, output);
+      return { kind: "done", command: UNINSTALL_COMMAND };
     },
   };
 }

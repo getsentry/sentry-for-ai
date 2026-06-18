@@ -41,6 +41,15 @@ For each detected assistant, the installer runs that tool's native plugin comman
 
 Each per-agent plugin is built and published from the [`sentry-for-ai`](https://github.com/getsentry/sentry-for-ai) repository, which is the source of truth for all skills and commands.
 
+## Removing the plugin
+
+```bash
+npx @sentry/ai remove                  # interactive — pick which agents to remove from
+npx @sentry/ai remove --no-interactive # remove from every agent that has it
+```
+
+`uninstall` is an alias for `remove`. This only offers agents that currently have the plugin, and removes the Sentry plugin itself — each tool's plugin marketplace is left registered. Restart your AI tools afterward to drop the plugin.
+
 ## Requirements
 
 - Node.js 18 or newer

@@ -58,6 +58,21 @@ export async function installHarness(
   }
 }
 
+// Remove a single harness's plugin. The caller filters to harnesses that have it
+// installed, so there is no readiness gate and no cleanup — we only take out our
+// own plugin. A thrown remove is captured as a `failed` result so a concurrent
+// batch keeps going instead of rejecting the whole run.
+export async function removeHarness(
+  detection: Detection,
+  output?: OutputSink,
+): Promise<InstallResult> {
+  try {
+    return await detection.harness.remove(output);
+  } catch (err) {
+    return { kind: "failed", message: err instanceof Error ? err.message : String(err) };
+  }
+}
+
 export function installSucceeded(result: InstallResult): boolean {
   return result.kind === "done" || result.kind === "manual";
 }

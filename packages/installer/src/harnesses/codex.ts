@@ -1,6 +1,6 @@
 import { realSystem, type OutputSink, type SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
-import { detectOnPath, runInstallCommand, runJson } from "./shell";
+import { detectOnPath, runCommand, runJson } from "./shell";
 
 // TODO: Codex is the only agent we install from our OWN marketplace
 // (getsentry/plugin-codex) rather than the agent vendor's official marketplace
@@ -12,6 +12,7 @@ const MARKETPLACE = "sentry-plugin-marketplace";
 const MARKETPLACE_SOURCE = "getsentry/plugin-codex";
 const PLUGIN_ID = `sentry@${MARKETPLACE}`;
 const INSTALL_COMMAND = `codex plugin add ${PLUGIN_ID}`;
+const UNINSTALL_COMMAND = `codex plugin remove ${PLUGIN_ID}`;
 
 // Codex ships an "official" Sentry plugin from its own curated marketplace. It
 // shadows ours, so remove it before installing. Drop this once we publish to
@@ -52,7 +53,7 @@ async function isMarketplaceRegistered(system: SystemDeps): Promise<boolean> {
 // Required by both install and update.
 async function ensureMarketplace(system: SystemDeps, output?: OutputSink): Promise<void> {
   const registered = await isMarketplaceRegistered(system);
-  await runInstallCommand(
+  await runCommand(
     system,
     registered
       ? `codex plugin marketplace upgrade ${MARKETPLACE}`
@@ -66,7 +67,7 @@ async function ensureMarketplace(system: SystemDeps, output?: OutputSink): Promi
 // share this single path.
 async function addPlugin(system: SystemDeps, output?: OutputSink): Promise<InstallOutcome> {
   await ensureMarketplace(system, output);
-  await runInstallCommand(system, INSTALL_COMMAND, output);
+  await runCommand(system, INSTALL_COMMAND, output);
   return { kind: "done", command: INSTALL_COMMAND };
 }
 
@@ -86,13 +87,18 @@ export function createCodex(system: SystemDeps): Harness {
         return null;
       }
 
-      await runInstallCommand(system, `codex plugin remove ${LEGACY_PLUGIN_ID}`, output);
+      await runCommand(system, `codex plugin remove ${LEGACY_PLUGIN_ID}`, output);
       return `Removed conflicting plugin ${LEGACY_PLUGIN_ID}`;
     },
 
     install: async (output) => addPlugin(system, output),
 
     update: async (output) => addPlugin(system, output),
+
+    remove: async (output): Promise<InstallOutcome> => {
+      await runCommand(system, UNINSTALL_COMMAND, output);
+      return { kind: "done", command: UNINSTALL_COMMAND };
+    },
   };
 }
 

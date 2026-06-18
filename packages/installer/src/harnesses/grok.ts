@@ -1,6 +1,6 @@
 import { realSystem, type OutputSink, type SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
-import { detectOnPath, runInstallCommand, runJson } from "./shell";
+import { detectOnPath, runCommand, runJson } from "./shell";
 
 // Grok has no headless install-by-name; its marketplace install is TUI-only. So
 // we install from the plugin repo directly — the exact source grok's built-in
@@ -60,21 +60,26 @@ export function createGrok(system: SystemDeps): Harness {
         return null;
       }
 
-      await runInstallCommand(system, UNINSTALL_COMMAND, output);
+      await runCommand(system, UNINSTALL_COMMAND, output);
       const via = foreign.marketplace ? ` (installed via ${foreign.marketplace})` : "";
       return `Removed conflicting sentry plugin${via}`;
     },
 
     install: async (output): Promise<InstallOutcome> => {
-      await runInstallCommand(system, INSTALL_COMMAND, output);
+      await runCommand(system, INSTALL_COMMAND, output);
       return { kind: "done", command: INSTALL_COMMAND };
     },
 
     // `grok plugin install` errors on an already-installed repo, so update in
     // place instead of reinstalling.
     update: async (output): Promise<InstallOutcome> => {
-      await runInstallCommand(system, UPDATE_COMMAND, output);
+      await runCommand(system, UPDATE_COMMAND, output);
       return { kind: "done", command: UPDATE_COMMAND };
+    },
+
+    remove: async (output): Promise<InstallOutcome> => {
+      await runCommand(system, UNINSTALL_COMMAND, output);
+      return { kind: "done", command: UNINSTALL_COMMAND };
     },
   };
 }
