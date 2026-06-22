@@ -113,7 +113,7 @@ try {
   transaction.setData('cart.item_count', cart.items.length);
   transaction.status = const SpanStatus.ok();
 } catch (exception) {
-  transaction.status = const SpanStatus.internalError();
+  transaction.status = const SpanStatus.internalError(); // -> span.status (see below)
   rethrow;
 } finally {
   await transaction.finish();
@@ -126,7 +126,15 @@ await Sentry.startSpan('checkout', (span) async {
 });
 ```
 
-Error handling is automatic: if the callback throws (or the future errors), the span status is set to `SentrySpanStatusV2.error` before the span ends, and the error is rethrown.
+Error handling is automatic: if the callback throws (or the future errors), the span status is set to `SentrySpanStatusV2.error` before the span ends, and the error is rethrown. Otherwise the status defaults to `ok`.
+
+You can also set the status manually via the `status` setter:
+
+```dart
+span.status = SentrySpanStatusV2.error;
+```
+
+There is no untyped `SpanStatus` string equivalent. Explicit statuses from the old API (e.g. `transaction.status = const SpanStatus.internalError()`) migrate to `span.status = SentrySpanStatusV2.error` — though `error` is set automatically on throw and `ok` automatically otherwise, so manual assignment is only needed to override the default.
 
 For synchronous work, use `Sentry.startSpanSync`:
 
@@ -152,7 +160,19 @@ void onDeepLink(Uri uri) {
 }
 ```
 
-By default the span is created as a child of the currently active span. To parent explicitly, pass `parentSpan:`; pass `parentSpan: null` to force a root span.
+**Parenting.** `parentSpan` defaults to an internal *unset* sentinel (`const UnsetSentrySpanV2()`), which means "inherit the currently active span." This is explicitly distinct from passing `parentSpan: null`, which forces a root span with no parent. Pass an explicit `SentrySpanV2` to parent under a specific span. (The same default applies to `startSpan` / `startSpanSync`.)
+
+**Retroactive timing.** `startSpan` and `startSpanSync` accept an optional `startTimestamp`, and `span.end(endTimestamp: ...)` accepts an explicit end time. Use these when the real start or end of the work happened before you could create or end the span — for example, a duration measured by a platform channel:
+
+```dart
+final paymentSpan = Sentry.startInactiveSpan('payment');
+// ...native reports it started at `nativeStart` and ended at `nativeEnd`
+paymentSpan.end(endTimestamp: nativeEnd);
+
+// startTimestamp is available on the callback variants:
+Sentry.startSpanSync('replay-import', (_) => importRows(),
+    startTimestamp: measuredStart);
+```
 
 ### 2.4 Migrate `setData` / `setTag` to Typed Attributes
 
@@ -306,6 +326,20 @@ Future<void> main() async {
     await doWork();
   });
 }
+```
+
+### Span Control Reference
+
+```dart
+// Status (auto-set to error on throw, ok otherwise)
+span.status = SentrySpanStatusV2.error; // error | ok
+
+// Retroactive timing
+Sentry.startSpanSync('task', (_) => work(), startTimestamp: start); // also on startSpan
+span.end(endTimestamp: end);                                        // on any span
+
+// Parenting (startSpan / startSpanSync / startInactiveSpan)
+// default: inherit active span | parentSpan: someSpan -> explicit parent | parentSpan: null -> root
 ```
 
 ### Full Migration Checklist
