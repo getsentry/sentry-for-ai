@@ -21,7 +21,7 @@ Mobile Session Replay is **fundamentally different** from web replay. Understand
 | **Offline support** | ✅ Both session and error modes | ❌ **Error mode only** (`sessionSampleRate` unsupported offline) |
 | **Touch recording** | Full pointer/mouse events | Tap breadcrumbs only (no gesture paths) |
 | **Rage clicks** | ✅ Detected | ❌ Not supported |
-| **Network bodies** | ✅ Optional capture | ❌ Not captured |
+| **Network bodies** | ✅ Optional capture | ✅ **Opt-in capture** (XHR only, SDK ≥8.13.0) |
 | **Scroll positions** | ✅ Precise | ⚠️ Approximate (from screenshots) |
 
 Mobile replay captures **native view hierarchy snapshots + a screenshot** within the same frame, compresses them into video segments, and streams them to Sentry alongside trace IDs, breadcrumbs, and debug info.
@@ -138,6 +138,11 @@ Sentry.mobileReplayIntegration({
 | `includedViewClasses` | `string[]` | — | 7.9.0 (iOS) | Allowlist of native class names to traverse |
 | `excludedViewClasses` | `string[]` | — | 7.9.0 (iOS) | Blocklist; takes precedence over `includedViewClasses` |
 | `beforeErrorSampling` | `(event, hint) => boolean` | — | — | Return `false` to skip replay for a specific error |
+| `networkDetailAllowUrls` | `(string \| RegExp)[]` | `[]` | 8.13.0+ | URLs to enrich with headers (and bodies, when `networkCaptureBodies` is on) |
+| `networkDetailDenyUrls` | `(string \| RegExp)[]` | `[]` | 8.13.0+ | URLs to never enrich, even if they match the allow list |
+| `networkCaptureBodies` | `boolean` | `false` | 8.13.0+ | Opt in to capturing request/response bodies for allow-listed URLs |
+| `networkRequestHeaders` | `string[]` | `[]` | 8.13.0+ | Extra request headers to capture (beyond defaults: `Content-Type`, `Content-Length`, `Accept`) |
+| `networkResponseHeaders` | `string[]` | `[]` | 8.13.0+ | Extra response headers to capture |
 
 ### Top-Level `Sentry.init()` Options
 
@@ -324,16 +329,64 @@ Touch interactions are recorded as **breadcrumb events** (discrete tap events), 
 
 ## Network Request Capture
 
-Network requests are **automatically captured** and displayed in the replay Network panel — no extra configuration needed.
+Network requests are **automatically captured** and displayed in the replay Network panel. By default, only basic metadata is captured (URL, method, status, duration). Starting with SDK **8.13.0+**, you can opt in to capturing request/response headers and bodies.
 
-| What's captured | What's NOT captured |
+### Default Capture (all SDK versions)
+
+| Captured automatically | Requires opt-in |
 |---|---|
-| URL, HTTP method | Request bodies |
-| Status code | Response bodies |
-| Request duration | Response headers |
+| URL, HTTP method | Request/response bodies |
+| Status code | Request/response headers |
+| Request duration | |
 | Failed requests (highlighted red) | |
 
-Network capture works via existing Sentry network instrumentation, not replay-specific config. Unlike web replay, there is no way to opt in to body capture for mobile.
+### Opt-In: Request/Response Headers and Bodies (SDK ≥8.13.0)
+
+**Minimum SDK:** `@sentry/react-native` ≥ **8.13.0**  
+**Protocol support:** XHR only (covers `axios` and most HTTP clients; native `fetch` support coming in a future release)
+
+Add these options to `mobileReplayIntegration()` to enrich allow-listed URLs with headers and/or bodies:
+
+```javascript
+Sentry.init({
+  dsn: "YOUR_DSN_HERE",
+  integrations: [
+    Sentry.mobileReplayIntegration({
+      // URLs to enrich with headers (and bodies, when networkCaptureBodies is true)
+      networkDetailAllowUrls: [
+        "api.example.com",           // substring match
+        /^https:\/\/cdn\./,          // regex match
+      ],
+      
+      // URLs to never enrich, even if they match the allow list
+      networkDetailDenyUrls: [/\/auth\//],
+      
+      // Opt in to capturing request/response bodies (default: false)
+      networkCaptureBodies: true,
+      
+      // Extra request headers to capture (in addition to defaults)
+      networkRequestHeaders: ["X-My-Header"],
+      
+      // Extra response headers to capture (in addition to defaults)
+      networkResponseHeaders: ["X-Response-Header"],
+    }),
+  ],
+});
+```
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `networkDetailAllowUrls` | `(string \| RegExp)[]` | `[]` | URLs to enrich with headers (and bodies, when `networkCaptureBodies` is on). Strings use substring match; regexes use `.test(url)`. |
+| `networkDetailDenyUrls` | `(string \| RegExp)[]` | `[]` | URLs to **never** enrich, even if they match the allow list. |
+| `networkCaptureBodies` | `boolean` | `false` | Opt in to capturing request/response bodies for allow-listed URLs. |
+| `networkRequestHeaders` | `string[]` | `[]` | Extra request headers to capture, in addition to the defaults (`Content-Type`, `Content-Length`, `Accept`). |
+| `networkResponseHeaders` | `string[]` | `[]` | Extra response headers to capture, in addition to the defaults. |
+
+**Privacy:**
+- Authorization-like headers (`Authorization`, `Cookie`, `Set-Cookie`, `X-API-Key`, `X-Auth-Token`, `Proxy-Authorization`) are **always stripped**, regardless of configuration.
+- Request/response bodies are truncated at **150 KB**.
+- Binary payloads (`Blob`, `ArrayBuffer`, typed arrays) are replaced with a placeholder (`UNPARSEABLE_BODY_TYPE` warning).
+- Bodies and headers are PII-scrubbed server-side, but you should still be deliberate about which URLs you allow-list.
 
 ---
 
