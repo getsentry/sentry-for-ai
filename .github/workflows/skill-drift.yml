@@ -461,7 +461,6 @@ jobs:
           ISSUES_OPENED=0
           NO_DRIFT=0
           FAILED=0
-          OPENED_PR_NUMS=()
 
           # Title / body length caps. Mirrors the detect job's validate step.
           # These bound the amount of attacker-controlled text (sourced from
@@ -485,7 +484,6 @@ jobs:
               echo "issues=0"
               echo "no_drift=0"
               echo "failed=0"
-              echo "opened_pr_nums="
             } >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -660,28 +658,7 @@ jobs:
                   --body "$PR_BODY" \
                   --label "skill-drift" \
                   --label "automated"
-                # Look up the PR number via `gh pr view <branch>` — the
-                # canonical source. Parsing `gh pr create` stdout is fragile
-                # because warnings or other text can be intermixed with the
-                # URL on some gh versions. The GitHub API is eventually
-                # consistent so we retry briefly; without the loop a
-                # transient 404 immediately after creation would silently
-                # skip reviewer assignment.
-                PR_NUM=""
-                for attempt in 1 2 3 4 5; do
-                  PR_NUM=$(gh pr view "$BRANCH" --repo "$GITHUB_REPOSITORY" --json number --jq '.number' 2>/dev/null || echo "")
-                  if [[ "$PR_NUM" =~ ^[0-9]+$ ]]; then
-                    break
-                  fi
-                  sleep 1
-                done
-                if [[ "$PR_NUM" =~ ^[0-9]+$ ]]; then
-                  OPENED_PR_NUMS+=("$PR_NUM")
-                  PRS_OPENED=$((PRS_OPENED + 1))
-                else
-                  echo "::warning::Created PR for $SKILL on branch $BRANCH but could not determine PR number after 5 retries (reviewer assignment skipped)"
-                  FAILED=$((FAILED + 1))
-                fi
+                PRS_OPENED=$((PRS_OPENED + 1))
                 git switch main
                 ;;
             esac
@@ -693,67 +670,8 @@ jobs:
             echo "issues=${ISSUES_OPENED}"
             echo "no_drift=${NO_DRIFT}"
             echo "failed=${FAILED}"
-            printf 'opened_pr_nums=%s\n' "$(IFS=,; echo "${OPENED_PR_NUMS[*]:-}")"
           } >> "$GITHUB_OUTPUT"
 
           echo "::notice::Done. PRs=$PRS_OPENED issues=$ISSUES_OPENED no_drift=$NO_DRIFT failed=$FAILED"
         id: apply
 
-      - name: Assign reviewers to opened PRs (inline)
-        if: steps.apply.outputs.opened_pr_nums != ''
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        env:
-          OPENED_PR_NUMS: ${{ steps.apply.outputs.opened_pr_nums }}
-        with:
-          script: |
-            // PRs opened by GITHUB_TOKEN do not trigger downstream workflows,
-            // so the existing skill-drift-assign-reviewers.yml will NOT fire
-            // for these. We assign inline to keep the system self-contained
-            // and avoid requiring a PAT or App. The standalone reviewer
-            // workflow stays as a backstop for manually-labeled PRs.
-            const fs = require('fs');
-            const matrix = JSON.parse(fs.readFileSync('.github/skill-drift-matrix.json', 'utf8'));
-            const skillToTeam = Object.fromEntries(matrix.map(m => [m.skill, m.team]));
-
-            const nums = (process.env.OPENED_PR_NUMS || '').split(',').filter(Boolean);
-            for (const num of nums) {
-              const pr = Number(num);
-              if (!Number.isInteger(pr) || pr <= 0) {
-                core.warning(`Skipping reviewer assignment for invalid PR number from apply step: ${JSON.stringify(num)}`);
-                continue;
-              }
-
-              // Paginate listFiles so PRs touching >100 files don't get
-              // partial team coverage. In practice skill-drift PRs only
-              // touch one skill subdir, but mirror the convention used by
-              // skill-drift-assign-reviewers.yml for consistency.
-              const files = await github.paginate(
-                github.rest.pulls.listFiles,
-                {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: pr,
-                  per_page: 100,
-                },
-              );
-              const teams = new Set();
-              for (const f of files) {
-                const m = f.filename.match(/^skills\/(sentry-[\w-]+-sdk)\//);
-                if (m && skillToTeam[m[1]]) {
-                  // requestReviewers wants slugs without the "owner/" prefix
-                  teams.add(skillToTeam[m[1]].split('/')[1]);
-                }
-              }
-              if (teams.size === 0) continue;
-              try {
-                await github.rest.pulls.requestReviewers({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: pr,
-                  team_reviewers: [...teams],
-                });
-                core.info(`PR #${pr}: requested ${[...teams].join(', ')}`);
-              } catch (e) {
-                core.warning(`PR #${pr}: requestReviewers failed: ${e.message}`);
-              }
-            }
