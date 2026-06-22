@@ -6,6 +6,7 @@
 > Workflow instrumentation: v10.x+
 > D1 instrumentation: v8.x+
 > Durable Object Storage instrumentation: v10.x+
+> Synchronous KV storage instrumentation: v10.59.0+
 
 ---
 
@@ -17,7 +18,7 @@
 - Initialize the Sentry SDK per-request
 - Capture unhandled errors in all DO methods
 - Create spans for fetch, alarm, WebSocket, and RPC methods
-- Track Durable Object Storage operations (get, put, delete, list)
+- Track Durable Object Storage operations (async storage: get, put, delete, list; sync KV: kv.get, kv.put, kv.delete, kv.list)
 
 ### Setup
 
@@ -106,12 +107,14 @@ export const MyDurableObject = Sentry.instrumentDurableObjectWithSentry(
 
 ### Durable Object Storage Instrumentation
 
-Durable Object Storage operations (`get`, `put`, `delete`, `list`) are automatically instrumented when using `instrumentDurableObjectWithSentry`. Each storage operation creates a span.
+Durable Object Storage operations are automatically instrumented when using `instrumentDurableObjectWithSentry`. Each storage operation creates a span.
+
+**Async storage operations** (`get`, `put`, `delete`, `list`):
 
 ```typescript
 class MyDurableObjectBase extends DurableObject<Env> {
   async fetch(request: Request): Promise<Response> {
-    // These storage operations are automatically traced
+    // These async storage operations are automatically traced
     await this.ctx.storage.put("key", "value");
     const value = await this.ctx.storage.get("key");
     await this.ctx.storage.delete("key");
@@ -121,6 +124,26 @@ class MyDurableObjectBase extends DurableObject<Env> {
   }
 }
 ```
+
+**Synchronous KV storage operations** (v10.59.0+):
+
+The synchronous KV API (`ctx.storage.kv.*`) is also automatically instrumented:
+
+```typescript
+class MyDurableObjectBase extends DurableObject<Env> {
+  async fetch(request: Request): Promise<Response> {
+    // Synchronous KV operations are automatically traced (v10.59.0+)
+    this.ctx.storage.kv.put("counter", { value: 42 });
+    const counter = this.ctx.storage.kv.get("counter");
+    const entries = [...this.ctx.storage.kv.list()];
+    this.ctx.storage.kv.delete("counter");
+
+    return new Response(JSON.stringify({ counter, entriesCount: entries.length }));
+  }
+}
+```
+
+Both async storage and sync KV operations create spans with the operation name (`durable_object_storage_get`, `durable_object_storage_kv_get`, etc.).
 
 ---
 
