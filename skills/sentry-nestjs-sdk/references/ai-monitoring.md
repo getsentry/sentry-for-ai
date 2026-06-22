@@ -231,6 +231,7 @@ Sentry automatically captures token usage following OpenTelemetry GenAI semantic
 | Span Attribute | Description |
 |----------------|-------------|
 | `gen_ai.request.model` | Model name |
+| `gen_ai.request.reasoning_effort` | Reasoning effort level for reasoning models (e.g., `low`, `medium`, `high`). Supported values vary by provider. |
 | `gen_ai.usage.input_tokens` | Prompt/input token count |
 | `gen_ai.usage.output_tokens` | Completion/output token count |
 | `gen_ai.usage.input_tokens.cached` | Cached input tokens |
