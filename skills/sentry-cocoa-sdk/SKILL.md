@@ -378,28 +378,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | MetricKit | Yes (15+) | No | Yes (12+) | No | No |
 | Metrics API | Yes | Yes | Yes | Verify | Yes |
 
----
-
-## Verification
-
-Test that Sentry is receiving events:
-
-```swift
-// Trigger a test error event:
-SentrySDK.capture(message: "Sentry Cocoa SDK test")
-
-// Or test crash reporting (without debugger — crashes are intercepted by debugger):
-// SentrySDK.crash()  // uncomment, run without debugger, relaunch to see crash report
-```
-
-Check the Sentry dashboard within a few seconds. If nothing appears:
-1. Set `options.debug = true` — prints SDK internals to Xcode console
-2. Verify the DSN is correct and the project exists
-3. Ensure initialization is on the **main thread**
-
----
-
-## Production Settings
+### Production Settings
 
 Lower sample rates for production to control volume and cost:
 
@@ -418,6 +397,25 @@ options.enableLogs = true
 options.enableMetrics = true             // default true in SDK 9.12+
 options.debug = false                   // never in production
 ```
+
+---
+
+## Verification
+
+Test that Sentry is receiving events:
+
+```swift
+// Trigger a test error event:
+SentrySDK.capture(message: "Sentry Cocoa SDK test")
+
+// Or test crash reporting (without debugger — crashes are intercepted by debugger):
+// SentrySDK.crash()  // uncomment, run without debugger, relaunch to see crash report
+```
+
+Check the Sentry dashboard within a few seconds. If nothing appears:
+1. Set `options.debug = true` — prints SDK internals to Xcode console
+2. Verify the DSN is correct and the project exists
+3. Ensure initialization is on the **main thread**
 
 ---
 

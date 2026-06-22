@@ -535,6 +535,7 @@ Walk through features one at a time. Load the reference file for each, follow it
 | Session Replay | `${SKILL_ROOT}/references/session-replay.md` | User-facing apps |
 | Logging | `${SKILL_ROOT}/references/logging.md` | Structured logging / log-to-trace correlation |
 | User Feedback | `${SKILL_ROOT}/references/user-feedback.md` | Collecting user-submitted reports |
+| Expo Config Plugin | `${SKILL_ROOT}/references/expo-config-plugin.md` | Configuring the `@sentry/react-native/expo` plugin |
 
 For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exactly, verify it works.
 
@@ -646,9 +647,7 @@ Sentry.init({
 | `beforeBreadcrumb` | `(breadcrumb, hint) => breadcrumb \| null` | Process breadcrumbs before storage |
 | `onNativeLog` | `(log: { level, component, message }) => void` | Intercept native SDK log messages and forward to JS console. Only fires when `debug: true` |
 
----
-
-## Environment Variables
+### Environment Variables
 
 | Variable | Purpose | Notes |
 |----------|---------|-------|
@@ -664,44 +663,7 @@ Sentry.init({
 | `SENTRY_EAS_BUILD_CAPTURE_SUCCESS` | EAS build hook: capture successful builds | Set `true` in EAS secrets |
 | `SENTRY_EAS_BUILD_TAGS` | EAS build hook: additional tags JSON | e.g., `{"team":"mobile"}` |
 
----
-
-## Source Maps & Debug Symbols
-
-Source maps and debug symbols are what transform minified stack traces into readable ones. When set up correctly, Sentry shows you the exact line of your source code that threw.
-
-### How Uploads Work
-
-| Platform | What's uploaded | When |
-|----------|----------------|------|
-| **iOS** (JS) | Source maps (`.map` files) | During Xcode build |
-| **iOS** (Native) | dSYM bundles | During Xcode archive / Xcode Cloud |
-| **Android** (JS) | Source maps + Hermes `.hbc.map` | During Gradle build |
-| **Android** (Native) | Proguard mapping + NDK `.so` files | During Gradle build |
-
-### Expo: Automatic Upload
-
-The `@sentry/react-native/expo` config plugin automatically sets up upload hooks for native builds. Source maps are uploaded during `eas build` and `expo run:ios/android` (release).
-
-```bash
-SENTRY_AUTH_TOKEN=sntrys_... npx expo run:ios --configuration Release
-```
-
-### Manual Upload (bare RN)
-
-If you need to manually upload source maps:
-
-```bash
-npx sentry-cli sourcemaps upload \
-  --org YOUR_ORG \
-  --project YOUR_PROJECT \
-  --release "my-app@1.0.0+1" \
-  ./dist
-```
-
----
-
-## Default Integrations (Auto-Enabled)
+### Default Integrations (Auto-Enabled)
 
 These integrations are enabled automatically — no config needed:
 
@@ -771,51 +733,68 @@ When a native crash occurs inside a tracked TurboModule method call, the crash r
 </Sentry.TouchEventBoundary>
 ```
 
+### Production Settings
+
+Lower sample rates and harden config before shipping to production:
+
+```typescript
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  environment: __DEV__ ? "development" : "production",
+
+  // Trace 10–20% of transactions in high-traffic production
+  tracesSampleRate: __DEV__ ? 1.0 : 0.1,
+
+  // Profile 100% of traced transactions (profiling is always a subset of tracing)
+  profilesSampleRate: 1.0,
+
+  // Replay all error sessions, sample 5% of normal sessions
+  replaysOnErrorSampleRate: 1.0,
+  replaysSessionSampleRate: __DEV__ ? 1.0 : 0.05,
+
+  // Set release and dist for accurate source map lookup
+  release: "my-app@" + Application.nativeApplicationVersion,
+  dist: String(Application.nativeBuildVersion),
+
+  // Disable debug logging in production
+  debug: __DEV__,
+});
+```
+
 ---
 
-## Expo Config Plugin Reference
+## Source Maps & Debug Symbols
 
-Configure the plugin in `app.json` or `app.config.js`:
+Source maps and debug symbols are what transform minified stack traces into readable ones. When set up correctly, Sentry shows you the exact line of your source code that threw.
 
-```json
-{
-  "expo": {
-    "plugins": [
-      [
-        "@sentry/react-native/expo",
-        {
-          "url": "https://sentry.io/",
-          "project": "my-project",
-          "organization": "my-org",
-          "note": "Set SENTRY_AUTH_TOKEN env var for native builds"
-        }
-      ]
-    ]
-  }
-}
+### How Uploads Work
+
+| Platform | What's uploaded | When |
+|----------|----------------|------|
+| **iOS** (JS) | Source maps (`.map` files) | During Xcode build |
+| **iOS** (Native) | dSYM bundles | During Xcode archive / Xcode Cloud |
+| **Android** (JS) | Source maps + Hermes `.hbc.map` | During Gradle build |
+| **Android** (Native) | Proguard mapping + NDK `.so` files | During Gradle build |
+
+### Expo: Automatic Upload
+
+The `@sentry/react-native/expo` config plugin automatically sets up upload hooks for native builds. Source maps are uploaded during `eas build` and `expo run:ios/android` (release).
+
+```bash
+SENTRY_AUTH_TOKEN=sntrys_... npx expo run:ios --configuration Release
 ```
 
-Or in `app.config.js` (allows env var interpolation):
+### Manual Upload (bare RN)
 
-```javascript
-export default {
-  expo: {
-    plugins: [
-      [
-        "@sentry/react-native/expo",
-        {
-          url: "https://sentry.io/",
-          project: process.env.SENTRY_PROJECT,
-          organization: process.env.SENTRY_ORG,
-          disableAutoUpload: process.env.NODE_ENV === "development",
-        },
-      ],
-    ],
-  },
-};
+If you need to manually upload source maps:
+
+```bash
+npx sentry-cli sourcemaps upload \
+  --org YOUR_ORG \
+  --project YOUR_PROJECT \
+  --release "my-app@1.0.0+1" \
+  ./dist
 ```
-
-> **Tip:** Set `disableAutoUpload: true` during local development to speed up builds by skipping source map and dSYM uploads. The option is available in SDK ≥8.13.0.
 
 ---
 
@@ -853,36 +832,6 @@ The hook reads `SENTRY_DSN` from the build environment — it does not share the
 | `SENTRY_EAS_BUILD_SUCCESS_MESSAGE` | Custom message for successful builds |
 
 > **How it works:** The hook script is an EAS [npm lifecycle hook](https://docs.expo.dev/build-reference/npm-hooks/). EAS calls `package.json` scripts matching `eas-build-on-*` at the end of the build process. The script loads env from `@expo/env`, `.env`, or `.env.sentry-build-plugin` — without overwriting EAS secrets already in the environment.
-
----
-
-## Production Settings
-
-Lower sample rates and harden config before shipping to production:
-
-```typescript
-Sentry.init({
-  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
-  environment: __DEV__ ? "development" : "production",
-
-  // Trace 10–20% of transactions in high-traffic production
-  tracesSampleRate: __DEV__ ? 1.0 : 0.1,
-
-  // Profile 100% of traced transactions (profiling is always a subset of tracing)
-  profilesSampleRate: 1.0,
-
-  // Replay all error sessions, sample 5% of normal sessions
-  replaysOnErrorSampleRate: 1.0,
-  replaysSessionSampleRate: __DEV__ ? 1.0 : 0.05,
-
-  // Set release and dist for accurate source map lookup
-  release: "my-app@" + Application.nativeApplicationVersion,
-  dist: String(Application.nativeBuildVersion),
-
-  // Disable debug logging in production
-  debug: __DEV__,
-});
-```
 
 ---
 
