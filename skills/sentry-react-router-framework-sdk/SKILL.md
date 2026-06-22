@@ -1,6 +1,6 @@
 ---
 name: sentry-react-router-framework-sdk
-description: Full Sentry SDK setup for React Router Framework mode. Use when asked to "add Sentry to React Router Framework", "install @sentry/react-router", or configure error monitoring, tracing, profiling, session replay, logs, or user feedback for a React Router v7 framework app.
+description: Full Sentry SDK setup for React Router Framework mode. Use when asked to "add Sentry to React Router Framework", "install @sentry/react-router", or configure error monitoring, tracing, profiling, session replay, logs, or user feedback for a React Router v7 or v8 framework app.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -15,13 +15,13 @@ Opinionated wizard that scans your React Router Framework project and guides you
 
 ## Invoke This Skill When
 
-- User asks to "add Sentry to React Router Framework" or "set up Sentry in React Router v7 framework mode"
+- User asks to "add Sentry to React Router Framework" or "set up Sentry in React Router v7 or v8 framework mode"
 - User wants to install or configure `@sentry/react-router`
 - User uses React Router framework entry files (`entry.client.tsx`, `entry.server.tsx`) and wants tracing/error capture
 - User asks about `reactRouterTracingIntegration`, `sentryOnError`, `createSentryHandleRequest`, or React Router wizard setup
 
-> **Important:** This SDK is currently beta.
-> For React Router non-framework/data/declarative mode (v5/v6/v7), use `sentry-react-sdk` with `@sentry/react` integrations instead.
+> **Important:** This SDK is currently beta. Supports React Router v7 and v8 framework mode.
+> For React Router non-framework/data/declarative mode (v5/v6/v7/v8), use `sentry-react-sdk` with `@sentry/react` integrations instead.
 
 ---
 
@@ -30,7 +30,7 @@ Opinionated wizard that scans your React Router Framework project and guides you
 Run these commands to understand the project before making any recommendations:
 
 ```bash
-# Detect React Router Framework indicators and versions
+# Detect React Router Framework indicators and versions (v7 or v8)
 cat package.json | grep -E '"react-router"|"@react-router/"|"react-router-dev"|"react-router-serve"'
 
 # Detect Sentry package choice
