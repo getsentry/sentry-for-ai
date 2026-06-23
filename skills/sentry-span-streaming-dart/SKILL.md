@@ -279,7 +279,7 @@ Instruct the user to verify with `options.debug = true` or network inspection:
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Log: `startTransaction is not supported when traceLifecycle is 'streaming'` | Old transaction API still called in streaming mode | Replace with `Sentry.startSpan` / `startSpanSync` |
+| Log: `startTransaction is not supported when traceLifecycle is 'stream'` | Old transaction API still called in streaming mode | Replace with `Sentry.startSpan` / `startSpanSync` |
 | `Sentry.startSpan` produces no spans | `traceLifecycle` still `static` (the default), or tracing disabled | Set `options.traceLifecycle = SentryTraceLifecycle.stream` and a `tracesSampleRate` |
 | `beforeSendTransaction` never called | Expected in streaming mode | Migrate logic to `beforeSendSpan` or `ignoreSpans`, then remove it |
 | Returning a value from `beforeSendSpan` to drop a span does nothing | `beforeSendSpan` is mutation-only (`FutureOr<void>` return) | Use `ignoreSpans` to drop spans |
