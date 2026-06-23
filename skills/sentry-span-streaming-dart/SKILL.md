@@ -273,7 +273,7 @@ Instruct the user to verify with `options.debug = true` or network inspection:
 
 1. **Envelope content type**: span envelopes are sent with content type `application/vnd.sentry.items.span.v2+json` instead of transaction envelopes. Spans are buffered briefly and flushed in batches, so expect a short delay before envelopes appear.
 2. **Sentry dashboard**: spans appear in the Traces view shortly after each span completes, without waiting for a whole transaction to finish.
-3. **No-op warnings**: a log line `startTransaction is not supported when traceLifecycle is 'streaming'` means old transaction API calls remain — find and migrate them.
+3. **No-op warnings**: a log line `startTransaction is not supported when traceLifecycle is 'stream'` means old transaction API calls remain — find and migrate them.
 
 ### 3.3 Common Issues
 
