@@ -1,6 +1,6 @@
 ---
 name: sentry-setup-ai-monitoring
-description: Setup Sentry AI Agent Monitoring in any project. Use when asked to monitor LLM calls, track AI agents, track conversations, or instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI/Pydantic AI. Detects installed AI SDKs and configures appropriate integrations.
+description: Setup Sentry AI Agent Monitoring in any project. Use when asked to monitor LLM calls, track AI agents, track conversations, or instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI/Pydantic AI/Laravel AI. Detects installed AI SDKs and configures appropriate integrations.
 license: Apache-2.0
 category: feature-setup
 parent: sentry-feature-setup
@@ -47,6 +47,10 @@ grep -E '"(openai|@anthropic-ai/sdk|ai|@langchain|@google/genai)"' package.json
 
 # Python
 grep -E '(openai|anthropic|langchain|huggingface)' requirements.txt pyproject.toml 2>/dev/null
+
+# PHP / Laravel
+grep -E '"(laravel/ai|openai-php|openai/|anthropic|llm)' composer.json 2>/dev/null
+ls artisan 2>/dev/null && echo "Laravel detected"
 ```
 
 ## Sampling Check
@@ -59,6 +63,9 @@ grep -E 'tracesSampleRate|tracesSampler' sentry.*.config.* instrument.* src/inst
 
 # Python
 grep -E 'traces_sample_rate|traces_sampler' *.py **/*.py 2>/dev/null
+
+# PHP / Laravel
+grep -E 'SENTRY_TRACES_SAMPLE_RATE|traces_sample_rate|traces_sampler' .env config/sentry.php 2>/dev/null
 ```
 
 **If `tracesSampleRate` / `traces_sample_rate` is below 1.0 AND no `tracesSampler` / `traces_sampler` is configured:**
@@ -98,6 +105,14 @@ Integrations auto-enable when the AI package is installed — no explicit regist
 | `pydantic-ai` | Yes | |
 | `litellm` | **No** | Requires explicit integration |
 | `mcp` (Model Context Protocol) | Yes | |
+
+### PHP / Laravel
+
+| Package | Integration | Min Sentry SDK | Auto? |
+|---------|-------------|----------------|-------|
+| `laravel/ai` | Laravel AI instrumentation in `sentry/sentry-laravel` | 4.27.0 | Yes |
+
+Laravel AI support requires Laravel 12.x or later, `sentry/sentry-laravel` 4.27.0 or later, and tracing enabled.
 
 ## JavaScript Configuration
 
@@ -200,6 +215,42 @@ sentry_sdk.init(
     # integrations=[OpenAIIntegration(include_prompts=True)],
 )
 ```
+
+## PHP / Laravel AI Configuration
+
+Laravel AI instrumentation auto-enables when both `sentry/sentry-laravel` and `laravel/ai` are installed and tracing is active.
+
+```bash
+composer require sentry/sentry-laravel "^4.27.0"
+composer require laravel/ai
+php artisan vendor:publish --provider="Laravel\Ai\AiServiceProvider"
+php artisan migrate
+```
+
+Enable tracing in `.env`:
+
+```ini
+SENTRY_TRACES_SAMPLE_RATE=1.0
+```
+
+To include LLM prompts, tool arguments, and responses after explicit user confirmation, enable PII capture:
+
+```ini
+SENTRY_SEND_DEFAULT_PII=true
+```
+
+Sentry treats LLM and tool inputs/outputs as PII and does not capture them by default. Do not enable `SENTRY_SEND_DEFAULT_PII=true` without confirming the Data Capture Warning above.
+
+The Laravel integration captures these span types automatically:
+
+| Span op | Purpose |
+|---------|---------|
+| `gen_ai.invoke_agent` | Agent prompt lifecycle |
+| `gen_ai.chat` | AI provider chat requests |
+| `gen_ai.execute_tool` | Laravel AI tool executions |
+| `gen_ai.embeddings` | Embedding generation |
+
+For detailed Laravel setup, verification, Conversations behavior, and feature flags, read `${SKILL_ROOT}/../sentry-php-sdk/references/ai-monitoring.md`.
 
 ## Manual Instrumentation
 
@@ -324,11 +375,11 @@ Find it at **Explore > Conversations** in Sentry.
 
 - Tracing enabled with `tracesSampleRate > 0`
 - `streamGenAiSpans: true` (JS SDK >=10.53.0) / `stream_gen_ai_spans=True` (Python SDK >=2.60.0) — required so AI spans are sent as standalone items. Without this, spans with large inputs/outputs can hit transaction payload size limits and be dropped.
-- **Input and output capture enabled** — Conversations reconstructs the chat from `gen_ai.input.messages` and `gen_ai.output.messages` attributes. Set `sendDefaultPii: true` (JS) / `send_default_pii=True` (Python). Without it, conversations appear empty.
+- **Input and output capture enabled** — Conversations reconstructs the chat from `gen_ai.input.messages` and `gen_ai.output.messages` attributes. Set `sendDefaultPii: true` (JS) / `send_default_pii=True` (Python) / `SENTRY_SEND_DEFAULT_PII=true` (Laravel). Without it, conversations appear empty.
 
 ### Setting a Conversation ID
 
-Some integrations (OpenAI Agents SDK for Python, OpenAI SDK for Node) infer the conversation ID automatically. For all others, set it manually.
+Some integrations (OpenAI Agents SDK for Python, OpenAI SDK for Node, Laravel AI agents using `Conversational` + `RemembersConversations`) infer the conversation ID automatically. For all others, set it manually.
 
 #### JavaScript
 
@@ -385,6 +436,7 @@ These are independent concepts:
 | AI spans not appearing | Verify `tracesSampleRate > 0`, check SDK version |
 | Token counts missing | Some providers don't return tokens for streaming |
 | Negative or wrong costs in dashboard | Cached/reasoning tokens are subsets of totals — see Token Usage and Cost Calculation |
-| Prompts not captured | Set `sendDefaultPii: true` (JS) or `send_default_pii=True` (Python); use `recordInputs`/`include_prompts` only for explicit overrides |
+| Prompts not captured | Set `sendDefaultPii: true` (JS), `send_default_pii=True` (Python), or `SENTRY_SEND_DEFAULT_PII=true` (Laravel); use `recordInputs`/`include_prompts` only for explicit overrides |
 | Vercel AI not working | Add `experimental_telemetry` to each call |
-| Conversations view empty | Ensure `streamGenAiSpans: true` / `stream_gen_ai_spans=True`, `sendDefaultPii: true` / `send_default_pii=True`, and a conversation ID is set |
+| Laravel AI spans not appearing | Verify `sentry/sentry-laravel >=4.27.0`, `laravel/ai` is installed, and `SENTRY_TRACES_SAMPLE_RATE > 0` |
+| Conversations view empty | Ensure `streamGenAiSpans: true` / `stream_gen_ai_spans=True` or Laravel AI conversation IDs, input/output capture is enabled, and a conversation ID is set |

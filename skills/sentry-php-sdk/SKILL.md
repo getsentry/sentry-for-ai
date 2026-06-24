@@ -1,6 +1,6 @@
 ---
 name: sentry-php-sdk
-description: Full Sentry SDK setup for PHP. Use when asked to "add Sentry to PHP", "install sentry/sentry", "setup Sentry in PHP", or configure error monitoring, tracing, profiling, logging, metrics, or crons for PHP applications. Supports plain PHP, Laravel, and Symfony.
+description: Full Sentry SDK setup for PHP. Use when asked to "add Sentry to PHP", "install sentry/sentry", "setup Sentry in PHP", or configure error monitoring, tracing, profiling, logging, metrics, crons, or AI monitoring for PHP applications. Supports plain PHP, Laravel, and Symfony.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -44,7 +44,7 @@ ls bin/console 2>/dev/null && echo "Symfony detected"
 grep -E '"laravel/horizon"|"symfony/messenger"' composer.json 2>/dev/null
 
 # Detect AI libraries
-grep -E '"openai-php|"openai/|anthropic|llm' composer.json 2>/dev/null
+grep -E '"(laravel/ai|openai-php|openai/|anthropic|llm)' composer.json 2>/dev/null
 
 # Check for companion frontend
 ls frontend/ resources/js/ assets/ 2>/dev/null
@@ -55,7 +55,7 @@ cat package.json 2>/dev/null | grep -E '"react"|"svelte"|"vue"|"next"'
 - Is `sentry/sentry` (or `-laravel` / `-symfony`) already in `composer.json`? If yes, check if the init call exists — may just need feature config.
 - Framework detected? **Laravel** (has `artisan` + `laravel/framework` in composer.json), **Symfony** (has `bin/console` + `symfony/framework-bundle`), or **plain PHP**.
 - Queue system? (Laravel Queue / Horizon, Symfony Messenger need queue worker configuration.)
-- AI libraries? (No PHP AI auto-instrumentation yet — document manually if needed.)
+- AI libraries? (`laravel/ai` is auto-instrumented by `sentry/sentry-laravel >= 4.27.0` when tracing is enabled; other PHP AI libraries need manual spans.)
 - Companion frontend? (Triggers Phase 4 cross-link.)
 
 ---
@@ -73,6 +73,7 @@ Based on what you found, present a concrete proposal. Don't ask open-ended quest
 - ⚡ **Profiling** — production apps where performance matters (requires `excimer` PHP extension, Linux/macOS only)
 - ⚡ **Crons** — scheduler patterns detected (Laravel Scheduler, Symfony Scheduler, custom cron jobs)
 - ⚡ **Metrics** — business KPIs or SLO tracking (uses `TraceMetrics` API)
+- ✅ **AI Monitoring** — `laravel/ai` detected in a Laravel app (auto-instrumented in `sentry/sentry-laravel >= 4.27.0`)
 
 **Recommendation matrix:**
 
@@ -84,8 +85,9 @@ Based on what you found, present a concrete proposal. Don't ask open-ended quest
 | Logging | **Always**; Monolog for Laravel/Symfony | `${SKILL_ROOT}/references/logging.md` |
 | Metrics | Business events or SLO tracking needed | `${SKILL_ROOT}/references/metrics.md` |
 | Crons | Scheduler or cron patterns detected | `${SKILL_ROOT}/references/crons.md` |
+| AI Monitoring | `laravel/ai` detected in a Laravel app, or manual PHP AI spans needed | `${SKILL_ROOT}/references/ai-monitoring.md` |
 
-Propose: *"I recommend Error Monitoring + Tracing [+ Logging]. Want Profiling, Crons, or Metrics too?"*
+Propose: *"I recommend Error Monitoring + Tracing [+ Logging]. Want Profiling, Crons, Metrics, or AI Monitoring too?"*
 
 ---
 
@@ -99,6 +101,9 @@ composer require sentry/sentry "^4.0"
 
 # Laravel
 composer require sentry/sentry-laravel "^4.0"
+
+# Laravel with Laravel AI monitoring
+composer require sentry/sentry-laravel "^4.27.0"
 
 # Symfony
 composer require sentry/sentry-symfony "^5.0"
@@ -228,6 +233,7 @@ Walk through features one at a time. Load the reference, follow its steps, verif
 | Logging | `${SKILL_ROOT}/references/logging.md` | Always; Monolog for Laravel/Symfony |
 | Metrics | `${SKILL_ROOT}/references/metrics.md` | Business KPIs / SLO tracking |
 | Crons | `${SKILL_ROOT}/references/crons.md` | Scheduler / cron patterns detected |
+| AI Monitoring | `${SKILL_ROOT}/references/ai-monitoring.md` | `laravel/ai` detected in Laravel, or manual PHP AI spans needed |
 
 For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exactly, verify it works.
 
