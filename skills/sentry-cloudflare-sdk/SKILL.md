@@ -21,7 +21,7 @@ Opinionated wizard that scans your Cloudflare project and guides you through com
 - User asks about `withSentry`, `sentryPagesPlugin`, `instrumentDurableObjectWithSentry`, or `instrumentD1WithSentry`
 - User wants to monitor Durable Objects, Queues, Workflows, Scheduled handlers, or Email handlers on Cloudflare
 
-> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.55.0).
+> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.59.0).
 > Always verify against [docs.sentry.io/platforms/javascript/guides/cloudflare/](https://docs.sentry.io/platforms/javascript/guides/cloudflare/) before implementing.
 
 ---
