@@ -52,6 +52,9 @@ Avoid sprinkling shallow logs across many files just to increase coverage.
 When choosing where to instrument:
 
 * Prefer a few well-chosen files over many lightly touched files.
+* Whenever possible opt for simple easy to follow logic, so that this skill
+  creates easy to follow examples for users: avoid obscure SDK methods, avoid
+  coding tricks.
 * Prefer complete examples over partial ones.
 * Once you add logs for a workflow, entity, or algorithm, make the instrumentation
   reasonably comprehensive.
