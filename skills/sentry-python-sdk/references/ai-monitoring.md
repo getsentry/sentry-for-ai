@@ -142,8 +142,6 @@ messages = [{"role": "user", "content": "Tell me a joke"}]
 with sentry_sdk.start_span(op="gen_ai.request", name="chat gpt-4o") as span:
     span.set_data("gen_ai.request.model", "gpt-4o")
     span.set_data("gen_ai.request.messages", json.dumps(messages))   # must JSON-stringify
-    span.set_data("gen_ai.request.temperature", 0.7)
-    span.set_data("gen_ai.request.max_tokens", 500)
 
     result = my_llm_client.chat(model="gpt-4o", messages=messages)
 
@@ -211,11 +209,7 @@ with sentry_sdk.start_span(op="gen_ai.handoff",
 
 | Attribute | Type |
 |-----------|------|
-| `gen_ai.request.temperature` | float |
-| `gen_ai.request.max_tokens` | int |
-| `gen_ai.request.top_p` | float |
-| `gen_ai.request.frequency_penalty` | float |
-| `gen_ai.request.presence_penalty` | float |
+| `gen_ai.request.reasoning_effort` | string |
 
 ### Content attributes (PII-gated — only when `send_default_pii=True` + `include_prompts=True`)
 

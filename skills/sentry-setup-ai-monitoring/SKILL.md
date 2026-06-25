@@ -263,6 +263,12 @@ await Sentry.startSpan({
 | `gen_ai.operation.name` | No | Operation label (`chat`, `embeddings`, `invoke_agent`, `execute_tool`, `handoff`, etc.) |
 | `gen_ai.agent.name` | No | Agent name (set on agent and tool spans) |
 
+**Model config (LLM call spans):**
+
+| Attribute | Description |
+|-----------|-------------|
+| `gen_ai.request.reasoning_effort` | Reasoning effort level for reasoning models (e.g., `low`, `medium`, `high`). Supported values vary by provider. |
+
 **Request / response content (PII — enable only after confirming; see Data Capture Warning above):**
 
 | Attribute | Description |
