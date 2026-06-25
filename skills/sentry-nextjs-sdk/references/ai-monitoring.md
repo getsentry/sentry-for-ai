@@ -422,6 +422,14 @@ await openai.chat.completions.create({
 
 A single conversation can span multiple traces, and a single trace can contain multiple conversations.
 
+### User Attribution
+
+To populate the **User** column in Conversations, call `setUser` once per request or session before any AI calls:
+
+```typescript
+Sentry.setUser({ id: "user_123", email: "jane@example.com", username: "jane" });
+```
+
 ## Troubleshooting
 
 | Issue | Solution |
@@ -433,5 +441,6 @@ A single conversation can span multiple traces, and a single trace can contain m
 | Anthropic spans missing | Check SDK version supports Anthropic integration; add `anthropicAIIntegration()` explicitly |
 | Cost estimates not showing | Model name must match models.dev/OpenRouter pricing data; custom/fine-tuned models may show no estimate |
 | Edge runtime AI spans missing | Add `vercelAIIntegration()` to `sentry.edge.config.ts` explicitly (not auto-enabled for Edge) |
+| User column shows "Unknown" | Call `Sentry.setUser()` once per request or session |
 | OpenAI browser-side spans missing | Use `instrumentOpenAiClient()` wrapper — `openAIIntegration()` only works server-side |
 | No data in AI Agents dashboard | Ensure traces are being sent; check DSN and `tracesSampleRate` |

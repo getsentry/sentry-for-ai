@@ -378,6 +378,28 @@ response = openai.responses.create(
 )
 ```
 
+### User Attribution
+
+The Conversations view shows a **User** column. To populate it, call `setUser` / `set_user` once per request or session, before any AI calls:
+
+#### JavaScript
+
+```javascript
+import * as Sentry from "@sentry/node"; // or @sentry/nextjs, @sentry/nestjs, etc.
+
+Sentry.setUser({ id: "user_123", email: "jane@example.com", username: "jane" });
+```
+
+#### Python
+
+```python
+import sentry_sdk
+
+sentry_sdk.set_user({"id": "user_123", "email": "jane@example.com", "username": "jane"})
+```
+
+Any of `id`, `email`, or `username` is sufficient — Conversations will display whichever fields are present.
+
 ### Conversations vs Traces
 
 These are independent concepts:
@@ -394,3 +416,4 @@ These are independent concepts:
 | Prompts not captured | Set `sendDefaultPii: true` (JS) or `send_default_pii=True` (Python); use `recordInputs`/`include_prompts` only for explicit overrides |
 | Vercel AI not working | Add `experimental_telemetry` to each call |
 | Conversations view empty | Ensure `streamGenAiSpans: true` / `stream_gen_ai_spans=True`, `sendDefaultPii: true` / `send_default_pii=True`, and a conversation ID is set |
+| User column shows "Unknown" | Call `Sentry.setUser()` (JS) or `sentry_sdk.set_user()` (Python) once per request or session |
