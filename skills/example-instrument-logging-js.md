@@ -1,12 +1,12 @@
 ---
 name: add-sentry-logging
-description: Adds Sentry logging to an application following the best practices outlined in [sentry-concepts/references/logging.md](../sentry-concepts/references/logging.md).
+description: Adds Sentry logging to an application following the best practices outlined in [sentry-concepts/references/logging.md](sentry-concepts/references/logging.md).
 ---
 
 # Add Sentry Logging
 
 This skill adds structured logs to an application following the practices outlined in
-[sentry-concepts/references/logging.md](../sentry-concepts/references/logging.md).
+[sentry-concepts/references/logging.md](sentry-concepts/references/logging.md).
 
 The goal is to give users a useful real-world starting point: a small set of
 high-signal logs that demonstrate where, what, and how to instrument their app.
@@ -28,7 +28,7 @@ not already configured.
 
 ## Steps
 
-1. Read [sentry-concepts/references/logging.md](../sentry-concepts/references/logging.md).
+1. Read [sentry-concepts/references/logging.md](sentry-concepts/references/logging.md).
 2. Analyze the codebase and identify its language or languages.
 3. For each application area, read the corresponding language-specific skill in
    [skills](./) and confirm that Sentry logging is configured.
@@ -38,7 +38,7 @@ not already configured.
    * Audit and forensic events.
    * Context around recoverable or non-critical failures.
 5. Add structured log lines using:
-   * The guidance in [sentry-concepts/references/logging.md](../sentry-concepts/references/logging.md).
+   * The guidance in [sentry-concepts/references/logging.md](sentry-concepts/references/logging.md).
    * The syntax and conventions from the relevant language-specific skill.
    * The Instrumentation Guidance section below.
 
@@ -60,7 +60,7 @@ When choosing where to instrument:
   unnecessary PII.
 * Use structured fields with consistent names.
 * Include enough context to debug without redeploying the application.
-* Take all the advice in [sentry-concepts/references/logging.md](../sentry-concepts/references/logging.md) seriously:
+* Take all the advice in [sentry-concepts/references/logging.md](sentry-concepts/references/logging.md) seriously:
     * The type of context to log.
     * What to avoid logging.
     * When to avoid logs alltogether, as other telemetry is better suited.
