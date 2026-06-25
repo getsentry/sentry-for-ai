@@ -1,5 +1,5 @@
 ---
-name: add-sentry-logging
+name: instrument-sentry-logging
 description: Adds Sentry logging to an application following the best practices outlined in [skills/sentry-concepts/references/logging.md](skills/sentry-concepts/references/logging.md).
 ---
 
