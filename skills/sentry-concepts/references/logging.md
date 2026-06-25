@@ -1,8 +1,31 @@
 # Logging
 
-This document provides language-agnostic suggestions for:
+Logs are often the first instrumentation developers add to an application.
+They can be as simple as writing a `console` message to `stdout` or `stderr`.
 
-- When to use logs, vs., other types of telemetry.
+Because they're so easy to add, logs are a great way to collect initial
+telemetry about your application. It's perfectly reasonable for logs to be
+temporary instrumentation: add them while investigating a problem or
+validating a new feature, then remove them when they're no longer useful.
+
+Example log message using Sentry's SDK:
+
+```php
+\Sentry\logger()->warn('This is a warning log with attributes.', attributes: [
+  'attribute1' => 'string',
+  'attribute2' => 1,
+  'attribute3' => 1.0,
+  'attribute4' => true,
+]);
+```
+
+Sentry collects structured logs alongside traces, errors, and other telemetry, 
+allowing you to search logs, visualize trends, create alerts, and correlate
+log messages with the rest of an application's execution.
+
+This document provides language-agnostic suggestions for.
+
+- When to reach for logging, vs., other types of telemetry.
 - Log entries to instrument in a codebase.
 - How to structure log entries.
 - Anti-patterns: what metadata to exclude from logs and types of log entries to
@@ -10,7 +33,7 @@ This document provides language-agnostic suggestions for:
 
 ---
 
-## When to use logs, vs., other types of telemetry
+## When to reach for logging, vs., other types of telemetry
 
 Logs are ideal for recording the context and decisions that explain what
 happened during an application's execution.
@@ -139,7 +162,8 @@ Logs should accumulate context as a request moves through your application. Emit
 that context alongside event-specific metadata in your log messages.
 
 For example, logs emitted before authentication won't contain user information.
-Later in the request lifecycle, after authentication.
+Later in the request lifecycle, after authentication  user-specific details
+should be included alongside context specific to the event being logged.
 
 Sentry automatically attaches a Trace ID to log messages, allowing them to be
 correlated to traces.
