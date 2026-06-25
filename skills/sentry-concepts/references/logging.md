@@ -107,7 +107,7 @@ Key steps in the algorithm are logged and outcomes are collected. At the end of
 the run, the outcomes are included in the log message, helping evaluate whether
 or not the algorithm ran as expected.
 
-### Audit and forensic events (creates, updates, deletes, access, permissions)
+### Audit and access events (creates, updates, deletes, access, permissions)
 
 Audit logs help answer questions like "Who changed this?", "When did it
 happen?", and "Was this action expected?"
