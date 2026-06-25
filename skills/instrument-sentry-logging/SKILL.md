@@ -49,6 +49,10 @@ Prioritize quality over quantity.
 Add logs that are immediately useful for debugging real production behavior.
 Avoid sprinkling shallow logs across many files just to increase coverage.
 
+Write easy to follow log messages that whenever possible provide standalone examples of how to
+use Sentry logging effectively. Avoid obscure SDK methods and complex logic to build up
+the message logged.
+
 When choosing where to instrument follow the advice in [skills/sentry-concepts/references/logging.md](../sentry-concepts/references/logging.md) very closely adhering to its guidance.
 
 For a small codebase, aim to add enough high-value logs that the user can use
