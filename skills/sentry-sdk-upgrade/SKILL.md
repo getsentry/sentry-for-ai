@@ -2,12 +2,12 @@
 name: sentry-sdk-upgrade
 description: Upgrade the Sentry JavaScript SDK across major versions. Use when asked to upgrade Sentry, migrate to a newer version, fix deprecated Sentry APIs, or resolve breaking changes after a Sentry version bump.
 license: Apache-2.0
-category: workflow
-parent: sentry-workflow
+category: improve-setup
+parent: sentry-improve-setup
 disable-model-invocation: true
 ---
 
-> [All Skills](../../SKILL_TREE.md) > [Workflow](../sentry-workflow/SKILL.md) > SDK Upgrade
+> [All Skills](../../SKILL_TREE.md) > [Improve My Setup](../sentry-improve-setup/SKILL.md) > SDK Upgrade
 
 # Sentry JavaScript SDK Upgrade
 

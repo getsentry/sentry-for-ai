@@ -36,11 +36,11 @@ Do not guess or shorten URLs. Use exact paths from the tables.
 **Do not skip this section.** Do not assume what the user needs based on their project files. Do not start installing packages, creating files, or running commands until you have confirmed the user's intent.
 
 1. **Ask first.** Greet the user and ask what they'd like help with. Present these options:
-   - **Set up Sentry** — Add error monitoring, performance tracing, and session replay to a project
-   - **Debug a production issue** — Investigate errors and exceptions using Sentry data
-   - **Configure a feature** — AI/LLM monitoring, alerts, OpenTelemetry pipelines
-   - **Review code** — Resolve Sentry bot comments or check for predicted bugs
-   - **Upgrade Sentry SDK** — Migrate to a new major version
+   - **Start monitoring** — First-time setup: install the SDK, capture an error, and confirm it lands (`sentry-sdk-setup`)
+   - **Add a signal** — Tracing, logging, metrics, crons, profiling, session replay, user feedback, AI/LLM monitoring (`sentry-add-signal`)
+   - **Fix something** — Investigate and fix production issues, or resolve Sentry bot / Seer PR comments (`sentry-workflow`)
+   - **Improve my setup** — Source maps, releases, data scrubbing, quota, AI code review, upgrades, migrations (`sentry-improve-setup`)
+   - **Monitors & alerts** — Alert rules, uptime, metric alerts, dashboards (`sentry-monitors`)
 
 2. **Wait for their answer.** Do not proceed until the user tells you what they want.
 
@@ -91,29 +91,60 @@ When multiple SDKs could match, prefer the more specific one:
 - **Browser JS** (vanilla, jQuery, static sites) → `sentry-browser-sdk`
 - **No match** → direct user to [Sentry Docs](https://docs.sentry.io/platforms/)
 
+## Add a Signal
+
+Add telemetry to a project that already reports errors: tracing, logging, metrics, crons,
+profiling, session replay, user feedback, and AI/LLM monitoring. The concept skills cover the
+WHAT/WHY; the platform SDK skill handles the HOW.
+
+| Signal | Skill | Path |
+|---|---|---|
+| Cron and recurring-job monitoring concepts and best practices for Sentry | [`sentry-crons`](skills/sentry-crons/SKILL.md) | `sentry-crons/SKILL.md` |
+| Structured logging concepts and best practices for Sentry | [`sentry-logging`](skills/sentry-logging/SKILL.md) | `sentry-logging/SKILL.md` |
+| Application metrics concepts and best practices for Sentry | [`sentry-metrics`](skills/sentry-metrics/SKILL.md) | `sentry-metrics/SKILL.md` |
+| Profiling concepts and best practices for Sentry | [`sentry-profiling`](skills/sentry-profiling/SKILL.md) | `sentry-profiling/SKILL.md` |
+| Session Replay concepts and best practices for Sentry | [`sentry-session-replay`](skills/sentry-session-replay/SKILL.md) | `sentry-session-replay/SKILL.md` |
+| Setup Sentry AI Agent Monitoring in any project | [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) | `sentry-setup-ai-monitoring/SKILL.md` |
+| Tracing and performance concepts and best practices | [`sentry-tracing`](skills/sentry-tracing/SKILL.md) | `sentry-tracing/SKILL.md` |
+| User Feedback concepts and best practices for Sentry | [`sentry-user-feedback`](skills/sentry-user-feedback/SKILL.md) | `sentry-user-feedback/SKILL.md` |
+
+## Improve My Setup
+
+Make an existing Sentry setup better, cleaner, cheaper, safer, or more current: source maps,
+releases, data scrubbing, quota, AI code review, upgrades, and migrations.
+
+| Improvement | Skill | Path |
+|---|---|---|
+| Improve data scrubbing and PII handling in Sentry | [`sentry-data-scrubbing`](skills/sentry-data-scrubbing/SKILL.md) | `sentry-data-scrubbing/SKILL.md` |
+| Turn on Sentry's AI code review and bug prediction for a repository | [`sentry-enable-ai-review`](skills/sentry-enable-ai-review/SKILL.md) | `sentry-enable-ai-review/SKILL.md` |
+| Configure the OpenTelemetry Collector with Sentry Exporter for multi-project routing and automatic project creation | [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) | `sentry-otel-exporter-setup/SKILL.md` |
+| Reduce Sentry event volume and manage quota | [`sentry-reduce-volume`](skills/sentry-reduce-volume/SKILL.md) | `sentry-reduce-volume/SKILL.md` |
+| Set up Sentry releases with suspect commits and deploy tracking | [`sentry-releases`](skills/sentry-releases/SKILL.md) | `sentry-releases/SKILL.md` |
+| Upgrade the Sentry JavaScript SDK across major versions | [`sentry-sdk-upgrade`](skills/sentry-sdk-upgrade/SKILL.md) | `sentry-sdk-upgrade/SKILL.md` |
+| Make stack traces readable by uploading source maps (JavaScript) or debug files (mobile/native) | [`sentry-source-maps`](skills/sentry-source-maps/SKILL.md) | `sentry-source-maps/SKILL.md` |
+| Migrate JavaScript SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-js`](skills/sentry-span-streaming-js/SKILL.md) | `sentry-span-streaming-js/SKILL.md` |
+| Migrate Python SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-python`](skills/sentry-span-streaming-python/SKILL.md) | `sentry-span-streaming-python/SKILL.md` |
+
 ## Workflows
 
 Debug production issues and maintain code quality with Sentry context.
 
 | Use when | Skill | Path |
 |---|---|---|
-| Analyze and resolve Sentry comments on GitHub Pull Requests | [`sentry-code-review`](skills/sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
+| Analyze and resolve Sentry's bot comments on GitHub Pull Requests — both sentry[bot] review comments and Seer Bug Prediction (seer-by-sentry[bot]) findings | [`sentry-code-review`](skills/sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
 | Find and fix issues from Sentry using MCP | [`sentry-fix-issues`](skills/sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
-| Review a project's PRs to check for issues detected in code review by Seer Bug Prediction | [`sentry-pr-code-review`](skills/sentry-pr-code-review/SKILL.md) | `sentry-pr-code-review/SKILL.md` |
-| Upgrade the Sentry JavaScript SDK across major versions | [`sentry-sdk-upgrade`](skills/sentry-sdk-upgrade/SKILL.md) | `sentry-sdk-upgrade/SKILL.md` |
 
-## Feature Setup
+## Monitors & Alerts
 
-Configure specific Sentry capabilities beyond basic SDK setup.
+Get notified and watch availability: alert rules and notifications, uptime, metric alerts, and
+dashboards.
 
-| Feature | Skill | Path |
+| Monitor / Alert | Skill | Path |
 |---|---|---|
 | Create Sentry alerts using the workflow engine API | [`sentry-create-alert`](skills/sentry-create-alert/SKILL.md) | `sentry-create-alert/SKILL.md` |
-| Decide which Sentry signal to reach for when instrumenting code — error, span, span attribute, log, or metric | [`sentry-instrumentation-guide`](skills/sentry-instrumentation-guide/SKILL.md) | `sentry-instrumentation-guide/SKILL.md` |
-| Configure the OpenTelemetry Collector with Sentry Exporter for multi-project routing and automatic project creation | [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) | `sentry-otel-exporter-setup/SKILL.md` |
-| Setup Sentry AI Agent Monitoring in any project | [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) | `sentry-setup-ai-monitoring/SKILL.md` |
-| Migrate JavaScript SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-js`](skills/sentry-span-streaming-js/SKILL.md) | `sentry-span-streaming-js/SKILL.md` |
-| Migrate Python SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-python`](skills/sentry-span-streaming-python/SKILL.md) | `sentry-span-streaming-python/SKILL.md` |
+| Create and configure Sentry dashboards to visualize errors, spans, logs, and releases | [`sentry-dashboards`](skills/sentry-dashboards/SKILL.md) | `sentry-dashboards/SKILL.md` |
+| Set up Sentry metric alerts | [`sentry-metric-alerts`](skills/sentry-metric-alerts/SKILL.md) | `sentry-metric-alerts/SKILL.md` |
+| Set up Sentry uptime monitoring for a URL | [`sentry-uptime`](skills/sentry-uptime/SKILL.md) | `sentry-uptime/SKILL.md` |
 
 ## Quick Lookup
 
