@@ -54,6 +54,7 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 | `sentry-span-streaming-python` | Migrate Python SDK from transaction-based to streamed span delivery |
 | `sentry-span-streaming-dart` | Migrate Dart/Flutter SDK from transaction-based to streamed span delivery |
 | `sentry-instrumentation-guide` | Decide which signal to reach for — error vs span vs log vs metric |
+| `sentry-snapshots-cocoa` | Setup Sentry Snapshots for Apple/Cocoa projects, including SnapshotPreviews and Apple snapshot CI |
 
 ### Workflow Skills
 | Skill | Description |
