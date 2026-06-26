@@ -1,0 +1,9 @@
+# First-error scope only; other signals route to sentry-instrument.
+needs:
+  - sdks/index.md
+  - sdks/*/index.md
+  - sdks/*/error-monitoring.md
+  - concepts/errors.md
+  - first-error-setup.md
+  - new-project.md
+  - setup-verification.md
