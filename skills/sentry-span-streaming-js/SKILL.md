@@ -66,7 +66,7 @@ Based on detection results, classify each `Sentry.init` call as:
 
 ## Phase 2: Migrate
 
-**Prerequisites:** Sentry JavaScript SDK `>=10.53.1` with tracing enabled (`tracesSampleRate` or `tracesSampler` configured).
+**Prerequisites:** Sentry JavaScript SDK `>=10.61.0` with tracing enabled (`tracesSampleRate` or `tracesSampler` configured).
 
 Apply changes to each `Sentry.init` call. Work through each file identified above.
 
@@ -179,7 +179,56 @@ Sentry.init({
 
 Returning `null` from `beforeSendSpan` does **not** drop the span — it is ignored and a warning is logged.
 
-### 2.3 Remove or Replace `beforeSendTransaction`
+### 2.3 Migrate `setTag(s)` to `setAttribute(s)`
+
+In streaming mode, **tags no longer apply to streamed spans** — only attributes do. Wherever the user sets tags via `Sentry.setTag` / `Sentry.setTags` or `scope.setTag` / `scope.setTags` (e.g. via `withScope()`, `getCurrentScope()`, `getGlobalScope()`), add an equivalent `setAttribute` / `setAttributes` call with the same key/value pairs so the data still reaches spans.
+
+Tags continue to work for errors, so **keep the existing `setTag(s)` calls** and add the attribute calls alongside them — do not replace one with the other.
+
+Find existing usage:
+
+```bash
+grep -rn "\.setTag\b\|\.setTags\b\|setTag(\|setTags(" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" --include="*.mjs" 2>/dev/null
+```
+
+Apply the migration. Most `setTag(s)` calls run in a code path that also produces spans, so default to adding the attribute equivalent unless the call is clearly scoped to error reporting only.
+
+```js
+// Before
+Sentry.setTag('feature', 'checkout');
+Sentry.setTags({ tier: 'premium', region: 'eu' });
+
+// After — keep the tags, add matching attributes
+Sentry.setTag('feature', 'checkout');
+Sentry.setAttribute('feature', 'checkout');
+
+Sentry.setTags({ tier: 'premium', region: 'eu' });
+Sentry.setAttributes({ tier: 'premium', region: 'eu' });
+```
+
+The same applies to scope-based calls:
+
+```js
+// Before
+Sentry.withScope((scope) => {
+  scope.setTag('job', 'sync-orders');
+  // ...
+});
+Sentry.getCurrentScope().setTag('job', 'sync-orders')
+
+// After
+Sentry.withScope((scope) => {
+  scope.setTag('job', 'sync-orders');
+  scope.setAttribute('job', 'sync-orders');
+  // ...
+});
+Sentry.getCurrentScope().setTag('job', 'sync-orders')
+Sentry.getCurrentScope().setAttribute('job', 'sync-orders')
+```
+
+`setAttribute(s)` is available from SDK `>=10.61.0` — confirm the prerequisite version before applying this step.
+
+### 2.4 Remove or Replace `beforeSendTransaction`
 
 `beforeSendTransaction` has **no effect** in streaming mode. Spans are sent individually, not batched into transactions.
 
@@ -207,7 +256,7 @@ Sentry.init({
 
 Remove the `beforeSendTransaction` option from `Sentry.init()` after migrating its logic.
 
-### 2.4 Configure `ignoreSpans` (Optional)
+### 2.5 Configure `ignoreSpans` (Optional)
 
 `ignoreSpans` works in both static and streaming modes, but the filter is evaluated at different points in the span lifecycle:
 
@@ -254,7 +303,7 @@ Sentry.init({
 
 When multiple properties are specified in a filter object, **all** must match for the span to be ignored.
 
-### 2.5 Set Up Browser Profiling (Optional)
+### 2.6 Set Up Browser Profiling (Optional)
 
 When using span streaming in the browser, use the **v2 profiling options** — not the legacy `profilesSampleRate`. The legacy option is deprecated and does not integrate with the span streaming lifecycle.
 
@@ -328,6 +377,7 @@ Instruct the user to verify in their browser devtools or server logs:
 | Type errors on `span.description` | `StreamedSpanJSON` uses `name` not `description` | Change `span.description` to `span.name` in callback |
 | Type errors on `span.data` | `StreamedSpanJSON` uses `attributes` not `data` | Change `span.data` to `span.attributes` in callback |
 | `profileSessionSampleRate` has no effect | Legacy `profilesSampleRate` is also set | Remove `profilesSampleRate` and use only `profileSessionSampleRate` + `profileLifecycle` |
+| Tags missing from spans | Tags do not apply to streamed spans | Add matching `setAttribute(s)` calls alongside existing `setTag(s)` calls |
 
 ---
 
@@ -380,11 +430,12 @@ Sentry.init({
 
 ### Full Migration Checklist
 
-- [ ] SDK version is `>=10.53.1`
+- [ ] SDK version is `>=10.61.0`
 - [ ] Server configs: added `traceLifecycle: 'stream'`
 - [ ] Browser configs: added `spanStreamingIntegration()`
 - [ ] `beforeSendSpan` callbacks wrapped with `Sentry.withStreamedSpan()`
 - [ ] `beforeSendSpan` callbacks updated: `description` -> `name`, `data` -> `attributes`
+- [ ] `setTag(s)` / `scope.setTag(s)` calls paired with matching `setAttribute(s)` calls
 - [ ] `beforeSendTransaction` logic migrated to `beforeSendSpan` or `ignoreSpans`
 - [ ] `beforeSendTransaction` removed from config
 - [ ] (If profiling) Replaced `profilesSampleRate` with `profileSessionSampleRate` + `profileLifecycle`
