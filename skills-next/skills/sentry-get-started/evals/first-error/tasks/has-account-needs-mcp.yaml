@@ -1,0 +1,126 @@
+id: first-error-has-account-needs-mcp
+name: "Has Sentry account, MCP not connected -> connect via /mcp"
+description: |
+  A user who DOES have a Sentry account, but the Sentry MCP is NOT connected.
+  Per the skill's account branch, the agent should probe, find the MCP isn't
+  authed, ask whether they have an account, and on "yes" walk them through
+  connecting the Sentry MCP (via /mcp), then continue once it's connected. It
+  must NOT fabricate a DSN, instrument the code, or claim success — there is no
+  connected Sentry to work against yet.
+
+  Like the signup task, the correct behavior needs no working MCP (it stops to
+  get the MCP connected), so this passes while MCP wiring is deferred.
+tags:
+  - get-started
+  - has-account
+  - no-mcp
+  - connect-mcp
+
+inputs:
+  # The real trigger: the user invokes the command/skill explicitly.
+  prompt: "/sentry-get-started"
+
+  files:
+    - path: package.json
+    - path: index.js
+
+  responder:
+    max_followups: 8
+    instructions: |
+      You are a developer who already HAS a Sentry account, but the Sentry MCP
+      is NOT connected in your agent yet. Answer briefly and stay consistent:
+
+        - You DO have a Sentry account (you've used Sentry before).
+        - The Sentry MCP is NOT connected/authenticated right now. If the
+          agent's Sentry tools don't work, that's expected — it isn't connected.
+        - When the agent asks whether you have a Sentry account or offers
+          options, choose the "I have an account — connect Sentry" option.
+        - You do NOT have a DSN, org slug, or token handy to paste; the way to
+          proceed is to connect the Sentry MCP. If the agent tells you to run
+          /mcp (or otherwise connect the Sentry MCP), say you'll do that.
+
+      Once the agent has told you how to connect the Sentry MCP and said it will
+      continue afterward, STOP — do not ask for more work.
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Judgments. The right move is to STOP and get the MCP connected (/mcp) — not to
+# instrument anything or fake a setup. No working MCP is required to pass.
+# ──────────────────────────────────────────────────────────────────────────────
+graders:
+  # 1. Did NOT fabricate a setup — no SDK dependency was added.
+  - name: no-fake-dep
+    type: file
+    config:
+      content_patterns:
+        - path: package.json
+          must_not_match:
+            - "@sentry/node"
+
+  # 2. Did NOT create an init file (no fabricated instrumentation).
+  - name: no-fake-init
+    type: file
+    config:
+      must_not_exist:
+        - instrument.js
+
+  # 3. Routed through the skill under test.
+  - name: routed-to-get-started
+    type: skill_invocation
+    config:
+      mode: any_order
+      allow_extra: true
+      required_skills:
+        - sentry-get-started
+
+  # 4. Stayed bounded — this is a short interaction.
+  - name: bounded
+    type: behavior
+    config:
+      max_tool_calls: 40
+      max_duration_ms: 300000
+
+  # ── LLM-judge checks (continue the agent's session and grade it) ──
+
+  # 5. Recognized the MCP-not-connected state rather than assuming Sentry is
+  #    set up and usable.
+  - name: detected-not-connected
+    type: prompt
+    config:
+      model: openai/gpt-5.5
+      continue_session: true
+      prompt: |
+        Judge ONLY what the agent actually did in this conversation. Did the
+        agent recognize that the Sentry MCP is NOT connected — rather than
+        assuming Sentry was already connected and trying to provision or
+        instrument against it? PASS only if the agent correctly identified the
+        not-connected state.
+
+  # 6. Directed the user to connect the Sentry MCP (the core behavior), and
+  #    indicated it would continue once connected.
+  - name: directed-to-connect-mcp
+    type: prompt
+    config:
+      model: openai/gpt-5.5
+      continue_session: true
+      prompt: |
+        Judge ONLY what the agent actually said in this conversation. Since the
+        user HAS a Sentry account but the MCP isn't connected, did the agent
+        direct the user to connect the Sentry MCP (for example by running /mcp
+        and authenticating Sentry), and indicate it would continue the setup
+        once the MCP is connected? PASS only if connecting the MCP was given as
+        the clear next step. (Sending the user to sign up for a new account
+        would be WRONG here — they already have one.)
+
+  # 7. Did NOT fake success — anti-hallucination backstop to the file graders.
+  - name: did-not-fake-success
+    type: prompt
+    config:
+      model: openai/gpt-5.5
+      continue_session: true
+      prompt: |
+        Judge ONLY what the agent actually did in this conversation. Did the
+        agent AVOID fabricating setup — i.e. it did NOT invent a DSN, did NOT
+        claim a project was created, did NOT claim an error was captured or
+        verified in Sentry, and did NOT report success? PASS only if the agent
+        made no false claims of a working Sentry setup (stopping at "connect the
+        MCP first" is the correct outcome).

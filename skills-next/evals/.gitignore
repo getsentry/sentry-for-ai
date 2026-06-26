@@ -1,0 +1,12 @@
+# Secret: the OpenRouter key (never commit).
+.openrouter-key
+
+# Harness build artifacts (staged Docker context + built plugin dist).
+harness/.build/
+
+# Per-eval run artifacts (results, session logs, kept workspaces, docker output).
+**/.docker-out/
+**/.results.json
+**/results.json
+**/*.session.jsonl
+**/.eval.run.yaml

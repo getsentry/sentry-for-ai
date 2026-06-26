@@ -28,7 +28,10 @@ resolve_content_root() {
 # only runs (and only spawns uv) when some skill actually declares references.
 #   copy_skills <content_root> <dest_skills_dir>
 copy_skills() {
-    rsync -a "$1/skills/" "$2/"
+    # Exclude per-skill evals/ (tasks, fixtures, grader prompts): test material,
+    # never shipped — and baking it into a skill would leak grader expectations
+    # to the agent under test.
+    rsync -a --exclude='evals/' "$1/skills/" "$2/"
     if compgen -G "$1/skills/*/references.yml" > /dev/null; then
         uv run --script "$_BUILD_COMMON_DIR/hydrate-references.py" \
             --references "$1/references" --skills-source "$1/skills" --skills-output "$2"

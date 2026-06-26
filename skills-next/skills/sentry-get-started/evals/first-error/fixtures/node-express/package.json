@@ -1,0 +1,13 @@
+{
+  "name": "node-express-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tiny Express service with no Sentry yet (eval fixture).",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

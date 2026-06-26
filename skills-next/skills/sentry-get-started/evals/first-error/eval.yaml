@@ -1,0 +1,53 @@
+# Eval: sentry-get-started — first-error end-to-end (brand-new project).
+#
+# Drives the get-started flow on a fresh Node/Express app through a simulated
+# user and grades the resulting setup against the judgments in the task file.
+#
+# Fidelity model: the harness builds the SHIPPED skill tree (real reference
+# hydration, same as the plugin build) and installs ALL skills into the Copilot
+# harness, then the agent must discover and route through them itself. So
+# `inject_skill_body` is OFF — this tests real discovery/routing, not a single
+# handed-in skill body. See ../../../../evals/harness/ for how it runs.
+name: sentry-get-started-first-error
+description: |
+  Exercises the sentry-get-started first-error flow for a brand-new user on a
+  small Node/Express project: orient -> provision a project -> install + init
+  the SDK -> capture errors -> trigger a REAL error through the running app ->
+  verify the event landed in Sentry -> surface it -> recommend deploying.
+skill: sentry-get-started
+version: "0.1"
+
+config:
+  # Bump once stable; routing/agent behavior has run-to-run variance worth
+  # measuring with more trials.
+  trials_per_task: 1
+  timeout_seconds: 600
+  parallel: false
+  executor: copilot-sdk
+  # OpenRouter model id (custom OpenAI-compat provider, wired by harness/run.sh).
+  # GPT gives reliable native tool-calling over the chat-completions wire;
+  # Claude over OpenRouter's completions wire had flaky tool-calling. Keep in
+  # sync with run.sh's COPILOT_PROVIDER_WIRE_MODEL.
+  model: openai/gpt-5.5
+  # OFF on purpose: the full skill tree is installed into the harness, so the
+  # agent discovers/routes through it rather than being handed one body.
+  inject_skill_body: false
+
+  # ----------------------------------------------------------------------------
+  # MCP IS DEFERRED (v1). There is no Sentry MCP attached yet, so the agent will
+  # orient and then STALL the moment it needs to provision a project or verify
+  # an event. That stall is the expected, designed signal that it's time to wire
+  # MCP — at which point most of the MCP-dependent graders below start passing.
+  #
+  # The plan (see harness/README.md): run the real Sentry MCP in its stdio
+  # self-mock mode rather than maintaining a hand-rolled mock, e.g.
+  #
+  #   mcp_servers:
+  #     sentry:
+  #       type: stdio
+  #       command: npx
+  #       args: ["-y", "@sentry/mcp-server@latest", "--mock"]   # exact flag TBD
+  # ----------------------------------------------------------------------------
+
+tasks:
+  - "tasks/*.yaml"

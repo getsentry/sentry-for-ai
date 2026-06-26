@@ -1,0 +1,6 @@
+# Eval run artifacts (never committed).
+.docker-out/
+.results.json
+.eval.run.yaml
+*-session.jsonl
+*.session.jsonl

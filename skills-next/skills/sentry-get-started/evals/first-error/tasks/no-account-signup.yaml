@@ -1,0 +1,128 @@
+id: first-error-no-account-signup
+name: "No Sentry account + no MCP -> direct to signup"
+description: |
+  A brand-new user wants Sentry, but the Sentry MCP is NOT connected and they do
+  NOT have a Sentry account yet. Per the skill's account branch, the agent should
+  probe, find the MCP isn't authed, ask whether they have an account, and on "no"
+  point them to https://sentry.io/signup and tell them to come back and connect
+  the MCP (/mcp). It must NOT fabricate a DSN, instrument the code, or claim
+  success — there is nothing to connect to yet.
+
+  This is also the canonical "no MCP attached" eval: the correct behavior needs
+  no MCP at all, so it should pass even while MCP wiring is deferred.
+tags:
+  - get-started
+  - no-account
+  - no-mcp
+  - signup
+
+inputs:
+  # The real trigger: the user invokes the command/skill explicitly.
+  prompt: "/sentry-get-started"
+
+  files:
+    - path: package.json
+    - path: index.js
+
+  responder:
+    max_followups: 8
+    instructions: |
+      You are a developer with NO Sentry account and the Sentry MCP is NOT
+      connected. Answer briefly and stay consistent:
+
+        - You have never used Sentry. You do NOT have a Sentry account.
+        - The Sentry MCP is not connected/authenticated. If the agent's Sentry
+          tools don't work, that's expected — you haven't set anything up.
+        - When the agent asks whether you have a Sentry account or offers
+          options, choose the "I don't have a Sentry account yet" option.
+        - Do not pretend to have an account, an org, or a DSN. If the agent asks
+          for a DSN/token/org, you don't have one.
+
+      Once the agent has told you where to sign up for Sentry, STOP — do not ask
+      for more work.
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Judgments. The right move here is to STOP and route to signup — not to
+# instrument anything. No MCP is required for this task to pass.
+# ──────────────────────────────────────────────────────────────────────────────
+graders:
+  # NOTE: a plain text grader for "sentry.io/signup" is unreliable here — the
+  # agent often surfaces the link via an interactive prompt (AskUserQuestion),
+  # so it isn't in the final message text. The `directed-to-signup` LLM judge
+  # below covers this (it sees the whole session).
+
+  # 1. Did NOT fabricate a setup — no SDK dependency was added.
+  - name: no-fake-dep
+    type: file
+    config:
+      content_patterns:
+        - path: package.json
+          must_not_match:
+            - "@sentry/node"
+
+  # 3. Did NOT create an init file (no fabricated instrumentation).
+  - name: no-fake-init
+    type: file
+    config:
+      must_not_exist:
+        - instrument.js
+
+  # 4. Routed through the skill under test.
+  - name: routed-to-get-started
+    type: skill_invocation
+    config:
+      mode: any_order
+      allow_extra: true
+      required_skills:
+        - sentry-get-started
+
+  # 5. Stayed bounded — this is a short interaction.
+  - name: bounded
+    type: behavior
+    config:
+      max_tool_calls: 40
+      max_duration_ms: 300000
+
+  # ── LLM-judge checks (continue the agent's session and grade it) ──
+
+  # 6. Recognized the unauthed/no-account state rather than assuming Sentry is
+  #    set up.
+  - name: detected-not-connected
+    type: prompt
+    config:
+      model: openai/gpt-5.5
+      continue_session: true
+      prompt: |
+        Judge ONLY what the agent actually did in this conversation. Did the
+        agent recognize that Sentry is NOT connected / the user has no Sentry
+        account — rather than assuming Sentry was already set up and trying to
+        provision or instrument against it? PASS only if the agent correctly
+        identified the not-connected / no-account state.
+
+  # 7. Directed the user to sign up (the core behavior), and to come back and
+  #    connect the MCP.
+  - name: directed-to-signup
+    type: prompt
+    config:
+      model: openai/gpt-5.5
+      continue_session: true
+      prompt: |
+        Judge ONLY what the agent actually said in this conversation. Did the
+        agent clearly direct the user to create a Sentry account by signing up
+        at sentry.io/signup, and indicate they should come back and connect the
+        Sentry MCP (e.g. via /mcp) afterward? PASS only if the agent pointed the
+        user to sign up as the next step.
+
+  # 8. Did NOT fake success — anti-hallucination backstop to the file graders.
+  - name: did-not-fake-success
+    type: prompt
+    config:
+      model: openai/gpt-5.5
+      continue_session: true
+      prompt: |
+        Judge ONLY what the agent actually did in this conversation. Did the
+        agent AVOID fabricating setup — i.e. it did NOT invent a DSN, did NOT
+        claim a project was created, did NOT claim an error was captured or
+        verified in Sentry, and did NOT report success? PASS only if the agent
+        made no false claims of a working Sentry setup (stopping at "sign up
+        first" is the correct outcome).

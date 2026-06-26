@@ -1,0 +1,199 @@
+id: first-error-new-node-express
+name: "First-error setup on a fresh Node/Express project (brand-new user)"
+description: |
+  The user has a small Express service with no Sentry yet and wants error
+  monitoring set up and proven to work. Expected flow: orient -> detect no
+  Sentry in the repo -> provision a project (DSN) -> install + init the SDK ->
+  capture errors -> trigger a REAL error by running the app and hitting the
+  throwing route -> verify the event landed via the MCP -> show the user the
+  captured error + issue link -> strongly recommend deploying to production.
+tags:
+  - get-started
+  - first-error
+  - node
+  - happy-path
+
+inputs:
+  # The real trigger: the user invokes the command/skill explicitly. (The
+  # user's situation — has an account, MCP connected — is carried by the
+  # responder below.)
+  prompt: "/sentry-get-started"
+
+  # Copied into the fresh per-task workspace from the fixture (--context-dir
+  # points at fixtures/node-express, so these land at the workspace root).
+  files:
+    - path: package.json
+    - path: index.js
+
+  # Simulated first-time user. Answers follow-ups consistently so the flow can
+  # run to completion, and stops once the loop is closed.
+  responder:
+    max_followups: 12
+    instructions: |
+      You are a developer trying Sentry for the first time on a small Node.js
+      Express service. Answer the agent's questions briefly and stay consistent
+      with these facts:
+
+        - You DO have a Sentry account and the Sentry MCP is connected and
+          authenticated. Never say it is disconnected.
+        - This project does not use Sentry yet. You want basic error monitoring
+          (capturing errors is enough for now — do NOT ask for tracing, logs,
+          replay, etc.).
+        - Yes, create a new Sentry project when asked. Any default name, team,
+          or platform the agent proposes is fine.
+        - Yes, add the minimal error-capture setup to the code.
+        - Yes, you want to confirm it actually works. The app starts with
+          `npm start` (or `node index.js`). Let the agent run it and trigger a
+          test error itself — do not run anything yourself.
+        - Accept sensible defaults for anything else. Keep replies short.
+
+      Once the agent has confirmed a test error landed in Sentry AND advised you
+      on deploying to production, STOP — do not ask for more work.
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Judgments. Deterministic graders (file/code/skill_invocation/behavior) first,
+# then LLM-judge (prompt) graders for the behavioral checks. Each prompt grader
+# is a single, focused judgment so its score is unambiguous.
+#
+# NOTE (v1, MCP deferred): the graders marked [needs-MCP] cannot pass until a
+# Sentry MCP is attached (see eval.yaml) — the agent has no way to mint a DSN or
+# verify an event without it. They are intentionally kept here to express the
+# full target; expect them red on the first run.
+# ──────────────────────────────────────────────────────────────────────────────
+graders:
+  # 1. Instrumented the code — the SDK dependency landed in the manifest.
+  #    Strongest deterministic signal the project was actually instrumented.
+  - name: sentry-dep-added
+    type: file
+    config:
+      content_patterns:
+        - path: package.json
+          must_match:
+            - "@sentry/node"
+
+  # 1b. SDK initialized. Node convention is an instrument.js loaded first; if a
+  #     run puts Sentry.init elsewhere, update this path.
+  #     [needs-MCP] Once MCP mints a DSN, also assert the unique DSN public key
+  #     lands here — that doubles as proof create_project was actually called:
+  #         - "<unique-dsn-public-key-from-mock>"
+  - name: sdk-initialized
+    type: file
+    config:
+      content_patterns:
+        - path: instrument.js
+          must_match:
+            - "Sentry\\.init"
+
+  # 2. Did real work (liveness). The only trustworthy thing the code grader can
+  #    assert cheaply; richer "ran the real app" judgment is the prompt grader
+  #    below. `tool_calls` excludes MCP calls (only native Copilot tools appear).
+  - name: did-work
+    type: code
+    config:
+      assertions:
+        - "len(tool_calls) > 0"
+
+  # 3. Routed through the skill under test. The first-error flow is
+  #    self-contained in sentry-get-started, so that's the skill we require.
+  - name: routed-to-get-started
+    type: skill_invocation
+    config:
+      mode: any_order
+      allow_extra: true
+      required_skills:
+        - sentry-get-started
+
+  # 4. Stay bounded — don't go off the rails.
+  - name: bounded
+    type: behavior
+    config:
+      max_tool_calls: 80
+      max_duration_ms: 600000
+
+  # ── LLM-judge behavioral checks (continue the agent's session and grade it) ──
+
+  # 5. Actually instrumented (judge backstop to the file graders): the agent
+  #    edited the project's own code to initialize Sentry, not a throwaway file.
+  - name: instrumented-the-code
+    type: prompt
+    config:
+      model: openai/gpt-5.5
+      continue_session: true
+      prompt: |
+        Judge ONLY what the agent actually did in this conversation. Did the
+        agent instrument THIS project's code with Sentry — add the SDK
+        dependency and initialize Sentry (Sentry.init with a DSN) wired into the
+        app's startup — as opposed to only describing what to do or editing an
+        unrelated scratch file? PASS only if real instrumentation of the project
+        was performed.
+
+  # 6. Ran the REAL app to produce the error — not a dummy script. This is the
+  #    key anti-cheat judgment: the agent must boot the actual application and
+  #    trigger its real error path (e.g. start the server and request /debug),
+  #    NOT write a throwaway script that just calls Sentry.captureException or
+  #    constructs a fake Error to send.  [partly needs-MCP for the event to be
+  #    verifiable, but the "ran the real app" behavior is gradable regardless]
+  - name: triggered-real-error
+    type: prompt
+    config:
+      model: openai/gpt-5.5
+      continue_session: true
+      prompt: |
+        Judge ONLY what the agent actually did in this conversation. Did the
+        agent produce the test error by RUNNING THE REAL APPLICATION and hitting
+        its actual error path — for example starting the server (npm start /
+        node index.js) and making a request to the throwing route (/debug)?
+
+        FAIL if instead the agent produced the error with a throwaway/dummy
+        script — e.g. a one-off `node -e "..."`, a temp file that only imports
+        Sentry and calls Sentry.captureException(...), or constructs and sends a
+        synthetic Error without exercising the app's real code path. The whole
+        point is to prove the app's own errors reach Sentry, so a dummy send
+        does NOT count. PASS only if a real error was triggered through the
+        running app.
+
+  # 7. [needs-MCP] Checked Sentry for the error — verified via the MCP that the
+  #    event actually landed, rather than telling the user to go look.
+  - name: verified-in-sentry
+    type: prompt
+    config:
+      model: openai/gpt-5.5
+      continue_session: true
+      prompt: |
+        Judge ONLY what the agent actually did in this conversation. Did the
+        agent confirm the test error actually landed in Sentry by querying the
+        Sentry MCP itself (e.g. search_events / search_issues /
+        get_issue_details), rather than telling the user to go check the Sentry
+        dashboard? PASS only if the agent verified arrival via the MCP.
+
+  # 8. [needs-MCP] Printed the resulting error — surfaced the captured error's
+  #    details to the user (title/message/culprit and the issue permalink),
+  #    rather than just saying "it worked".
+  - name: printed-the-error
+    type: prompt
+    config:
+      model: openai/gpt-5.5
+      continue_session: true
+      prompt: |
+        Judge ONLY what the agent actually did in this conversation. After
+        verifying the event, did the agent SHOW the user the captured error —
+        its title/message (and ideally culprit) AND a direct Sentry issue link
+        (a https://...sentry.io/issues/... permalink) — so the user can click
+        through? PASS only if the agent surfaced the concrete captured error and
+        its link, not just a generic "it's working" message.
+
+  # 9. Strongly recommended deploying to production. The flow isn't done at
+  #    "works locally" — the agent should push the user to deploy so Sentry
+  #    captures real production errors.
+  - name: recommended-deploy
+    type: prompt
+    config:
+      model: openai/gpt-5.5
+      continue_session: true
+      prompt: |
+        Judge ONLY what the agent actually said in this conversation. Did the
+        agent clearly and strongly recommend DEPLOYING this change to production
+        (so Sentry starts capturing real user-facing errors), as an explicit
+        next step? A passing mention buried in passing does not count — it
+        should be a clear, deliberate recommendation. PASS only if deploying to
+        production was strongly suggested.
