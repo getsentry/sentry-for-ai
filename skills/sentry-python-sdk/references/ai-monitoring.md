@@ -283,6 +283,14 @@ response = openai.responses.create(
 
 A single conversation can span multiple traces, and a single trace can contain multiple conversations.
 
+### User Attribution
+
+To populate the **User** column in Conversations, call `set_user` once per request or session before any AI calls:
+
+```python
+sentry_sdk.set_user({"id": "user_123", "email": "jane@example.com", "username": "jane"})
+```
+
 ## Streaming
 
 | Integration | Streaming | Token counts in streams |
@@ -316,4 +324,5 @@ If your `traces_sample_rate` is below 1.0, you may be losing entire agent runs. 
 | LiteLLM not tracked | LiteLLM is NOT auto-enabled — add `LiteLLMIntegration` to `integrations=[]` explicitly |
 | Token counts missing for OpenAI streaming | Install `tiktoken>=0.3.0` and set `tiktoken_encoding_name` |
 | AI Agents Dashboard empty | Wrap agent runs in `gen_ai.invoke_agent` spans |
+| User column shows "Unknown" | Call `sentry_sdk.set_user()` once per request or session |
 | Wrong cost calculations | Ensure cached/reasoning token counts are subsets of totals, not additions |

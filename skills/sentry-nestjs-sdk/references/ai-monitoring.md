@@ -359,6 +359,14 @@ Sentry.setConversationId("conv_abc123");
 
 A single conversation can span multiple traces, and a single trace can contain multiple conversations.
 
+### User Attribution
+
+To populate the **User** column in Conversations, call `setUser` once per request or session before any AI calls:
+
+```typescript
+Sentry.setUser({ id: "user_123", email: "jane@example.com", username: "jane" });
+```
+
 ## Troubleshooting
 
 | Issue | Solution |
@@ -370,3 +378,4 @@ A single conversation can span multiple traces, and a single trace can contain m
 | Cost estimates not showing | Model name must match models.dev/OpenRouter pricing data; custom models may show no estimate |
 | Vercel AI spans not tracked | Pass `experimental_telemetry: { isEnabled: true }` to every AI SDK call |
 | No data in AI Agents dashboard | Ensure traces are being sent; check DSN and `tracesSampleRate` |
+| User column shows "Unknown" | Call `Sentry.setUser()` once per request or session |

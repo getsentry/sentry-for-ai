@@ -247,6 +247,14 @@ await openai.chat.completions.create({
 
 A single conversation can span multiple traces (e.g., page refresh), and a single trace can contain multiple conversations.
 
+### User Attribution
+
+To populate the **User** column in Conversations, call `setUser` once per request or session before any AI calls:
+
+```typescript
+Sentry.setUser({ id: "user_123", email: "jane@example.com", username: "jane" });
+```
+
 ## Troubleshooting
 
 | Issue | Solution |
@@ -259,3 +267,4 @@ A single conversation can span multiple traces (e.g., page refresh), and a singl
 | AI Agents Dashboard empty | Ensure traces are being sent; check DSN and `tracesSampleRate` |
 | Wrong cost calculations | Cached/reasoning tokens are subsets of totals, not additions |
 | Conversations view empty | Ensure `streamGenAiSpans: true`, `sendDefaultPii: true`, and a conversation ID is set via `Sentry.setConversationId()` |
+| User column shows "Unknown" | Call `Sentry.setUser()` once per request or session |
