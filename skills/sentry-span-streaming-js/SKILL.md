@@ -181,7 +181,7 @@ Returning `null` from `beforeSendSpan` does **not** drop the span — it is igno
 
 ### 2.3 Migrate `setTag(s)` to `setAttribute(s)`
 
-In streaming mode, **tags no longer apply to streamed spans** — only attributes do. Wherever the user sets tags via `Sentry.setTag` / `Sentry.setTags` or `scope.setTag` / `scope.setTags` (e.g. via `withSccope()`, `getCurrentScope()`, `getGlobalScope()`), add an equivalent `setAttribute` / `setAttributes` call with the same key/value pairs so the data still reaches spans.
+In streaming mode, **tags no longer apply to streamed spans** — only attributes do. Wherever the user sets tags via `Sentry.setTag` / `Sentry.setTags` or `scope.setTag` / `scope.setTags` (e.g. via `withScope()`, `getCurrentScope()`, `getGlobalScope()`), add an equivalent `setAttribute` / `setAttributes` call with the same key/value pairs so the data still reaches spans.
 
 Tags continue to work for errors, so **keep the existing `setTag(s)` calls** and add the attribute calls alongside them — do not replace one with the other.
 
