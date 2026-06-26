@@ -30,6 +30,8 @@ TARGET_DIR="${1:?usage: build.sh <TARGET_DIR>}"
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SRC_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
+source "$REPO_ROOT/scripts/build-common.sh"
+resolve_content_root "$REPO_ROOT"
 
 PLUGIN_NAME="sentry"
 PLUGIN="$TARGET_DIR/plugins/$PLUGIN_NAME"
@@ -42,9 +44,11 @@ cp "$SRC_DIR/README.md" "$TARGET_DIR/README.md"
 cp LICENSE "$TARGET_DIR/LICENSE"
 
 cp mcp.json "$PLUGIN/.mcp.json"
-cp SKILL_TREE.md "$PLUGIN/SKILL_TREE.md"
+copy_skill_tree "$CONTENT_ROOT" "$PLUGIN/SKILL_TREE.md"
 rsync -a assets/ "$PLUGIN/assets/"
-rsync -a skills/ "$PLUGIN/skills/"
+# copy_skills hydrates each skill's shared references before the Codex transform,
+# so the hidden-leaf rewrite sees the final skill tree. (Codex ships no commands.)
+copy_skills "$CONTENT_ROOT" "$PLUGIN/skills"
 
 # Per-skill transform: strip the rejected field + emit agents/openai.yaml for
 # every hidden leaf (skills the source marked disable-model-invocation: true).
