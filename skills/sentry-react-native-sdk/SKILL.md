@@ -763,11 +763,11 @@ Sentry.init({
 
 ---
 
-## Source Maps & Debug Symbols
+### Source Maps & Debug Symbols
 
-Source maps and debug symbols are what transform minified stack traces into readable ones. When set up correctly, Sentry shows you the exact line of your source code that threw.
+Source maps and debug symbols are what transform minified stack traces into readable ones. When set up correctly, Sentry shows you the exact line of your source code that threw. The generic auth-token and CI setup lives in [`sentry-source-maps`](../sentry-source-maps/SKILL.md); the React Native-specific upload mechanics are below.
 
-### How Uploads Work
+#### How Uploads Work
 
 | Platform | What's uploaded | When |
 |----------|----------------|------|
@@ -776,7 +776,7 @@ Source maps and debug symbols are what transform minified stack traces into read
 | **Android** (JS) | Source maps + Hermes `.hbc.map` | During Gradle build |
 | **Android** (Native) | Proguard mapping + NDK `.so` files | During Gradle build |
 
-### Expo: Automatic Upload
+#### Expo: Automatic Upload
 
 The `@sentry/react-native/expo` config plugin automatically sets up upload hooks for native builds. Source maps are uploaded during `eas build` and `expo run:ios/android` (release).
 
@@ -784,7 +784,7 @@ The `@sentry/react-native/expo` config plugin automatically sets up upload hooks
 SENTRY_AUTH_TOKEN=sntrys_... npx expo run:ios --configuration Release
 ```
 
-### Manual Upload (bare RN)
+#### Manual Upload (bare RN)
 
 If you need to manually upload source maps:
 
@@ -798,7 +798,7 @@ npx sentry-cli sourcemaps upload \
 
 ---
 
-## EAS Build Hooks
+### EAS Build Hooks
 
 Monitor your Expo Application Services (EAS) builds in Sentry. The SDK ships three binary hooks — `sentry-eas-build-on-complete`, `sentry-eas-build-on-error`, and `sentry-eas-build-on-success` — that capture build events as Sentry errors or messages.
 
