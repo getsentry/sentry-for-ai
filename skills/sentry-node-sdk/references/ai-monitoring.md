@@ -1,6 +1,6 @@
 # AI Monitoring - Sentry Node.js SDK
 
-> Minimum SDK: `@sentry/node` >=10.53.0. OpenAI, Anthropic, LangChain, LangGraph, Google GenAI, Vercel AI SDK auto-instrument.
+> Minimum SDK: `@sentry/node` >=10.61.0 (Gen AI span streaming is on by default at this version). OpenAI, Anthropic, LangChain, LangGraph, Google GenAI, Vercel AI SDK auto-instrument and are available since 10.53.0.
 
 ## Prerequisites
 
@@ -217,7 +217,7 @@ If `tracesSampleRate` < 1.0, see the [AI sampling guide](../../sentry-setup-ai-m
 
 Link AI spans across turns into a chat-style timeline at **Explore > Conversations**.
 
-**Prerequisites:** `sendDefaultPii: true` must be set, and `streamGenAiSpans` must be enabled (default since SDK 10.61.0; set it explicitly on 10.53.0–10.60.x) — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
+**Prerequisites:** SDK >=10.61.0 (where `streamGenAiSpans` defaults to `true`, so AI spans stream as standalone items) and `sendDefaultPii: true` — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
 
 ```typescript
 import * as Sentry from "@sentry/node";
@@ -256,7 +256,7 @@ Sentry.setUser({ id: "user_123", email: "jane@example.com", username: "jane" });
 
 | Issue | Solution |
 |-------|----------|
-| No AI spans appearing | Verify `tracesSampleRate > 0`; check SDK >=10.53.0 |
+| No AI spans appearing | Verify `tracesSampleRate > 0`; check SDK >=10.61.0 |
 | Token counts missing in streams | Add `stream_options: { include_usage: true }` (OpenAI) |
 | Vercel AI spans not tracked | Add `experimental_telemetry: { isEnabled: true }` per call |
 | Browser OpenAI not traced | Use `Sentry.instrumentOpenAiClient()` - auto-instrumentation is server-only |

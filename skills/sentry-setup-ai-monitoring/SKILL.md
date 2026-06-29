@@ -325,7 +325,7 @@ Find it at **Explore > Conversations** in Sentry.
 ### Prerequisites for Conversations
 
 - Tracing enabled with `tracesSampleRate > 0`
-- `streamGenAiSpans` defaults to `true` since JS SDK 10.61.0 (set it explicitly on 10.53.0–10.60.x); Python still requires `stream_gen_ai_spans=True` (Python SDK >=2.60.0). This sends AI spans as standalone items, so spans with large inputs/outputs don't hit transaction payload size limits and get dropped.
+- Gen AI span streaming requires JS SDK >=10.61.0, where `streamGenAiSpans` defaults to `true`; Python still requires `stream_gen_ai_spans=True` (Python SDK >=2.60.0). This sends AI spans as standalone items, so spans with large inputs/outputs don't hit transaction payload size limits and get dropped.
 - **Input and output capture enabled** — Conversations reconstructs the chat from `gen_ai.input.messages` and `gen_ai.output.messages` attributes. Set `sendDefaultPii: true` (JS) / `send_default_pii=True` (Python). Without it, conversations appear empty.
 
 ### Setting a Conversation ID

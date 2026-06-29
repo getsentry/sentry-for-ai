@@ -341,7 +341,7 @@ If your `tracesSampleRate` is below 1.0, you may be losing entire agent runs. Se
 
 Link AI spans across turns into a chat-style timeline at **Explore > Conversations**.
 
-**Prerequisites:** `sendDefaultPii: true` must be set, and `streamGenAiSpans` must be enabled (default since SDK 10.61.0; set it explicitly on 10.53.0–10.60.x) — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
+**Prerequisites:** SDK >=10.61.0 (where `streamGenAiSpans` defaults to `true`, so AI spans stream as standalone items) and `sendDefaultPii: true` — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
 
 ```typescript
 import * as Sentry from "@sentry/nestjs";
