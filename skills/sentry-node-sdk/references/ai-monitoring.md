@@ -10,10 +10,12 @@ Tracing must be enabled - AI spans require an active trace:
 Sentry.init({
   dsn: "...",
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
+  streamGenAiSpans: true, // default since 10.62.0; set to false for self-hosted instances
   sendDefaultPii: true,
 });
 ```
+
+> **Note:** `streamGenAiSpans` is enabled by default as of SDK 10.62.0. Set `streamGenAiSpans: false` if you're using a self-hosted Sentry instance that doesn't support streamed gen_ai spans.
 
 ## Integration Matrix
 
@@ -48,7 +50,7 @@ import * as Sentry from "@sentry/node";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
+  streamGenAiSpans: true, // default since 10.62.0
   sendDefaultPii: true, // required to capture prompts/outputs
 });
 // OpenAI, Anthropic, LangChain, LangGraph, Google GenAI activate automatically
@@ -60,7 +62,7 @@ Sentry.init({
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
+  streamGenAiSpans: true, // default since 10.62.0
   sendDefaultPii: true,
   integrations: [
     Sentry.openAIIntegration(),
@@ -220,7 +222,7 @@ If `tracesSampleRate` < 1.0, see the [AI sampling guide](../../sentry-setup-ai-m
 
 Link AI spans across turns into a chat-style timeline at **Explore > Conversations**.
 
-**Prerequisites:** `streamGenAiSpans: true` (SDK >=10.53.0) and `sendDefaultPii: true` must be set — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
+**Prerequisites:** `streamGenAiSpans: true` (enabled by default since SDK >=10.62.0, opt-in for 10.53.0-10.61.0) and `sendDefaultPii: true` must be set — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
 
 ```typescript
 import * as Sentry from "@sentry/node";
@@ -266,5 +268,5 @@ Sentry.setUser({ id: "user_123", email: "jane@example.com", username: "jane" });
 | Prompts not captured | Set `sendDefaultPii: true`, or explicitly pass `recordInputs: true` / `recordOutputs: true` to the integration |
 | AI Agents Dashboard empty | Ensure traces are being sent; check DSN and `tracesSampleRate` |
 | Wrong cost calculations | Cached/reasoning tokens are subsets of totals, not additions |
-| Conversations view empty | Ensure `streamGenAiSpans: true`, `sendDefaultPii: true`, and a conversation ID is set via `Sentry.setConversationId()` |
+| Conversations view empty | Ensure `streamGenAiSpans: true` (default since 10.62.0), `sendDefaultPii: true`, and a conversation ID is set via `Sentry.setConversationId()` |
 | User column shows "Unknown" | Call `Sentry.setUser()` once per request or session |
