@@ -21,7 +21,7 @@ Opinionated wizard that scans your Cloudflare project and guides you through com
 - User asks about `withSentry`, `sentryPagesPlugin`, `instrumentDurableObjectWithSentry`, or `instrumentD1WithSentry`
 - User wants to monitor Durable Objects, Queues, Workflows, Scheduled handlers, or Email handlers on Cloudflare
 
-> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.59.0).
+> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.61.0).
 > Always verify against [docs.sentry.io/platforms/javascript/guides/cloudflare/](https://docs.sentry.io/platforms/javascript/guides/cloudflare/) before implementing.
 
 ---
@@ -543,7 +543,7 @@ Connecting frontend and backend with linked Sentry projects enables **distribute
 | Events lost on short-lived requests | SDK not flushing before worker terminates | Ensure `withSentry` or `sentryPagesPlugin` wraps your handler — they use `ctx.waitUntil()` to flush |
 | Hono errors not captured | Hono app not instrumented | Use `@sentry/hono/cloudflare` — import `sentry` middleware and call `app.use(sentry(app, options))` |
 | Durable Object errors missing | DO class not instrumented | Wrap class with `Sentry.instrumentDurableObjectWithSentry()` — see `references/durable-objects.md` |
-| D1 queries not creating spans | D1 binding not instrumented | Wrap binding with `Sentry.instrumentD1WithSentry(env.DB)` before use |
+| D1 queries not creating spans | D1 binding not instrumented | Wrap binding with `Sentry.instrumentD1WithSentry(env.DB)` before use; all query methods (`prepare`, `batch`, `exec`, `withSession`) are traced in v10.61.0+ |
 | Scheduled handler not monitored | `withSentry` not wrapping the handler | Ensure `export default Sentry.withSentry(...)` wraps your entire exported handler object |
 | Release not auto-detected | `CF_VERSION_METADATA` binding not configured | Add `[version_metadata]` with `binding = "CF_VERSION_METADATA"` to `wrangler.toml` |
 | Duplicate events in Workflows | Dedupe integration filtering step failures | SDK automatically disables dedupe for Workflows; verify you use `instrumentWorkflowWithSentry` |

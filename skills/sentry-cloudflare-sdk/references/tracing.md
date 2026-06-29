@@ -124,15 +124,30 @@ When you instrument D1 with `instrumentD1WithSentry`, all queries create `db.que
 ```typescript
 const db = Sentry.instrumentD1WithSentry(env.DB);
 
-// This creates a db.query span with the SQL statement
+// Prepared statement queries
 const result = await db.prepare("SELECT * FROM users WHERE id = ?").bind(1).run();
+
+// Batch operations (v10.61.0+)
+const results = await db.batch([
+  db.prepare("UPDATE users SET active = ? WHERE id = ?").bind(true, 1),
+  db.prepare("SELECT * FROM users WHERE id = ?").bind(1),
+]);
+
+// Direct SQL execution (v10.61.0+)
+await db.exec("CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, message TEXT)");
+
+// Session-based queries (v10.61.0+)
+await db.withSession(async (session) => {
+  await session.prepare("INSERT INTO logs (message) VALUES (?)").bind("test").run();
+});
 ```
 
 Span attributes include:
-- `cloudflare.d1.query_type` — `first`, `run`, `all`, or `raw`
+- `db.operation.name` — query type: `first`, `run`, `all`, `raw`, `batch`, `exec`
 - `cloudflare.d1.duration` — query duration
 - `cloudflare.d1.rows_read` — number of rows read
 - `cloudflare.d1.rows_written` — number of rows written
+- `db.operation.batch.size` — (batch only) number of statements in the batch
 
 ---
 

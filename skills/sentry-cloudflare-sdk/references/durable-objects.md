@@ -145,6 +145,38 @@ class MyDurableObjectBase extends DurableObject<Env> {
 
 Both async storage and sync KV operations create spans with the operation name (`durable_object_storage_get`, `durable_object_storage_kv_get`, etc.).
 
+### SQL Storage Instrumentation (v10.61.0+)
+
+Durable Objects with SQL storage (`ctx.storage.sql`) are automatically instrumented when using `instrumentDurableObjectWithSentry`:
+
+```typescript
+class MyDurableObjectBase extends DurableObject<Env> {
+  async fetch(request: Request): Promise<Response> {
+    // SQL queries are automatically traced
+    await this.ctx.storage.sql.exec(
+      "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)"
+    );
+
+    await this.ctx.storage.sql.exec(
+      "INSERT INTO users (id, name) VALUES (?, ?)",
+      1,
+      "Alice"
+    );
+
+    const users = await this.ctx.storage.sql.exec("SELECT * FROM users");
+
+    return new Response(JSON.stringify(users));
+  }
+}
+```
+
+Each `sql.exec()` call creates a `db.query` span with:
+- `db.system.name`: `"cloudflare-durable-object-sql"`
+- `db.operation.name`: `"exec"`
+- `db.query.text`: sanitized SQL query
+- `db.query.summary`: extracted operation summary (e.g., `"SELECT users"`)
+- `cloudflare.durable_object.query.bindings`: number of bind parameters
+
 ---
 
 ## Workflows
@@ -253,11 +285,14 @@ export default Sentry.withSentry(
 | `statement.run()` | SQL query text | Execute with metadata return |
 | `statement.all()` | SQL query text | Returns all rows with metadata |
 | `statement.raw()` | SQL query text | Returns raw row arrays |
+| `db.batch(statements[])` | `"D1 batch"` | Execute multiple prepared statements (v10.61.0+) |
+| `db.exec(query)` | SQL query text | Execute raw SQL directly (v10.61.0+) |
+| `db.withSession(callback)` | — | Returns instrumented session; `session.prepare()` and `session.batch()` are also traced (v10.61.0+) |
 
 All methods create:
 - A `db.query` span with the SQL statement as the span name
 - A breadcrumb in the `query` category
-- Span attributes: `cloudflare.d1.query_type`, `cloudflare.d1.duration`, `cloudflare.d1.rows_read`, `cloudflare.d1.rows_written`
+- Span attributes include: `db.operation.name` (query type), `cloudflare.d1.duration`, `cloudflare.d1.rows_read`, `cloudflare.d1.rows_written`
 
 ### Bind Support
 
@@ -273,9 +308,41 @@ const result = await db
   .run();
 ```
 
+### Batch Operations
+
+The SDK instruments `db.batch()` for executing multiple prepared statements atomically:
+
+```typescript
+const db = Sentry.instrumentD1WithSentry(env.DB);
+
+const results = await db.batch([
+  db.prepare("UPDATE users SET status = ? WHERE id = ?").bind("active", 1),
+  db.prepare("INSERT INTO logs (action) VALUES (?)").bind("user_activated"),
+  db.prepare("SELECT * FROM users WHERE id = ?").bind(1),
+]);
+```
+
+This creates a single `db.query` span named `"D1 batch"` with attributes:
+- `db.operation.name`: `"batch"`
+- `db.operation.batch.size`: number of statements
+- `db.query.text`: concatenated SQL statements (newline-separated)
+
+### Sessions
+
+`db.withSession()` is instrumented, and any `prepare()` or `batch()` calls within the session callback are automatically traced:
+
+```typescript
+const db = Sentry.instrumentD1WithSentry(env.DB);
+
+const result = await db.withSession(async (session) => {
+  const user = await session.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first();
+  await session.prepare("UPDATE users SET last_seen = ? WHERE id = ?").bind(Date.now(), userId).run();
+  return user;
+});
+```
+
 ### Limitations
 
-- `db.exec()` and `db.batch()` are **not** instrumented — only prepared statements
 - Query parameters are not captured in span data (to avoid PII leakage)
 
 ---
@@ -300,7 +367,7 @@ const result = await db
 |-------|----------|
 | DO errors not captured | Ensure you exported the instrumented class, not the base class |
 | RPC methods not creating spans | Enable `instrumentPrototypeMethods: true` or list specific methods |
-| D1 queries not traced | Call `instrumentD1WithSentry(env.DB)` before executing queries |
+| D1 queries not traced | Call `instrumentD1WithSentry(env.DB)` before executing queries; all methods (`prepare`, `batch`, `exec`, `withSession`) are traced in v10.61.0+ |
 | Workflow spans disconnected | Verify all steps in the same workflow instance share the same trace (automatic) |
-| Storage operations not traced | Ensure you're using `instrumentDurableObjectWithSentry` — storage instrumentation is included |
-| `db.batch()` not creating spans | Expected — batch and exec are not instrumented; use prepared statements |
+| Storage operations not traced | Ensure you're using `instrumentDurableObjectWithSentry` — storage (async, KV, and SQL) instrumentation is included |
+| SQL storage not traced | Upgrade to v10.61.0+; `ctx.storage.sql.exec()` is automatically instrumented |
