@@ -1,0 +1,9 @@
+needs:
+  # Whole SDK tree (platform is chosen at runtime); STRUCTURE.md is excluded.
+  - sdks/index.md
+  - sdks/*/*.md
+  - concepts/choosing-a-signal.md
+  - concepts/{errors,tracing,logging,metrics,profiling,session-replay,user-feedback,crons}.md
+  - first-error-setup.md
+  - new-project.md
+  - setup-verification.md
