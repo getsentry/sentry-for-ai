@@ -158,7 +158,10 @@ npx expo install @sentry/react-native
 
 ```javascript
 const { getSentryExpoConfig } = require("@sentry/react-native/metro");
-const config = getSentryExpoConfig(__dirname);
+const config = getSentryExpoConfig(__dirname, {
+  // Auto-wrap Expo Router ErrorBoundary exports at build time (SDK ≥8.16.0)
+  autoWrapExpoRouterErrorBoundary: true,
+});
 module.exports = config;
 ```
 
@@ -167,6 +170,16 @@ If `metro.config.js` doesn't exist yet:
 npx expo customize metro.config.js
 # Then replace contents with the above
 ```
+
+**Metro config options:**
+
+| Option | Type | Default | Purpose |
+|--------|------|---------|---------|
+| `autoWrapExpoRouterErrorBoundary` | `boolean` | `false` | Automatically wrap `export { ErrorBoundary } from 'expo-router'` with Sentry at build time (SDK ≥8.16.0). Captures errors that hit per-route ErrorBoundaries without manual wrapping |
+| `annotateReactComponents` | `boolean` | `false` | Inject component names for better error context |
+| `includeWebReplay` | `boolean` | `true` | Include web replay bundle (set `false` for native-only apps) |
+| `includeWebFeedback` | `boolean` | `true` | Include web feedback bundle (set `false` for native-only apps) |
+| `enableSourceContextInDevelopment` | `boolean` | `true` | Enable source context in dev builds |
 
 **Step 3 — `app.json` — Add Expo config plugin**
 
@@ -244,6 +257,24 @@ export default Sentry.wrap(RootLayout);
 
 > **Note:** Expo Router automatically handles navigation tracking. The `Sentry.NavigationContainer` wrapper is not needed for Expo Router projects — navigation spans are captured automatically.
 
+**Expo Router ErrorBoundary Setup (SDK ≥8.16.0)**
+
+Expo Router's per-route `ErrorBoundary` swallows render errors by default — Sentry won't see them unless you explicitly capture them. Two options:
+
+1. **Auto-wrap (recommended)** — Enable `autoWrapExpoRouterErrorBoundary: true` in `metro.config.js` (shown above). The Babel plugin rewrites `export { ErrorBoundary } from 'expo-router'` automatically in all route files.
+
+2. **Manual wrap** — Wrap the boundary yourself in each route file:
+
+   ```typescript
+   // app/_layout.tsx (or any route file)
+   import { ErrorBoundary as ExpoErrorBoundary } from 'expo-router';
+   import * as Sentry from '@sentry/react-native';
+
+   export const ErrorBoundary = Sentry.wrapExpoRouterErrorBoundary(ExpoErrorBoundary);
+   ```
+
+Both methods capture errors that hit the boundary with route context (`route.name`, `route.path`, `route.params`), tag the active navigation span as errored, and emit a breadcrumb. Concrete paths/params respect `sendDefaultPii`.
+
 For **standard Expo** (`App.tsx`):
 
 ```typescript
@@ -299,6 +330,8 @@ module.exports = withSentryConfig(config, {
   // includeWebReplay: true,
   // Set to false to exclude @sentry-internal/feedback from the native bundle (web only).
   // includeWebFeedback: true,
+  // Auto-wrap Expo Router ErrorBoundary exports at build time (SDK ≥8.16.0, Expo Router only)
+  // autoWrapExpoRouterErrorBoundary: true,
 });
 ```
 
@@ -614,6 +647,7 @@ Sentry.init({
 | `attachAllThreads` | `boolean` | `false` | Attach full stack traces for all threads to every captured event (iOS only, requires Cocoa SDK ≥9.9.0) |
 | `autoInitializeNativeSdk` | `boolean` | `true` | Set `false` for manual native init |
 | `onReady` | `function` | — | Callback after native SDKs initialize |
+| `enableTurboModuleTracking` | `boolean` | `false` | **Experimental.** Install native TurboModule perf logger for crash attribution and per-module spans. RN 0.75+ New Architecture only; no-op on Old Architecture (SDK ≥8.17.0) |
 
 ### Session & Release Health Options
 
