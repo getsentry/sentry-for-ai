@@ -644,14 +644,14 @@ Sentry.setUser({
 // On logout — clears user from all subsequent events:
 Sentry.setUser(null);
 
-// Auto-infer IP address (requires sendDefaultPii: true):
+// Auto-infer IP address (userInfo defaults to true):
 Sentry.setUser({
   id: "usr_abc123",
   ip_address: "{{ auto }}",
 });
 ```
 
-> **Privacy:** `sendDefaultPii: true` in `Sentry.init` enables automatic IP inference. To prevent IP storage entirely, enable "Prevent Storing of IP Addresses" in your project's Security & Privacy settings in Sentry.
+> **Privacy:** `userInfo` (in `dataCollection`) defaults to `true`, which enables automatic IP inference. Set `dataCollection: { userInfo: false }` to opt out, or enable "Prevent Storing of IP Addresses" in your project's Security & Privacy settings in Sentry to prevent IP storage entirely.
 
 ---
 

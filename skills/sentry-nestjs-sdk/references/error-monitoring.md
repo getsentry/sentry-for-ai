@@ -619,7 +619,7 @@ Key `Sentry.init()` options for error monitoring (in `instrument.ts`):
 | `environment` | `string` | `"production"` | Deployment environment tag |
 | `release` | `string` | env `SENTRY_RELEASE` | App version string |
 | `sampleRate` | `number` | `1.0` | Fraction of error events to send (0.0–1.0) |
-| `sendDefaultPii` | `boolean` | `false` | Include IPs, cookies, sessions |
+| `dataCollection` | `object` | conservative unless set | Fine-grained control over auto-collected categories (`userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`). When omitted, the SDK falls back to `sendDefaultPii` (default `false`). Passing the object — even `{}` — flips unset categories to their permissive defaults; opt out per category. |
 | `attachStacktrace` | `boolean` | `false` | Add stack traces to `captureMessage()` |
 | `maxBreadcrumbs` | `number` | `100` | Max breadcrumbs per event |
 | `ignoreErrors` | `Array<string \| RegExp>` | `[]` | Error message patterns to never report |
@@ -705,4 +705,4 @@ Sentry.init({ ignoreErrors: ["string", /regex/] })
 | User context missing from events | Set `Sentry.setUser()` in middleware **before** the request reaches the controller; isolation scope is per-request |
 | `instrument.ts` import order error | `import "./instrument"` must be the **very first line** of `main.ts` — before any other imports |
 | Events not appearing | Verify DSN, enable `debug: true` in `Sentry.init()` to see SDK logs, confirm `SentryModule.forRoot()` is imported |
-| PII appearing in events | Set `sendDefaultPii: false` (default) and scrub in `beforeSend` |
+| PII appearing in events | Data is collected by default; opt out via `dataCollection` (e.g. `userInfo: false`, `httpBodies: []`, `cookies: false`) and scrub remaining values in `beforeSend` |

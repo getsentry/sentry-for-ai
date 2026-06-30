@@ -20,7 +20,12 @@ Sentry.init({
   release: "my-app@1.2.3",
   environment: process.env.NODE_ENV ?? "production",
   tracesSampleRate: 1.0,
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
 });
 ```
 
@@ -822,13 +827,18 @@ Auto-enabled. Attaches HTTP request data to all events during a request. Each fr
 | `method` | ✅ Always | GET, POST, etc. |
 | `headers` | ✅ Always | Auth header scrubbed automatically |
 | `query_string` | ✅ Always | URL query params |
-| `data` (body) | ⚠️ Opt-in | Requires `sendDefaultPii: true` |
-| `cookies` | ⚠️ Opt-in | Requires `sendDefaultPii: true` |
-| `ip_address` | ⚠️ Opt-in | Requires `sendDefaultPii: true` |
+| `data` (body) | ✅ Default on | Controlled by `dataCollection` (`httpBodies`); set to `[]` to opt out |
+| `cookies` | ✅ Default on | Controlled by `dataCollection` (`cookies`); set to `false` to opt out |
+| `ip_address` | ✅ Default on | Controlled by `dataCollection` (`userInfo`); set to `false` to opt out |
 
 ```javascript
 Sentry.init({
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
   integrations: [
     Sentry.requestDataIntegration({
       include: {
@@ -937,7 +947,7 @@ Sentry.init({
   normalizeDepth?: number;         // default: 3
 
   // Privacy
-  sendDefaultPii?: boolean;        // default: false — enables body/cookies/IP
+  dataCollection?: DataCollectionOptions; // omitted => falls back to sendDefaultPii (conservative); pass an object (even {}) to enable permissive collection, then opt out per category
 
   // Filtering
   ignoreErrors?: Array<string | RegExp>;
@@ -970,7 +980,12 @@ import * as Sentry from "@sentry/bun";
 Sentry.init({
   dsn: "https://examplePublicKey@o0.ingest.sentry.io/0",
   tracesSampleRate: 1.0,
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
 });
 ```
 

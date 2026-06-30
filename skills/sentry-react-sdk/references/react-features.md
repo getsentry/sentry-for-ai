@@ -879,8 +879,12 @@ Sentry.init({
       ],
     }),
   ],
-  // Required to capture request/response bodies (PII risk — use cautiously)
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/react/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
 });
 ```
 

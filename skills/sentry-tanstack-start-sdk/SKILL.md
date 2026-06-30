@@ -118,7 +118,10 @@ export const getRouter = () => {
   if (!router.isServer) {
     Sentry.init({
       dsn: "___PUBLIC_DSN___",
-      sendDefaultPii: true,
+      dataCollection: {
+        // userInfo: false,
+        // httpBodies: [],
+      },
 
       integrations: [
         Sentry.tanstackRouterBrowserTracingIntegration(router),
@@ -148,7 +151,12 @@ import * as Sentry from "@sentry/tanstackstart-react";
 
 Sentry.init({
   dsn: "___PUBLIC_DSN___",
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
   enableLogs: true,
   tracesSampleRate: 1.0,
 });
@@ -266,7 +274,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | Option | Type | Default | Notes |
 |--------|------|---------|-------|
 | `dsn` | `string` | — | Required; SDK is disabled when empty |
-| `sendDefaultPii` | `boolean` | `false` | Sends request headers and IP-derived user context |
+| `dataCollection` | `object` | conservative unless set | Fine-grained control over auto-collected categories (`userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`). When omitted, the SDK falls back to `sendDefaultPii` (default `false`). Passing the object — even `{}` — flips unset categories to their permissive defaults; opt out per category. |
 | `integrations` | `Integration[]` | SDK defaults | Include TanStack Router tracing, replay, feedback as needed |
 | `enableLogs` | `boolean` | `false` | Enables `Sentry.logger.*` APIs |
 | `tracesSampleRate` | `number` | — | `1.0` in development, lower in production |

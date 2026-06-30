@@ -177,7 +177,12 @@ const Sentry = require("@sentry/node");
 Sentry.init({
   dsn: process.env.SENTRY_DSN ?? "___DSN___",
 
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
 
   // 100% in dev, lower in production
   tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
@@ -198,7 +203,12 @@ import * as Sentry from "@sentry/node";
 Sentry.init({
   dsn: process.env.SENTRY_DSN ?? "___DSN___",
 
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
   tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
   includeLocalVariables: true,
   enableLogs: true,
@@ -390,7 +400,12 @@ import * as Sentry from "@sentry/bun";
 Sentry.init({
   dsn: process.env.SENTRY_DSN ?? "___DSN___",
 
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
   tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
   enableLogs: true,
 });
@@ -487,7 +502,12 @@ import * as Sentry from "@sentry/deno";
 Sentry.init({
   dsn: Deno.env.get("SENTRY_DSN") ?? "___DSN___",
 
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
   tracesSampleRate: Deno.env.get("DENO_ENV") === "development" ? 1.0 : 0.1,
   enableLogs: true,
 });
@@ -591,7 +611,12 @@ provider.register();
 Sentry.init({
   dsn: process.env.SENTRY_DSN ?? '___DSN___',
 
-  sendDefaultPii: true,
+  dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
+  },
   enableLogs: true,
 
   // Do NOT set tracesSampleRate — OTel controls sampling
@@ -705,7 +730,7 @@ Metrics collected: same as Node.js except no event loop delay percentiles (unava
 |--------|------|---------|-------|
 | `dsn` | `string` | — | Required. Also from `SENTRY_DSN` env var |
 | `tracesSampleRate` | `number` | — | 0–1; required to enable tracing; **do not set when using OTLP path** |
-| `sendDefaultPii` | `boolean` | `false` | Include IP, request headers, user info |
+| `dataCollection` | `object` | conservative unless set | Fine-grained control over auto-collected categories (`userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`). When omitted, the SDK falls back to `sendDefaultPii` (default `false`). Passing the object — even `{}` — flips unset categories to their permissive defaults; opt out per category. |
 | `includeLocalVariables` | `boolean` | `false` | Add local variable values to stack frames (Node.js) |
 | `enableLogs` | `boolean` | `false` | Enable Sentry Logs product (v9.41.0+) |
 | `environment` | `string` | `"production"` | Also from `SENTRY_ENVIRONMENT` env var |

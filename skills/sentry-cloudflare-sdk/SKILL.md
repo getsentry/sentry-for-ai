@@ -408,7 +408,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 | `dsn` | `string` | — | Required. Read from `env.SENTRY_DSN` automatically if not set |
 | `tracesSampleRate` | `number` | — | 0–1; 1.0 in dev, lower in prod recommended |
 | `tracesSampler` | `function` | — | Dynamic sampling function; mutually exclusive with `tracesSampleRate` |
-| `dataCollection` | `object` | `{}` | Controls what data the SDK captures (`userInfo`, `httpBodies`, etc.). See [Data Collection Reference](#data-collection-reference) |
+| `dataCollection` | `object` | conservative unless set | Controls what data the SDK captures (`userInfo`, `httpBodies`, etc.). When omitted, falls back to `sendDefaultPii` (default `false`); passing the object — even `{}` — enables permissive defaults. See [Data Collection Reference](#data-collection-reference) |
 | `sendDefaultPii` | `boolean` | `false` | Legacy. Prefer `dataCollection` for control over captured data |
 | `enableLogs` | `boolean` | `false` | Enable Sentry Logs product |
 | `environment` | `string` | auto | Read from `env.SENTRY_ENVIRONMENT` if not set |

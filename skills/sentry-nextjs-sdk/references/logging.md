@@ -250,7 +250,7 @@ These are added by the SDK to every log without any developer configuration:
 | `sentry.sdk.name` | e.g., `"sentry.javascript.nextjs"` |
 | `sentry.sdk.version` | Always present |
 | `browser.name`, `browser.version` | Client-side only |
-| `user.id`, `user.name`, `user.email` | When `Sentry.setUser()` + `sendDefaultPii: true` |
+| `user.id`, `user.name`, `user.email` | When `Sentry.setUser()` is called (`userInfo` defaults to `true`) |
 | `sentry.trace.parent_span_id` | When inside an active span (enables log ↔ trace correlation) |
 | `sentry.replay_id` | Client-side with Replay enabled |
 | `server.address` | Server-side only |
