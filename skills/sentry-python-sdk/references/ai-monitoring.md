@@ -1,6 +1,6 @@
 # AI Monitoring — Sentry Python SDK
 
-> Minimum SDK: `sentry-sdk` >=2.60.0
+> Minimum SDK: `sentry-sdk` >=2.64.0 (Gen AI span streaming is on by default at this version; the `stream_gen_ai_spans` option is available since 2.60.0).
 
 ## Prerequisites
 
@@ -10,7 +10,6 @@ Tracing must be enabled — AI spans require an active transaction:
 sentry_sdk.init(
     dsn="...",
     traces_sample_rate=1.0,
-    stream_gen_ai_spans=True,
     send_default_pii=True,
 )
 ```
@@ -54,7 +53,6 @@ import sentry_sdk
 sentry_sdk.init(
     dsn="https://<key>@<org>.ingest.sentry.io/<project>",
     traces_sample_rate=1.0,
-    stream_gen_ai_spans=True,
     send_default_pii=True,    # required to capture prompts/outputs
 )
 
@@ -71,7 +69,6 @@ from sentry_sdk.integrations.anthropic import AnthropicIntegration
 sentry_sdk.init(
     dsn="...",
     traces_sample_rate=1.0,
-    stream_gen_ai_spans=True,
     send_default_pii=True,
     integrations=[
         OpenAIIntegration(
@@ -92,7 +89,6 @@ from sentry_sdk.integrations.litellm import LiteLLMIntegration
 sentry_sdk.init(
     dsn="...",
     traces_sample_rate=1.0,
-    stream_gen_ai_spans=True,
     send_default_pii=True,
     integrations=[
         LiteLLMIntegration(include_prompts=True),   # 100+ providers via proxy
@@ -255,7 +251,7 @@ This populates the **AI Agents Dashboard** in Sentry with per-agent latency, too
 
 Link AI spans across turns in a multi-turn conversation. Sentry groups spans by `gen_ai.conversation.id` into a chat-style timeline at **Explore > Conversations**.
 
-**Prerequisites:** `stream_gen_ai_spans=True` (SDK >=2.60.0) and `send_default_pii=True` must be set — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
+**Prerequisites:** SDK >=2.64.0 (where `stream_gen_ai_spans` defaults to `True`, so AI spans stream as standalone items) and `send_default_pii=True` — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
 
 ```python
 import sentry_sdk.ai

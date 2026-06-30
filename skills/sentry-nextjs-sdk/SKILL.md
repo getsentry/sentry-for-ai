@@ -330,43 +330,18 @@ export const config = {
 
 ### Source Maps Setup
 
-Source maps make production stack traces readable — without them, you see minified code. This is non-negotiable for production apps.
-
-**Step 1: Generate a Sentry auth token**
-
-Go to [sentry.io/settings/auth-tokens/](https://sentry.io/settings/auth-tokens/) and create a token with `project:releases` and `org:read` scopes.
-
-**Step 2: Set environment variables**
-
-```bash
-# .env.sentry-build-plugin  (gitignore this file)
-SENTRY_AUTH_TOKEN=sntrys_eyJ...
-```
-
-Or set in CI secrets:
-
-```bash
-SENTRY_AUTH_TOKEN=sntrys_eyJ...
-SENTRY_ORG=my-org        # optional if set in next.config
-SENTRY_PROJECT=my-project # optional if set in next.config
-```
-
-**Step 3: Add to `.gitignore`**
-
-```
-.env.sentry-build-plugin
-```
-
-**Step 4: Verify `authToken` is wired in `next.config.ts`**
+`withSentryConfig` uploads source maps on production builds so stack traces show your original code instead of minified output. The SDK-specific wiring is the `authToken` (plus `widenClientFileUpload`, which improves client stack traces) in `next.config.ts`:
 
 ```typescript
 withSentryConfig(nextConfig, {
   org: "my-org",
   project: "my-project",
-  authToken: process.env.SENTRY_AUTH_TOKEN, // reads from .env.sentry-build-plugin or CI env
+  authToken: process.env.SENTRY_AUTH_TOKEN, // from CI env or a gitignored .env.sentry-build-plugin
   widenClientFileUpload: true,
 });
 ```
+
+`SENTRY_AUTH_TOKEN` is a build-time secret, distinct from the DSN. For creating the token, wiring it into CI, and troubleshooting minified traces, see [`sentry-source-maps`](../sentry-source-maps/SKILL.md).
 
 Source maps are uploaded automatically on every `next build`.
 

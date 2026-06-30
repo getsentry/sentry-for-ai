@@ -787,19 +787,7 @@ process.on("SIGTERM", async () => {
 
 ### Source Maps (Node.js)
 
-Readable stack traces in production require source map upload. Use `@sentry/cli` or the webpack/esbuild/rollup plugins:
-
-```bash
-npm install @sentry/cli --save-dev
-```
-
-```bash
-# Create a Sentry auth token at sentry.io/settings/auth-tokens/
-# Set in .env.sentry-build-plugin (gitignore this file):
-SENTRY_AUTH_TOKEN=sntrys_eyJ...
-```
-
-Add upload step to your build:
+Readable stack traces in production require uploading source maps with `@sentry/cli` or the webpack/esbuild/rollup plugins — for example, an inject + upload step in your build:
 
 ```json
 {
@@ -808,6 +796,8 @@ Add upload step to your build:
   }
 }
 ```
+
+Upload needs a `SENTRY_AUTH_TOKEN` (a build-time secret). For creating the token and wiring it into CI, see [`sentry-source-maps`](../sentry-source-maps/SKILL.md).
 
 ---
 

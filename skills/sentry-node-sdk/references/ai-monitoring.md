@@ -1,6 +1,6 @@
 # AI Monitoring - Sentry Node.js SDK
 
-> Minimum SDK: `@sentry/node` >=10.53.0. OpenAI, Anthropic, LangChain, LangGraph, Google GenAI, Vercel AI SDK auto-instrument.
+> Minimum SDK: `@sentry/node` >=10.61.0 (Gen AI span streaming is on by default at this version). OpenAI, Anthropic, LangChain, LangGraph, Google GenAI, Vercel AI SDK auto-instrument and are available since 10.53.0.
 
 ## Prerequisites
 
@@ -10,7 +10,6 @@ Tracing must be enabled - AI spans require an active trace:
 Sentry.init({
   dsn: "...",
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   dataCollection: {
     // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
   },
@@ -50,7 +49,6 @@ import * as Sentry from "@sentry/node";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   dataCollection: {
     // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
   },
@@ -64,7 +62,6 @@ Sentry.init({
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   dataCollection: {
     // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
   },
@@ -226,7 +223,7 @@ If `tracesSampleRate` < 1.0, see the [AI sampling guide](../../sentry-setup-ai-m
 
 Link AI spans across turns into a chat-style timeline at **Explore > Conversations**.
 
-**Prerequisites:** `streamGenAiSpans: true` (SDK >=10.53.0) and genAI input/output capture enabled (on by default via `dataCollection`) — Conversations reconstructs the chat from input/output attributes, so without input/output capture the view will be empty.
+**Prerequisites:** `streamGenAiSpans` defaults to `true` (SDK >=10.61.0, so AI spans stream as standalone items) and genAI input/output capture enabled (on by default via `dataCollection`) — Conversations reconstructs the chat from input/output attributes, so without input/output capture the view will be empty.
 
 ```typescript
 import * as Sentry from "@sentry/node";
@@ -265,12 +262,12 @@ Sentry.setUser({ id: "user_123", email: "jane@example.com", username: "jane" });
 
 | Issue | Solution |
 |-------|----------|
-| No AI spans appearing | Verify `tracesSampleRate > 0`; check SDK >=10.53.0 |
+| No AI spans appearing | Verify `tracesSampleRate > 0`; check SDK >=10.61.0 |
 | Token counts missing in streams | Add `stream_options: { include_usage: true }` (OpenAI) |
 | Vercel AI spans not tracked | Add `experimental_telemetry: { isEnabled: true }` per call |
 | Browser OpenAI not traced | Use `Sentry.instrumentOpenAiClient()` - auto-instrumentation is server-only |
 | Prompts not captured | genAI capture is on by default; ensure you haven't set `dataCollection: { genAI: { inputs: false } }`, or pass `recordInputs: true` explicitly |
 | AI Agents Dashboard empty | Ensure traces are being sent; check DSN and `tracesSampleRate` |
 | Wrong cost calculations | Cached/reasoning tokens are subsets of totals, not additions |
-| Conversations view empty | Ensure `streamGenAiSpans: true`, genAI capture is on (default; not disabled via `dataCollection: { genAI: { inputs: false } }`), and a conversation ID is set via `Sentry.setConversationId()` |
+| Conversations view empty | Ensure `streamGenAiSpans` is enabled (default since SDK 10.61.0), genAI capture is on (default; not disabled via `dataCollection: { genAI: { inputs: false } }`), and a conversation ID is set via `Sentry.setConversationId()` |
 | User column shows "Unknown" | Call `Sentry.setUser()` once per request or session |

@@ -303,13 +303,6 @@ export default defineConfig({
 });
 ```
 
-Add to `.env` (never commit):
-```bash
-SENTRY_AUTH_TOKEN=sntrys_...
-SENTRY_ORG=my-org-slug
-SENTRY_PROJECT=my-project-slug
-```
-
 **Create React App (via CRACO):**
 
 ```bash
@@ -334,6 +327,8 @@ module.exports = {
   },
 };
 ```
+
+`SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` are build-time values; the auth token is a secret (never commit it). For creating the token and wiring it into CI, see [`sentry-source-maps`](../sentry-source-maps/SKILL.md).
 
 ### For Each Agreed Feature
 

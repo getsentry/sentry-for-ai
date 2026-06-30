@@ -338,19 +338,11 @@ interface Env {
 
 #### Source Maps Setup
 
-Source maps make production stack traces readable. Without them, you see minified/bundled code.
-
-**Step 1: Generate a Sentry auth token**
-
-Go to [sentry.io/settings/auth-tokens/](https://sentry.io/settings/auth-tokens/) and create a token with `project:releases` and `org:read` scopes.
-
-**Step 2: Install the Sentry Vite plugin** (most Cloudflare projects use Vite via Wrangler):
+Source maps make production stack traces readable. Most Cloudflare projects build with Vite via Wrangler — wire the Sentry Vite plugin so maps upload on build:
 
 ```bash
 npm install @sentry/vite-plugin --save-dev
 ```
-
-**Step 3: Configure `vite.config.ts`** (if your project has one):
 
 ```typescript
 import { defineConfig } from "vite";
@@ -370,20 +362,7 @@ export default defineConfig({
 });
 ```
 
-**Step 4: Set environment variables in CI**
-
-```bash
-SENTRY_AUTH_TOKEN=sntrys_eyJ...
-SENTRY_ORG=my-org
-SENTRY_PROJECT=my-project
-```
-
-**Step 5: Add to `.gitignore`**
-
-```
-.dev.vars
-.env.sentry-build-plugin
-```
+`SENTRY_AUTH_TOKEN` is a build-time secret. For creating the token and wiring it into CI, see [`sentry-source-maps`](../sentry-source-maps/SKILL.md). The `npx @sentry/wizard@latest -i sourcemaps` shortcut noted above automates this setup.
 
 ---
 

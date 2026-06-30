@@ -52,7 +52,6 @@ Sentry.init({
 
   // Tracing MUST be enabled for AI monitoring
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   dataCollection: {
     // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
   },
@@ -122,7 +121,6 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   dataCollection: {
     // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
   },
@@ -141,7 +139,6 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   dataCollection: {
     // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
   },
@@ -219,7 +216,6 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   dataCollection: {
     // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
   },
@@ -295,7 +291,6 @@ Sentry.init({
     // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
   },
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
 });
 ```
 
@@ -323,7 +318,6 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   dataCollection: {
     // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
   },
@@ -417,7 +411,7 @@ If your `tracesSampleRate` is below 1.0, you may be losing entire agent runs. Se
 
 Link AI spans across turns into a chat-style timeline at **Explore > Conversations**.
 
-**Prerequisites:** `streamGenAiSpans: true` (SDK >=10.53.0) and genAI input/output capture enabled (on by default via `dataCollection`) in your server config — Conversations reconstructs the chat from input/output attributes, so without input/output capture the view will be empty.
+**Prerequisites:** `streamGenAiSpans` defaults to `true` (SDK >=10.61.0, so AI spans stream as standalone items) and genAI input/output capture enabled (on by default via `dataCollection`) in your server config — Conversations reconstructs the chat from input/output attributes, so without input/output capture the view will be empty.
 
 ```typescript
 import * as Sentry from "@sentry/nextjs";
