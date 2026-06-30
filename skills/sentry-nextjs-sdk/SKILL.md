@@ -141,7 +141,10 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN ?? "___PUBLIC_DSN___",
 
-  sendDefaultPii: true,
+  dataCollection: {
+    // userInfo: false,
+    // httpBodies: [],
+  },
 
   // 100% in dev, 10% in production
   tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
@@ -171,7 +174,10 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN ?? "___DSN___",
 
-  sendDefaultPii: true,
+  dataCollection: {
+    // userInfo: false,
+    // httpBodies: [],
+  },
   tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
 
   // Attach local variable values to stack frames
@@ -189,7 +195,10 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN ?? "___DSN___",
 
-  sendDefaultPii: true,
+  dataCollection: {
+    // userInfo: false,
+    // httpBodies: [],
+  },
   tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
 
   enableLogs: true,
@@ -392,7 +401,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 | `tracesSampleRate` | `number` | — | 0–1; 1.0 in dev, 0.1 in prod recommended |
 | `replaysSessionSampleRate` | `number` | `0.1` | Fraction of all sessions recorded |
 | `replaysOnErrorSampleRate` | `number` | `1.0` | Fraction of error sessions recorded |
-| `sendDefaultPii` | `boolean` | `false` | Include IP, request headers in events |
+| `dataCollection` | `object` | collects by default | Controls auto-collected data categories: `userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`. Opt out per category. |
 | `includeLocalVariables` | `boolean` | `false` | Attach local variable values to stack frames (server only) |
 | `enableLogs` | `boolean` | `false` | Enable Sentry Logs product |
 | `environment` | `string` | auto | `"production"`, `"staging"`, etc. |

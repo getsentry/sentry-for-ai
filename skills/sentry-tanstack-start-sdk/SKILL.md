@@ -118,7 +118,10 @@ export const getRouter = () => {
   if (!router.isServer) {
     Sentry.init({
       dsn: "___PUBLIC_DSN___",
-      sendDefaultPii: true,
+      dataCollection: {
+        // userInfo: false,
+        // httpBodies: [],
+      },
 
       integrations: [
         Sentry.tanstackRouterBrowserTracingIntegration(router),
@@ -148,7 +151,10 @@ import * as Sentry from "@sentry/tanstackstart-react";
 
 Sentry.init({
   dsn: "___PUBLIC_DSN___",
-  sendDefaultPii: true,
+  dataCollection: {
+    // userInfo: false,
+    // httpBodies: [],
+  },
   enableLogs: true,
   tracesSampleRate: 1.0,
 });
@@ -266,7 +272,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | Option | Type | Default | Notes |
 |--------|------|---------|-------|
 | `dsn` | `string` | — | Required; SDK is disabled when empty |
-| `sendDefaultPii` | `boolean` | `false` | Sends request headers and IP-derived user context |
+| `dataCollection` | `object` | collects by default | Controls auto-collected data categories: `userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`. Opt out per category. |
 | `integrations` | `Integration[]` | SDK defaults | Include TanStack Router tracing, replay, feedback as needed |
 | `enableLogs` | `boolean` | `false` | Enables `Sentry.logger.*` APIs |
 | `tracesSampleRate` | `number` | — | `1.0` in development, lower in production |

@@ -879,8 +879,10 @@ Sentry.init({
       ],
     }),
   ],
-  // Required to capture request/response bodies (PII risk — use cautiously)
-  sendDefaultPii: true,
+  dataCollection: {
+    // userInfo: false,
+    // httpBodies: [],
+  },
 });
 ```
 

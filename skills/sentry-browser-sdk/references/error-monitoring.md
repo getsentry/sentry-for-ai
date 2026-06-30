@@ -278,7 +278,7 @@ Sentry.setUser({
 // Clear user on logout
 Sentry.setUser(null);
 
-// Auto-infer IP address (requires sendDefaultPii: true in init)
+// Auto-infer IP address (collected by default; controlled by dataCollection.userInfo)
 Sentry.setUser({ ip_address: "{{auto}}" });
 ```
 

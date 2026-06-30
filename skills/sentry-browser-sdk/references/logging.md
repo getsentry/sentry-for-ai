@@ -223,7 +223,7 @@ These are added by the SDK to every log without any developer configuration:
 | `sentry.sdk.version` | SDK internals | — |
 | `browser.name` | User-Agent parsing | e.g., `"Chrome"` |
 | `browser.version` | User-Agent parsing | e.g., `"121.0.0"` |
-| `user.id`, `user.name`, `user.email` | `Sentry.setUser()` | Requires `sendDefaultPii: true` |
+| `user.id`, `user.name`, `user.email` | `Sentry.setUser()` | Populated when `Sentry.setUser()` is called (`userInfo` defaults to `true`) |
 | `sentry.trace.parent_span_id` | Active tracing span | Enables log ↔ trace correlation |
 | `sentry.replay_id` | Active Session Replay session | Enables log ↔ replay correlation |
 | `message.template` | `logger.fmt` usage | The template string |
@@ -301,4 +301,4 @@ Use `Sentry.logger.*` for **structured, searchable observability data**. Use `ca
 | Log attributes contain `undefined` | Only `string`, `number`, `boolean` are accepted — filter undefined values before passing |
 | `beforeSendLog` not firing | Confirm `enableLogs: true` is set; without it, no logs are sent and no hook is called |
 | Sensitive data appearing in logs | Add filtering in `beforeSendLog`; avoid logging sensitive data at the call site |
-| Logs appear but have no user context | Call `Sentry.setUser({ id, email })` after authentication; set `sendDefaultPii: true` |
+| Logs appear but have no user context | Call `Sentry.setUser({ id, email })` after authentication; `userInfo` is collected by default unless disabled via `dataCollection` |

@@ -361,8 +361,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `dsn` | `string` | — | **Required.** SDK disabled when empty |
 | `environment` | `string` | `"production"` | e.g., `"staging"`, `"development"` |
 | `release` | `string` | — | e.g., `"my-app@1.0.0"` or git SHA — links errors to releases |
-| `dataCollection` | `object` | — | Fine-grained control over data collection (see table below); **recommended over `sendDefaultPii`** |
-| `sendDefaultPii` | `boolean` | `false` | ⚠️ **Legacy** — use `dataCollection` instead; includes IP addresses and request headers |
+| `dataCollection` | `object` | collects by default | Controls auto-collected data categories: `userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`. Opt out per category. |
 | `tracesSampleRate` | `number` | — | 0–1; `1.0` in dev, `0.1–0.2` in prod |
 | `tracesSampler` | `function` | — | Per-transaction sampling; overrides rate |
 | `tracePropagationTargets` | `(string\|RegExp)[]` | — | Outgoing URLs that receive distributed tracing headers |
@@ -376,11 +375,11 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 
 ### `dataCollection` Options (SDK ≥10.57.0)
 
-Fine-grained control over what data the SDK collects. Replaces the simple `sendDefaultPii` boolean with per-feature toggles:
+Fine-grained control over what data the SDK collects. Collection is on by default (with sensitive-value scrubbing); opt out per category:
 
 | Field | Type | Default | Notes |
 |-------|------|---------|-------|
-| `userInfo` | `boolean` | `true` | Collect user IP and headers (equivalent to `sendDefaultPii: true`) |
+| `userInfo` | `boolean` | `true` | Collect user id, email, and IP |
 | `cookies` | `boolean \| { allow: string[] } \| { deny: string[] }` | `true` | Cookie collection and filtering; `true` = all cookies (sensitive keys filtered) |
 | `httpHeaders.request` | `boolean \| { allow: string[] } \| { deny: string[] }` | `true` | HTTP request header collection |
 | `httpHeaders.response` | `boolean \| { allow: string[] } \| { deny: string[] }` | `true` | HTTP response header collection |

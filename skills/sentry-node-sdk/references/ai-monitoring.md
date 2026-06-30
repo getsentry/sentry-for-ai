@@ -11,7 +11,9 @@ Sentry.init({
   dsn: "...",
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
-  sendDefaultPii: true,
+  dataCollection: {
+    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+  },
 });
 ```
 
@@ -30,13 +32,13 @@ Sentry.init({
 
 ## PII Control
 
-| `sendDefaultPii` | `recordInputs` | Prompts captured? |
+| `dataCollection.genAI` | `recordInputs` | Prompts captured? |
 |-------------------|-----------------|-------------------|
-| `false` (default) | `true` | No |
-| `true` | `true` (default) | Yes |
-| `true` | `false` | No |
+| default on | `true` (default) | Yes |
+| `{ inputs: false }` | `true` | No |
+| default on | `false` | No |
 
-Set `sendDefaultPii: true` in `Sentry.init()` to let supported integrations default `recordInputs`/`recordOutputs` to `true`. Use integration-level options to opt out or override specific integrations.
+With `dataCollection`, genAI input/output capture is **on by default**. Supported integrations default `recordInputs`/`recordOutputs` to `true` (governed by `dataCollection.genAI`). To disable it, set `dataCollection: { genAI: { inputs: false, outputs: false } }`. Use integration-level options to opt out or override specific integrations.
 
 ## Configuration Examples
 
@@ -49,7 +51,9 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
-  sendDefaultPii: true, // required to capture prompts/outputs
+  dataCollection: {
+    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+  },
 });
 // OpenAI, Anthropic, LangChain, LangGraph, Google GenAI activate automatically
 ```
@@ -61,7 +65,9 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   streamGenAiSpans: true,
-  sendDefaultPii: true,
+  dataCollection: {
+    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+  },
   integrations: [
     Sentry.openAIIntegration(),
     Sentry.vercelAIIntegration(),
@@ -158,7 +164,7 @@ await Sentry.startSpan({
 |-----------|------|
 | `gen_ai.request.reasoning_effort` | string |
 
-### Content attributes (PII-gated — only when `sendDefaultPii: true` + `recordInputs/recordOutputs: true`)
+### Content attributes (captured by default; gated by `dataCollection.genAI` + `recordInputs/recordOutputs`)
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
@@ -220,7 +226,7 @@ If `tracesSampleRate` < 1.0, see the [AI sampling guide](../../sentry-setup-ai-m
 
 Link AI spans across turns into a chat-style timeline at **Explore > Conversations**.
 
-**Prerequisites:** `streamGenAiSpans: true` (SDK >=10.53.0) and `sendDefaultPii: true` must be set — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
+**Prerequisites:** `streamGenAiSpans: true` (SDK >=10.53.0) and genAI input/output capture enabled (on by default via `dataCollection`) — Conversations reconstructs the chat from input/output attributes, so without input/output capture the view will be empty.
 
 ```typescript
 import * as Sentry from "@sentry/node";
@@ -263,8 +269,8 @@ Sentry.setUser({ id: "user_123", email: "jane@example.com", username: "jane" });
 | Token counts missing in streams | Add `stream_options: { include_usage: true }` (OpenAI) |
 | Vercel AI spans not tracked | Add `experimental_telemetry: { isEnabled: true }` per call |
 | Browser OpenAI not traced | Use `Sentry.instrumentOpenAiClient()` - auto-instrumentation is server-only |
-| Prompts not captured | Set `sendDefaultPii: true`, or explicitly pass `recordInputs: true` / `recordOutputs: true` to the integration |
+| Prompts not captured | genAI capture is on by default; ensure you haven't set `dataCollection: { genAI: { inputs: false } }`, or pass `recordInputs: true` explicitly |
 | AI Agents Dashboard empty | Ensure traces are being sent; check DSN and `tracesSampleRate` |
 | Wrong cost calculations | Cached/reasoning tokens are subsets of totals, not additions |
-| Conversations view empty | Ensure `streamGenAiSpans: true`, `sendDefaultPii: true`, and a conversation ID is set via `Sentry.setConversationId()` |
+| Conversations view empty | Ensure `streamGenAiSpans: true`, genAI capture is on (default; not disabled via `dataCollection: { genAI: { inputs: false } }`), and a conversation ID is set via `Sentry.setConversationId()` |
 | User column shows "Unknown" | Call `Sentry.setUser()` once per request or session |
