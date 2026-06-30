@@ -189,7 +189,6 @@ import sentry_sdk
 sentry_sdk.init(
     dsn="YOUR_DSN",
     traces_sample_rate=1.0,  # Lower in production (e.g., 0.1)
-    stream_gen_ai_spans=True,  # SDK ≥2.60.0
     send_default_pii=True,
     # Integrations auto-enable when the AI package is installed.
     # Only specify explicitly to customize (e.g., include_prompts):
@@ -325,7 +324,7 @@ Find it at **Explore > Conversations** in Sentry.
 ### Prerequisites for Conversations
 
 - Tracing enabled with `tracesSampleRate > 0`
-- Gen AI span streaming requires JS SDK >=10.61.0, where `streamGenAiSpans` defaults to `true`; Python still requires `stream_gen_ai_spans=True` (Python SDK >=2.60.0). This sends AI spans as standalone items, so spans with large inputs/outputs don't hit transaction payload size limits and get dropped.
+- Gen AI span streaming is on by default — `streamGenAiSpans` defaults to `true` since JS SDK 10.61.0 and `stream_gen_ai_spans` defaults to `True` since Python SDK 2.64.0. This sends AI spans as standalone items, so spans with large inputs/outputs don't hit transaction payload size limits and get dropped. (The options are available since JS 10.53.0 / Python 2.60.0 if you need to set them explicitly on older SDKs.)
 - **Input and output capture enabled** — Conversations reconstructs the chat from `gen_ai.input.messages` and `gen_ai.output.messages` attributes. Set `sendDefaultPii: true` (JS) / `send_default_pii=True` (Python). Without it, conversations appear empty.
 
 ### Setting a Conversation ID
@@ -411,5 +410,5 @@ These are independent concepts:
 | Negative or wrong costs in dashboard | Cached/reasoning tokens are subsets of totals — see Token Usage and Cost Calculation |
 | Prompts not captured | Set `sendDefaultPii: true` (JS) or `send_default_pii=True` (Python); use `recordInputs`/`include_prompts` only for explicit overrides |
 | Vercel AI not working | Add `experimental_telemetry` to each call |
-| Conversations view empty | Ensure `streamGenAiSpans` is enabled (default since JS SDK 10.61.0) / `stream_gen_ai_spans=True` (Python), `sendDefaultPii: true` / `send_default_pii=True`, and a conversation ID is set |
+| Conversations view empty | Ensure Gen AI span streaming is enabled (default since JS SDK 10.61.0 / Python SDK 2.64.0), `sendDefaultPii: true` / `send_default_pii=True`, and a conversation ID is set |
 | User column shows "Unknown" | Call `Sentry.setUser()` (JS) or `sentry_sdk.set_user()` (Python) once per request or session |
