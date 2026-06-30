@@ -49,7 +49,10 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/nestjs/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
   integrations: [
     Sentry.openAIIntegration(),
@@ -118,7 +121,10 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/nestjs/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
   integrations: [
     Sentry.vercelAIIntegration(),
@@ -188,7 +194,10 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/nestjs/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
   integrations: [
     Sentry.anthropicAIIntegration(),
@@ -256,7 +265,7 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    genAI: { inputs: false, outputs: false },
   },
   enableLogs: true,
   integrations: [

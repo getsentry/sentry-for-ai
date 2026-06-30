@@ -11,7 +11,10 @@ Sentry.init({
   dsn: "...",
   tracesSampleRate: 1.0,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
 });
 ```
@@ -50,7 +53,10 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
 });
 // OpenAI, Anthropic, LangChain, LangGraph, Google GenAI activate automatically
@@ -63,7 +69,10 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
   integrations: [
     Sentry.openAIIntegration(),

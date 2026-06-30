@@ -21,6 +21,8 @@ Sentry.init({
   environment: process.env.NODE_ENV ?? "production",
   tracesSampleRate: 1.0,
   dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
     // userInfo: false,
     // httpBodies: [],
   },
@@ -832,6 +834,8 @@ Auto-enabled. Attaches HTTP request data to all events during a request. Each fr
 ```javascript
 Sentry.init({
   dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
     // userInfo: false,
     // httpBodies: [],
   },
@@ -977,6 +981,8 @@ Sentry.init({
   dsn: "https://examplePublicKey@o0.ingest.sentry.io/0",
   tracesSampleRate: 1.0,
   dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/#dataCollection
     // userInfo: false,
     // httpBodies: [],
   },

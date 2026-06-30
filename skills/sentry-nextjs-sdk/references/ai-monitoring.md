@@ -53,7 +53,10 @@ Sentry.init({
   // Tracing MUST be enabled for AI monitoring
   tracesSampleRate: 1.0,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
 
   integrations: [
@@ -122,7 +125,10 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
   integrations: [
     Sentry.vercelAIIntegration({
@@ -140,7 +146,10 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
   integrations: [
     Sentry.vercelAIIntegration(),
@@ -217,7 +226,10 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
   integrations: [
     Sentry.anthropicAIIntegration(),
@@ -288,7 +300,7 @@ With `dataCollection`, genAI input/output capture is **on by default**. To disab
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    genAI: { inputs: false, outputs: false },
   },
   tracesSampleRate: 1.0,
 });
@@ -319,7 +331,10 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
   dataCollection: {
-    // genAI: { inputs: false, outputs: false }, // input/output capture is on by default
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#dataCollection
+    // userInfo: false,
+    // httpBodies: [],
   },
   integrations: [
     Sentry.openAIIntegration(),

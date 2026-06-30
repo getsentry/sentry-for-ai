@@ -152,6 +152,8 @@ import * as Sentry from "@sentry/tanstackstart-react";
 Sentry.init({
   dsn: "___PUBLIC_DSN___",
   dataCollection: {
+    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+    // https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/configuration/options/#dataCollection
     // userInfo: false,
     // httpBodies: [],
   },
