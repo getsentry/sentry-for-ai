@@ -1,6 +1,6 @@
 ---
 name: sentry-react-sdk
-description: Full Sentry SDK setup for React. Use when asked to "add Sentry to React", "install @sentry/react", or configure error monitoring, tracing, session replay, profiling, or logging for React applications. Supports React 16+, React Router v5-v7 non-framework mode, TanStack Router, Redux, Vite, and webpack.
+description: Full Sentry SDK setup for React. Use when asked to "add Sentry to React", "install @sentry/react", or configure error monitoring, tracing, session replay, profiling, or logging for React applications. Supports React 16+, React Router v5-v8 non-framework mode, TanStack Router, Redux, Vite, and webpack.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -18,7 +18,7 @@ Opinionated wizard that scans your React project and guides you through complete
 - User asks to "add Sentry to React" or "set up Sentry" in a React app
 - User wants error monitoring, tracing, session replay, profiling, or logging in React
 - User mentions `@sentry/react`, React Sentry SDK, or Sentry error boundaries
-- User wants to monitor React Router v5/v6/v7 non-framework navigation, Redux state, or component performance
+- User wants to monitor React Router v5/v6/v7/v8 non-framework navigation, Redux state, or component performance
 
 If project is React Router **Framework mode** using `@sentry/react-router`, use `sentry-react-router-framework-sdk` instead of this skill.
 
@@ -64,7 +64,7 @@ cat ../go.mod ../requirements.txt ../Gemfile ../pom.xml 2>/dev/null | head -3
 | React <19? | Use `Sentry.ErrorBoundary` |
 | `@sentry/react` already present? | Skip install, go straight to feature config |
 | React Router Framework mode indicators (`@sentry/react-router`, `@react-router/*`)? | Use `sentry-react-router-framework-sdk` |
-| `react-router-dom` v5 / v6 / v7? | Determines which router integration to use |
+| `react-router-dom` v5 / v6 / v7 / v8? | Determines which router integration to use |
 | `@tanstack/react-router`? | Use `tanstackRouterBrowserTracingIntegration()` |
 | Redux in use? | Recommend `createReduxEnhancer()` |
 | Vite detected? | Source maps via `sentryVitePlugin` |
@@ -98,7 +98,7 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 
 **React-specific extras:**
 - React 19 detected → set up `reactErrorHandler()` on `createRoot`
-- React Router v5/v6/v7 non-framework detected → configure matching router integration (see Phase 3)
+- React Router v5/v6/v7/v8 non-framework detected → configure matching router integration (see Phase 3)
 - React Router Framework mode detected → switch to `sentry-react-router-framework-sdk`
 - Redux detected → add `createReduxEnhancer()` to Redux store
 - Vite detected → configure `sentryVitePlugin` for source maps (essential for readable stack traces)
@@ -215,13 +215,14 @@ Configure the matching integration for your router (non-framework mode):
 
 | Router | Integration | Notes |
 |--------|------------|-------|
-| React Router v7 | `reactRouterV7BrowserTracingIntegration` | `useEffect`, `useLocation`, `useNavigationType`, `createRoutesFromChildren`, `matchRoutes` from `react-router` |
-| React Router v6 | `reactRouterV6BrowserTracingIntegration` | `useEffect`, `useLocation`, `useNavigationType`, `createRoutesFromChildren`, `matchRoutes` from `react-router-dom` |
+| React Router v6/v7/v8 | `reactRouterBrowserTracingIntegration` | **Recommended** — works across v6+; pass hooks from your router package |
+| React Router v7 | `reactRouterV7BrowserTracingIntegration` | Version-specific API (deprecated in favor of compatibility API) |
+| React Router v6 | `reactRouterV6BrowserTracingIntegration` | Version-specific API (deprecated in favor of compatibility API) |
 | React Router v5 | `reactRouterV5BrowserTracingIntegration` | Wrap routes in `withSentryRouting(Route)` |
 | TanStack Router | `tanstackRouterBrowserTracingIntegration(router)` | Pass router instance — no hooks required |
 | No router / custom | `browserTracingIntegration()` | Names transactions by URL path |
 
-**React Router v6/v7 setup:**
+**React Router v6/v7/v8 setup (recommended — compatibility APIs):**
 
 ```typescript
 // in instrument.ts integrations array:
@@ -229,22 +230,18 @@ import React from "react";
 import {
   createRoutesFromChildren, matchRoutes,
   useLocation, useNavigationType,
-} from "react-router-dom"; // or "react-router" for v7
+} from "react-router-dom"; // or "react-router" for v7/v8
 import * as Sentry from "@sentry/react";
-import { reactRouterV6BrowserTracingIntegration } from "@sentry/react";
 import { createBrowserRouter } from "react-router-dom";
 
-// Option A — createBrowserRouter (recommended for v6.4+):
-const sentryCreateBrowserRouter = Sentry.wrapCreateBrowserRouterV6(createBrowserRouter);
+// Option A — createBrowserRouter (recommended for v6.4+ / v7+ / v8+):
+const sentryCreateBrowserRouter = Sentry.wrapCreateBrowserRouter(createBrowserRouter);
 const router = sentryCreateBrowserRouter([...routes]);
 
-// Option B — createBrowserRouter for React Router v7:
-// const sentryCreateBrowserRouter = Sentry.wrapCreateBrowserRouterV7(createBrowserRouter);
-
-// Option C — integration with hooks (v6 without data APIs):
+// Option B — integration with hooks (for useRoutes or Routes component):
 Sentry.init({
   integrations: [
-    reactRouterV6BrowserTracingIntegration({
+    Sentry.reactRouterBrowserTracingIntegration({
       useEffect: React.useEffect,
       useLocation,
       useNavigationType,
@@ -253,6 +250,20 @@ Sentry.init({
     }),
   ],
 });
+
+// Option C — wrap useRoutes hook:
+const sentryUseRoutes = Sentry.wrapUseRoutes(useRoutes);
+// then use sentryUseRoutes in your components
+```
+
+**Version-specific APIs (deprecated, use compatibility APIs above):**
+
+```typescript
+// React Router v6 — use wrapCreateBrowserRouterV6 (deprecated):
+// const sentryCreateBrowserRouter = Sentry.wrapCreateBrowserRouterV6(createBrowserRouter);
+
+// React Router v7 — use wrapCreateBrowserRouterV7 (deprecated):
+// const sentryCreateBrowserRouter = Sentry.wrapCreateBrowserRouterV7(createBrowserRouter);
 ```
 
 **TanStack Router setup:**
