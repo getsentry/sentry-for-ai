@@ -943,7 +943,7 @@ Sentry.init({
   normalizeDepth?: number;         // default: 3
 
   // Privacy
-  dataCollection?: DataCollectionOptions; // collects by default; opt out per category
+  dataCollection?: DataCollectionOptions; // omitted => falls back to sendDefaultPii (conservative); pass an object (even {}) to enable permissive collection, then opt out per category
 
   // Filtering
   ignoreErrors?: Array<string | RegExp>;

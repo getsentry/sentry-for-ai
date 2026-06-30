@@ -720,7 +720,7 @@ Metrics collected: same as Node.js except no event loop delay percentiles (unava
 |--------|------|---------|-------|
 | `dsn` | `string` | — | Required. Also from `SENTRY_DSN` env var |
 | `tracesSampleRate` | `number` | — | 0–1; required to enable tracing; **do not set when using OTLP path** |
-| `dataCollection` | `object` | collects by default | Controls auto-collected data categories: `userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`. Opt out per category. |
+| `dataCollection` | `object` | conservative unless set | Fine-grained control over auto-collected categories (`userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`). When omitted, the SDK falls back to `sendDefaultPii` (default `false`). Passing the object — even `{}` — flips unset categories to their permissive defaults; opt out per category. |
 | `includeLocalVariables` | `boolean` | `false` | Add local variable values to stack frames (Node.js) |
 | `enableLogs` | `boolean` | `false` | Enable Sentry Logs product (v9.41.0+) |
 | `environment` | `string` | `"production"` | Also from `SENTRY_ENVIRONMENT` env var |

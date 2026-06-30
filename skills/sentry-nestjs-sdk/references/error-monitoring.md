@@ -619,7 +619,7 @@ Key `Sentry.init()` options for error monitoring (in `instrument.ts`):
 | `environment` | `string` | `"production"` | Deployment environment tag |
 | `release` | `string` | env `SENTRY_RELEASE` | App version string |
 | `sampleRate` | `number` | `1.0` | Fraction of error events to send (0.0–1.0) |
-| `dataCollection` | `object` | collects by default | Controls auto-collected data categories: `userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`. Opt out per category. |
+| `dataCollection` | `object` | conservative unless set | Fine-grained control over auto-collected categories (`userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`). When omitted, the SDK falls back to `sendDefaultPii` (default `false`). Passing the object — even `{}` — flips unset categories to their permissive defaults; opt out per category. |
 | `attachStacktrace` | `boolean` | `false` | Add stack traces to `captureMessage()` |
 | `maxBreadcrumbs` | `number` | `100` | Max breadcrumbs per event |
 | `ignoreErrors` | `Array<string \| RegExp>` | `[]` | Error message patterns to never report |

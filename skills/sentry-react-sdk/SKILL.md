@@ -356,7 +356,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `dsn` | `string` | — | **Required.** SDK disabled when empty |
 | `environment` | `string` | `"production"` | e.g., `"staging"`, `"development"` |
 | `release` | `string` | — | e.g., `"my-app@1.0.0"` or git SHA — links errors to releases |
-| `dataCollection` | `object` | collects by default | Controls auto-collected data categories: `userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`. Opt out per category. |
+| `dataCollection` | `object` | conservative unless set | Fine-grained control over auto-collected categories (`userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`). When omitted, the SDK falls back to `sendDefaultPii` (default `false`). Passing the object — even `{}` — flips unset categories to their permissive defaults; opt out per category. |
 | `tracesSampleRate` | `number` | — | 0–1; `1.0` in dev, `0.1–0.2` in prod |
 | `tracesSampler` | `function` | — | Per-transaction sampling; overrides rate |
 | `tracePropagationTargets` | `(string\|RegExp)[]` | — | Outgoing URLs that receive distributed tracing headers |

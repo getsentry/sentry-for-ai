@@ -272,7 +272,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | Option | Type | Default | Notes |
 |--------|------|---------|-------|
 | `dsn` | `string` | — | Required; SDK is disabled when empty |
-| `dataCollection` | `object` | collects by default | Controls auto-collected data categories: `userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`. Opt out per category. |
+| `dataCollection` | `object` | conservative unless set | Fine-grained control over auto-collected categories (`userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`). When omitted, the SDK falls back to `sendDefaultPii` (default `false`). Passing the object — even `{}` — flips unset categories to their permissive defaults; opt out per category. |
 | `integrations` | `Integration[]` | SDK defaults | Include TanStack Router tracing, replay, feedback as needed |
 | `enableLogs` | `boolean` | `false` | Enables `Sentry.logger.*` APIs |
 | `tracesSampleRate` | `number` | — | `1.0` in development, lower in production |

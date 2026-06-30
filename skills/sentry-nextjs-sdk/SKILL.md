@@ -376,7 +376,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 | `tracesSampleRate` | `number` | — | 0–1; 1.0 in dev, 0.1 in prod recommended |
 | `replaysSessionSampleRate` | `number` | `0.1` | Fraction of all sessions recorded |
 | `replaysOnErrorSampleRate` | `number` | `1.0` | Fraction of error sessions recorded |
-| `dataCollection` | `object` | collects by default | Controls auto-collected data categories: `userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`. Opt out per category. |
+| `dataCollection` | `object` | conservative unless set | Fine-grained control over auto-collected categories (`userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`). When omitted, the SDK falls back to `sendDefaultPii` (default `false`). Passing the object — even `{}` — flips unset categories to their permissive defaults; opt out per category. |
 | `includeLocalVariables` | `boolean` | `false` | Attach local variable values to stack frames (server only) |
 | `enableLogs` | `boolean` | `false` | Enable Sentry Logs product |
 | `environment` | `string` | auto | `"production"`, `"staging"`, etc. |
