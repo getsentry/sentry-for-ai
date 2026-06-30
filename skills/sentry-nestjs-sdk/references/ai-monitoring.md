@@ -48,7 +48,6 @@ import * as Sentry from "@sentry/nestjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   sendDefaultPii: true, // enables recordInputs/recordOutputs by default
   integrations: [
     Sentry.openAIIntegration(),
@@ -116,7 +115,6 @@ import * as Sentry from "@sentry/nestjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   sendDefaultPii: true,
   integrations: [
     Sentry.vercelAIIntegration(),
@@ -185,7 +183,6 @@ import * as Sentry from "@sentry/nestjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   sendDefaultPii: true,
   integrations: [
     Sentry.anthropicAIIntegration(),
@@ -253,7 +250,6 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   sendDefaultPii: true, // ← enables input/output recording by default
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
 });
 ```
 
@@ -270,7 +266,6 @@ import * as Sentry from "@sentry/nestjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   sendDefaultPii: true,
   enableLogs: true,
   integrations: [
@@ -346,7 +341,7 @@ If your `tracesSampleRate` is below 1.0, you may be losing entire agent runs. Se
 
 Link AI spans across turns into a chat-style timeline at **Explore > Conversations**.
 
-**Prerequisites:** `streamGenAiSpans: true` (SDK >=10.53.0) and `sendDefaultPii: true` must be set — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
+**Prerequisites:** SDK >=10.61.0 (where `streamGenAiSpans` defaults to `true`, so AI spans stream as standalone items) and `sendDefaultPii: true` — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
 
 ```typescript
 import * as Sentry from "@sentry/nestjs";

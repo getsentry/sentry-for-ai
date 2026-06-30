@@ -109,7 +109,6 @@ Just ensure tracing is enabled. Integrations auto-enable when the AI package is 
 Sentry.init({
   dsn: "YOUR_DSN",
   tracesSampleRate: 1.0, // Lower in production (e.g., 0.1)
-  streamGenAiSpans: true, // SDK ≥10.53.0
   // OpenAI, Anthropic, Google GenAI, LangChain integrations auto-enable in Node.js
 });
 ```
@@ -120,7 +119,6 @@ To customize (e.g., enable prompt capture after user confirmation — see Data C
 Sentry.init({
   dsn: "YOUR_DSN",
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   sendDefaultPii: true,
   integrations: [
     Sentry.openAIIntegration({
@@ -148,7 +146,6 @@ const openai = Sentry.instrumentOpenAiClient(new OpenAI());
 Sentry.init({
   dsn: "YOUR_DSN",
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   sendDefaultPii: true,
   integrations: [
     Sentry.langChainIntegration(),
@@ -164,7 +161,6 @@ Add to `sentry.edge.config.ts` for Edge runtime:
 Sentry.init({
   dsn: "YOUR_DSN",
   tracesSampleRate: 1.0,
-  streamGenAiSpans: true,
   sendDefaultPii: true,
   integrations: [Sentry.vercelAIIntegration()],
 });
@@ -329,7 +325,7 @@ Find it at **Explore > Conversations** in Sentry.
 ### Prerequisites for Conversations
 
 - Tracing enabled with `tracesSampleRate > 0`
-- `streamGenAiSpans: true` (JS SDK >=10.53.0) / `stream_gen_ai_spans=True` (Python SDK >=2.60.0) — required so AI spans are sent as standalone items. Without this, spans with large inputs/outputs can hit transaction payload size limits and be dropped.
+- Gen AI span streaming requires JS SDK >=10.61.0, where `streamGenAiSpans` defaults to `true`; Python still requires `stream_gen_ai_spans=True` (Python SDK >=2.60.0). This sends AI spans as standalone items, so spans with large inputs/outputs don't hit transaction payload size limits and get dropped.
 - **Input and output capture enabled** — Conversations reconstructs the chat from `gen_ai.input.messages` and `gen_ai.output.messages` attributes. Set `sendDefaultPii: true` (JS) / `send_default_pii=True` (Python). Without it, conversations appear empty.
 
 ### Setting a Conversation ID
@@ -415,5 +411,5 @@ These are independent concepts:
 | Negative or wrong costs in dashboard | Cached/reasoning tokens are subsets of totals — see Token Usage and Cost Calculation |
 | Prompts not captured | Set `sendDefaultPii: true` (JS) or `send_default_pii=True` (Python); use `recordInputs`/`include_prompts` only for explicit overrides |
 | Vercel AI not working | Add `experimental_telemetry` to each call |
-| Conversations view empty | Ensure `streamGenAiSpans: true` / `stream_gen_ai_spans=True`, `sendDefaultPii: true` / `send_default_pii=True`, and a conversation ID is set |
+| Conversations view empty | Ensure `streamGenAiSpans` is enabled (default since JS SDK 10.61.0) / `stream_gen_ai_spans=True` (Python), `sendDefaultPii: true` / `send_default_pii=True`, and a conversation ID is set |
 | User column shows "Unknown" | Call `Sentry.setUser()` (JS) or `sentry_sdk.set_user()` (Python) once per request or session |
