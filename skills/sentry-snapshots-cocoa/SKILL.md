@@ -37,9 +37,9 @@ find . -name '*.xcodeproj' -print 2>/dev/null | head -20
 ls fastlane/Fastfile Gemfile 2>/dev/null
 
 # Sentry auth presence only -> never print secret values
-for v in SENTRY_AUTH_TOKEN SENTRY_ORG SENTRY_PROJECT; do
-  [ -n "${!v}" ] && echo "$v=set" || echo "$v=unset"
-done
+[ -n "$SENTRY_AUTH_TOKEN" ] && echo "SENTRY_AUTH_TOKEN=set" || echo "SENTRY_AUTH_TOKEN=unset"
+[ -n "$SENTRY_ORG" ] && echo "SENTRY_ORG=set" || echo "SENTRY_ORG=unset"
+[ -n "$SENTRY_PROJECT" ] && echo "SENTRY_PROJECT=set" || echo "SENTRY_PROJECT=unset"
 ```
 
 Record: existing SnapshotPreviews setup, existing snapshot generator/library, output directory if known, Xcode project directory, CI provider, Fastlane, and Sentry auth. For each `.xcodeproj` match, record the containing directory for `--xcode-project-dir`; if `find` prints `./MyApp/MyApp.xcodeproj`, pass `./MyApp`, not the bundle path. Let the wizard detect app targets, hosted XCTest targets, and Swift previews only when no existing generator is present.
