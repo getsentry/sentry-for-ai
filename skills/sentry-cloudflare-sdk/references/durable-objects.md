@@ -145,6 +145,41 @@ class MyDurableObjectBase extends DurableObject<Env> {
 
 Both async storage and sync KV operations create spans with the operation name (`durable_object_storage_get`, `durable_object_storage_kv_get`, etc.).
 
+### SQL Storage Instrumentation (v10.61.0+)
+
+Durable Objects with SQL storage (`ctx.storage.sql`) are automatically instrumented when using `instrumentDurableObjectWithSentry`:
+
+```typescript
+class MyDurableObjectBase extends DurableObject<Env> {
+  async fetch(request: Request): Promise<Response> {
+    // SQL queries are automatically traced.
+    // sql.exec() is synchronous and returns a SqlStorageCursor.
+    this.ctx.storage.sql.exec(
+      "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)"
+    );
+
+    this.ctx.storage.sql.exec(
+      "INSERT INTO users (id, name) VALUES (?, ?)",
+      1,
+      "Alice"
+    );
+
+    // Consume the cursor with .toArray() before serializing —
+    // JSON.stringify on the cursor itself yields "{}".
+    const users = this.ctx.storage.sql.exec("SELECT * FROM users").toArray();
+
+    return new Response(JSON.stringify(users));
+  }
+}
+```
+
+Each `sql.exec()` call creates a `db.query` span with:
+- `db.system.name`: `"cloudflare-durable-object-sql"`
+- `db.operation.name`: `"exec"`
+- `db.query.text`: sanitized SQL query
+- `db.query.summary`: extracted operation summary (e.g., `"SELECT users"`)
+- `cloudflare.durable_object.query.bindings`: number of bind parameters
+
 ---
 
 ## Workflows
@@ -219,7 +254,9 @@ The SDK generates a deterministic trace ID from the workflow instance ID. This m
 
 ### Overview
 
-`instrumentD1WithSentry` wraps a Cloudflare D1 database binding to automatically create spans and breadcrumbs for all queries.
+D1 database bindings are instrumented **automatically** as of v10.57.0. When your handler is wrapped with `Sentry.withSentry`, all D1 bindings on `env` are instrumented for you — queries create spans and breadcrumbs with no extra code.
+
+> `Sentry.instrumentD1WithSentry(env.DB)` is **deprecated** and no longer required. It still works (and is a harmless no-op on an already-instrumented binding), but it will be removed in the next major version. Use `env.DB` directly.
 
 ### Setup
 
@@ -233,11 +270,8 @@ export default Sentry.withSentry(
   }),
   {
     async fetch(request, env, ctx) {
-      // Wrap the D1 binding
-      const db = Sentry.instrumentD1WithSentry(env.DB);
-
-      // Use as normal — all queries are traced
-      const users = await db.prepare("SELECT * FROM users WHERE active = ?").bind(1).all();
+      // env.DB is already instrumented by withSentry — use it directly
+      const users = await env.DB.prepare("SELECT * FROM users WHERE active = ?").bind(1).all();
 
       return new Response(JSON.stringify(users.results));
     },
@@ -253,44 +287,69 @@ export default Sentry.withSentry(
 | `statement.run()` | SQL query text | Execute with metadata return |
 | `statement.all()` | SQL query text | Returns all rows with metadata |
 | `statement.raw()` | SQL query text | Returns raw row arrays |
+| `db.batch(statements[])` | `"D1 batch"` | Execute multiple prepared statements (v10.61.0+) |
+| `db.exec(query)` | SQL query text | Execute raw SQL directly (v10.61.0+) |
+| `db.withSession(constraintOrBookmark?)` | — | Returns instrumented session synchronously; `session.prepare()` and `session.batch()` are also traced (v10.61.0+) |
 
 All methods create:
 - A `db.query` span with the SQL statement as the span name
 - A breadcrumb in the `query` category
-- Span attributes: `cloudflare.d1.query_type`, `cloudflare.d1.duration`, `cloudflare.d1.rows_read`, `cloudflare.d1.rows_written`
+- Span attributes include: `db.operation.name` (query type), `cloudflare.d1.duration`, `cloudflare.d1.rows_read`, `cloudflare.d1.rows_written`
 
 ### Bind Support
 
 The instrumentation follows through `statement.bind()`:
 
 ```typescript
-const db = Sentry.instrumentD1WithSentry(env.DB);
-
 // bind() returns a new statement — it's also instrumented
-const result = await db
+const result = await env.DB
   .prepare("INSERT INTO users (name, email) VALUES (?, ?)")
   .bind("Alice", "alice@example.com")
   .run();
 ```
 
+### Batch Operations
+
+The SDK instruments `db.batch()` for executing multiple prepared statements atomically:
+
+```typescript
+const results = await env.DB.batch([
+  env.DB.prepare("UPDATE users SET status = ? WHERE id = ?").bind("active", 1),
+  env.DB.prepare("INSERT INTO logs (action) VALUES (?)").bind("user_activated"),
+  env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(1),
+]);
+```
+
+This creates a single `db.query` span named `"D1 batch"` with attributes:
+- `db.operation.name`: `"batch"`
+- `db.operation.batch.size`: number of statements
+- `db.query.text`: concatenated SQL statements (newline-separated)
+
+### Sessions
+
+`db.withSession()` is instrumented, and any `prepare()` or `batch()` calls made on the returned session are automatically traced. `withSession()` takes an optional consistency constraint (`"first-primary"`, `"first-unconstrained"`) or a bookmark string, and returns the session synchronously:
+
+```typescript
+const session = env.DB.withSession("first-primary");
+const user = await session.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first();
+await session.prepare("UPDATE users SET last_seen = ? WHERE id = ?").bind(Date.now(), userId).run();
+```
+
 ### Limitations
 
-- `db.exec()` and `db.batch()` are **not** instrumented — only prepared statements
 - Query parameters are not captured in span data (to avoid PII leakage)
 
 ---
 
 ## Best Practices
 
-1. **Instrument D1 once per request** — call `instrumentD1WithSentry(env.DB)` at the top of your handler and use the wrapped binding throughout.
+1. **Use D1 bindings directly** — `withSentry` auto-instruments all `env` D1 bindings (v10.57.0+), so use `env.DB` as-is. The deprecated `instrumentD1WithSentry(env.DB)` wrapper is no longer needed.
 
 2. **Export wrapped classes** — always export the instrumented class (`Sentry.instrumentDurableObjectWithSentry(...)`) as the binding target, not the base class.
 
 3. **Use `instrumentPrototypeMethods` selectively** — it wraps all prototype methods which adds overhead. Use an array of method names if you only need specific RPC methods.
 
-4. **Don't wrap already-wrapped objects** — calling `instrumentD1WithSentry` twice on the same binding is harmless (it checks for existing instrumentation) but unnecessary.
-
-5. **Workflow error handling** — step errors are captured with `handled: true` since Workflows may retry steps. The dedupe integration is automatically disabled.
+4. **Workflow error handling** — step errors are captured with `handled: true` since Workflows may retry steps. The dedupe integration is automatically disabled.
 
 ---
 
@@ -300,7 +359,7 @@ const result = await db
 |-------|----------|
 | DO errors not captured | Ensure you exported the instrumented class, not the base class |
 | RPC methods not creating spans | Enable `instrumentPrototypeMethods: true` or list specific methods |
-| D1 queries not traced | Call `instrumentD1WithSentry(env.DB)` before executing queries |
+| D1 queries not traced | D1 bindings are auto-instrumented by `withSentry` (v10.57.0+) — ensure your handler is wrapped and you're using the `env.DB` binding. All methods (`prepare`, `batch`, `exec`, `withSession`) are traced in v10.61.0+ |
 | Workflow spans disconnected | Verify all steps in the same workflow instance share the same trace (automatic) |
-| Storage operations not traced | Ensure you're using `instrumentDurableObjectWithSentry` — storage instrumentation is included |
-| `db.batch()` not creating spans | Expected — batch and exec are not instrumented; use prepared statements |
+| Storage operations not traced | Ensure you're using `instrumentDurableObjectWithSentry` — storage (async, KV, and SQL) instrumentation is included |
+| SQL storage not traced | Upgrade to v10.61.0+; `ctx.storage.sql.exec()` is automatically instrumented |
