@@ -24,14 +24,11 @@ disable-model-invocation: true
 Do only enough detection to route before calling the wizard:
 
 ```bash
-# Manifest/project files to scan for generator signatures
-SNAP_FILES=$(find . \( -name Package.swift -o -name Package.resolved -o -path '*/project.pbxproj' \) -print0 2>/dev/null)
-
 # SnapshotPreviews (Sentry first-party) -> prefer wizard / SnapshotPreviews routing
-echo -n "$SNAP_FILES" | xargs -0 grep -lE "SnapshotPreviews" 2>/dev/null
+find . \( -name Package.swift -o -name Package.resolved -o -path '*/project.pbxproj' \) -print0 2>/dev/null | xargs -0 grep -lE "SnapshotPreviews" 2>/dev/null
 
 # Point-Free swift-snapshot-testing -> preserve generator, swift-snapshot-testing CI path
-echo -n "$SNAP_FILES" | xargs -0 grep -lE "swift-snapshot-testing|SnapshotTesting|assertSnapshot|__Snapshots__|TEST_RUNNER_SNAPSHOT_TESTING_RECORD" 2>/dev/null
+find . \( -name Package.swift -o -name Package.resolved -o -path '*/project.pbxproj' \) -print0 2>/dev/null | xargs -0 grep -lE "swift-snapshot-testing|SnapshotTesting|assertSnapshot|__Snapshots__|TEST_RUNNER_SNAPSHOT_TESTING_RECORD" 2>/dev/null
 
 # Required wizard input
 find . -name '*.xcodeproj' -print 2>/dev/null | head -20
