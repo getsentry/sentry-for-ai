@@ -73,17 +73,15 @@ https://github.com/getsentry/SnapshotPreviews
 
 1. Link products:
 
-
 | Product               | Target                                                                       |
 | --------------------- | ---------------------------------------------------------------------------- |
 | `SnapshottingTests`   | Hosted snapshot/layout XCTest target                                         |
 | `SnapshotPreferences` | Preview-declaring target only when custom tags/context/thresholds are needed |
 | `PreviewGallery`      | Internal app target only when an in-app preview gallery is requested         |
 
-
-1. Add or verify one hosted XCTest class importing `SnapshottingTests` and inheriting from `SnapshotTest`.
-2. Export images with `TEST_RUNNER_SNAPSHOTS_EXPORT_DIR` and `xcodebuild test`.
-3. Upload with `sentry-cli snapshots upload`.
+2. Add or verify one hosted XCTest class importing `SnapshottingTests` and inheriting from `SnapshotTest`.
+3. Export images with `TEST_RUNNER_SNAPSHOTS_EXPORT_DIR` and `xcodebuild test`.
+4. Upload with `sentry-cli snapshots upload`.
 
 ```bash
 TEST_RUNNER_SNAPSHOTS_EXPORT_DIR="$PWD/snapshot-images" \

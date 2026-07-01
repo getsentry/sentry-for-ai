@@ -46,21 +46,25 @@ Record: existing SnapshotPreviews setup, existing snapshot generator/library, ou
 
 ## Route
 
-Apply rows top-down. When multiple generators are detected, use the generator the user explicitly named; otherwise prefer SnapshotPreviews as Sentry's first-party snapshot source.
+Resolve routing in this order; setup is the primary path and CI is optional follow-up.
 
-| State | Action |
-|---|---|
-| User asks for GitHub Actions/CI and SnapshotPreviews exists with one simulator destination | Read `references/github-actions-simple.md`. |
-| User asks for GitHub Actions/CI and SnapshotPreviews exists with multiple simulators/device families, matrix, or selective CI | Read `references/github-actions-fanout.md`; read `references/snapshot-previews.md` for selective-rendering mechanics. |
-| User asks for GitHub Actions/CI and Point-Free `swift-snapshot-testing` is the selected generator | Preserve generator; read `references/github-actions-swift-snapshot-testing.md` and `references/snapshots.md` for upload behavior. |
-| User asks for GitHub Actions/CI and a non-SnapshotPreviews generator exists | Preserve generator; read `references/snapshots.md` for upload behavior and adapt the project's existing CI. |
-| User asks for GitHub Actions/CI but no snapshot generator or SnapshotPreviews setup exists | Establish the image source first using the rows below; do not write CI that has nothing to run. |
-| SnapshotPreviews already present | Verify export/upload; read `references/snapshot-previews.md` for SnapshotPreviews-specific debugging or advanced options; read `references/snapshots.md` for upload behavior. |
-| Existing non-SnapshotPreviews generator/library, including Point-Free `swift-snapshot-testing` | Preserve generator; read `references/snapshots.md` for upload behavior. |
-| Package-only SwiftPM with no `.xcodeproj` host app | Stop and ask for the host app/test target; standalone `swift test` rendering is not supported. |
-| No hosted XCTest target exists for the selected app target | Stop and ask the user to add or identify a hosted XCTest target before continuing; SnapshotPreviews requires `xcodebuild test` against a hosted test bundle. |
-| No existing generator/setup and user wants SnapshotPreviews | Read `references/wizard-setup.md`. |
-| Wizard reports no Swift previews | Stop and ask whether to add Swift previews for SnapshotPreviews or identify the intended Sentry Snapshot image source; do not create, restore, or infer previews without explicit user approval. |
+1. Select or create the image generator:
+   - named generator wins;
+   - multiple existing generators with no user choice -> ask;
+   - existing non-SnapshotPreviews generator -> preserve it;
+   - existing SnapshotPreviews -> use it;
+   - no existing generator -> set up SnapshotPreviews by default for Sentry Snapshots or Apple snapshot testing.
+2. For SnapshotPreviews, stop before setup/verification/CI if there is no `.xcodeproj` host app or no hosted XCTest target. These stops do not apply when preserving another generator.
+3. For setup or verification:
+   - existing non-SnapshotPreviews generator -> read `references/snapshots.md`;
+   - existing SnapshotPreviews -> read `references/snapshot-previews.md` and `references/snapshots.md`;
+   - new SnapshotPreviews setup -> read `references/wizard-setup.md`;
+   - wizard reports no Swift previews -> ask before adding previews or choosing another generator.
+4. For GitHub Actions/CI only after an image generator exists:
+   - Point-Free `swift-snapshot-testing` -> read `references/github-actions-swift-snapshot-testing.md` and `references/snapshots.md`;
+   - other non-SnapshotPreviews generator -> read `references/snapshots.md` and adapt existing CI/upload;
+   - SnapshotPreviews, one simulator only, no matrix/fanout/selective CI -> read `references/github-actions-simple.md`;
+   - SnapshotPreviews with multiple simulators, device families, matrix, or any selective CI -> read `references/github-actions-fanout.md` and `references/snapshot-previews.md`.
 
 ## Optional References
 
@@ -75,7 +79,7 @@ Apply rows top-down. When multiple generators are detected, use the generator th
 
 ## Completion Checks
 
-- The selected snapshot image source is documented and preserved or configured according to the route above.
+- The selected snapshot image generator is documented and preserved or configured according to the route above.
 - Snapshot generation appears in the relevant local or CI test logs.
 - Export directory contains `.png` files and any generated `.json` sidecars.
 - Upload succeeds and prints a Sentry URL or snapshot id.
