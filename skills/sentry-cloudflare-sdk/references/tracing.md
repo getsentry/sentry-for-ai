@@ -14,7 +14,7 @@ The Cloudflare SDK is **not natively OpenTelemetry-based** (unlike `@sentry/node
 - Spans emitted via `@opentelemetry/api` are captured by Sentry
 - The SDK creates its own HTTP server spans for incoming requests
 - Outbound `fetch()` calls are automatically traced via `fetchIntegration`
-- D1 queries are traced when you use `instrumentD1WithSentry`
+- D1 queries are traced automatically for all `env` D1 bindings when wrapped with `withSentry` (v10.57.0+)
 
 ---
 
@@ -119,27 +119,24 @@ Each outbound fetch creates a child span with method, URL, and response status.
 
 ### D1 Query Spans
 
-When you instrument D1 with `instrumentD1WithSentry`, all queries create `db.query` spans:
+D1 bindings on `env` are auto-instrumented by `withSentry` (v10.57.0+), so all queries create `db.query` spans with no wrapper needed (the `instrumentD1WithSentry` helper is deprecated):
 
 ```typescript
-const db = Sentry.instrumentD1WithSentry(env.DB);
-
 // Prepared statement queries
-const result = await db.prepare("SELECT * FROM users WHERE id = ?").bind(1).run();
+const result = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(1).run();
 
 // Batch operations (v10.61.0+)
-const results = await db.batch([
-  db.prepare("UPDATE users SET active = ? WHERE id = ?").bind(true, 1),
-  db.prepare("SELECT * FROM users WHERE id = ?").bind(1),
+const results = await env.DB.batch([
+  env.DB.prepare("UPDATE users SET active = ? WHERE id = ?").bind(true, 1),
+  env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(1),
 ]);
 
 // Direct SQL execution (v10.61.0+)
-await db.exec("CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, message TEXT)");
+await env.DB.exec("CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, message TEXT)");
 
 // Session-based queries (v10.61.0+)
-await db.withSession(async (session) => {
-  await session.prepare("INSERT INTO logs (message) VALUES (?)").bind("test").run();
-});
+const session = env.DB.withSession("first-primary");
+await session.prepare("INSERT INTO logs (message) VALUES (?)").bind("test").run();
 ```
 
 Span attributes include:
@@ -313,7 +310,7 @@ See the Workflows section in `references/durable-objects.md` for full setup.
 
 2. **Use `tracePropagationTargets`** — avoid leaking trace headers to third-party APIs. Only propagate to your own services.
 
-3. **Instrument D1** — `instrumentD1WithSentry` adds almost no overhead and gives you query-level visibility.
+3. **D1 is auto-instrumented** — `env` D1 bindings are traced automatically by `withSentry` (v10.57.0+) with almost no overhead, giving you query-level visibility. No manual wrapping needed.
 
 4. **Use `startSpan` for custom operations** — wrap business logic in spans for detailed visibility beyond HTTP/DB.
 
@@ -328,6 +325,6 @@ See the Workflows section in `references/durable-objects.md` for full setup.
 | No traces appearing | Verify `tracesSampleRate` or `tracesSampler` is set in init options |
 | Missing outbound fetch spans | Ensure `fetchIntegration` is not removed from `defaultIntegrations` |
 | Trace headers not propagated | Check `tracePropagationTargets` includes the target URL |
-| D1 spans not appearing | Ensure `instrumentD1WithSentry(env.DB)` is called before queries |
+| D1 spans not appearing | D1 bindings are auto-instrumented by `withSentry` (v10.57.0+) — ensure your handler is wrapped and you query via the `env.DB` binding |
 | Very short span durations (0ms) | Expected for CPU-bound work — Cloudflare Workers timers only advance during I/O |
 | Streaming response spans too short | Update to latest SDK — streaming response tracking was added in v10.x |
