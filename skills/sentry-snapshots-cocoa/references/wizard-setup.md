@@ -41,12 +41,10 @@ Use this only when the wizard asks for target values or reports that no hosted X
 
 Only gather values the wizard asked for. Probe first; ask the user only if probing cannot identify a safe single target.
 
-
-| Wizard asks for      | How to investigate                                          | Add flag                                                  |
-| -------------------- | ----------------------------------------------------------- | --------------------------------------------------------- |
-| App target           | `xcodebuild -list -project <Project>.xcodeproj 2>/dev/null` | `--app-target <AppTarget>`                                |
-| Hosted XCTest target | `grep -rE "TEST_HOST`                                       | BUNDLE_LOADER" --include='project.pbxproj' . 2>/dev/null` |
-
+| Wizard asks for      | How to investigate                                                              | Add flag                                    |
+| -------------------- | ------------------------------------------------------------------------------- | ------------------------------------------ |
+| App target           | `xcodebuild -list -project <Project>.xcodeproj 2>/dev/null`                     | `--app-target <AppTarget>`                 |
+| Hosted XCTest target | `grep -rE "TEST_HOST\|BUNDLE_LOADER" --include='project.pbxproj' . 2>/dev/null` | `--hosted-test-target <HostedTestsTarget>` |
 
 If the wizard asks for multiple values, gather all requested values through probing or user clarification, then rerun once with the complete requested flag set.
 
