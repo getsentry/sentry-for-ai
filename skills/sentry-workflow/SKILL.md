@@ -23,10 +23,12 @@ Append the path from the `Path` column in the table below to `https://skills.sen
 
 **Do not skip this section.** Do not assume which workflow the user needs. Ask first.
 
-1. If the user mentions **fixing errors, debugging exceptions, or investigating production issues** → `sentry-fix-issues`
-2. If the user mentions **Sentry bot comments or `sentry[bot]` on a PR** → `sentry-code-review`
-3. If the user mentions **Seer, bug prediction, or reviewing PRs for predicted issues** → `sentry-pr-code-review`
-4. If the user mentions **upgrading Sentry, migrating SDK versions, or fixing deprecated APIs** → `sentry-sdk-upgrade`
+1. If the user mentions **fixing a specific bug, debugging exceptions, or investigating production issues** → `sentry-fix-issues`
+2. If the user mentions **triaging the new-issue queue or archiving non-actionable noise** → `sentry-triage-issues`
+3. If the user mentions **a Sentry digest/summary, "what got worse", a standup or on-call handoff report** → `sentry-issue-digest`
+4. If the user mentions **Sentry bot comments or `sentry[bot]` on a PR** → `sentry-code-review`
+5. If the user mentions **Seer, bug prediction, or reviewing PRs for predicted issues** → `sentry-pr-code-review`
+6. If the user mentions **upgrading Sentry, migrating SDK versions, or fixing deprecated APIs** → `sentry-sdk-upgrade`
 
 When unclear, **ask the user** whether the task involves live production issues, PR review comments, or SDK upgrades. Do not guess.
 
@@ -36,7 +38,9 @@ When unclear, **ask the user** whether the task involves live production issues,
 
 | Use when | Skill | Path |
 |---|---|---|
-| Finding and fixing production issues — stack traces, breadcrumbs, event data | [`sentry-fix-issues`](../sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
+| Fixing a specific bug — stack traces, breadcrumbs, event data, opening a PR | [`sentry-fix-issues`](../sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
+| Triaging the new-issue queue — archiving non-actionable noise, flagging needs-human | [`sentry-triage-issues`](../sentry-triage-issues/SKILL.md) | `sentry-triage-issues/SKILL.md` |
+| A read-only digest of what changed — new issues, regressions, movers, release health, correlated in-repo to the commits that likely caused them | [`sentry-issue-digest`](../sentry-issue-digest/SKILL.md) | `sentry-issue-digest/SKILL.md` |
 | Resolving comments from `sentry[bot]` on GitHub PRs | [`sentry-code-review`](../sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
 | Fixing issues detected by Seer Bug Prediction in PR reviews | [`sentry-pr-code-review`](../sentry-pr-code-review/SKILL.md) | `sentry-pr-code-review/SKILL.md` |
 | Upgrading the Sentry JavaScript SDK — migration guides, breaking changes, deprecated APIs | [`sentry-sdk-upgrade`](../sentry-sdk-upgrade/SKILL.md) | `sentry-sdk-upgrade/SKILL.md` |

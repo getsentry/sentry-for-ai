@@ -61,7 +61,9 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 |-------|-------------|
 | `sentry-code-review` | Analyze and resolve Sentry bot comments on GitHub PRs |
 | `sentry-pr-code-review` | Review PRs for issues detected by Seer Bug Prediction |
-| `sentry-fix-issues` | Find and fix Sentry issues using MCP |
+| `sentry-fix-issues` | Find and fix a specific Sentry issue using MCP — on-demand, human-in-the-loop, opens a draft PR |
+| `sentry-triage-issues` | Triage the new-issue queue — archive non-actionable noise, flag needs-human (cron-safe, archive-only) |
+| `sentry-issue-digest` | Read-only, concise digest of what changed — new issues, regressions, movers, release health; correlates issues to the commits that likely caused them when run in a repo (cron-safe) |
 | `sentry-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
 | `sentry-create-alert` | Create Sentry alerts using the workflow engine API |
 
