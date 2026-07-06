@@ -140,7 +140,7 @@ Sentry.mobileReplayIntegration({
 | `beforeErrorSampling` | `(event, hint) => boolean` | — | — | Return `false` to skip replay for a specific error |
 | `networkDetailAllowUrls` | `(string \| RegExp)[]` | `[]` | 8.13.0+ | URLs to enrich with headers (and bodies, when `networkCaptureBodies` is on) |
 | `networkDetailDenyUrls` | `(string \| RegExp)[]` | `[]` | 8.13.0+ | URLs to never enrich, even if they match the allow list |
-| `networkCaptureBodies` | `boolean` | `false` | 8.13.0+ | Opt in to capturing request/response bodies for allow-listed URLs |
+| `networkCaptureBodies` | `boolean` | `true` | 8.13.0+ | Capture request/response bodies for allow-listed URLs (changed to `true` in 8.17.0) |
 | `networkRequestHeaders` | `string[]` | `[]` | 8.13.0+ | Extra request headers to capture (beyond defaults: `Content-Type`, `Content-Length`, `Accept`) |
 | `networkResponseHeaders` | `string[]` | `[]` | 8.13.0+ | Extra response headers to capture |
 

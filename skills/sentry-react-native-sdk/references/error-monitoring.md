@@ -524,6 +524,8 @@ Sentry.withScope((scope) => {
 ```typescript
 Sentry.setTag(key, value)
 Sentry.setTags({ key: value })
+Sentry.setAttribute(key, value)          // SDK ≥8.16.0
+Sentry.setAttributes({ key: value })     // SDK ≥8.16.0
 Sentry.setUser({ id, email, username })
 Sentry.setContext(name, object)
 Sentry.setExtra(key, value)
