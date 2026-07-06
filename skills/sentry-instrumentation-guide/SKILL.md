@@ -1,6 +1,6 @@
 ---
 name: sentry-instrumentation-guide
-description: Decide which Sentry signal to reach for when instrumenting code — error, span, span attribute, log, or metric. Use when adding instrumentation and unsure whether something should be a log vs a span vs a metric, when deciding "what to instrument where", when reviewing instrumentation for gaps, or when a coding agent needs a rule for choosing between errors, traces, logs, and metrics. This skill decides WHAT to emit; the sentry-*-sdk skills handle HOW to set each pillar up.
+description: Decision framework for choosing the right Sentry signal when instrumenting code — error, span, span attribute, log, or metric. Use when adding instrumentation and unsure whether something should be a log vs a span vs a metric, deciding "what to instrument where", auditing existing instrumentation for gaps (for example an empty error feed while users report problems), or when a coding agent needs a consistent rule for choosing between errors, traces, logs, and metrics. Decides WHAT to emit; the sentry-*-sdk skills and sentry-setup-ai-monitoring handle HOW to set each pillar up.
 license: Apache-2.0
 category: feature-setup
 parent: sentry-feature-setup
@@ -24,15 +24,6 @@ or an event in front of you, which signal should carry it, and why.
 
 It decides **what** to emit. For **how** to turn each pillar on for a given stack, hand off to the
 `sentry-*-sdk` skills and `sentry-setup-ai-monitoring`.
-
-## Invoke This Skill When
-
-- You're instrumenting a piece of code and unsure whether something should be a log, a span, a
-  span attribute, or a metric
-- You're deciding "what to instrument where" across a service or request handler
-- You're reviewing existing instrumentation for gaps (e.g. an error feed that's empty while users
-  report problems)
-- A coding agent needs a consistent rule for choosing between errors, traces, logs, and metrics
 
 **Important:** The SDK APIs and code samples here are illustrative. Verify exact signatures and
 minimum versions against [docs.sentry.io](https://docs.sentry.io) and the relevant `sentry-*-sdk`

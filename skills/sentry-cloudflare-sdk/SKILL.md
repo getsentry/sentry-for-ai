@@ -1,6 +1,6 @@
 ---
 name: sentry-cloudflare-sdk
-description: Full Sentry SDK setup for Cloudflare Workers and Pages. Use when asked to "add Sentry to Cloudflare Workers", "install @sentry/cloudflare", or configure error monitoring, tracing, logging, crons, or AI monitoring for Cloudflare Workers, Pages, Durable Objects, Queues, Workflows, or Hono on Cloudflare.
+description: Full Sentry SDK setup for Cloudflare Workers and Pages. Use when asked to "add Sentry to Cloudflare Workers", "install @sentry/cloudflare", or configure error monitoring, tracing, logging, crons, or AI monitoring on Cloudflare. Covers withSentry, sentryPagesPlugin, instrumentDurableObjectWithSentry, instrumentD1WithSentry, and monitoring Durable Objects, D1, Queues, Workflows, Scheduled handlers, Email handlers, and Hono.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,14 +12,6 @@ disable-model-invocation: true
 # Sentry Cloudflare SDK
 
 Opinionated wizard that scans your Cloudflare project and guides you through complete Sentry setup for Workers, Pages, Durable Objects, Queues, Workflows, and Hono.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to Cloudflare Workers" or "set up Sentry" in a Cloudflare project
-- User wants to install or configure `@sentry/cloudflare`
-- User wants error monitoring, tracing, logging, crons, or AI monitoring for Cloudflare Workers or Pages
-- User asks about `withSentry`, `sentryPagesPlugin`, `instrumentDurableObjectWithSentry`, or `instrumentD1WithSentry`
-- User wants to monitor Durable Objects, Queues, Workflows, Scheduled handlers, or Email handlers on Cloudflare
 
 > **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.61.0).
 > Always verify against [docs.sentry.io/platforms/javascript/guides/cloudflare/](https://docs.sentry.io/platforms/javascript/guides/cloudflare/) before implementing.

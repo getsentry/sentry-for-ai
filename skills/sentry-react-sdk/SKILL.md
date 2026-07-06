@@ -1,6 +1,6 @@
 ---
 name: sentry-react-sdk
-description: Full Sentry SDK setup for React. Use when asked to "add Sentry to React", "install @sentry/react", or configure error monitoring, tracing, session replay, profiling, or logging for React applications. Supports React 16+, React Router v5-v7 non-framework mode, TanStack Router, Redux, Vite, and webpack.
+description: Full Sentry SDK setup for React. Use when asked to "add Sentry to React", "install @sentry/react", set up Sentry error boundaries, or configure error monitoring, tracing, session replay, profiling, or logging for a React app. Covers React Router v5/v6/v7 non-framework navigation, Redux state, and component performance. Supports React 16+, TanStack Router, Redux, Vite, and webpack. For React Router framework mode use sentry-react-router-framework-sdk.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry React SDK
 
 Opinionated wizard that scans your React project and guides you through complete Sentry setup.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to React" or "set up Sentry" in a React app
-- User wants error monitoring, tracing, session replay, profiling, or logging in React
-- User mentions `@sentry/react`, React Sentry SDK, or Sentry error boundaries
-- User wants to monitor React Router v5/v6/v7 non-framework navigation, Redux state, or component performance
 
 If project is React Router **Framework mode** using `@sentry/react-router`, use `sentry-react-router-framework-sdk` instead of this skill.
 

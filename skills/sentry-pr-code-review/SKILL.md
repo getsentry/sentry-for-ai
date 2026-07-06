@@ -1,6 +1,6 @@
 ---
 name: sentry-pr-code-review
-description: Review a project's PRs to check for issues detected in code review by Seer Bug Prediction. Use when asked to review or fix issues identified by Sentry in PR comments, or to find recent PRs with Sentry feedback.
+description: Review and fix issues flagged by Seer Bug Prediction in GitHub PR comments. Use when asked to "review Sentry comments", "fix Sentry issues" on a PR, "address Sentry review", or "resolve Sentry findings", when given a PR URL or number with Seer feedback, or to find recent PRs with unresolved Sentry comments. Requires the gh CLI and the Seer by Sentry GitHub App.
 license: Apache-2.0
 category: workflow
 parent: sentry-workflow
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry Code Review
 
 Review and fix issues identified by Seer (by Sentry) in GitHub PR comments.
-
-## Invoke This Skill When
-
-- User asks to "review Sentry comments" or "fix Sentry issues" on a PR
-- User shares a PR URL/number and mentions Sentry or Seer feedback
-- User asks to "address Sentry review" or "resolve Sentry findings"
-- User wants to find PRs with unresolved Sentry comments
 
 ## Prerequisites
 

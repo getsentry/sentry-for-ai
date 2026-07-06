@@ -1,6 +1,6 @@
 ---
 name: sentry-ruby-sdk
-description: Full Sentry SDK setup for Ruby. Use when asked to add Sentry to Ruby, install sentry-ruby, setup Sentry in Rails/Sinatra/Rack, or configure error monitoring, tracing, logging, metrics, profiling, or crons for Ruby applications. Also handles migration from AppSignal, Honeybadger, Bugsnag, Rollbar, or Airbrake. Supports Rails, Sinatra, Rack, Sidekiq, and Resque.
+description: Full Sentry SDK setup for Ruby. Use when asked to "add Sentry to Ruby", install sentry-ruby or sentry-rails, "set up Sentry in Rails/Sinatra/Rack", or configure error monitoring, tracing, logging, metrics, profiling, or crons for a Ruby app. Covers monitoring exceptions, HTTP requests, and background jobs, plus migration from AppSignal, Honeybadger, Bugsnag, Rollbar, or Airbrake. Supports Rails, Sinatra, Rack, Sidekiq, and Resque.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,14 +12,6 @@ disable-model-invocation: true
 # Sentry Ruby SDK
 
 Opinionated wizard that scans the project and guides through complete Sentry setup.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to Ruby" or "set up Sentry" in a Ruby app
-- User wants error monitoring, tracing, logging, metrics, profiling, or crons in Ruby
-- User mentions `sentry-ruby`, `sentry-rails`, or the Ruby Sentry SDK
-- User is migrating from AppSignal, Honeybadger, Bugsnag, Rollbar, or Airbrake to Sentry
-- User wants to monitor exceptions, HTTP requests, or background jobs in Rails/Sinatra
 
 > **Note:** SDK APIs below reflect sentry-ruby v6.6.2.
 > Always verify against [docs.sentry.io/platforms/ruby/](https://docs.sentry.io/platforms/ruby/) before implementing.

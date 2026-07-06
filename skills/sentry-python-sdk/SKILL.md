@@ -1,6 +1,6 @@
 ---
 name: sentry-python-sdk
-description: Full Sentry SDK setup for Python. Use when asked to "add Sentry to Python", "install sentry-sdk", "setup Sentry in Python", or configure error monitoring, tracing, profiling, logging, metrics, crons, or AI monitoring for Python applications. Supports Django, Flask, FastAPI, Celery, Starlette, AIOHTTP, Tornado, and more.
+description: Full Sentry SDK setup for Python. Use when asked to "add Sentry to Python", "install sentry-sdk", or configure error monitoring, tracing, profiling, logging, metrics, crons, or AI monitoring for a Python app. Covers monitoring Django views, Flask routes, FastAPI endpoints, Celery tasks, and scheduled jobs. Supports Django, Flask, FastAPI, Celery, Starlette, AIOHTTP, Tornado, and more.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry Python SDK
 
 Opinionated wizard that scans your Python project and guides you through complete Sentry setup.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to Python" or "setup Sentry" in a Python app
-- User wants error monitoring, tracing, profiling, logging, metrics, or crons in Python
-- User mentions `sentry-sdk`, `sentry_sdk`, or Sentry + any Python framework
-- User wants to monitor Django views, Flask routes, FastAPI endpoints, Celery tasks, or scheduled jobs
 
 > **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry-sdk 2.x).
 > Always verify against [docs.sentry.io/platforms/python/](https://docs.sentry.io/platforms/python/) before implementing.

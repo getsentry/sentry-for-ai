@@ -1,6 +1,6 @@
 ---
 name: sentry-browser-sdk
-description: Full Sentry SDK setup for browser JavaScript. Use when asked to "add Sentry to a website", "install @sentry/browser", or configure error monitoring, tracing, session replay, or logging for vanilla JavaScript, jQuery, static sites, or WordPress.
+description: Full Sentry SDK setup for browser JavaScript. Use when asked to "add Sentry to a website", "install @sentry/browser", set up the Loader Script or CDN snippet, or configure error monitoring, tracing, session replay, or logging for plain JavaScript with no framework-specific SDK. Covers vanilla JS, jQuery, WordPress, Shopify, Squarespace, and static HTML sites.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,14 +12,6 @@ disable-model-invocation: true
 # Sentry Browser SDK
 
 Opinionated wizard that scans your project and guides you through complete Sentry setup for browser JavaScript — vanilla JS, jQuery, static sites, WordPress, and any JS project without a framework-specific SDK.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to a website" or set up Sentry for plain JavaScript
-- User wants to install `@sentry/browser` or configure the Loader Script
-- User has a WordPress, Shopify, Squarespace, or static HTML site
-- User wants error monitoring, tracing, session replay, or logging without a framework
-- No framework-specific SDK applies
 
 > **Note:** SDK versions and APIs below reflect `@sentry/browser` ≥10.0.0.
 > Always verify against [docs.sentry.io/platforms/javascript/](https://docs.sentry.io/platforms/javascript/) before implementing.

@@ -1,6 +1,6 @@
 ---
 name: sentry-cocoa-sdk
-description: Full Sentry SDK setup for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS). Use when asked to "add Sentry to iOS", "add Sentry to Swift", "install sentry-cocoa", or configure error monitoring, tracing, profiling, session replay, logging, or metrics for Apple applications. Supports SwiftUI and UIKit.
+description: Full Sentry SDK setup for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS). Use when asked to "add Sentry to iOS/macOS", "add Sentry to Swift", "install sentry-cocoa", or set up crash reporting, error monitoring, tracing, profiling, session replay, logging, or metrics for Apple apps. Covers SentrySDK setup, app hangs, watchdog terminations, and performance in Swift or Objective-C. Supports SwiftUI and UIKit.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry Cocoa SDK
 
 Opinionated wizard that scans your Apple project and guides you through complete Sentry setup.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to iOS/macOS/tvOS" or "set up Sentry" in an Apple app
-- User wants error monitoring, tracing, profiling, session replay, or logging in Swift/ObjC, or metrics in Swift
-- User mentions `sentry-cocoa`, `SentrySDK`, or the Apple/iOS Sentry SDK
-- User wants to monitor crashes, app hangs, watchdog terminations, or performance
 
 > **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry-cocoa 9.15.0).
 > Always verify against [docs.sentry.io/platforms/apple/](https://docs.sentry.io/platforms/apple/) before implementing.

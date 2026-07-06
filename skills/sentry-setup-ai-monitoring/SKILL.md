@@ -1,6 +1,6 @@
 ---
 name: sentry-setup-ai-monitoring
-description: Setup Sentry AI Agent Monitoring in any project. Use when asked to monitor LLM calls, track AI agents, track conversations, or instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI/Pydantic AI. Detects installed AI SDKs and configures appropriate integrations.
+description: Set up Sentry AI Agent Monitoring to track LLM calls, agent executions, tool usage, and token consumption. Use when asked to "monitor AI/LLM calls", "track OpenAI/Anthropic usage", set up "AI observability" or "agent monitoring", or investigate token usage, model latency, or AI costs. Detects installed AI SDKs (OpenAI, Anthropic, Vercel AI, LangChain, Google GenAI, Pydantic AI) and configures the appropriate integrations. Requires tracing enabled.
 license: Apache-2.0
 category: feature-setup
 parent: sentry-feature-setup
@@ -12,12 +12,6 @@ disable-model-invocation: true
 # Setup Sentry AI Agent Monitoring
 
 Configure Sentry to track LLM calls, agent executions, tool usage, and token consumption.
-
-## Invoke This Skill When
-
-- User asks to "monitor AI/LLM calls" or "track OpenAI/Anthropic usage"
-- User wants "AI observability" or "agent monitoring"
-- User asks about token usage, model latency, or AI costs
 
 **Important:** The SDK versions, API names, and code samples below are examples. Always verify against [docs.sentry.io](https://docs.sentry.io) before implementing, as APIs and minimum versions may have changed.
 

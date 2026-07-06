@@ -1,6 +1,6 @@
 ---
 name: sentry-elixir-sdk
-description: Full Sentry SDK setup for Elixir. Use when asked to "add Sentry to Elixir", "install sentry for Elixir", or configure error monitoring, tracing, logging, or crons for Elixir, Phoenix, or Plug applications. Supports Phoenix, Plug, LiveView, Oban, and Quantum.
+description: Full Sentry SDK setup for Elixir. Use when asked to "add Sentry to Elixir", "install the sentry hex package" (getsentry/sentry-elixir), or configure error monitoring, tracing, logging, or crons for Elixir or Phoenix apps. Covers capturing exceptions, Plug errors, LiveView errors, and scheduled jobs. Supports Phoenix, Plug, LiveView, Oban, and Quantum.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry Elixir SDK
 
 Opinionated wizard that scans your Elixir project and guides you through complete Sentry setup.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to Elixir" or "set up Sentry" in an Elixir or Phoenix app
-- User wants error monitoring, tracing, logging, or crons in Elixir or Phoenix
-- User mentions `sentry` hex package, `getsentry/sentry-elixir`, or Elixir Sentry SDK
-- User wants to monitor exceptions, Plug errors, LiveView errors, or scheduled jobs
 
 > **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry v13.2.0, requires Elixir ~> 1.13).
 > Always verify against [docs.sentry.io/platforms/elixir/](https://docs.sentry.io/platforms/elixir/) before implementing.

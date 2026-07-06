@@ -1,6 +1,6 @@
 ---
 name: sentry-dotnet-sdk
-description: Full Sentry SDK setup for .NET. Use when asked to "add Sentry to .NET", "install Sentry for C#", or configure error monitoring, tracing, profiling, logging, or crons for ASP.NET Core, MAUI, WPF, WinForms, Blazor, Azure Functions, or any other .NET application.
+description: Full Sentry SDK setup for .NET. Use when asked to "add Sentry to .NET", "install Sentry for C#", "set up Sentry in ASP.NET Core", or configure error monitoring, tracing, profiling, logging, or crons for a .NET app. Covers SentrySdk.Init, UseSentry, SentryOptions, BeforeSend, TracesSampleRate, and symbol upload across ASP.NET Core, MAUI, WPF, WinForms, Blazor, and Azure Functions.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,14 +12,6 @@ disable-model-invocation: true
 # Sentry .NET SDK
 
 Opinionated wizard that scans your .NET project and guides you through complete Sentry setup: error monitoring, distributed tracing, profiling, structured logging, and cron monitoring across all major .NET frameworks.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to .NET", "set up Sentry in C#", or "install Sentry for ASP.NET Core"
-- User wants error monitoring, tracing, profiling, logging, or crons for a .NET app
-- User mentions `SentrySdk.Init`, `UseSentry`, `Sentry.AspNetCore`, or `Sentry.Maui`
-- User wants to capture unhandled exceptions in WPF, WinForms, MAUI, or Azure Functions
-- User asks about `SentryOptions`, `BeforeSend`, `TracesSampleRate`, or symbol upload
 
 > **Note:** SDK version and APIs below reflect `Sentry` NuGet packages ≥6.1.0 (OTLP export requires ≥6.5.0).
 > Always verify against [docs.sentry.io/platforms/dotnet/](https://docs.sentry.io/platforms/dotnet/) before implementing.

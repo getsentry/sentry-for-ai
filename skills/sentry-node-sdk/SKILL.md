@@ -1,6 +1,6 @@
 ---
 name: sentry-node-sdk
-description: Full Sentry SDK setup for Node.js, Bun, and Deno. Use when asked to "add Sentry to Node.js", "add Sentry to Bun", "add Sentry to Deno", "install @sentry/node", "@sentry/bun", or "@sentry/deno", or configure error monitoring, tracing, logging, profiling, metrics, crons, or AI monitoring for server-side JavaScript/TypeScript runtimes.
+description: Full Sentry SDK setup for Node.js, Bun, and Deno. Use when asked to "add Sentry to Node.js/Bun/Deno", install @sentry/node, @sentry/bun, or @sentry/deno, or configure error monitoring, tracing, logging, profiling, metrics, crons, or AI monitoring for a backend JavaScript or TypeScript app. Covers instrument.js, --import ./instrument.mjs, bun --preload, and monitoring Express, Fastify, Koa, Hapi, Connect, Bun.serve(), and Deno.serve(). For NestJS use sentry-nestjs-sdk; for Next.js use sentry-nextjs-sdk.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,14 +12,6 @@ disable-model-invocation: true
 # Sentry Node.js / Bun / Deno SDK
 
 Opinionated wizard that scans your project and guides you through complete Sentry setup for server-side JavaScript and TypeScript runtimes: Node.js, Bun, and Deno.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to Node.js", "Bun", or "Deno"
-- User wants to install or configure `@sentry/node`, `@sentry/bun`, or `@sentry/deno`
-- User wants error monitoring, tracing, logging, profiling, crons, metrics, or AI monitoring for a backend JS/TS app
-- User asks about `instrument.js`, `--import ./instrument.mjs`, `bun --preload`, or `npm:@sentry/deno`
-- User wants to monitor Express, Fastify, Koa, Hapi, Connect, Bun.serve(), or Deno.serve()
 
 > **NestJS?** Use [`sentry-nestjs-sdk`](../sentry-nestjs-sdk/SKILL.md) instead — it uses `@sentry/nestjs` with NestJS-native decorators and filters.
 > **Next.js?** Use [`sentry-nextjs-sdk`](../sentry-nextjs-sdk/SKILL.md) instead — it handles the three-runtime architecture (browser, server, edge).

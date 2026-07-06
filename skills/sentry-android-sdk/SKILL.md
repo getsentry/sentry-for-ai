@@ -1,6 +1,6 @@
 ---
 name: sentry-android-sdk
-description: Full Sentry SDK setup for Android. Use when asked to "add Sentry to Android", "install sentry-android", "setup Sentry in Android", or configure error monitoring, tracing, profiling, session replay, or logging for Android applications. Supports Kotlin and Java codebases.
+description: Full Sentry SDK setup for Android. Use when asked to "add Sentry to Android", "install sentry-android", or set up crash reporting, ANR detection, error monitoring, tracing, profiling, session replay, or logging in a Kotlin or Java Android app. Covers native (NDK) crashes, app startup performance, io.sentry:sentry-android, and Jetpack Compose. Supports Kotlin and Java codebases.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry Android SDK
 
 Opinionated wizard that scans your Android project and guides you through complete Sentry setup — error monitoring, tracing, profiling, session replay, logging, and more.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to Android" or "set up Sentry" in an Android app
-- User wants error monitoring, crash reporting, ANR detection, tracing, profiling, session replay, or logging in Android
-- User mentions `sentry-android`, `io.sentry:sentry-android`, mobile crash tracking, or Sentry for Kotlin/Java Android
-- User wants to monitor native (NDK) crashes, application not responding (ANR) events, or app startup performance
 
 > **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`io.sentry:sentry-android:8.33.0`, Gradle plugin `6.1.0`).
 > Always verify against [docs.sentry.io/platforms/android/](https://docs.sentry.io/platforms/android/) before implementing.

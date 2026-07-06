@@ -1,6 +1,6 @@
 ---
 name: sentry-svelte-sdk
-description: Full Sentry SDK setup for Svelte and SvelteKit. Use when asked to "add Sentry to Svelte", "add Sentry to SvelteKit", "install @sentry/sveltekit", or configure error monitoring, tracing, session replay, or logging for Svelte or SvelteKit applications.
+description: Full Sentry SDK setup for Svelte and SvelteKit. Use when asked to "add Sentry to Svelte" or "SvelteKit", install @sentry/svelte or @sentry/sveltekit, or configure error monitoring, tracing, session replay, or logging for a Svelte or SvelteKit app.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,12 +12,6 @@ disable-model-invocation: true
 # Sentry Svelte SDK
 
 Opinionated wizard that scans your project and guides you through complete Sentry setup for Svelte and SvelteKit.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to Svelte" or "set up Sentry" in a Svelte/SvelteKit app
-- User wants error monitoring, tracing, session replay, or logging in Svelte or SvelteKit
-- User mentions `@sentry/svelte`, `@sentry/sveltekit`, or Sentry SDK for Svelte
 
 > **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/sveltekit` ≥10.8.0, SvelteKit ≥2.31.0).
 > Always verify against [docs.sentry.io/platforms/javascript/guides/sveltekit/](https://docs.sentry.io/platforms/javascript/guides/sveltekit/) before implementing.

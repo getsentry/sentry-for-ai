@@ -1,6 +1,6 @@
 ---
 name: sentry-react-native-sdk
-description: Full Sentry SDK setup for React Native and Expo. Use when asked to "add Sentry to React Native", "install @sentry/react-native", "setup Sentry in Expo", or configure error monitoring, tracing, profiling, session replay, or logging for React Native applications. Supports Expo managed, Expo bare, and vanilla React Native.
+description: Full Sentry SDK setup for React Native and Expo. Use when asked to "add Sentry to React Native", "install @sentry/react-native", "set up Sentry in Expo", or configure error monitoring, tracing, profiling, session replay, or logging. Covers native crashes, ANRs, and app hangs on iOS/Android. Supports Expo managed, Expo bare, and vanilla React Native.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry React Native SDK
 
 Opinionated wizard that scans your React Native or Expo project and guides you through complete Sentry setup — error monitoring, tracing, profiling, session replay, logging, and more.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to React Native" or "set up Sentry" in an RN or Expo app
-- User wants error monitoring, tracing, profiling, session replay, or logging in React Native
-- User mentions `@sentry/react-native`, mobile error tracking, or Sentry for Expo
-- User wants to monitor native crashes, ANRs, or app hangs on iOS/Android
 
 > **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/react-native` ≥6.0.0, minimum recommended ≥8.0.0).
 > Always verify against [docs.sentry.io/platforms/react-native/](https://docs.sentry.io/platforms/react-native/) before implementing.

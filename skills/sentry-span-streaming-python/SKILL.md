@@ -1,6 +1,6 @@
 ---
 name: sentry-span-streaming-python
-description: Migrate Python SDK to Sentry span streaming (span-first trace lifecycle). Use when asked to "enable span streaming", "migrate to span streaming", "use trace_lifecycle stream", or switch from transaction-based to streamed span delivery in a Python project.
+description: Migrate the Python Sentry SDK from transaction-based to streamed span delivery (span-first trace lifecycle). Use when asked to "enable span streaming", "migrate to span streaming", use trace_lifecycle stream, the new start_span API, or sentry_sdk.traces, or when you want lower-latency span delivery or per-span processing in a Python project.
 license: Apache-2.0
 category: feature-setup
 parent: sentry-feature-setup
@@ -15,13 +15,6 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 Migrate from the default transaction-based trace lifecycle (`static`) to span streaming (`stream`), where spans are sent individually as they complete instead of being batched into a transaction at the end.
 
 This skill covers the Python SDK. For JavaScript, see [Span Streaming (JavaScript)](../sentry-span-streaming-js/SKILL.md). For Dart/Flutter, see [Span Streaming (Dart)](../sentry-span-streaming-dart/SKILL.md).
-
-## Invoke This Skill When
-
-- User asks to "enable span streaming" or "migrate to span streaming" in a Python project
-- User wants to switch from transaction-based to streamed span delivery
-- User mentions `trace_lifecycle`, `sentry_sdk.traces`, or the new `start_span` API
-- User wants lower latency span delivery or per-span processing
 
 ---
 

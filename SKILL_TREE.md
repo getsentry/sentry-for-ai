@@ -97,10 +97,10 @@ Debug production issues and maintain code quality with Sentry context.
 
 | Use when | Skill | Path |
 |---|---|---|
-| Analyze and resolve Sentry comments on GitHub Pull Requests | [`sentry-code-review`](skills/sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
-| Find and fix issues from Sentry using MCP | [`sentry-fix-issues`](skills/sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
-| Review a project's PRs to check for issues detected in code review by Seer Bug Prediction | [`sentry-pr-code-review`](skills/sentry-pr-code-review/SKILL.md) | `sentry-pr-code-review/SKILL.md` |
-| Upgrade the Sentry JavaScript SDK across major versions | [`sentry-sdk-upgrade`](skills/sentry-sdk-upgrade/SKILL.md) | `sentry-sdk-upgrade/SKILL.md` |
+| Analyze and resolve comments from sentry[bot] on GitHub pull requests | [`sentry-code-review`](skills/sentry-code-review/SKILL.md) | `sentry-code-review/SKILL.md` |
+| Find and fix production issues from Sentry using the Sentry MCP server | [`sentry-fix-issues`](skills/sentry-fix-issues/SKILL.md) | `sentry-fix-issues/SKILL.md` |
+| Review and fix issues flagged by Seer Bug Prediction in GitHub PR comments | [`sentry-pr-code-review`](skills/sentry-pr-code-review/SKILL.md) | `sentry-pr-code-review/SKILL.md` |
+| Upgrade the Sentry JavaScript SDK across major versions with guided migration | [`sentry-sdk-upgrade`](skills/sentry-sdk-upgrade/SKILL.md) | `sentry-sdk-upgrade/SKILL.md` |
 
 ## Feature Setup
 
@@ -108,14 +108,14 @@ Configure specific Sentry capabilities beyond basic SDK setup.
 
 | Feature | Skill | Path |
 |---|---|---|
-| Create Sentry alerts using the workflow engine API | [`sentry-create-alert`](skills/sentry-create-alert/SKILL.md) | `sentry-create-alert/SKILL.md` |
-| Decide which Sentry signal to reach for when instrumenting code — error, span, span attribute, log, or metric | [`sentry-instrumentation-guide`](skills/sentry-instrumentation-guide/SKILL.md) | `sentry-instrumentation-guide/SKILL.md` |
-| Configure the OpenTelemetry Collector with Sentry Exporter for multi-project routing and automatic project creation | [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) | `sentry-otel-exporter-setup/SKILL.md` |
-| Setup Sentry AI Agent Monitoring in any project | [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) | `sentry-setup-ai-monitoring/SKILL.md` |
+| Create Sentry alerts using the workflow engine API (currently beta) | [`sentry-create-alert`](skills/sentry-create-alert/SKILL.md) | `sentry-create-alert/SKILL.md` |
+| Decision framework for choosing the right Sentry signal when instrumenting code — error, span, span attribute, log, or metric | [`sentry-instrumentation-guide`](skills/sentry-instrumentation-guide/SKILL.md) | `sentry-instrumentation-guide/SKILL.md` |
+| Configure the OpenTelemetry Collector with the Sentry Exporter for multi-project routing and automatic project creation | [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) | `sentry-otel-exporter-setup/SKILL.md` |
+| Set up Sentry AI Agent Monitoring to track LLM calls, agent executions, tool usage, and token consumption | [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) | `sentry-setup-ai-monitoring/SKILL.md` |
 | Full Sentry Snapshots setup for Apple/Cocoa projects | [`sentry-snapshots-cocoa`](skills/sentry-snapshots-cocoa/SKILL.md) | `sentry-snapshots-cocoa/SKILL.md` |
-| Migrate Dart/Flutter SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-dart`](skills/sentry-span-streaming-dart/SKILL.md) | `sentry-span-streaming-dart/SKILL.md` |
-| Migrate JavaScript SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-js`](skills/sentry-span-streaming-js/SKILL.md) | `sentry-span-streaming-js/SKILL.md` |
-| Migrate Python SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-python`](skills/sentry-span-streaming-python/SKILL.md) | `sentry-span-streaming-python/SKILL.md` |
+| Migrate the Dart and Flutter Sentry SDK from transaction-based to streamed span delivery (span-first trace lifecycle) | [`sentry-span-streaming-dart`](skills/sentry-span-streaming-dart/SKILL.md) | `sentry-span-streaming-dart/SKILL.md` |
+| Migrate the JavaScript Sentry SDK from transaction-based to streamed span delivery (span-first trace lifecycle) | [`sentry-span-streaming-js`](skills/sentry-span-streaming-js/SKILL.md) | `sentry-span-streaming-js/SKILL.md` |
+| Migrate the Python Sentry SDK from transaction-based to streamed span delivery (span-first trace lifecycle) | [`sentry-span-streaming-python`](skills/sentry-span-streaming-python/SKILL.md) | `sentry-span-streaming-python/SKILL.md` |
 
 ## Quick Lookup
 

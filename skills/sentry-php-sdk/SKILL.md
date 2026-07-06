@@ -1,6 +1,6 @@
 ---
 name: sentry-php-sdk
-description: Full Sentry SDK setup for PHP. Use when asked to "add Sentry to PHP", "install sentry/sentry", "setup Sentry in PHP", or configure error monitoring, tracing, profiling, logging, metrics, or crons for PHP applications. Supports plain PHP, Laravel, and Symfony.
+description: Full Sentry SDK setup for PHP. Use when asked to "add Sentry to PHP", install sentry/sentry, sentry/sentry-laravel, or sentry/sentry-symfony, or configure error monitoring, tracing, profiling, logging, metrics, or crons for a PHP app. Covers monitoring Laravel routes, Symfony controllers, queues, scheduled tasks, and plain PHP scripts. Supports plain PHP, Laravel, and Symfony.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry PHP SDK
 
 Opinionated wizard that scans your PHP project and guides you through complete Sentry setup.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to PHP" or "setup Sentry" in a PHP app
-- User wants error monitoring, tracing, profiling, logging, metrics, or crons in PHP
-- User mentions `sentry/sentry`, `sentry/sentry-laravel`, `sentry/sentry-symfony`, or Sentry + any PHP framework
-- User wants to monitor Laravel routes, Symfony controllers, queues, scheduled tasks, or plain PHP scripts
 
 > **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry/sentry 4.x, sentry/sentry-laravel 4.x, sentry/sentry-symfony 5.x).
 > Always verify against [docs.sentry.io/platforms/php/](https://docs.sentry.io/platforms/php/) before implementing.

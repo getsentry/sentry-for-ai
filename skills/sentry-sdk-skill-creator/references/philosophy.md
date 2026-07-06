@@ -303,22 +303,14 @@ Minimal `SKILL.md` structure:
 
 ```markdown
 ---
-name: sentry-<platform>-sdk
-description: Full Sentry SDK setup for <Platform>. Use when asked to add Sentry
-  to a <platform> project, install the <platform> SDK, or configure error
-  monitoring, tracing, profiling, logging, or crons for <Platform>.
+name: sentry-[platform]-sdk
+description: Full Sentry SDK setup for [Platform]. Use when asked to "add Sentry to [platform]", "install [package]", or configure error monitoring, tracing, profiling, logging, or crons for a [platform] app. Covers [key monitoring targets and notable APIs — e.g. native crashes, HTTP handlers, background jobs]. Supports [frameworks].
 license: Apache-2.0
 ---
 
 # Sentry <Platform> SDK
 
 Opinionated wizard that scans your project and guides you through complete Sentry setup.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to <platform>" or "set up Sentry"
-- User wants error monitoring, tracing, profiling, or logging in <platform>
-- User mentions the <platform> Sentry SDK package name
 
 > **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing.
 > Always verify against [docs.sentry.io](https://docs.sentry.io/<platform>/) before implementing.

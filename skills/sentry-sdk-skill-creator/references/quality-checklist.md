@@ -94,7 +94,7 @@ Watch for these red flags that indicate fabricated or outdated content:
 | Check | What to verify |
 |-------|---------------|
 | Frontmatter style | Same fields and format as other SDK skills |
-| Trigger phrase style | Same "Invoke This Skill When" pattern |
+| Trigger phrase style | "Use when …" triggers live in the `description` frontmatter, not a body section |
 | Table format | Same column headers and layout |
 | Disclaimer | Same or consciously evolved style |
 | Troubleshooting format | Same Issue/Solution table pattern |

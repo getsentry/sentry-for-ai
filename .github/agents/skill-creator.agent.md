@@ -5,7 +5,7 @@ description: >
   any platform or framework. Researches official docs, clones the SDK repo to
   verify APIs against source code, studies existing skills for patterns, and
   produces a full skill bundle (SKILL.md + reference files) with a PR.
-  Use when asked to "create a skill for <platform>" or "add SDK support for <framework>".
+  Use when asked to "create a skill for [platform]" or "add SDK support for [framework]".
 tools:
   - read
   - edit
@@ -44,8 +44,7 @@ Before writing anything, read 2 existing SDK skills to internalize the patterns:
 - **One frontend skill**: read `skills/sentry-nextjs-sdk/SKILL.md` and 2-3 of its `references/*.md` files
 
 Study them for:
-- Frontmatter fields and format
-- "Invoke This Skill When" trigger phrase style
+- Frontmatter fields and format — the `description` carries the "Use when …" trigger phrases (single line, no XML tags); there is no separate "when to use" section in the body
 - Phase 1 detection commands (real bash, not pseudo-code)
 - Phase 2 recommendation matrix (opinionated: always/when detected/optional)
 - Phase 3 guide structure (wizard option, manual setup, reference dispatch table)
