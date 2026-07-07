@@ -21,7 +21,7 @@ Mobile Session Replay is **fundamentally different** from web replay. Understand
 | **Offline support** | ✅ Both session and error modes | ❌ **Error mode only** (`sessionSampleRate` unsupported offline) |
 | **Touch recording** | Full pointer/mouse events | Tap breadcrumbs only (no gesture paths) |
 | **Rage clicks** | ✅ Detected | ❌ Not supported |
-| **Network bodies** | ✅ Optional capture | ✅ **Opt-in capture** (XHR only, SDK ≥8.13.0) |
+| **Network bodies** | ✅ Optional capture | ✅ Captured for allow-listed URLs (XHR only, SDK ≥8.13.0) |
 | **Scroll positions** | ✅ Precise | ⚠️ Approximate (from screenshots) |
 
 Mobile replay captures **native view hierarchy snapshots + a screenshot** within the same frame, compresses them into video segments, and streams them to Sentry alongside trace IDs, breadcrumbs, and debug info.
@@ -140,7 +140,7 @@ Sentry.mobileReplayIntegration({
 | `beforeErrorSampling` | `(event, hint) => boolean` | — | — | Return `false` to skip replay for a specific error |
 | `networkDetailAllowUrls` | `(string \| RegExp)[]` | `[]` | 8.13.0+ | URLs to enrich with headers (and bodies, when `networkCaptureBodies` is on) |
 | `networkDetailDenyUrls` | `(string \| RegExp)[]` | `[]` | 8.13.0+ | URLs to never enrich, even if they match the allow list |
-| `networkCaptureBodies` | `boolean` | `false` | 8.13.0+ | Opt in to capturing request/response bodies for allow-listed URLs |
+| `networkCaptureBodies` | `boolean` | `true` | 8.13.0+ | Capture request/response bodies for allow-listed URLs (changed to `true` in 8.17.0) |
 | `networkRequestHeaders` | `string[]` | `[]` | 8.13.0+ | Extra request headers to capture (beyond defaults: `Content-Type`, `Content-Length`, `Accept`) |
 | `networkResponseHeaders` | `string[]` | `[]` | 8.13.0+ | Extra response headers to capture |
 
@@ -361,7 +361,7 @@ Sentry.init({
       // URLs to never enrich, even if they match the allow list
       networkDetailDenyUrls: [/\/auth\//],
       
-      // Opt in to capturing request/response bodies (default: false)
+      // Capture request/response bodies for allow-listed URLs (default: true; set false to disable)
       networkCaptureBodies: true,
       
       // Extra request headers to capture (in addition to defaults)
@@ -378,7 +378,7 @@ Sentry.init({
 |---|---|---|---|
 | `networkDetailAllowUrls` | `(string \| RegExp)[]` | `[]` | URLs to enrich with headers (and bodies, when `networkCaptureBodies` is on). Strings use substring match; regexes use `.test(url)`. |
 | `networkDetailDenyUrls` | `(string \| RegExp)[]` | `[]` | URLs to **never** enrich, even if they match the allow list. |
-| `networkCaptureBodies` | `boolean` | `false` | Opt in to capturing request/response bodies for allow-listed URLs. |
+| `networkCaptureBodies` | `boolean` | `true` | Capture request/response bodies for allow-listed URLs. Set `false` to disable. |
 | `networkRequestHeaders` | `string[]` | `[]` | Extra request headers to capture, in addition to the defaults (`Content-Type`, `Content-Length`, `Accept`). |
 | `networkResponseHeaders` | `string[]` | `[]` | Extra response headers to capture, in addition to the defaults. |
 
@@ -525,7 +525,7 @@ This works with Hermes builds. The annotation happens at the native layer, not t
 | Scroll positions | ✅ Precise | ⚠️ Approximate |
 | Offline session recording | ✅ | ❌ (error mode only) |
 | Canvas / WebGL | ✅ | ⚠️ Captured as screenshot |
-| Network request bodies | ✅ Optional | ❌ Not available |
+| Network request bodies | ✅ Optional | ✅ Captured for allow-listed URLs (XHR only) |
 | Unmask → nested children | ✅ All descendants | ⚠️ Direct children only |
 | View Flattening interference | N/A | ⚠️ Can remove Mask/Unmask wrappers |
 | iOS 26.0 Liquid Glass | N/A | ⚠️ Potential PII leak (unfixed) |
