@@ -361,7 +361,7 @@ Sentry.init({
       // URLs to never enrich, even if they match the allow list
       networkDetailDenyUrls: [/\/auth\//],
       
-      // Opt in to capturing request/response bodies (default: false)
+      // Capture request/response bodies for allow-listed URLs (default: true; set false to disable)
       networkCaptureBodies: true,
       
       // Extra request headers to capture (in addition to defaults)
@@ -378,7 +378,7 @@ Sentry.init({
 |---|---|---|---|
 | `networkDetailAllowUrls` | `(string \| RegExp)[]` | `[]` | URLs to enrich with headers (and bodies, when `networkCaptureBodies` is on). Strings use substring match; regexes use `.test(url)`. |
 | `networkDetailDenyUrls` | `(string \| RegExp)[]` | `[]` | URLs to **never** enrich, even if they match the allow list. |
-| `networkCaptureBodies` | `boolean` | `false` | Opt in to capturing request/response bodies for allow-listed URLs. |
+| `networkCaptureBodies` | `boolean` | `true` | Capture request/response bodies for allow-listed URLs. Set `false` to disable. |
 | `networkRequestHeaders` | `string[]` | `[]` | Extra request headers to capture, in addition to the defaults (`Content-Type`, `Content-Length`, `Accept`). |
 | `networkResponseHeaders` | `string[]` | `[]` | Extra response headers to capture, in addition to the defaults. |
 
