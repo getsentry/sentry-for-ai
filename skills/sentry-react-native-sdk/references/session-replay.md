@@ -525,7 +525,7 @@ This works with Hermes builds. The annotation happens at the native layer, not t
 | Scroll positions | ✅ Precise | ⚠️ Approximate |
 | Offline session recording | ✅ | ❌ (error mode only) |
 | Canvas / WebGL | ✅ | ⚠️ Captured as screenshot |
-| Network request bodies | ✅ Optional | ❌ Not available |
+| Network request bodies | ✅ Optional | ✅ Captured for allow-listed URLs (XHR only) |
 | Unmask → nested children | ✅ All descendants | ⚠️ Direct children only |
 | View Flattening interference | N/A | ⚠️ Can remove Mask/Unmask wrappers |
 | iOS 26.0 Liquid Glass | N/A | ⚠️ Potential PII leak (unfixed) |
