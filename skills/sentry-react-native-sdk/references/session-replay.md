@@ -21,7 +21,7 @@ Mobile Session Replay is **fundamentally different** from web replay. Understand
 | **Offline support** | ✅ Both session and error modes | ❌ **Error mode only** (`sessionSampleRate` unsupported offline) |
 | **Touch recording** | Full pointer/mouse events | Tap breadcrumbs only (no gesture paths) |
 | **Rage clicks** | ✅ Detected | ❌ Not supported |
-| **Network bodies** | ✅ Optional capture | ✅ **Opt-in capture** (XHR only, SDK ≥8.13.0) |
+| **Network bodies** | ✅ Optional capture | ✅ Captured for allow-listed URLs (XHR only, SDK ≥8.13.0) |
 | **Scroll positions** | ✅ Precise | ⚠️ Approximate (from screenshots) |
 
 Mobile replay captures **native view hierarchy snapshots + a screenshot** within the same frame, compresses them into video segments, and streams them to Sentry alongside trace IDs, breadcrumbs, and debug info.
