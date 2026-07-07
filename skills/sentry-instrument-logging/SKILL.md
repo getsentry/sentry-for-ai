@@ -1,7 +1,8 @@
 ---
 name: sentry-instrument-logging
 description: Instruments structured Sentry logs in a new or existing application.
-disable-model-invocation: true
+license: Apache-2.0
+role: router
 ---
 
 # Instrument Sentry Logging
