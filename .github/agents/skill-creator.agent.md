@@ -44,7 +44,7 @@ Before writing anything, read 2 existing SDK skills to internalize the patterns:
 - **One frontend skill**: read `skills/sentry-nextjs-sdk/SKILL.md` and 2-3 of its `references/*.md` files
 
 Study them for:
-- Frontmatter fields and format — the `description` carries the "Use when …" trigger phrases (single line, no XML tags); there is no separate "when to use" section in the body
+- Frontmatter fields and format — the `description` carries the "Use when …" trigger phrases (single line, max. 1024 characters, no XML tags); there is no separate "when to use" section in the body
 - Phase 1 detection commands (real bash, not pseudo-code)
 - Phase 2 recommendation matrix (opinionated: always/when detected/optional)
 - Phase 3 guide structure (wizard option, manual setup, reference dispatch table)
