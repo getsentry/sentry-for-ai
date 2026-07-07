@@ -159,7 +159,7 @@ npx expo install @sentry/react-native
 ```javascript
 const { getSentryExpoConfig } = require("@sentry/react-native/metro");
 const config = getSentryExpoConfig(__dirname, {
-  // Auto-wrap Expo Router ErrorBoundary exports at build time (SDK ≥8.17.0)
+  // Auto-wrap Expo Router ErrorBoundary exports at build time (SDK ≥8.17.2)
   autoWrapExpoRouterErrorBoundary: true,
 });
 module.exports = config;
@@ -175,7 +175,7 @@ npx expo customize metro.config.js
 
 | Option | Type | Default | Purpose |
 |--------|------|---------|---------|
-| `autoWrapExpoRouterErrorBoundary` | `boolean` | `false` | Automatically wrap `export { ErrorBoundary } from 'expo-router'` with Sentry at build time (SDK ≥8.17.0). Captures errors that hit per-route ErrorBoundaries without manual wrapping |
+| `autoWrapExpoRouterErrorBoundary` | `boolean` | `false` | Automatically wrap `export { ErrorBoundary } from 'expo-router'` with Sentry at build time (SDK ≥8.17.2). Captures errors that hit per-route ErrorBoundaries without manual wrapping |
 | `annotateReactComponents` | `boolean` | `false` | Inject component names for better error context |
 | `includeWebReplay` | `boolean` | `true` | Include web replay bundle (set `false` for native-only apps) |
 | `includeWebFeedback` | `boolean` | `true` | Include web feedback bundle (set `false` for native-only apps) |
@@ -261,7 +261,7 @@ export default Sentry.wrap(RootLayout);
 
 Expo Router's per-route `ErrorBoundary` swallows render errors by default — Sentry won't see them unless you explicitly capture them. Two options:
 
-1. **Auto-wrap (recommended, SDK ≥8.17.0)** — Enable `autoWrapExpoRouterErrorBoundary: true` in `metro.config.js` (shown above). The Babel plugin rewrites `export { ErrorBoundary } from 'expo-router'` automatically in all route files.
+1. **Auto-wrap (recommended, SDK ≥8.17.2)** — Enable `autoWrapExpoRouterErrorBoundary: true` in `metro.config.js` (shown above). The Babel plugin rewrites `export { ErrorBoundary } from 'expo-router'` automatically in all route files.
 
 2. **Manual wrap** — Wrap the boundary yourself in each route file:
 
@@ -330,7 +330,7 @@ module.exports = withSentryConfig(config, {
   // includeWebReplay: true,
   // Set to false to exclude @sentry-internal/feedback from the native bundle (web only).
   // includeWebFeedback: true,
-  // Auto-wrap Expo Router ErrorBoundary exports at build time (SDK ≥8.17.0, Expo Router only)
+  // Auto-wrap Expo Router ErrorBoundary exports at build time (SDK ≥8.17.2, Expo Router only)
   // autoWrapExpoRouterErrorBoundary: true,
 });
 ```
