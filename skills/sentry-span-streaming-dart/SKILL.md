@@ -1,6 +1,6 @@
 ---
 name: sentry-span-streaming-dart
-description: Migrate Dart/Flutter SDK to Sentry span streaming (span-first trace lifecycle). Use when asked to "enable span streaming", "migrate to span streaming", "use traceLifecycle stream", "use Sentry.startSpan", or switch from transaction-based to streamed span delivery in a Dart or Flutter project.
+description: Migrate the Dart and Flutter Sentry SDK from transaction-based to streamed span delivery (span-first trace lifecycle). Use when asked to "enable span streaming", "migrate to span streaming", use traceLifecycle stream, SentryTraceLifecycle.stream, Sentry.startSpan, or SentrySpanV2, or when you want lower-latency span delivery or per-span processing in a Dart or Flutter project.
 license: Apache-2.0
 category: feature-setup
 parent: sentry-feature-setup
@@ -15,13 +15,6 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 Migrate from the default transaction-based trace lifecycle (`SentryTraceLifecycle.static`) to span streaming (`SentryTraceLifecycle.stream`), where spans are sent individually as they complete instead of being batched into a transaction at the end.
 
 This skill covers the Dart and Flutter SDKs (`sentry`, `sentry_flutter`, and integration packages such as `sentry_dio`, `sentry_sqflite`, `sentry_drift`). For JavaScript, see [Span Streaming (JavaScript)](../sentry-span-streaming-js/SKILL.md). For Python, see [Span Streaming (Python)](../sentry-span-streaming-python/SKILL.md).
-
-## Invoke This Skill When
-
-- User asks to "enable span streaming" or "migrate to span streaming" in a Dart or Flutter project
-- User wants to switch from transaction-based to streamed span delivery
-- User mentions `traceLifecycle`, `SentryTraceLifecycle.stream`, `Sentry.startSpan`, or `SentrySpanV2`
-- User wants lower latency span delivery or per-span processing
 
 ---
 

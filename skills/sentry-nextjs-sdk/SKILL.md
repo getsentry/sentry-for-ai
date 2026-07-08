@@ -1,6 +1,6 @@
 ---
 name: sentry-nextjs-sdk
-description: Full Sentry SDK setup for Next.js. Use when asked to "add Sentry to Next.js", "install @sentry/nextjs", or configure error monitoring, tracing, session replay, logging, profiling, AI monitoring, or crons for Next.js applications. Supports Next.js 13+ with App Router and Pages Router.
+description: Full Sentry SDK setup for Next.js. Use when asked to "add Sentry to Next.js", "install @sentry/nextjs", or configure error monitoring, tracing, session replay, logging, profiling, AI monitoring, or crons. Covers instrumentation.ts, withSentryConfig(), global-error.tsx, and capturing server actions, server component errors, and edge runtime errors across the browser, Node.js server, and Edge runtimes. Supports Next.js 13+ with App Router and Pages Router.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,14 +12,6 @@ disable-model-invocation: true
 # Sentry Next.js SDK
 
 Opinionated wizard that scans your Next.js project and guides you through complete Sentry setup across all three runtimes: browser, Node.js server, and Edge.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to Next.js" or "set up Sentry" in a Next.js app
-- User wants to install or configure `@sentry/nextjs`
-- User wants error monitoring, tracing, session replay, logging, or profiling for Next.js
-- User asks about `instrumentation.ts`, `withSentryConfig()`, or `global-error.tsx`
-- User wants to capture server actions, server component errors, or edge runtime errors
 
 > **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/nextjs` ≥8.28.0).
 > Always verify against [docs.sentry.io/platforms/javascript/guides/nextjs/](https://docs.sentry.io/platforms/javascript/guides/nextjs/) before implementing.

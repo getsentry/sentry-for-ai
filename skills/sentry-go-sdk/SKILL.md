@@ -1,6 +1,6 @@
 ---
 name: sentry-go-sdk
-description: Full Sentry SDK setup for Go. Use when asked to "add Sentry to Go", "install sentry-go", "setup Sentry in Go", or configure error monitoring, tracing, logging, metrics, or crons for Go applications. Supports net/http, Gin, Echo, Fiber, FastHTTP, Iris, Negroni, and gRPC.
+description: Full Sentry SDK setup for Go. Use when asked to "add Sentry to Go", "install sentry-go" (github.com/getsentry/sentry-go), or configure error monitoring, tracing, logging, metrics, or crons for a Go app. Covers capturing panics, HTTP handlers, and scheduled jobs. Supports net/http, Gin, Echo, Fiber, FastHTTP, Iris, Negroni, and gRPC.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry Go SDK
 
 Opinionated wizard that scans your Go project and guides you through complete Sentry setup.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to Go" or "setup Sentry" in a Go app
-- User wants error monitoring, tracing, logging, metrics, or crons in Go
-- User mentions `sentry-go`, `github.com/getsentry/sentry-go`, or Go Sentry SDK
-- User wants to monitor panics, HTTP handlers, or scheduled jobs in Go
 
 > **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry-go v0.43.0+).
 > As of v0.33.0+, the SDK requires **Go 1.25 or later** (supports the two most recent Go major versions).

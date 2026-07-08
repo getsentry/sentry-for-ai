@@ -1,6 +1,6 @@
 ---
 name: sentry-nestjs-sdk
-description: Full Sentry SDK setup for NestJS. Use when asked to "add Sentry to NestJS", "install @sentry/nestjs", "setup Sentry in NestJS", or configure error monitoring, tracing, profiling, logging, metrics, crons, or AI monitoring for NestJS applications. Supports Express and Fastify adapters, GraphQL, microservices, WebSockets, and background jobs.
+description: Full Sentry SDK setup for NestJS. Use when asked to "add Sentry to NestJS", "install @sentry/nestjs", or configure error monitoring, tracing, profiling, logging, metrics, crons, or AI monitoring for a NestJS app. Covers monitoring controllers, services, guards, microservices, WebSockets, and background jobs. Supports Express and Fastify adapters and GraphQL.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry NestJS SDK
 
 Opinionated wizard that scans your NestJS project and guides you through complete Sentry setup.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to NestJS" or "setup Sentry" in a NestJS app
-- User wants error monitoring, tracing, profiling, logging, metrics, or crons in NestJS
-- User mentions `@sentry/nestjs` or Sentry + NestJS
-- User wants to monitor NestJS controllers, services, guards, microservices, or background jobs
 
 > **Note:** SDK versions and APIs below reflect `@sentry/nestjs` 10.x (NestJS 8–11 supported).
 > Always verify against [docs.sentry.io/platforms/node/guides/nestjs/](https://docs.sentry.io/platforms/node/guides/nestjs/) before implementing.

@@ -1,6 +1,6 @@
 ---
 name: sentry-react-router-framework-sdk
-description: Full Sentry SDK setup for React Router Framework mode. Use when asked to "add Sentry to React Router Framework", "install @sentry/react-router", or configure error monitoring, tracing, profiling, session replay, logs, or user feedback for a React Router v7 framework app.
+description: Full Sentry SDK setup for React Router Framework mode. Use when asked to "add Sentry to React Router Framework", "set up Sentry in React Router v7 framework mode", or when a project uses framework entry files (entry.client.tsx, entry.server.tsx) and needs error monitoring, tracing, profiling, session replay, logs, or user feedback. Covers @sentry/react-router (currently beta), reactRouterTracingIntegration, sentryOnError, and createSentryHandleRequest. For React Router non-framework mode (v5-v7) use sentry-react-sdk.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry React Router Framework SDK
 
 Opinionated wizard that scans your React Router Framework project and guides you through complete Sentry setup across client and server entry points.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to React Router Framework" or "set up Sentry in React Router v7 framework mode"
-- User wants to install or configure `@sentry/react-router`
-- User uses React Router framework entry files (`entry.client.tsx`, `entry.server.tsx`) and wants tracing/error capture
-- User asks about `reactRouterTracingIntegration`, `sentryOnError`, `createSentryHandleRequest`, or React Router wizard setup
 
 > **Important:** This SDK is currently beta.
 > For React Router non-framework/data/declarative mode (v5/v6/v7), use `sentry-react-sdk` with `@sentry/react` integrations instead.

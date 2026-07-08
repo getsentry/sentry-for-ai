@@ -1,6 +1,6 @@
 ---
 name: sentry-create-alert
-description: Create Sentry alerts using the workflow engine API. Use when asked to create alerts, set up notifications, configure issue priority alerts, or build workflow automations. Supports email, Slack, PagerDuty, Discord, and other notification actions.
+description: Create Sentry alerts using the workflow engine API (currently beta). Use when asked to "create a Sentry alert", "set up notifications", configure issue priority or de-escalation alerts, get notified when issues match conditions, or build workflow automations. Supports email, Slack, PagerDuty, Discord, and other notification actions. Requires curl and an org auth token with alerts:write scope.
 license: Apache-2.0
 category: feature-setup
 parent: sentry-feature-setup
@@ -14,13 +14,6 @@ disable-model-invocation: true
 Create alerts via Sentry's workflow engine API.
 
 **Note:** This API is currently in **beta** and may be subject to change. It is part of New Monitors and Alerts and may not be viewable in the legacy Alerts UI.
-
-## Invoke This Skill When
-
-- User asks to "create a Sentry alert" or "set up notifications"
-- User wants to be emailed or notified when issues match certain conditions
-- User mentions priority alerts, de-escalation alerts, or workflow automations
-- User wants to configure Slack, PagerDuty, or email notifications for Sentry issues
 
 ## Prerequisites
 

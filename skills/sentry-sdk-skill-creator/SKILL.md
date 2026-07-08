@@ -1,6 +1,6 @@
 ---
 name: sentry-sdk-skill-creator
-description: Create a complete Sentry SDK skill bundle for any platform. Use when asked to "create an SDK skill", "add a new platform skill", "write a Sentry skill for X", or build a new sentry-<platform>-sdk skill bundle with wizard flow and feature reference files.
+description: Create a complete Sentry SDK skill bundle for any platform. Use when asked to "create an SDK skill", "add a new platform skill", "write a Sentry skill for a language or framework", or build a new per-platform sentry-*-sdk skill bundle with wizard flow and feature reference files.
 license: Apache-2.0
 category: internal
 disable-model-invocation: true
@@ -11,13 +11,6 @@ disable-model-invocation: true
 # Create a Sentry SDK Skill Bundle
 
 Produce a complete, research-backed SDK skill bundle — a main wizard SKILL.md plus deep-dive reference files for every feature pillar the SDK supports.
-
-## Invoke This Skill When
-
-- Asked to "create a Sentry SDK skill" for a new platform
-- Asked to "add support for [language/framework]" to sentry-agent-skills
-- Building a new `sentry-<platform>-sdk` skill bundle
-- Porting the SDK skill pattern to a new Sentry SDK
 
 > Read `${SKILL_ROOT}/references/philosophy.md` first — it defines the bundle architecture, wizard flow, and design principles this skill implements.
 
@@ -132,8 +125,7 @@ The main SKILL.md implements the **four-phase wizard** from the philosophy doc. 
 ### Gather Context First
 
 Before writing, run a scout or read existing skills to understand conventions:
-- Frontmatter pattern (name, description, license)
-- "Invoke This Skill When" trigger phrases
+- Frontmatter pattern (name, description, license) — the `description` carries the "Use when" trigger phrases; do not add a separate "when to use" section in the body
 - Table formatting and code example style
 - Troubleshooting table conventions
 
@@ -141,17 +133,12 @@ Before writing, run a scout or read existing skills to understand conventions:
 
 ```markdown
 ---
-name: sentry-<platform>-sdk
-description: Full Sentry SDK setup for <Platform>. Use when asked to "add Sentry
-  to <platform>", "install <package>", or configure error monitoring, tracing,
-  [features] for <Platform> applications. Supports [frameworks].
+name: sentry-[platform]-sdk
+description: Full Sentry SDK setup for [Platform]. Use when asked to "add Sentry to [platform]", "install [package]", or configure error monitoring, tracing, profiling, logging, or crons for a [platform] app. Covers [key monitoring targets and notable APIs]. Supports [frameworks].
 license: Apache-2.0
 ---
 
-# Sentry <Platform> SDK
-
-## Invoke This Skill When
-[trigger phrases]
+# Sentry [Platform] SDK
 
 ## Phase 1: Detect
 [bash commands to scan project — package manager, framework, existing Sentry, frontend/backend]

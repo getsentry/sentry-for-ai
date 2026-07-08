@@ -1,6 +1,6 @@
 ---
 name: sentry-code-review
-description: Analyze and resolve Sentry comments on GitHub Pull Requests. Use this when asked to review or fix issues identified by Sentry in PR comments. Can review specific PRs by number or automatically find recent PRs with Sentry feedback.
+description: Analyze and resolve comments from sentry[bot] on GitHub pull requests. Use when asked to "review Sentry comments", "fix Sentry bot feedback", or resolve issues flagged by Sentry in PR review comments. Reviews a specific PR by number or automatically finds recent PRs with Sentry feedback, and processes only sentry[bot] comments while ignoring other bots. Requires the gh CLI.
 allowed-tools: Read, Edit, Write, Bash, Grep, Glob, WebFetch, AskUserQuestion
 category: workflow
 parent: sentry-workflow

@@ -1,6 +1,6 @@
 ---
 name: sentry-tanstack-start-sdk
-description: Full Sentry SDK setup for TanStack Start React. Use when asked to "add Sentry to TanStack Start", "install @sentry/tanstackstart-react", or configure error monitoring, tracing, session replay, logs, or user feedback in a TanStack Start React app.
+description: Full Sentry SDK setup for TanStack Start React. Use when asked to "add Sentry to TanStack Start", "install @sentry/tanstackstart-react", or configure error monitoring, tracing, session replay, logs, or user feedback for browser and server runtimes. Covers @sentry/tanstackstart-react (currently alpha), sentryTanstackStart, wrapFetchWithSentry, instrument.server.mjs, and TanStack Start middleware instrumentation.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry TanStack Start React SDK
 
 Opinionated wizard that scans your TanStack Start React project and guides you through complete Sentry setup for browser and server runtimes.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to TanStack Start" or "set up Sentry" in a TanStack Start React app
-- User wants to install or configure `@sentry/tanstackstart-react`
-- User wants error monitoring, tracing, session replay, logs, or user feedback for TanStack Start React
-- User asks about `sentryTanstackStart`, `wrapFetchWithSentry`, `instrument.server.mjs`, or TanStack Start middleware instrumentation
 
 > **Note:** This SDK is currently alpha and documented as compatible with TanStack Start `1.0 RC`.
 > Always verify against [docs.sentry.io/platforms/javascript/guides/tanstackstart-react/](https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/) before implementing.

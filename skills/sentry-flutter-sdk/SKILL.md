@@ -1,6 +1,6 @@
 ---
 name: sentry-flutter-sdk
-description: Full Sentry SDK setup for Flutter and Dart. Use when asked to "add Sentry to Flutter", "install sentry_flutter", "setup Sentry in Dart", or configure error monitoring, tracing, profiling, session replay, or logging for Flutter applications. Supports Android, iOS, macOS, Linux, Windows, and Web.
+description: Full Sentry SDK setup for Flutter and Dart. Use when asked to "add Sentry to Flutter", "install sentry_flutter", "set up Sentry in Dart", or configure error monitoring, tracing, profiling, session replay, or logging. Covers native crashes, ANRs, and app hangs on iOS/Android, plus ecosystem integrations (Dio, sqflite, Hive, Isar, Drift). Supports Android, iOS, macOS, Linux, Windows, and Web.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
@@ -12,13 +12,6 @@ disable-model-invocation: true
 # Sentry Flutter SDK
 
 Opinionated wizard that scans your Flutter or Dart project and guides you through complete Sentry setup — error monitoring, tracing, session replay, logging, profiling, and ecosystem integrations.
-
-## Invoke This Skill When
-
-- User asks to "add Sentry to Flutter" or "set up Sentry" in a Flutter or Dart app
-- User wants error monitoring, tracing, profiling, session replay, or logging in Flutter
-- User mentions `sentry_flutter`, `sentry_dart`, mobile error tracking, or Sentry for Flutter
-- User wants to monitor native crashes, ANRs, or app hangs on iOS/Android
 
 > **Note:** SDK versions and APIs below reflect `sentry_flutter` ≥9.14.0 (current stable, February 2026).
 > Always verify against [docs.sentry.io/platforms/flutter/](https://docs.sentry.io/platforms/flutter/) before implementing.

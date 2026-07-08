@@ -1,6 +1,6 @@
 ---
 name: sentry-span-streaming-js
-description: Migrate JavaScript SDK to Sentry span streaming (span-first trace lifecycle). Use when asked to "enable span streaming", "migrate to span streaming", "use traceLifecycle stream", "add spanStreamingIntegration", or switch from transaction-based to streamed span delivery in a JavaScript project.
+description: Migrate the JavaScript Sentry SDK from transaction-based to streamed span delivery (span-first trace lifecycle). Use when asked to "enable span streaming", "migrate to span streaming", add spanStreamingIntegration, or use traceLifecycle stream or withStreamedSpan, or when you want lower-latency span delivery or per-span processing in a JavaScript project (Browser, Node.js, Bun, Deno, Cloudflare).
 license: Apache-2.0
 category: feature-setup
 parent: sentry-feature-setup
@@ -15,13 +15,6 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 Migrate from the default transaction-based trace lifecycle (`static`) to span streaming (`stream`), where spans are sent individually as they complete instead of being batched into a transaction at the end.
 
 This skill covers the JavaScript SDK (Browser, Node.js, Bun, Deno, Cloudflare). For Python, see [Span Streaming (Python)](../sentry-span-streaming-python/SKILL.md). For Dart/Flutter, see [Span Streaming (Dart)](../sentry-span-streaming-dart/SKILL.md).
-
-## Invoke This Skill When
-
-- User asks to "enable span streaming" or "migrate to span streaming" in a JavaScript project
-- User wants to switch from transaction-based to streamed span delivery
-- User mentions `traceLifecycle`, `spanStreamingIntegration`, or `withStreamedSpan`
-- User wants lower latency span delivery or per-span processing
 
 ---
 

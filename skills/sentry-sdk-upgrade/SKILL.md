@@ -1,6 +1,6 @@
 ---
 name: sentry-sdk-upgrade
-description: Upgrade the Sentry JavaScript SDK across major versions. Use when asked to upgrade Sentry, migrate to a newer version, fix deprecated Sentry APIs, or resolve breaking changes after a Sentry version bump.
+description: Upgrade the Sentry JavaScript SDK across major versions with guided migration. Use when asked to "upgrade Sentry" or "migrate the Sentry SDK", move from v7 to v8 or v8 to v9, fix deprecated Sentry APIs, resolve breaking changes after bumping @sentry/* packages, or find the right migration guide or changelog.
 license: Apache-2.0
 category: workflow
 parent: sentry-workflow
@@ -12,14 +12,6 @@ disable-model-invocation: true
 # Sentry JavaScript SDK Upgrade
 
 Upgrade the Sentry JavaScript SDK across major versions with AI-guided migration.
-
-## Invoke This Skill When
-
-- User asks to "upgrade Sentry" or "migrate Sentry SDK"
-- User mentions deprecated Sentry APIs or breaking changes after a version bump
-- User wants to move from v7 to v8, v8 to v9, or any major version jump
-- User encounters errors after updating `@sentry/*` package versions
-- User asks about Sentry migration guides or changelogs
 
 ## Phase 1: Detect
 
