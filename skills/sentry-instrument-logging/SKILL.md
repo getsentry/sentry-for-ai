@@ -4,6 +4,7 @@ description: Instruments structured Sentry logs in a new or existing application
 license: Apache-2.0
 category: feature-setup
 parent: sentry-feature-setup
+disable-model-invocation: true
 ---
 
 # Instrument Sentry Logging

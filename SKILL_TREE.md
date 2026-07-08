@@ -109,6 +109,7 @@ Configure specific Sentry capabilities beyond basic SDK setup.
 | Feature | Skill | Path |
 |---|---|---|
 | Create Sentry alerts using the workflow engine API | [`sentry-create-alert`](skills/sentry-create-alert/SKILL.md) | `sentry-create-alert/SKILL.md` |
+| Instruments structured Sentry logs in a new or existing application | [`sentry-instrument-logging`](skills/sentry-instrument-logging/SKILL.md) | `sentry-instrument-logging/SKILL.md` |
 | Decide which Sentry signal to reach for when instrumenting code — error, span, span attribute, log, or metric | [`sentry-instrumentation-guide`](skills/sentry-instrumentation-guide/SKILL.md) | `sentry-instrumentation-guide/SKILL.md` |
 | Configure the OpenTelemetry Collector with Sentry Exporter for multi-project routing and automatic project creation | [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) | `sentry-otel-exporter-setup/SKILL.md` |
 | Setup Sentry AI Agent Monitoring in any project | [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) | `sentry-setup-ai-monitoring/SKILL.md` |
