@@ -1,6 +1,6 @@
 ---
 name: sentry-cloudflare-sdk
-description: Full Sentry SDK setup for Cloudflare Workers and Pages. Use when asked to "add Sentry to Cloudflare Workers", "install @sentry/cloudflare", or configure error monitoring, tracing, logging, crons, or AI monitoring on Cloudflare. Covers withSentry, sentryPagesPlugin, instrumentDurableObjectWithSentry, instrumentD1WithSentry, and monitoring Durable Objects, D1, Queues, Workflows, Scheduled handlers, Email handlers, and Hono.
+description: Full Sentry SDK setup for Cloudflare Workers and Pages. Use when asked to "add Sentry to Cloudflare Workers", "install @sentry/cloudflare", or configure error monitoring, tracing, logging, crons, or AI monitoring on Cloudflare. Covers withSentry, sentryPagesPlugin, instrumentDurableObjectWithSentry, and monitoring Durable Objects, D1, Queues, Workflows, Scheduled handlers, Email handlers, and Hono.
 license: Apache-2.0
 category: sdk-setup
 parent: sentry-sdk-setup
