@@ -1,6 +1,6 @@
 {
   "name": "sentry",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Sentry Plugin for Codex to help with debugging including MCP and skill capabilities.",
   "author": {
     "name": "Sentry",
