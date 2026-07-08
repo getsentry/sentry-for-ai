@@ -46,6 +46,8 @@ When unclear, **ask the user** which feature they want to configure. Do not gues
 | Span streaming (Python) — migrate from transaction-based to streamed span delivery | [`sentry-span-streaming-python`](../sentry-span-streaming-python/SKILL.md) | `sentry-span-streaming-python/SKILL.md` |
 | Span streaming (Dart/Flutter) — migrate from transaction-based to streamed span delivery | [`sentry-span-streaming-dart`](../sentry-span-streaming-dart/SKILL.md) | `sentry-span-streaming-dart/SKILL.md` |
 | Instrumentation guide — decide which signal to reach for (error vs span vs log vs metric), "what to instrument where" | [`sentry-instrumentation-guide`](../sentry-instrumentation-guide/SKILL.md) | `sentry-instrumentation-guide/SKILL.md` |
+| Instruments structured Sentry logs in a new or existing application | [`sentry-instrument-logging`](../sentry-instrument-logging/SKILL.md) | `sentry-instrument-logging/SKILL.md` |
+
 
 Each skill contains its own detection logic, prerequisites, and step-by-step instructions. Trust the skill — read it carefully and follow it. Do not improvise or take shortcuts.
 
