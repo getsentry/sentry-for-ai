@@ -2,7 +2,8 @@
 name: sentry-instrument-logging
 description: Instruments structured Sentry logs in a new or existing application.
 license: Apache-2.0
-role: router
+category: feature-setup
+parent: sentry-feature-setup
 ---
 
 # Instrument Sentry Logging
@@ -15,11 +16,6 @@ production behavior easier to understand and debug.
 
 The log messages added by this skill should also serve as clear, repeatable,
 examples that users can follow when instrumenting the rest of their application.
-
-## When to use
-
-- Add structured Sentry logging to a codebase with little or no existing logging.
-- Improve or expand an existing logging strategy using Sentry.
 
 ## Prerequisites
 
