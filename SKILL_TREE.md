@@ -21,46 +21,15 @@ Each skill file contains its own detection logic, prerequisites, and configurati
 
 ---
 
-## SDK Setup
+## Standalone Skills
 
-Install and configure Sentry for any platform. If unsure which SDK fits, detect the platform from the user's project files (`package.json`, `go.mod`, `requirements.txt`, `Gemfile`, `*.csproj`, `build.gradle`, etc.).
+Self-contained skills — start here. If you're not sure what the user needs, read `sentry-get-started`; it orients you and points to the right skill.
 
-| Platform | Skill |
+| Skill | What it does |
 |---|---|
-| Android | [`sentry-android-sdk`](skills/sentry-android-sdk/SKILL.md) |
-| browser JavaScript | [`sentry-browser-sdk`](skills/sentry-browser-sdk/SKILL.md) |
-| Cloudflare Workers and Pages | [`sentry-cloudflare-sdk`](skills/sentry-cloudflare-sdk/SKILL.md) |
-| Apple platforms (iOS, macOS, tvOS, watchOS, visionOS) | [`sentry-cocoa-sdk`](skills/sentry-cocoa-sdk/SKILL.md) |
-| .NET | [`sentry-dotnet-sdk`](skills/sentry-dotnet-sdk/SKILL.md) |
-| Elixir | [`sentry-elixir-sdk`](skills/sentry-elixir-sdk/SKILL.md) |
-| Flutter and Dart | [`sentry-flutter-sdk`](skills/sentry-flutter-sdk/SKILL.md) |
-| Go | [`sentry-go-sdk`](skills/sentry-go-sdk/SKILL.md) |
-| NestJS | [`sentry-nestjs-sdk`](skills/sentry-nestjs-sdk/SKILL.md) |
-| Next.js | [`sentry-nextjs-sdk`](skills/sentry-nextjs-sdk/SKILL.md) |
-| Node.js, Bun, and Deno | [`sentry-node-sdk`](skills/sentry-node-sdk/SKILL.md) |
-| PHP | [`sentry-php-sdk`](skills/sentry-php-sdk/SKILL.md) |
-| Python | [`sentry-python-sdk`](skills/sentry-python-sdk/SKILL.md) |
-| React Native and Expo | [`sentry-react-native-sdk`](skills/sentry-react-native-sdk/SKILL.md) |
-| React Router Framework mode | [`sentry-react-router-framework-sdk`](skills/sentry-react-router-framework-sdk/SKILL.md) |
-| React | [`sentry-react-sdk`](skills/sentry-react-sdk/SKILL.md) |
-| Ruby | [`sentry-ruby-sdk`](skills/sentry-ruby-sdk/SKILL.md) |
-| Svelte and SvelteKit | [`sentry-svelte-sdk`](skills/sentry-svelte-sdk/SKILL.md) |
-| TanStack Start React | [`sentry-tanstack-start-sdk`](skills/sentry-tanstack-start-sdk/SKILL.md) |
-
-### Platform Detection Priority
-
-When multiple SDKs could match, prefer the more specific one:
-
-- **Android** (`build.gradle` with android plugin) → `sentry-android-sdk`
-- **NestJS** (`@nestjs/core`) → `sentry-nestjs-sdk` over `sentry-node-sdk`
-- **Next.js** → `sentry-nextjs-sdk` over `sentry-react-sdk` or `sentry-node-sdk`
-- **React Router Framework** (`@sentry/react-router` or `@react-router/*`) → `sentry-react-router-framework-sdk` over `sentry-react-sdk`
-- **TanStack Start React** (`@tanstack/react-start`) → `sentry-tanstack-start-sdk` over `sentry-react-sdk`
-- **React Native** → `sentry-react-native-sdk` over `sentry-react-sdk`
-- **PHP** with Laravel or Symfony → `sentry-php-sdk`
-- **Node.js / Bun / Deno** without a specific framework → `sentry-node-sdk`
-- **Browser JS** (vanilla, jQuery, static sites) → `sentry-browser-sdk`
-- **No match** → direct user to [Sentry Docs](https://docs.sentry.io/platforms/)
+| [`sentry-debug-issue`](skills/sentry-debug-issue/SKILL.md) | Debug and fix a Sentry issue — find it (by link, ID, or search), pull full context (stack trace, breadcrumbs, trace, logs), optionally run Seer root-cause / autofix, apply the code fix, and resolve it via a `Fixes PROJECT-NAME-12A` commit/PR. Use when working a known error or hunting one down to fix. |
+| [`sentry-get-started`](skills/sentry-get-started/SKILL.md) | Guided entry point for using Sentry through your agent. Orients you to your current setup and, for a new project, sets up Sentry end to end with sane defaults — provision a project, install the SDK (errors, tracing, and whatever it enables by default), and confirm real telemetry reaches Sentry. Routes other intents (adding more signals, fixing issues) to the right skill. |
+| [`sentry-instrument`](skills/sentry-instrument/SKILL.md) | Instrument an application with Sentry — detect the platform, install and initialize the SDK if needed, and wire up any signal: error monitoring, tracing/performance, logging, metrics, profiling, session replay, user feedback, cron check-ins, and AI/LLM monitoring. Use to add Sentry to a project or to capture more than errors. |
 
 ## Workflows
 
@@ -88,29 +57,3 @@ Configure specific Sentry capabilities beyond basic SDK setup.
 | Migrate Dart/Flutter SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-dart`](skills/sentry-span-streaming-dart/SKILL.md) |
 | Migrate JavaScript SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-js`](skills/sentry-span-streaming-js/SKILL.md) |
 | Migrate Python SDK to Sentry span streaming (span-first trace lifecycle) | [`sentry-span-streaming-python`](skills/sentry-span-streaming-python/SKILL.md) |
-
-## Quick Lookup
-
-Match your project to a skill by keywords.
-
-| Keywords | Skill |
-|---|---|
-| android, kotlin, java, jetpack compose | [`sentry-android-sdk`](skills/sentry-android-sdk/SKILL.md) |
-| browser, vanilla js, javascript, jquery, cdn, wordpress, static site | [`sentry-browser-sdk`](skills/sentry-browser-sdk/SKILL.md) |
-| cloudflare, cloudflare workers, cloudflare pages, wrangler, durable objects, d1, hono | [`sentry-cloudflare-sdk`](skills/sentry-cloudflare-sdk/SKILL.md) |
-| ios, macos, swift, cocoa, tvos, watchos, visionos, swiftui, uikit | [`sentry-cocoa-sdk`](skills/sentry-cocoa-sdk/SKILL.md) |
-| .net, csharp, c#, asp.net, maui, wpf, winforms, blazor, azure functions | [`sentry-dotnet-sdk`](skills/sentry-dotnet-sdk/SKILL.md) |
-| elixir, phoenix, plug, liveview, oban, quantum, mix | [`sentry-elixir-sdk`](skills/sentry-elixir-sdk/SKILL.md) |
-| flutter, dart, sentry_flutter, pubspec, dio | [`sentry-flutter-sdk`](skills/sentry-flutter-sdk/SKILL.md) |
-| go, golang, gin, echo, fiber | [`sentry-go-sdk`](skills/sentry-go-sdk/SKILL.md) |
-| nestjs, nest | [`sentry-nestjs-sdk`](skills/sentry-nestjs-sdk/SKILL.md) |
-| nextjs, next.js, next | [`sentry-nextjs-sdk`](skills/sentry-nextjs-sdk/SKILL.md) |
-| node, nodejs, node.js, bun, deno, express, fastify, koa, hapi | [`sentry-node-sdk`](skills/sentry-node-sdk/SKILL.md) |
-| php, laravel, symfony | [`sentry-php-sdk`](skills/sentry-php-sdk/SKILL.md) |
-| python, django, flask, fastapi, celery, starlette | [`sentry-python-sdk`](skills/sentry-python-sdk/SKILL.md) |
-| react native, expo | [`sentry-react-native-sdk`](skills/sentry-react-native-sdk/SKILL.md) |
-| react-router framework, @sentry/react-router, @react-router/dev, react-router reveal | [`sentry-react-router-framework-sdk`](skills/sentry-react-router-framework-sdk/SKILL.md) |
-| react, react router, tanstack, redux, vite | [`sentry-react-sdk`](skills/sentry-react-sdk/SKILL.md) |
-| ruby, rails, sinatra, sidekiq, rack | [`sentry-ruby-sdk`](skills/sentry-ruby-sdk/SKILL.md) |
-| svelte, sveltekit | [`sentry-svelte-sdk`](skills/sentry-svelte-sdk/SKILL.md) |
-| tanstack start, tanstack react start, @tanstack/react-start, tanstackstart-react | [`sentry-tanstack-start-sdk`](skills/sentry-tanstack-start-sdk/SKILL.md) |
