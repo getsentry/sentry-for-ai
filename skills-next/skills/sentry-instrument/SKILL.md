@@ -33,29 +33,31 @@ first-error.**
 
 | Scope | When | What runs |
 |-------|------|-----------|
-| **First error** | Brand-new install, no Sentry yet | Provision + install + `init` + **error capture only**. Defer every other signal. |
+| **First error** | Brand-new install, no Sentry yet | Provision + install + the SDK's recommended default `init` (**errors + tracing**), then verify a real error. Defer *additional* signals (logging, profiling, replay, metrics, …). |
 | **Add a signal** | Sentry already installed; user wants one more signal | Skip provisioning/install. Jump straight to that one signal. |
-| **Full setup** | "Set it up properly / sensible defaults" | First error, then propose a recommended baseline (errors + tracing + releases + source maps) and add what the user accepts. |
+| **Full setup** | "Set it up properly / sensible defaults" | Run first error (which already establishes errors + tracing), then propose the rest of a baseline (releases, source maps, and any signals that fit the app) and add what the user accepts. |
 
-Never over-instrument — installing tracing/logging/etc. upfront when the user only asked to get Sentry
-working is doing more than they asked for.
+Never over-instrument — wiring up logging, session replay, profiling, metrics, etc. upfront when the
+user only asked to get Sentry working is doing more than they asked for. (The base `init` includes
+tracing — that's the SDK's recommended default, not over-instrumentation.)
 
 ## Step 2 — Get errors working first (fresh installs)
 
 For **first-error** and **full setup** scope — there's no Sentry yet, so the project needs a base
-install before any signal. **Run [`references/first-error-setup.md`](references/first-error-setup.md)
-end to end** — the shared spine: detect the platform, provision a project, install error-only `init`,
-verify a real error lands, push to production, and confirm stack traces will be readable. You'll also
-want to immediately read [`references/sdks/index.md`](references/sdks/index.md) and
-[`references/concepts/errors.md`](references/concepts/errors.md) so you have the catalog and the
+install before any additional signal. **Run [`references/first-error-setup.md`](references/first-error-setup.md)
+end to end** — the shared spine: detect the platform, provision a project, install the SDK's
+recommended default `init` (errors + tracing — take the reference's default as written, don't pare it
+back to errors-only), verify a real error lands, push to production, and confirm stack traces will be
+readable. You'll also want to immediately read [`references/sdks/index.md`](references/sdks/index.md)
+and [`references/concepts/errors.md`](references/concepts/errors.md) so you have the catalog and the
 baseline-signal context in hand before you start.
 
 For **add a signal** scope, Sentry is already installed with a DSN — skip this step entirely and go
 to Step 3.
 
-Under **first-error** scope you're done after the spine. Under **full setup**, continue: propose a
-recommended baseline (errors + tracing + releases + source maps) and wire what the user accepts via
-Step 3.
+Under **first-error** scope you're done after the spine. Under **full setup**, continue: the spine
+already set up errors + tracing and flagged source maps, so propose the rest of a solid baseline
+(releases, plus any signals that fit the app) and wire what the user accepts via Step 3.
 
 ## Step 3 — Wire the signal(s)
 
@@ -94,7 +96,7 @@ After the first error or a new signal is confirmed, offer concrete follow-ups wi
 them:
 
 - Ship it to production.
-- Add a signal — tracing is the usual next step after errors.
+- Add a signal — logging, session replay, or profiling are common next steps (tracing is already in the base `init`).
 - Harden the setup — readable stack traces (source maps for JS, debug symbols for native/mobile) and
   releases are the natural pair.
 - Start using the data.
