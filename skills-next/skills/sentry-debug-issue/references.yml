@@ -1,0 +1,8 @@
+needs:
+  - search-query-language.md
+  # Concept docs that help read/understand an issue while debugging: the error and
+  # its attached context (logs/replay/profile/feedback), the trace, and the monitor
+  # types that also create issues (cron missed/failed check-ins, metric thresholds)
+  # plus the Monitors->Issues->Alerts model. Excludes pure setup/strategy docs
+  # (choosing-a-signal, data-scrubbing, reduce-volume, releases).
+  - concepts/{errors,tracing,logging,session-replay,profiling,user-feedback,crons,metrics,monitors}.md
