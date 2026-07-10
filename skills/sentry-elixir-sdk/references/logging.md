@@ -163,6 +163,49 @@ config :sentry,
 
 `enable_logs: true` automatically wires up a Logger handler that captures log entries and forwards them to the Sentry Logs Protocol endpoint via the `TelemetryProcessor`.
 
+### Unified Config: Error Events + Structured Logs (since v13.2.0)
+
+The `enable_logs: true` path can now **also capture error events** (crashes and Logger messages) in addition to structured logs, eliminating the need to manually configure `LoggerHandler` for most use cases:
+
+```elixir
+# config/config.exs
+config :sentry,
+  enable_logs: true,
+  logs: [
+    # Structured logs sent to Sentry's Logs UI:
+    level: :info,
+    metadata: [:request_id],
+    excluded_domains: [:cowboy],
+    
+    # Error events (crashes + Logger messages):
+    capture_log_messages: true,              # also report Logger messages as error events
+    capture_level: :error,                   # minimum level for error events (default: :error)
+    capture_metadata: [:request_id, :user_id],  # metadata for error events
+    capture_excluded_domains: [:cowboy]      # domains to exclude from error events
+  ]
+```
+
+With this config:
+- `:info` and higher logs → Sentry Logs UI (structured logs)
+- `:error` and higher logs → Sentry Issues (error events)
+- Crashes are always reported as error events (regardless of `capture_log_messages`)
+
+### Logs Protocol Configuration Options (enable_logs: true)
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| **Structured Logs (Logs UI)** | | | |
+| `:level` | `Logger.level` | `:info` | Minimum log level for structured logs sent to Logs UI |
+| `:metadata` | `[atom] \| :all` | `[]` | Logger metadata keys to include as log attributes |
+| `:excluded_domains` | `[atom]` | `[]` | Domains to exclude from structured logs |
+| **Error Events (Issues)** | | | |
+| `:capture_log_messages` | `boolean` | `false` | When `true`, Logger messages (e.g., `Logger.error("oops")`) are also reported as error events. Crashes are always reported regardless of this setting. Since v13.2.0 |
+| `:capture_level` | `Logger.level` | `:error` | Minimum level for error events (including crashes). Since v13.2.0 |
+| `:capture_metadata` | `[atom] \| :all` | `[]` | Logger metadata keys to include in error events (added under `:extra` as `logger_metadata`). Since v13.2.0 |
+| `:capture_excluded_domains` | `[atom]` | `[]` | Domains to exclude from error events. Since v13.2.0 |
+
+> **Note:** The `:capture_*` keys configure **error events** independently from the structured logs keys. You can capture structured logs at `:info` while only creating error events at `:error`.
+
 ### Filter logs before sending
 
 ```elixir
@@ -202,6 +245,7 @@ You can run both simultaneously. A common setup: `LoggerHandler` at `:error` lev
 ## Best Practices
 
 - Prefer `Sentry.LoggerHandler` over `Sentry.LoggerBackend` for new projects — `LoggerHandler` is the Erlang `:logger` handler and runs in the calling process, which is more efficient
+- For v13.2.0+, prefer `enable_logs: true` with `capture_log_messages: true` over manually configuring `LoggerHandler` — it handles both structured logs and error events
 - Set `excluded_domains: [:cowboy]` (the default) to avoid duplicate events when using `Sentry.PlugCapture` with Cowboy
 - Enable `capture_log_messages: true` to catch error-level log messages that are not explicit `capture_exception` calls
 - Use `tags_from_metadata` to promote high-cardinality identifiers (user ID, region, request ID) to searchable Sentry tags

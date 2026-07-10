@@ -365,6 +365,6 @@ Connecting Phoenix backend and JavaScript frontend with linked Sentry projects e
 | Source code context missing in production | Run `mix sentry.package_source_code` before building your OTP release |
 | Context not appearing on async events | `Sentry.Context.*` is process-scoped; pass values explicitly or propagate Logger metadata across processes |
 | Oban integration not reporting crons | Requires Oban v2.17.6+ or Oban Pro; cron jobs must have `"cron" => true` in job meta |
-| Duplicate events from Cowboy/Bandit crashes | Set `excluded_domains: [:cowboy, :bandit]` in `LoggerHandler` config (both excluded by default as of v13.1.0) |
+| Duplicate events from Cowboy crashes | Set `excluded_domains: [:cowboy]` in `LoggerHandler` config (excluded by default) |
 | `finch` not starting | Ensure `{:finch, "~> 0.21"}` is in deps; Finch is the default HTTP client since v12.0.0 |
 | JSON encoding error | Add `{:jason, "~> 1.4"}` and set `json_library: Jason` for Elixir < 1.18 |
