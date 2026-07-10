@@ -24,6 +24,7 @@
 | `trace_propagation_targets` | Array | `[/.*/]` | URLs to inject `sentry-trace` + `baggage` headers into |
 | `propagate_traces` | Boolean | `true` | Propagate trace headers on outbound Net::HTTP requests |
 | `capture_queue_time` | Boolean | `true` | Record request queue time from `X-Request-Start` header (v6.4.0+, Rails fixed in v6.4.1) |
+| `rails.active_job_propagate_traces` | Boolean | `true` | Propagate trace context through ActiveJob payloads for distributed tracing across Sidekiq, Resque, DelayedJob adapters (sentry-rails only) |
 | `org_id` | String | `nil` | Explicit organization ID; overrides the value auto-extracted from the DSN. Set this for self-hosted or Relay setups where DSN-based parsing may not work (v6.5.0+) |
 | `strict_trace_continuation` | Boolean | `false` | When `true`, only continue an incoming trace if the `sentry-org_id` baggage matches the SDK's effective org ID; if either is missing the trace is **not** continued. Prevents inadvertent trace stitching from unknown third-party services (v6.5.0+) |
 
@@ -56,7 +57,11 @@ No extra code needed. The following are auto-instrumented:
 - `ActionController` — one transaction per request
 - `ActiveRecord` — SQL queries as child spans
 - `ActionMailer` — mail delivery as child spans
-- `ActiveJob` — job execution as child spans
+- `ActiveJob` — job execution as transactions with **distributed tracing** support:
+  - Emits a `queue.publish` producer span on `perform_later`
+  - Propagates trace context through job payloads (works with Sidekiq, Resque, DelayedJob adapters)
+  - Creates a `queue.active_job` consumer transaction on the worker
+  - Disable trace propagation with `config.rails.active_job_propagate_traces = false`
 - `Net::HTTP` outbound calls — child spans with trace header propagation
 
 ### Rack / Sinatra (via `Sentry::Rack::CaptureExceptions`)

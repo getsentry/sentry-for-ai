@@ -21,7 +21,7 @@ Opinionated wizard that scans the project and guides through complete Sentry set
 - User is migrating from AppSignal, Honeybadger, Bugsnag, Rollbar, or Airbrake to Sentry
 - User wants to monitor exceptions, HTTP requests, or background jobs in Rails/Sinatra
 
-> **Note:** SDK APIs below reflect sentry-ruby v6.6.2.
+> **Note:** SDK APIs below reflect sentry-ruby v6.7.0+.
 > Always verify against [docs.sentry.io/platforms/ruby/](https://docs.sentry.io/platforms/ruby/) before implementing.
 
 ---
@@ -222,6 +222,7 @@ For each feature: `Read ${SKILL_ROOT}/references/<feature>.md`, follow steps exa
 | `max_breadcrumbs` | Integer | `100` | Max breadcrumbs per event |
 | `debug` | Boolean | `false` | Verbose SDK output to stdout |
 | `capture_queue_time` | Boolean | `true` | Record request queue time from `X-Request-Start` header (v6.4.0+, Rails fixed in v6.4.1) |
+| `rails.active_job_propagate_traces` | Boolean | `true` | Propagate trace context through ActiveJob payloads for distributed tracing (sentry-rails only) |
 | `otlp.enabled` | Boolean | `false` | Route OTel spans to Sentry via OTLP; **do not combine with** `traces_sample_rate` |
 | `otlp.collector_url` | String | `nil` | OTLP HTTP endpoint of an OTel Collector (e.g., `http://localhost:4318/v1/traces`); when set, spans are sent to the collector instead of directly to Sentry |
 | `org_id` | String | `nil` | Explicit org ID; overrides DSN-extracted value; useful for self-hosted/Relay setups (v6.5.0+) |

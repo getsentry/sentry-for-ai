@@ -65,7 +65,7 @@ Sentry.set_user(
 Sentry.set_user({})
 ```
 
-### Tags, context, and extras
+### Tags, context, extras, and attributes
 
 ```ruby
 # Tags — indexed, filterable in Sentry search
@@ -73,6 +73,12 @@ Sentry.set_tags(region: "us-east-1", plan: "enterprise")
 
 # Context — structured data attached to events (not indexed)
 Sentry.set_context("order", { id: order.id, total: order.total, currency: "USD" })
+
+# Attributes — key-value pairs that apply to telemetry (logs, metrics, traces)
+Sentry.set_attribute("user.tier", "premium")
+Sentry.set_attribute("response.time", 150, unit: "millisecond")
+Sentry.set_attributes(region: "us-west", datacenter: "pdx-1")
+Sentry.remove_attribute("user.tier")  # remove a specific attribute
 
 # Extras — deprecated; prefer set_context for structured data
 Sentry.set_extras(raw_payload: payload.inspect)
@@ -208,11 +214,17 @@ Sentry.set_user(id:, email:, username:, ip_address:)
 Sentry.set_tags(key: "value")
 Sentry.set_context("key", { field: "value" })
 Sentry.set_extras(key: "value")  # deprecated — prefer set_context
+Sentry.set_attribute("key", "value", unit: nil)
+Sentry.set_attributes(key1: "value1", key2: "value2")
+Sentry.remove_attribute("key")
 
 # Scope instance methods (inside with_scope / configure_scope blocks)
 scope.set_tags(key: "value")
 scope.set_user(id: "42", email: "user@example.com")
 scope.set_context("key", { field: "value" })
+scope.set_attribute("key", "value", unit: nil)
+scope.set_attributes(key1: "value1", key2: "value2")
+scope.remove_attribute("key")
 scope.set_level(:error)            # :debug | :info | :warning | :error | :fatal
 scope.set_fingerprint(["my-group"])
 scope.clear
