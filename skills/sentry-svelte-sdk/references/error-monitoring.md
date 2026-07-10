@@ -151,6 +151,20 @@ Sentry.setTags({
 
 Key constraints: ≤32 chars, alphanumeric + `_`, `.`, `:`, `-`. Value: ≤200 chars, no newlines.
 
+### Attributes (applied to logs, metrics, and spans)
+
+```typescript
+Sentry.setAttribute("is_admin", true);
+Sentry.setAttribute("render_duration", 150);
+Sentry.setAttributes({
+  is_admin: true,
+  payment_selection: "credit_card",
+  render_duration: 150,
+});
+```
+
+Attributes are applied to logs, metrics, and streamed spans. Supported types: `string`, `number`, `boolean`, and arrays of these types (`string[]`, `number[]`, `boolean[]`).
+
 ### Context Objects (structured, non-indexed)
 
 ```typescript
