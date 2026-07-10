@@ -31,8 +31,8 @@ Add error monitoring to my iOS app
 **Find and fix production issues** — Query your Sentry environment, triage errors, and fix them in place.
 
 ```
-/seer What are the top errors in the last 24 hours?
-/seer Which issues are affecting the most users?
+What are the top errors in the last 24 hours?
+Which issues are affecting the most users?
 Fix the recent Sentry errors
 ```
 
@@ -124,12 +124,6 @@ To build any target locally, run `plugin-src/<agent>/build.sh <output-dir>`
 - **`references/concepts/`** — per-signal strategy: errors, tracing, logging, metrics, profiling, session replay, user feedback, crons, releases, data scrubbing, and choosing-a-signal.
 
 > Superseded per-SDK "wizard" skills are frozen under `skills-legacy/`, excluded from the plugin build.
-
-### Slash Commands
-
-| Command | Description |
-|---------|-------------|
-| `/seer <query>` | Ask questions about your Sentry environment in natural language |
 
 ## Prerequisites
 

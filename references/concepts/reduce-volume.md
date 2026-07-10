@@ -28,7 +28,7 @@ is keeping the data that earns its place and dropping the rest — for quota *an
 
 ## A practical workflow
 
-1. **Find the top offenders first** (MCP / `/seer` / Explore across errors, spans, and logs) — don't cut
+1. **Find the top offenders first** (MCP / Explore across errors, spans, and logs) — don't cut
    blind.
 2. **Filter known noise** — high precision, no fidelity loss on real data.
 3. **Tune span sampling** with a `tracesSampler` — the biggest lever.

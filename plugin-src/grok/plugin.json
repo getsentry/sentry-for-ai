@@ -1,7 +1,7 @@
 {
   "name": "sentry",
   "version": "1.1.0",
-  "description": "Sentry Plugin for Grok to help with debugging including MCP, commands, and skill capabilities.",
+  "description": "Sentry Plugin for Grok to help with debugging including MCP and skill capabilities.",
   "author": {
     "name": "Sentry",
     "url": "https://sentry.io"

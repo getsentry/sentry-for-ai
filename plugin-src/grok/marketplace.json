@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "sentry",
-      "description": "Tools for debugging application issues using Sentry. Includes MCP functionality, skills, and commands.",
+      "description": "Tools for debugging application issues using Sentry. Includes MCP functionality and skills.",
       "category": "monitoring",
       "source": "./",
       "homepage": "https://sentry.io",
