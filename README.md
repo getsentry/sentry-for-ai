@@ -1,5 +1,17 @@
 # Sentry for AI
 
+> [!IMPORTANT]
+> **This is a skill _source_ repository — not something you install directly.**
+> The skills here are built from this source into installable plugins for
+> [Claude Code](https://github.com/getsentry/plugin-claude),
+> [Cursor](https://github.com/getsentry/plugin-cursor),
+> [Codex](https://github.com/getsentry/plugin-codex), and
+> [Grok](https://github.com/getsentry/plugin-grok) — install one of those, not
+> this repo. They're also served over HTTP at
+> [skills.sentry.dev](https://skills.sentry.dev) for agents to fetch directly.
+> In the future we may also publish the skills as a generic, standalone skills
+> repository.
+
 Your AI coding assistant already knows how to write code. This plugin teaches it Sentry — how to set it up, how to find and fix production issues, and how to get the most out of every feature.
 
 Whether you're adding Sentry to a new project, debugging a spike in errors, or configuring alerts, just ask. The plugin gives your assistant the context it needs to do it right.
