@@ -29,7 +29,7 @@ Self-contained skills — start here. If you're not sure what the user needs, re
 |---|---|
 | [`sentry-debug-issue`](skills/sentry-debug-issue/SKILL.md) | Debug and fix a Sentry issue — find it (by link, ID, or search), pull full context (stack trace, breadcrumbs, trace, logs), optionally run Seer root-cause / autofix, apply the code fix, and resolve it via a `Fixes PROJECT-NAME-12A` commit/PR. Use when working a known error or hunting one down to fix. |
 | [`sentry-get-started`](skills/sentry-get-started/SKILL.md) | Guided entry point for using Sentry through your agent. Orients you to your current setup and, for a new project, sets up Sentry end to end with sane defaults — provision a project, install the SDK (errors, tracing, and whatever it enables by default), and confirm real telemetry reaches Sentry. Routes other intents (adding more signals, fixing issues) to the right skill. |
-| [`sentry-instrument`](skills/sentry-instrument/SKILL.md) | Instrument an application with Sentry — detect the platform, install and initialize the SDK if needed, and wire up any signal: error monitoring, tracing/performance, logging, metrics, profiling, session replay, user feedback, cron check-ins, and AI/LLM monitoring. Use to add Sentry to a project or to capture more than errors. |
+| [`sentry-instrument`](skills/sentry-instrument/SKILL.md) | Instrument an application with Sentry — detect the platform, install and initialize the SDK if needed, and wire up any signal — error monitoring, tracing/performance, logging, metrics, profiling, session replay, user feedback, cron check-ins, and AI/LLM monitoring. Use to add Sentry to a project or to capture more than errors. |
 
 ## Workflows
 
