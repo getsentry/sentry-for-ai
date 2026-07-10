@@ -194,6 +194,8 @@ Sentry.getGlobalScope().setContext("build", {
 scope.setUser({ id, email, username, ip_address });  // setUser(null) to clear
 scope.setTag("key", "value");
 scope.setTags({ key1: "v1", key2: "v2" });
+scope.setAttribute("key", value);
+scope.setAttributes({ key1: v1, key2: v2 });
 scope.setExtra("key", value);
 scope.setExtras({ key1: v1, key2: v2 });
 scope.setContext("name", { key: value });  // setContext("name", null) to remove
@@ -233,6 +235,34 @@ Sentry.withScope((scope) => {
   Sentry.captureException(new Error("Max retries exceeded"));
 });
 ```
+
+---
+
+### Attributes — Structured Scope Properties
+
+Attributes are key-value pairs attached to the scope, similar to tags but with support for structured naming (e.g., `user.role`, `subscription.tier`).
+
+```javascript
+// Single attribute — applied to all subsequent events (isolation scope)
+Sentry.setAttribute("is_admin", true);
+Sentry.setAttribute("user.num_orders", 42);
+Sentry.setAttribute("subscription.tier", "pro");
+
+// Multiple attributes at once
+Sentry.setAttributes({
+  "user.num_orders": user.numOrders,
+  "subscription.tier": "pro",
+  "feature.new_checkout": true,
+});
+
+// Scoped attribute — only on this one event
+Sentry.withScope((scope) => {
+  scope.setAttribute("retry_attempt", 3);
+  Sentry.captureException(new Error("Max retries exceeded"));
+});
+```
+
+> **Note:** `Sentry.setAttribute()` and `Sentry.setAttributes()` write to the isolation scope by default, analogous to `Sentry.setTag()`. Available since SDK v10.61.0.
 
 ---
 
