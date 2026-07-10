@@ -62,8 +62,8 @@ Review each log you add or change, and drop any that can't answer yes to all of 
 - **Safe** — no PII, secrets, raw payloads, or unstable exception-message text?
 - **Actionable** — would seeing it change how someone investigates or responds?
 
-For each log you keep, be able to say: *"This log is valuable because it helps answer &lt;specific
-question&gt;."* Drop logs that merely confirm a routine UI interaction, duplicate a generic API failure,
+For each log you keep, be able to say: *"This log is valuable because it helps answer <specific
+question>."* Drop logs that merely confirm a routine UI interaction, duplicate a generic API failure,
 or record an expected validation failure without adding context.
 
 ## Related
