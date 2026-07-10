@@ -1,7 +1,7 @@
 # Agent Instructions
 
 ## Project Overview
-Sentry plugin for AI coding assistants (Claude Code, Cursor, Codex, and Grok). Provides MCP server integration, slash commands, and skills.
+Sentry plugin for AI coding assistants (Claude Code, Cursor, Codex, and Grok). Provides MCP server integration and skills.
 
 ## Commit Attribution
 AI commits MUST include:
@@ -11,7 +11,6 @@ Co-Authored-By: (the agent model's name and attribution byline)
 
 ## Repository Structure
 ```
-commands/               # Slash commands (/seer)
 skills/                 # Setup and review skills
 ```
 
@@ -70,11 +69,6 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 | Skill | Description |
 |-------|-------------|
 | `sentry-sdk-skill-creator` | Create a complete SDK skill bundle for any new platform |
-
-## Commands
-| Command | Description |
-|---------|-------------|
-| `/seer <query>` | Natural language Sentry environment queries |
 
 ## MCP Server
 Sentry MCP server configured at `https://mcp.sentry.dev/mcp`. The source of truth is `mcp.json`: Cursor consumes it as-is at the plugin root, while the Codex and Grok builds emit it as `.mcp.json` (Codex's validator requires the dotted name; Grok auto-discovers it). Claude declares the server inline in its `plugin.json` (`mcpServers`), so the Claude build ships no MCP file. The root `.mcp.json` is a backwards-compat copy (identical to `mcp.json`) retained for existing installs that consumed the plugin from this repo's root; keep the two in sync until the root compat surface is removed.

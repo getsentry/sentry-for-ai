@@ -35,14 +35,6 @@ copy_skills() {
     fi
 }
 
-# Copy commands/ from a content root, if it has any.
-#   copy_commands <content_root> <dest_commands_dir>
-copy_commands() {
-    if [[ -d "$1/commands" ]]; then
-        rsync -a "$1/commands/" "$2/"
-    fi
-}
-
 # Copy SKILL_TREE.md from a content root, if present.
 #   copy_skill_tree <content_root> <dest_path>
 copy_skill_tree() {
