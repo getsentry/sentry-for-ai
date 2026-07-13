@@ -71,10 +71,11 @@ For each signal the scope calls for:
 1. **WHY (only when it helps the decision).** If the user is unsure *which* signal or *how much* to
    instrument, read [`references/concepts/choosing-a-signal.md`](references/concepts/choosing-a-signal.md).
    For a chosen signal, the matching `references/concepts/<signal>.md` covers strategy, sample-rate
-   philosophy, naming, and pitfalls — most signals have one; where they don't (e.g. AI/LLM monitoring)
-   the strategy lives in the platform `ai-monitoring.md` file plus the `gen_ai.*` note in
-   [`references/concepts/data-scrubbing.md`](references/concepts/data-scrubbing.md). **Skip this when
-   the user already said "add tracing, you pick the defaults"** — go straight to the HOW.
+   philosophy, naming, and pitfalls — including
+   [`references/concepts/ai-monitoring.md`](references/concepts/ai-monitoring.md) for the `gen_ai.*`
+   model, conversation-ID rules, token/cost accounting, and the AI sampling and PII strategy (the
+   per-platform code then lives in that platform's `ai-monitoring.md`). **Skip this when the user
+   already said "add tracing, you pick the defaults"** — go straight to the HOW.
 2. **HOW.** Read the platform's signal file — `references/sdks/<slug>/<signal>.md` (e.g.
    `references/sdks/nextjs/tracing.md`) — and apply the code. The platform `index.md` feature
    catalog links each supported signal and marks unsupported ones.
