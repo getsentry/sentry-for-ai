@@ -15,6 +15,11 @@
 # replacing the previous contents. The four jobs target four different repos,
 # so they run in parallel without contention.
 #
+# As part of the build for each agent we also perform a *live* plugin
+# installation (and basic validation) using that agent's own CLI. This exercises
+# the exact install paths, manifest parsing, and skill loading that end users
+# will hit (`grok plugin install`, `claude plugin marketplace add`, etc.).
+#
 # Cross-repo writes use a GitHub App token scoped per-job to a single plugin
 # repo; the default GITHUB_TOKEN cannot push to other repositories. The app must
 # be installed on the org with contents:write on the three plugin repos, its ID
@@ -67,6 +72,13 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
 
+      - name: Install test tooling (script, jq, etc. for agent CLIs)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bsdutils jq curl ca-certificates unzip tar
+          # script(1) from bsdutils provides a PTY wrapper for non-interactive agent prompts
+          # unzip/tar often needed by the CLI installers themselves
+
       - name: Build and deploy plugin-${{ matrix.agent }}
         env:
           AGENT: ${{ matrix.agent }}
@@ -91,6 +103,19 @@ jobs:
           # Validate the built tree against the agent's schema/validator before
           # it can be deployed.
           "plugin-src/${AGENT}/validate.sh" "$WORKTREE"
+
+          # Live installation + validation using the target agent's own CLI.
+          # This is the key step: each plugin build now actually installs itself
+          # into the harness (from the exact tree shape that will be published)
+          # and performs basic introspection. We do this on the runner before
+          # deciding whether to push the tree.
+          #
+          # The per-agent logic lives in plugin-src/<agent>/verify-install.sh so
+          # it stays co-located with build.sh + validate.sh and can be run locally
+          # by developers:  plugin-src/grok/verify-install.sh /path/to/built-tree
+          echo "=== Live agent-driven install test for ${AGENT} ==="
+          "plugin-src/${AGENT}/verify-install.sh" "$WORKTREE"
+          echo "=== Live ${AGENT} install test complete ==="
 
           # Commit only if something changed.
           git -C "$WORKTREE" add -A

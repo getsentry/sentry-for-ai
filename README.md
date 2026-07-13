@@ -89,6 +89,13 @@ plugin-src/codex/build.sh /tmp/sentry-codex   # or plugin-src/{claude,cursor,gro
 To build any target locally, run `plugin-src/<agent>/build.sh <output-dir>`
 (`claude`, `cursor`, `codex`, or `grok`).
 
+Each agent directory also contains:
+- `validate.sh` — static schema/validator checks (run by CI before deploy)
+- `verify-install.sh` — live installation + basic smoke using the real agent CLI
+  (exactly what the deploy workflow runs against the candidate tree).
+  Example: `plugin-src/grok/verify-install.sh /tmp/sentry-grok` (requires the
+  matching CLI or it will self-install).
+
 ## Skills
 
 ### Core
