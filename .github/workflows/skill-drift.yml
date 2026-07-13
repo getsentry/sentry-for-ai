@@ -3,8 +3,9 @@
 # Weekly fan-out: one parallel Claude Sonnet session per SDK reference tree,
 # routed through OpenRouter's Anthropic-compatible endpoint,
 # each scanning the last 7 days of merged PRs in the corresponding SDK repo,
-# reading the actual changed source files at the merge SHA, comparing
-# against the local SDK reference tree, and producing either:
+# keeping only those already shipped in the latest release, reading the
+# changed source files at the release tag (never unreleased default-branch
+# code), comparing against the local SDK reference tree, and producing either:
 #   - a file diff under references/sdks/<sdk>/  (the apply job opens a PR)
 #   - a structured "manual_review" summary  (the apply job opens an issue)
 #   - "no_drift"  (the apply job does nothing for that skill)
@@ -206,7 +207,15 @@ jobs:
               --limit 60
             ```
 
-            ## Step 3 — Filter to SDK-relevant PRs
+            Also fetch the SDK's latest published (non-draft, non-prerelease)
+            release tag — the reference must describe RELEASED code, not what
+            is merged but still unreleased on the default branch:
+
+            ```bash
+            LATEST_TAG=$(gh api "/repos/$SDK_REPO/releases/latest" --jq '.tag_name')
+            ```
+
+            ## Step 3 — Filter to SDK-relevant, already-released PRs
 
             Drop PRs that ONLY touch tests, CI, docs, lockfiles, or tooling.
             Apply `PATH_FILTER`: if non-empty, keep only PRs whose changed
@@ -214,14 +223,23 @@ jobs:
             Then, of the remaining PRs, keep only the ones whose changed source
             (not titles!) plausibly affects the public SDK surface.
 
+            Finally, drop any PR whose changes are NOT yet in `$LATEST_TAG`
+            (merged to the default branch but unreleased). A PR is released iff
+            its merge commit is contained in the latest release — check with the
+            compare API, keeping only `ahead`/`identical`:
+
+            ```bash
+            gh api "/repos/$SDK_REPO/compare/<merge_sha>...$LATEST_TAG" --jq '.status'
+            ```
+
             ## Step 4 — Actually read the code
 
             For each kept PR, do NOT trust the title or the diff summary alone.
-            Read the actual changed source files at the merge SHA:
+            Read the actual changed source files AT THE LATEST RELEASE TAG (the
+            released code users will run — never the default-branch merge SHA):
 
             ```bash
-            # Get the merge SHA from the PR object you already fetched, then:
-            gh api "/repos/$SDK_REPO/contents/<path>?ref=<merge_sha>" \
+            gh api "/repos/$SDK_REPO/contents/<path>?ref=$LATEST_TAG" \
               --jq '.content' | base64 -d
             ```
 
