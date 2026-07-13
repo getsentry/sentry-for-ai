@@ -39,7 +39,7 @@ For each detected assistant, the installer runs that tool's native plugin comman
 | Cursor      | Clones [`getsentry/plugin-cursor`](https://github.com/getsentry/plugin-cursor) into `~/.cursor/plugins/local/sentry` |
 | Grok        | `grok plugin install getsentry/plugin-grok`                                   |
 
-Each per-agent plugin is built and published from the [`sentry-for-ai`](https://github.com/getsentry/sentry-for-ai) repository, which is the source of truth for all skills and commands.
+Each per-agent plugin is built and published from the [`sentry-for-ai`](https://github.com/getsentry/sentry-for-ai) repository, which is the source of truth for all skills.
 
 ## Removing the plugin
 

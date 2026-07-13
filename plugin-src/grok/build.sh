@@ -2,7 +2,7 @@
 #
 # build.sh — Build the Grok distribution of the Sentry plugin.
 #
-# Grok plugins put their components at the repo ROOT (skills/, commands/, and a
+# Grok plugins put their components at the repo ROOT (skills/ and a
 # `.mcp.json` file Grok auto-discovers). The plugin manifest lives at
 # `.grok-plugin/plugin.json` — that is where the xAI plugin marketplace scanner
 # (generate-plugin-index.py) looks for it. A marketplace catalog also lives at
@@ -12,7 +12,7 @@
 #
 # MCP is a root `.mcp.json`, built from the repo's `mcp.json` source of truth.
 #
-# Skill content (skills/, commands/, references/, SKILL_TREE.md) is read from
+# Skill content (skills/, references/, SKILL_TREE.md) is read from
 # CONTENT_ROOT, defaulting to the repo root. Point it at an alternate tree (e.g.
 # CONTENT_ROOT=skills-next) to build a different skill set with the same steps.
 #
@@ -32,7 +32,6 @@ mkdir -p "$TARGET_DIR/.grok-plugin"
 cp "$SRC_DIR/plugin.json" "$TARGET_DIR/.grok-plugin/plugin.json"
 cp "$SRC_DIR/marketplace.json" "$TARGET_DIR/.grok-plugin/marketplace.json"
 copy_skills "$CONTENT_ROOT" "$TARGET_DIR/skills"
-copy_commands "$CONTENT_ROOT" "$TARGET_DIR/commands"
 copy_skill_tree "$CONTENT_ROOT" "$TARGET_DIR/SKILL_TREE.md"
 rsync -a assets/ "$TARGET_DIR/assets/"
 cp mcp.json "$TARGET_DIR/.mcp.json"

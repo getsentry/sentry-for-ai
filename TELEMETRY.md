@@ -188,9 +188,8 @@ separable from other MCP clients in this pivot.
 
 ### MCP Tool Execution
 
-When a plugin user runs a workflow skill (like `sentry-fix-issues`) or the
-`/seer` command, the agent calls Sentry MCP tools. These appear on the MCP server
-as tool spans.
+When a plugin user runs a workflow skill (like `sentry-fix-issues`), the agent
+calls Sentry MCP tools. These appear on the MCP server as tool spans.
 
 Use for: which tools plugin users invoke, failed tool calls, slow Sentry API
 operations, tool result counts.
@@ -216,7 +215,7 @@ Attributes (standard SDK only): `event_id`, `trace_id`, `transaction`,
 
 ### Static Plugin Content
 
-Skills (`skills/`), commands (`commands/`), and plugin manifests are static
+Skills (`skills/`) and plugin manifests are static
 content — they are not directly instrumented. Their usage is only observable
 indirectly when they trigger Sentry MCP tool calls (captured under MCP Tool
 Execution above) or when the installer fails while deploying them.

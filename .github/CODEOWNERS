@@ -1,28 +1,38 @@
-# SDK Skills — Mobile
-/skills/sentry-android-sdk/       @getsentry/team-mobile-core
-/skills/sentry-cocoa-sdk/         @getsentry/team-mobile-core
-/skills/sentry-flutter-sdk/       @getsentry/team-mobile-cross-platform
-/skills/sentry-react-native-sdk/  @getsentry/team-mobile-cross-platform
+# ---------------------------------------------------------------------------
+# Legacy SDK skills
+#
+# These per-SDK skills were superseded by the sentry-instrument skill. They
+# live under skills-legacy/ so they are excluded from the plugin build and
+# skipped by drift automation, but are still served
+# (as a fallback) by skills.sentry.dev for existing URL consumers. Ownership is
+# retained so the maintaining team is still pinged on the rare edit.
+# ---------------------------------------------------------------------------
 
-# SDK Skills — JavaScript (Browser)
-/skills/sentry-browser-sdk/       @getsentry/team-javascript-sdks-browser
+# Legacy SDK Skills — Mobile
+/skills-legacy/sentry-android-sdk/       @getsentry/team-mobile-core
+/skills-legacy/sentry-cocoa-sdk/         @getsentry/team-mobile-core
+/skills-legacy/sentry-flutter-sdk/       @getsentry/team-mobile-cross-platform
+/skills-legacy/sentry-react-native-sdk/  @getsentry/team-mobile-cross-platform
 
-# SDK Skills — JavaScript (Server)
-/skills/sentry-cloudflare-sdk/    @getsentry/team-javascript-sdks-server
-/skills/sentry-node-sdk/          @getsentry/team-javascript-sdks-server
+# Legacy SDK Skills — JavaScript (Browser)
+/skills-legacy/sentry-browser-sdk/       @getsentry/team-javascript-sdks-browser
 
-# SDK Skills — JavaScript (Framework)
-/skills/sentry-nestjs-sdk/        @getsentry/team-javascript-sdks-framework
-/skills/sentry-nextjs-sdk/        @getsentry/team-javascript-sdks-framework
-/skills/sentry-react-sdk/         @getsentry/team-javascript-sdks-framework
-/skills/sentry-react-router-framework-sdk/ @getsentry/team-javascript-sdks-framework
-/skills/sentry-svelte-sdk/        @getsentry/team-javascript-sdks-framework
-/skills/sentry-tanstack-start-sdk/ @getsentry/team-javascript-sdks-framework
+# Legacy SDK Skills — JavaScript (Server)
+/skills-legacy/sentry-cloudflare-sdk/    @getsentry/team-javascript-sdks-server
+/skills-legacy/sentry-node-sdk/          @getsentry/team-javascript-sdks-server
 
-# SDK Skills — Web Backend
-/skills/sentry-dotnet-sdk/        @getsentry/team-web-sdk-backend
-/skills/sentry-elixir-sdk/        @getsentry/team-web-sdk-backend
-/skills/sentry-go-sdk/            @getsentry/team-web-sdk-backend
-/skills/sentry-php-sdk/           @getsentry/team-web-sdk-backend
-/skills/sentry-python-sdk/        @getsentry/team-web-sdk-backend
-/skills/sentry-ruby-sdk/          @getsentry/team-web-sdk-backend
+# Legacy SDK Skills — JavaScript (Framework)
+/skills-legacy/sentry-nestjs-sdk/        @getsentry/team-javascript-sdks-framework
+/skills-legacy/sentry-nextjs-sdk/        @getsentry/team-javascript-sdks-framework
+/skills-legacy/sentry-react-sdk/         @getsentry/team-javascript-sdks-framework
+/skills-legacy/sentry-react-router-framework-sdk/ @getsentry/team-javascript-sdks-framework
+/skills-legacy/sentry-svelte-sdk/        @getsentry/team-javascript-sdks-framework
+/skills-legacy/sentry-tanstack-start-sdk/ @getsentry/team-javascript-sdks-framework
+
+# Legacy SDK Skills — Web Backend
+/skills-legacy/sentry-dotnet-sdk/        @getsentry/team-web-sdk-backend
+/skills-legacy/sentry-elixir-sdk/        @getsentry/team-web-sdk-backend
+/skills-legacy/sentry-go-sdk/            @getsentry/team-web-sdk-backend
+/skills-legacy/sentry-php-sdk/           @getsentry/team-web-sdk-backend
+/skills-legacy/sentry-python-sdk/        @getsentry/team-web-sdk-backend
+/skills-legacy/sentry-ruby-sdk/          @getsentry/team-web-sdk-backend

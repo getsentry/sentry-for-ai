@@ -28,7 +28,6 @@ claude plugin install sentry@claude-plugins-official
 
 - The full Sentry skill library (SDK setup wizards, debugging and code-review
   workflows, feature setup).
-- The `/seer` command for natural-language Sentry queries.
 - The hosted [Sentry MCP server](https://mcp.sentry.dev) for querying your
   Sentry environment.
 

@@ -13,7 +13,7 @@
 # bug currently hides plugin-delivered skills entirely. We ship the field
 # as-authored; that is a Cursor-side issue, not a packaging one.
 #
-# Skill content (skills/, commands/, references/, SKILL_TREE.md) is read from
+# Skill content (skills/, references/, SKILL_TREE.md) is read from
 # CONTENT_ROOT, defaulting to the repo root. Point it at an alternate tree (e.g.
 # CONTENT_ROOT=skills-next) to build a different skill set with the same steps.
 #
@@ -33,7 +33,6 @@ mkdir -p "$TARGET_DIR/.cursor-plugin"
 cp "$SRC_DIR/plugin.json" "$TARGET_DIR/.cursor-plugin/plugin.json"
 cp "$SRC_DIR/marketplace.json" "$TARGET_DIR/.cursor-plugin/marketplace.json"
 copy_skills "$CONTENT_ROOT" "$TARGET_DIR/skills"
-copy_commands "$CONTENT_ROOT" "$TARGET_DIR/commands"
 copy_skill_tree "$CONTENT_ROOT" "$TARGET_DIR/SKILL_TREE.md"
 rsync -a assets/ "$TARGET_DIR/assets/"
 cp mcp.json "$TARGET_DIR/mcp.json"

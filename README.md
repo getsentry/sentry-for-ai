@@ -1,5 +1,17 @@
 # Sentry for AI
 
+> [!IMPORTANT]
+> **This is a skill _source_ repository — not something you install directly.**
+> The skills here are built from this source into installable plugins for
+> [Claude Code](https://github.com/getsentry/plugin-claude),
+> [Cursor](https://github.com/getsentry/plugin-cursor),
+> [Codex](https://github.com/getsentry/plugin-codex), and
+> [Grok](https://github.com/getsentry/plugin-grok) — install one of those, not
+> this repo. They're also served over HTTP at
+> [skills.sentry.dev](https://skills.sentry.dev) for agents to fetch directly.
+> In the future we may also publish the skills as a generic, standalone skills
+> repository.
+
 Your AI coding assistant already knows how to write code. This plugin teaches it Sentry — how to set it up, how to find and fix production issues, and how to get the most out of every feature.
 
 Whether you're adding Sentry to a new project, debugging a spike in errors, or configuring alerts, just ask. The plugin gives your assistant the context it needs to do it right.
@@ -19,8 +31,8 @@ Add error monitoring to my iOS app
 **Find and fix production issues** — Query your Sentry environment, triage errors, and fix them in place.
 
 ```
-/seer What are the top errors in the last 24 hours?
-/seer Which issues are affecting the most users?
+What are the top errors in the last 24 hours?
+Which issues are affecting the most users?
 Fix the recent Sentry errors
 ```
 
@@ -79,50 +91,39 @@ To build any target locally, run `plugin-src/<agent>/build.sh <output-dir>`
 
 ## Skills
 
-### SDK Setup Wizards
+### Core
 
-Full platform bundles that scan your project, recommend features, and guide you through setup — error monitoring, tracing, profiling, session replay, logging, and more.
-
-| Skill | Platforms |
-|-------|-----------|
-| `sentry-android-sdk` | Android (Jetpack Compose, Views, OkHttp, Room, Fragment, Timber) |
-| `sentry-cocoa-sdk` | iOS, macOS, tvOS, watchOS, visionOS (Swift, UIKit, SwiftUI) |
-| `sentry-dotnet-sdk` | ASP.NET Core, MAUI, WPF, WinForms, Azure Functions, Blazor, gRPC |
-| `sentry-go-sdk` | Go (net/http, Gin, Echo, Fiber) |
-| `sentry-nestjs-sdk` | NestJS (Express, Fastify, GraphQL, Microservices, WebSocket) |
-| `sentry-nextjs-sdk` | Next.js App Router + Pages Router, Vercel |
-| `sentry-node-sdk` | Node.js, Bun, Deno (Express, Fastify, Koa, Hapi, NestJS, Connect, Bun.serve, Deno.serve) |
-| `sentry-php-sdk` | PHP (Laravel, Symfony) |
-| `sentry-python-sdk` | Python (Django, Flask, FastAPI, Celery, Starlette, AIOHTTP) |
-| `sentry-react-native-sdk` | React Native, Expo managed/bare |
-| `sentry-react-sdk` | React 16+, React Router v5-v7 non-framework mode, TanStack Router, Redux |
-| `sentry-react-router-framework-sdk` | React Router Framework mode (`@sentry/react-router`) |
-| `sentry-tanstack-start-sdk` | TanStack Start React |
-| `sentry-ruby-sdk` | Ruby, Rails, Sinatra, Rack, Sidekiq |
-| `sentry-svelte-sdk` | Svelte, SvelteKit |
-
-### Feature Setup
-
-| Skill | Description |
-|-------|-------------|
-| `sentry-setup-ai-monitoring` | Instrument OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI |
-| `sentry-otel-exporter-setup` | Configure OTel Collector with Sentry Exporter for multi-project routing |
-| `sentry-instrumentation-guide` | Decide which signal to reach for — error vs span vs log vs metric, and what to instrument where |
+| Skill | What it does |
+|-------|--------------|
+| `sentry-get-started` | Guided entry point — orients to your current Sentry setup and routes to the right skill |
+| `sentry-instrument` | Add Sentry to a project, or wire up any signal — error monitoring, tracing, logging, metrics, profiling, session replay, user feedback, cron check-ins, and AI/LLM monitoring. Detects your platform and pulls the code from the reference library. |
+| `sentry-debug-issue` | Find a Sentry issue, pull full context, optionally run Seer root-cause / autofix, apply the fix, and resolve it |
 
 ### Workflow
 
-| Skill | Description |
-|-------|-------------|
-| `sentry-code-review` | Fix bugs detected by Sentry in GitHub PR comments |
-| `sentry-pr-code-review` | Resolve issues flagged by Seer Bug Prediction |
-| `sentry-fix-issues` | Find and fix Sentry issues using MCP |
-| `sentry-create-alert` | Create alerts using the Sentry workflow engine API |
+| Skill | What it does |
+|-------|--------------|
+| `sentry-code-review` | Resolve `sentry[bot]` comments on GitHub PRs |
+| `sentry-pr-code-review` | Fix issues flagged by Seer Bug Prediction |
+| `sentry-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
 
-### Slash Commands
+### Feature Setup
 
-| Command | Description |
-|---------|-------------|
-| `/seer <query>` | Ask questions about your Sentry environment in natural language |
+| Skill | What it does |
+|-------|--------------|
+| `sentry-setup-ai-monitoring` | Instrument OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI |
+| `sentry-otel-exporter-setup` | Configure OTel Collector with the Sentry exporter for multi-project routing |
+| `sentry-create-alert` | Create alerts via the Sentry workflow engine API |
+| `sentry-snapshots-cocoa` | Set up Sentry Snapshots for Apple/Cocoa projects |
+
+### Reference Library
+
+`sentry-instrument` doesn't hard-code platform steps — it pulls them from a shared library that the build hydrates into the skill:
+
+- **`references/sdks/<platform>/`** — per-platform install and per-signal code, one directory per supported platform.
+- **`references/concepts/`** — per-signal strategy: errors, tracing, logging, metrics, profiling, session replay, user feedback, crons, releases, data scrubbing, and choosing-a-signal.
+
+> Superseded per-SDK "wizard" skills are frozen under `skills-legacy/`, excluded from the plugin build.
 
 ## Prerequisites
 
@@ -137,9 +138,7 @@ gh auth login
 
 ## Contributing
 
-Skills follow the [Agent Skills specification](https://agentskills.io). Each skill is a directory with a `SKILL.md` file containing YAML frontmatter and markdown instructions. SDK bundles include a `references/` directory for feature-specific deep dives.
-
-Use the `sentry-sdk-skill-creator` skill to scaffold new SDK bundles — it handles research, writing, and validation.
+Skills follow the [Agent Skills specification](https://agentskills.io). Each skill is a directory with a `SKILL.md` file containing YAML frontmatter and markdown instructions. A skill can declare the shared references it needs in a `references.yml` manifest; the build hydrates the matching files from the shared library at `references/` into the skill so the shipped copy is self-contained.
 
 ## License
 

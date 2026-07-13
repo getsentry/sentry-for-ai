@@ -12,7 +12,7 @@
 # `.mcp.json` is shipped here; the root `mcp.json` only feeds the Cursor and
 # Codex builds.
 #
-# Skill content (skills/, commands/, references/, SKILL_TREE.md) is read from
+# Skill content (skills/, references/, SKILL_TREE.md) is read from
 # CONTENT_ROOT, defaulting to the repo root. Point it at an alternate tree (e.g.
 # CONTENT_ROOT=skills-next) to build a different skill set with the same steps.
 #
@@ -32,7 +32,6 @@ mkdir -p "$TARGET_DIR/.claude-plugin"
 cp "$SRC_DIR/plugin.json" "$TARGET_DIR/.claude-plugin/plugin.json"
 cp "$SRC_DIR/marketplace.json" "$TARGET_DIR/.claude-plugin/marketplace.json"
 copy_skills "$CONTENT_ROOT" "$TARGET_DIR/skills"
-copy_commands "$CONTENT_ROOT" "$TARGET_DIR/commands"
 copy_skill_tree "$CONTENT_ROOT" "$TARGET_DIR/SKILL_TREE.md"
 rsync -a assets/ "$TARGET_DIR/assets/"
 cp "$SRC_DIR/README.md" "$TARGET_DIR/README.md"
