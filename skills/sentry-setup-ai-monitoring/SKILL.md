@@ -346,6 +346,12 @@ Find it at **Explore > Conversations** in Sentry.
 
 Some integrations (OpenAI Agents SDK for Python, OpenAI SDK for Node) infer the conversation ID automatically. For all others, set it manually.
 
+Use a short, opaque identifier — alphanumeric characters with dashes or underscores only. Never use a URL, email address, or other free-form text as the conversation ID: Sentry uses it as a URL path segment, and a value containing a slash breaks Conversations for that session.
+
+Good examples:
+- A UUID: `48e35936-82ab-4f1a-beaf-b2fa4273ac5e`
+- A prefixed ID: `conv_5j66UpCpwteGg4YSxUnt7lPYU`, `asst_abc12345`, `sess_987654`
+
 #### JavaScript
 
 ```javascript
