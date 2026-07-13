@@ -2,7 +2,7 @@
 # ============================================================
 # build-skill-tree.sh — Generate and validate the Sentry skill tree
 # ============================================================
-# Scans all skills/*/SKILL.md files, regenerates SKILL_TREE.md,
+# Scans all src/skills/*/SKILL.md files, regenerates src/SKILL_TREE.md,
 # validates the skill hierarchy, and checks breadcrumb links.
 #
 # Usage:
@@ -22,8 +22,8 @@ CHECK_ONLY=false
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-SKILL_TREE_FILE="SKILL_TREE.md"
-SKILLS_DIR="skills"
+SKILL_TREE_FILE="src/SKILL_TREE.md"
+SKILLS_DIR="src/skills"
 
 # Temp directory for per-skill data (bash 3 compatible, no assoc arrays)
 TMPDIR_SKILLS="$(mktemp -d)"
@@ -190,7 +190,7 @@ build_table_rows() {
     file="$(skill_get "$name" file)"
     desc="$(skill_get "$name" desc)"
     col_val="$(get_column_value "$desc" "$category")"
-    printf "| %s | [\`%s\`](%s) |\n" "$col_val" "$name" "$file"
+    printf "| %s | [\`%s\`](%s) |\n" "$col_val" "$name" "${file#src/}"
   done
 }
 
@@ -206,7 +206,7 @@ build_standalone_rows() {
     local file desc
     file="$(skill_get "$name" file)"
     desc="$(escape_cell "$(skill_get "$name" desc)")"
-    printf "| [\`%s\`](%s) | %s |\n" "$name" "$file" "$desc"
+    printf "| [\`%s\`](%s) | %s |\n" "$name" "${file#src/}" "$desc"
   done
 }
 

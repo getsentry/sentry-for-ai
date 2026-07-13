@@ -215,7 +215,7 @@ Attributes (standard SDK only): `event_id`, `trace_id`, `transaction`,
 
 ### Static Plugin Content
 
-Skills (`skills/`) and plugin manifests are static
+Skills (`src/skills/`) and plugin manifests are static
 content — they are not directly instrumented. Their usage is only observable
 indirectly when they trigger Sentry MCP tool calls (captured under MCP Tool
 Execution above) or when the installer fails while deploying them.
@@ -270,6 +270,6 @@ Sentry.init({
 
 - `packages/installer/src/instrument.ts`
 - `mcp.json` (Cursor MCP config with `utm_source=plugin`)
-- `plugin-src/claude/plugin.json` (Claude inline config — no `utm_source`)
+- `src/plugins/claude/plugin.json` (Claude inline config — no `utm_source`)
 - `getsentry/sentry-mcp` `TELEMETRY.md` — full MCP server telemetry reference
 - [MCP server spans reference](https://github.com/getsentry/sentry-mcp/blob/main/TELEMETRY.md)
