@@ -1,6 +1,7 @@
 # Skill Drift Detector
 #
 # Weekly fan-out: one parallel Claude Sonnet session per SDK reference tree,
+# routed through OpenRouter's Anthropic-compatible endpoint,
 # each scanning the last 7 days of merged PRs in the corresponding SDK repo,
 # reading the actual changed source files at the merge SHA, comparing
 # against the local SDK reference tree, and producing either:
@@ -149,10 +150,12 @@ jobs:
       - name: Run Claude
         uses: anthropics/claude-code-action@787c5a0ce96a9a6cfb050ea0c8f4c05f2447c251 # v1.0.133
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # OpenRouter key (sk-or-...) routed through the Anthropic-compatible
+          # endpoint below. See https://openrouter.ai/docs/cookbook/coding-agents/claude-code-integration
+          anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_args: |
-            --model claude-sonnet-4-5
+            --model claude-sonnet-5
             --max-turns 80
             --allowed-tools "Read,Edit,Write,Bash(gh pr list:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh api:*),Bash(gh issue list:*),Bash(date:*),Bash(jq:*),Bash(ls:*)"
           prompt: |
@@ -310,6 +313,7 @@ jobs:
             English summary (one paragraph). Your structured output lives in
             the files. Do not invent file paths or PR numbers.
         env:
+          ANTHROPIC_BASE_URL: https://openrouter.ai/api
           SDK: ${{ matrix.sdk }}
           SDK_REPO: ${{ matrix.repo }}
           PATH_FILTER: ${{ matrix.path_filter }}
@@ -645,7 +649,7 @@ jobs:
                 git add -A "references/sdks/$SDK/"
                 git commit -m "$TITLE" \
                   -m "Automated drift-fix run." \
-                  -m "Co-Authored-By: Claude (claude-sonnet-4-5) <noreply@anthropic.com>"
+                  -m "Co-Authored-By: Claude (claude-sonnet-5) <noreply@anthropic.com>"
                 git push origin "$BRANCH"
 
                 # Append the reviewed-PRs footer (deterministic, not LLM text)
