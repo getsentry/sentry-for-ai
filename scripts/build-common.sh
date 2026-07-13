@@ -2,22 +2,22 @@
 #
 # build-common.sh — Shared helpers for the per-agent plugin builders.
 #
-# Each plugin-src/<agent>/build.sh sources this for the steps that are identical
+# Each src/plugins/<agent>/build.sh sources this for the steps that are identical
 # across agents: resolving the content root and assembling the skill tree (copy +
-# reference hydration), commands, and SKILL_TREE.md. Agent-specific bits —
-# manifest locations, the MCP file, Codex's subdir layout and skill transform —
-# stay inline in each builder.
+# reference hydration) and SKILL_TREE.md. Agent-specific bits — manifest
+# locations, the MCP file, Codex's subdir layout and skill transform — stay
+# inline in each builder.
 #
 # Source it after cd-ing to the repo root:
 #   source "$REPO_ROOT/scripts/build-common.sh"
-#   resolve_content_root "$REPO_ROOT"
+#   resolve_content_root "$REPO_ROOT/src"
 
 # Directory holding this file and its sibling scripts (hydrate-references.py).
 _BUILD_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Resolve CONTENT_ROOT to an absolute path, defaulting to the given repo root, so
-# a relative override (e.g. CONTENT_ROOT=skills-next) resolves predictably.
-#   resolve_content_root <repo_root>   -> sets global CONTENT_ROOT
+# Resolve CONTENT_ROOT to an absolute path, defaulting to the given content root
+# (the repo's src/ dir), so a relative override resolves predictably.
+#   resolve_content_root <content_root>   -> sets global CONTENT_ROOT
 resolve_content_root() {
     CONTENT_ROOT="$(cd "${CONTENT_ROOT:-$1}" && pwd)"
 }

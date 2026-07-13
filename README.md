@@ -55,7 +55,7 @@ Set up OTel Collector with Sentry exporter
 This repository is the single source of truth for all skills, but it is not
 itself an installable plugin. Each assistant needs the plugin in a slightly
 different shape, so the per-agent plugins are **built** from it by the build
-scripts under `plugin-src/<agent>/build.sh`. CI runs these on every push and
+scripts under `src/plugins/<agent>/build.sh`. CI runs these on every push and
 deploys each result to its own **distribution repository**, whose root is
 exactly that agent's plugin:
 
@@ -75,7 +75,7 @@ installer.
 
 ### Build it yourself
 
-Each `plugin-src/<agent>/build.sh` takes an output directory and writes that
+Each `src/plugins/<agent>/build.sh` takes an output directory and writes that
 agent's plugin into it (the Codex build moves the plugin under `plugins/sentry/`
 and swaps the skill tree's `disable-model-invocation` flags for Codex's
 `agents/openai.yaml` policy):
@@ -83,10 +83,10 @@ and swaps the skill tree's `disable-model-invocation` flags for Codex's
 ```bash
 git clone https://github.com/getsentry/sentry-for-ai.git
 cd sentry-for-ai
-plugin-src/codex/build.sh /tmp/sentry-codex   # or plugin-src/{claude,cursor,grok}
+src/plugins/codex/build.sh /tmp/sentry-codex   # or src/plugins/{claude,cursor,grok}
 ```
 
-To build any target locally, run `plugin-src/<agent>/build.sh <output-dir>`
+To build any target locally, run `src/plugins/<agent>/build.sh <output-dir>`
 (`claude`, `cursor`, `codex`, or `grok`).
 
 ## Skills
@@ -120,8 +120,8 @@ To build any target locally, run `plugin-src/<agent>/build.sh <output-dir>`
 
 `sentry-instrument` doesn't hard-code platform steps — it pulls them from a shared library that the build hydrates into the skill:
 
-- **`references/sdks/<platform>/`** — per-platform install and per-signal code, one directory per supported platform.
-- **`references/concepts/`** — per-signal strategy: errors, tracing, logging, metrics, profiling, session replay, user feedback, crons, releases, data scrubbing, and choosing-a-signal.
+- **`src/references/sdks/<platform>/`** — per-platform install and per-signal code, one directory per supported platform.
+- **`src/references/concepts/`** — per-signal strategy: errors, tracing, logging, metrics, profiling, session replay, user feedback, crons, releases, data scrubbing, and choosing-a-signal.
 
 > Superseded per-SDK "wizard" skills are frozen under `skills-legacy/`, excluded from the plugin build.
 

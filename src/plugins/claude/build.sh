@@ -12,9 +12,9 @@
 # `.mcp.json` is shipped here; the root `mcp.json` only feeds the Cursor and
 # Codex builds.
 #
-# Skill content (skills/, references/, SKILL_TREE.md) is read from
-# CONTENT_ROOT, defaulting to the repo root. Point it at an alternate tree (e.g.
-# CONTENT_ROOT=skills-next) to build a different skill set with the same steps.
+# Skill content (skills/, references/, SKILL_TREE.md) is read from CONTENT_ROOT,
+# defaulting to the repo's src/ directory. Override CONTENT_ROOT to build a
+# different content tree with the same steps.
 #
 # Usage: build.sh <TARGET_DIR>   (TARGET_DIR assumed empty)
 
@@ -22,10 +22,10 @@ set -euo pipefail
 
 TARGET_DIR="${1:?usage: build.sh <TARGET_DIR>}"
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SRC_DIR/../.." && pwd)"
+REPO_ROOT="$(cd "$SRC_DIR/../../.." && pwd)"
 cd "$REPO_ROOT"
 source "$REPO_ROOT/scripts/build-common.sh"
-resolve_content_root "$REPO_ROOT"
+resolve_content_root "$REPO_ROOT/src"
 
 mkdir -p "$TARGET_DIR/.claude-plugin"
 

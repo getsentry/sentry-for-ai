@@ -18,9 +18,10 @@
 #      bundled, with no skills.sentry.dev dependency.
 #
 # Source lives alongside this script (plugin.json, marketplace.json) and is
-# assembled into the `.codex-plugin/` layout here; shared content (skills/,
-# assets/, mcp.json, SKILL_TREE.md) comes from the repo root. Codex expects the
-# MCP config as `.mcp.json`, so the source `mcp.json` is emitted under that name.
+# assembled into the `.codex-plugin/` layout here; shared content comes from the
+# repo's src/ dir (skills/, SKILL_TREE.md) and root (assets/, mcp.json). Codex
+# expects the MCP config as `.mcp.json`, so the source `mcp.json` is emitted
+# under that name.
 #
 # Usage: build.sh <TARGET_DIR>   (TARGET_DIR assumed empty)
 
@@ -28,10 +29,10 @@ set -euo pipefail
 
 TARGET_DIR="${1:?usage: build.sh <TARGET_DIR>}"
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SRC_DIR/../.." && pwd)"
+REPO_ROOT="$(cd "$SRC_DIR/../../.." && pwd)"
 cd "$REPO_ROOT"
 source "$REPO_ROOT/scripts/build-common.sh"
-resolve_content_root "$REPO_ROOT"
+resolve_content_root "$REPO_ROOT/src"
 
 PLUGIN_NAME="sentry"
 PLUGIN="$TARGET_DIR/plugins/$PLUGIN_NAME"

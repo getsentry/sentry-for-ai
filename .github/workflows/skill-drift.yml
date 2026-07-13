@@ -6,7 +6,7 @@
 # keeping only those already shipped in the latest release, reading the
 # changed source files at the release tag (never unreleased default-branch
 # code), comparing against the local SDK reference tree, and producing either:
-#   - a file diff under references/sdks/<sdk>/  (the apply job opens a PR)
+#   - a file diff under src/references/sdks/<sdk>/  (the apply job opens a PR)
 #   - a structured "manual_review" summary  (the apply job opens an issue)
 #   - "no_drift"  (the apply job does nothing for that skill)
 #
@@ -20,7 +20,7 @@
 #     tree plus a small allowlist of `gh` subcommands. It cannot run `git`,
 #     `curl`, or arbitrary shell.
 #   - The `apply` job is pure deterministic shell — no LLM in scope — and
-#     enforces a path allowlist (`references/sdks/<this-sdk>/` only) before any
+#     enforces a path allowlist (`src/references/sdks/<this-sdk>/` only) before any
 #     commit, push, or PR creation.
 #   - Triggers are limited to `schedule` + `workflow_dispatch` (no
 #     `pull_request_target`, no `issue_comment`). Both require repo write
@@ -250,10 +250,10 @@ jobs:
 
             ## Step 5 — Compare against the local SDK reference tree
 
-            Read every file under `references/sdks/$SDK/` — `index.md` plus the
+            Read every file under `src/references/sdks/$SDK/` — `index.md` plus the
             per-signal files (`error-monitoring.md`, `tracing.md`, `logging.md`,
             etc.). The tree follows the contract in
-            `references/sdks/STRUCTURE.md`; read that first and conform to it.
+            `src/references/sdks/STRUCTURE.md`; read that first and conform to it.
             Identify mismatches:
 
             1. New config options that the reference does not yet document.
@@ -267,7 +267,7 @@ jobs:
             - `create_pr` — the fix is mechanical and low-risk: add a config
               option row to a table, add an integration entry, bump a
               minimum-version line. EDIT THE LOCAL REFERENCE FILES under
-              `references/sdks/$SDK/` in the working tree, staying within the
+              `src/references/sdks/$SDK/` in the working tree, staying within the
               STRUCTURE.md contract. Then write a `summary.json` (see schema
               below) with `action: "create_pr"`.
 
@@ -319,7 +319,7 @@ jobs:
             ## File-edit allowlist
 
             You may ONLY create or modify files under:
-              - `references/sdks/$SDK/`
+              - `src/references/sdks/$SDK/`
               - `.skill-drift/`  (specifically `.skill-drift/summary.json`)
 
             Touching any other path will fail the validation step and the
@@ -388,7 +388,7 @@ jobs:
 
           # 4. Path allowlist for any modified or new files
           MODIFIED=$( (git diff --name-only; git ls-files --others --exclude-standard) | sort -u )
-          ALLOWED_RE="^(references/sdks/${SDK}/|\\.skill-drift/)"
+          ALLOWED_RE="^(src/references/sdks/${SDK}/|\\.skill-drift/)"
           violation=""
           while IFS= read -r path; do
             [[ -z "$path" ]] && continue
@@ -403,10 +403,10 @@ jobs:
             exit 1
           fi
 
-          # 5. If action=create_pr, there MUST be a diff in references/sdks/<sdk>/
+          # 5. If action=create_pr, there MUST be a diff in src/references/sdks/<sdk>/
           ACTION=$(jq -r .action "$SUMMARY")
           if [[ "$ACTION" == "create_pr" ]]; then
-            SDK_DIFF=$( (git diff --name-only; git ls-files --others --exclude-standard) | grep "^references/sdks/${SDK}/" || true )
+            SDK_DIFF=$( (git diff --name-only; git ls-files --others --exclude-standard) | grep "^src/references/sdks/${SDK}/" || true )
             if [[ -z "$SDK_DIFF" ]]; then
               echo "::error::action=create_pr but no reference file changes detected"
               exit 1
@@ -421,11 +421,11 @@ jobs:
           SDK: ${{ matrix.sdk }}
         run: |
           set -euo pipefail
-          mkdir -p artifact-staging/references/sdks
+          mkdir -p artifact-staging/src/references/sdks
           # Mirror only the reference subtree if it was edited (may be a no-op for
           # create_issue / no_drift). Use rsync to preserve directory shape.
-          if [[ -d "references/sdks/${SDK}" ]]; then
-            rsync -a --delete "references/sdks/${SDK}/" "artifact-staging/references/sdks/${SDK}/"
+          if [[ -d "src/references/sdks/${SDK}" ]]; then
+            rsync -a --delete "src/references/sdks/${SDK}/" "artifact-staging/src/references/sdks/${SDK}/"
           fi
           cp .skill-drift/summary.json artifact-staging/summary.json
 
@@ -580,16 +580,16 @@ jobs:
                 ;;
 
               create_pr)
-                # Reset references/ to a known-clean state. A previous iteration
+                # Reset src/references/ to a known-clean state. A previous iteration
                 # may have left untracked files (from rsync overlay on a
                 # bail-out path) which would otherwise leak into this
                 # iteration's diff and fail the allowlist below.
-                git checkout -- references/ 2>/dev/null || true
-                git clean -fd -- references/ 2>/dev/null || true
+                git checkout -- src/references/ 2>/dev/null || true
+                git clean -fd -- src/references/ 2>/dev/null || true
 
                 # Verify the artifact actually contains a reference subdirectory
                 # diff that, when overlaid, differs from main.
-                STAGED_REF_DIR="$dir/references/sdks/$SDK"
+                STAGED_REF_DIR="$dir/src/references/sdks/$SDK"
                 if [[ ! -d "$STAGED_REF_DIR" ]]; then
                   echo "::warning::action=create_pr but no reference dir in artifact for $SDK"
                   FAILED=$((FAILED + 1))
@@ -607,26 +607,26 @@ jobs:
                 git switch -c "$BRANCH" origin/main
 
                 # Overlay only the SDK reference subdir from the artifact.
-                rsync -a --delete "$STAGED_REF_DIR/" "references/sdks/$SDK/"
+                rsync -a --delete "$STAGED_REF_DIR/" "src/references/sdks/$SDK/"
 
-                # Compute touched paths SCOPED to references/ only. The apply
+                # Compute touched paths SCOPED to src/references/ only. The apply
                 # job's working tree also contains an `artifacts/` directory
                 # from download-artifact; an unscoped `git ls-files --others`
                 # would surface those and incorrectly fail the regex below.
-                # Scoping with `-- references/` is the simplest defense and keeps
+                # Scoping with `-- src/references/` is the simplest defense and keeps
                 # `artifacts/` (or any other untracked top-level path) out of
                 # the picture entirely.
-                TOUCHED=$( { git diff --name-only HEAD -- references/; git ls-files --others --exclude-standard -- references/; } | sort -u )
+                TOUCHED=$( { git diff --name-only HEAD -- src/references/; git ls-files --others --exclude-standard -- src/references/; } | sort -u )
 
                 # Empty-diff guard: catches the case where rsync produced no
                 # net change. Uses TOUCHED (which includes untracked files),
                 # so this works correctly even when the agent's only change
-                # is adding a brand-new file under references/sdks/$SDK/.
+                # is adding a brand-new file under src/references/sdks/$SDK/.
                 if [[ -z "$TOUCHED" ]]; then
                   echo "::warning::No effective diff after overlay for $SDK — skipping"
                   git switch main
                   git branch -D "$BRANCH" || true
-                  git clean -fd -- references/ 2>/dev/null || true
+                  git clean -fd -- src/references/ 2>/dev/null || true
                   FAILED=$((FAILED + 1))
                   echo "::endgroup::"
                   continue
@@ -636,7 +636,7 @@ jobs:
                 # this SDK's own reference subtree (defense in depth — the
                 # artifact's contents should already be confined by detect, but
                 # the deterministic apply job also enforces the rule).
-                ALLOWED_RE="^references/sdks/${SDK}/"
+                ALLOWED_RE="^src/references/sdks/${SDK}/"
                 violation=""
                 while IFS= read -r path; do
                   [[ -z "$path" ]] && continue
@@ -649,7 +649,7 @@ jobs:
                   echo "::warning::Path-allowlist violation on apply ($violation) — downgrading to issue"
                   git switch main
                   git branch -D "$BRANCH" || true
-                  git clean -fd -- references/ 2>/dev/null || true
+                  git clean -fd -- src/references/ 2>/dev/null || true
                   ISSUE_BODY=$(printf '%s\n\n---\n\nDowngraded from auto-PR because the artifact touched a disallowed path: `%s`.\n\nTouched paths:\n```\n%s\n```' \
                     "$BODY" "$violation" "$TOUCHED")
                   ISSUE_BODY=$(prepend_body_warning "$ISSUE_BODY")
@@ -664,7 +664,7 @@ jobs:
                   continue
                 fi
 
-                git add -A "references/sdks/$SDK/"
+                git add -A "src/references/sdks/$SDK/"
                 git commit -m "$TITLE" \
                   -m "Automated drift-fix run." \
                   -m "Co-Authored-By: Claude (claude-sonnet-5) <noreply@anthropic.com>"

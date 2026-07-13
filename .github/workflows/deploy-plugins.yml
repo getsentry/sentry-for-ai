@@ -28,12 +28,14 @@ on:
   push:
     branches: [main]
     paths:
-      - "skills/**"
+      - "src/skills/**"
+      - "src/references/**"
+      - "src/SKILL_TREE.md"
+      - "src/plugins/**"
       - "assets/**"
-      - "SKILL_TREE.md"
       - "LICENSE"
       - "*.json"
-      - "plugin-src/**"
+      - "scripts/**"
       - ".github/workflows/deploy-plugins.yml"
   workflow_dispatch:
 
@@ -86,11 +88,11 @@ jobs:
           # Rewrite the whole tree: clear tracked content (preserve the .git
           # dir), then repopulate from source via the agent's build script.
           git -C "$WORKTREE" rm -rfq --ignore-unmatch .
-          "plugin-src/${AGENT}/build.sh" "$WORKTREE"
+          "src/plugins/${AGENT}/build.sh" "$WORKTREE"
 
           # Validate the built tree against the agent's schema/validator before
           # it can be deployed.
-          "plugin-src/${AGENT}/validate.sh" "$WORKTREE"
+          "src/plugins/${AGENT}/validate.sh" "$WORKTREE"
 
           # Commit only if something changed.
           git -C "$WORKTREE" add -A
