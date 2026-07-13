@@ -103,8 +103,6 @@ To build any target locally, run `src/plugins/<agent>/build.sh <output-dir>`
 
 | Skill | What it does |
 |-------|--------------|
-| `sentry-code-review` | Resolve `sentry[bot]` comments on GitHub PRs |
-| `sentry-pr-code-review` | Fix issues flagged by Seer Bug Prediction |
 | `sentry-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
 
 ### Feature Setup
