@@ -25,7 +25,7 @@ Configure Sentry to track LLM calls, agent executions, tool usage, and token con
 
 AI monitoring requires **tracing enabled** (`tracesSampleRate > 0`).
 
-If the app has multi-turn chats, set a conversation ID by default anywhere it makes sense to identify a chat session. Sentry uses `gen_ai.conversation.id` to group related AI spans into Conversations. Some integrations infer it automatically, but many setups need to set it explicitly — see [Setting a Conversation ID](#setting-a-conversation-id) for the required format.
+If the app has multi-turn chats, set a conversation ID by default anywhere it makes sense to identify a chat session. Sentry uses `gen_ai.conversation.id` to group related AI spans into Conversations. Some integrations infer it automatically, but many setups need to set it explicitly.
 
 ## Data Capture Warning
 
