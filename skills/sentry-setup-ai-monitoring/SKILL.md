@@ -25,7 +25,7 @@ Configure Sentry to track LLM calls, agent executions, tool usage, and token con
 
 AI monitoring requires **tracing enabled** (`tracesSampleRate > 0`).
 
-If the app has multi-turn chats, set a conversation ID by default anywhere it makes sense to identify a chat session. Sentry uses `gen_ai.conversation.id` to group related AI spans into Conversations. Some integrations infer it automatically, but many setups need to set it explicitly.
+If the app has multi-turn chats, set a conversation ID by default anywhere it makes sense to identify a chat session. Sentry uses `gen_ai.conversation.id` to group related AI spans into Conversations. Some integrations infer it automatically, but many setups need to set it explicitly — see [Setting a Conversation ID](#setting-a-conversation-id) for the required format.
 
 ## Data Capture Warning
 
@@ -345,6 +345,12 @@ Find it at **Explore > Conversations** in Sentry.
 ### Setting a Conversation ID
 
 Some integrations (OpenAI Agents SDK for Python, OpenAI SDK for Node) infer the conversation ID automatically. For all others, set it manually.
+
+Use a short, opaque identifier — alphanumeric characters with dashes or underscores only. Never use a URL, email address, or other free-form text as the conversation ID: Sentry uses it as a URL path segment, and a value containing a slash breaks Conversations for that session.
+
+Good examples:
+- A UUID: `48e35936-82ab-4f1a-beaf-b2fa4273ac5e`
+- A prefixed ID: `conv_5j66UpCpwteGg4YSxUnt7lPYU`, `asst_abc12345`, `sess_987654`
 
 #### JavaScript
 
