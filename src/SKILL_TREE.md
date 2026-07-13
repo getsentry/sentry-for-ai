@@ -49,5 +49,4 @@ Configure specific Sentry capabilities beyond basic SDK setup.
 |---|---|
 | Create Sentry alerts using the workflow engine API | [`sentry-create-alert`](skills/sentry-create-alert/SKILL.md) |
 | Configure the OpenTelemetry Collector with Sentry Exporter for multi-project routing and automatic project creation | [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) |
-| Setup Sentry AI Agent Monitoring in any project | [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) |
 | Full Sentry Snapshots setup for Apple/Cocoa projects | [`sentry-snapshots-cocoa`](skills/sentry-snapshots-cocoa/SKILL.md) |
