@@ -37,8 +37,6 @@ Debug production issues and maintain code quality with Sentry context.
 
 | Use when | Skill |
 |---|---|
-| Analyze and resolve Sentry comments on GitHub Pull Requests | [`sentry-code-review`](skills/sentry-code-review/SKILL.md) |
-| Review a project's PRs to check for issues detected in code review by Seer Bug Prediction | [`sentry-pr-code-review`](skills/sentry-pr-code-review/SKILL.md) |
 | Upgrade the Sentry JavaScript SDK across major versions | [`sentry-sdk-upgrade`](skills/sentry-sdk-upgrade/SKILL.md) |
 
 ## Feature Setup
