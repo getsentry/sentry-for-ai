@@ -67,7 +67,6 @@ Skills use YAML frontmatter with `allowed-tools` — this is required by Cursor 
 | Skill | Description |
 |-------|-------------|
 | `sentry-fix-issues` | Find and fix Sentry issues using MCP |
-| `sentry-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
 | `sentry-create-alert` | Create Sentry alerts using the workflow engine API |
 
 ### Authoring Skills
@@ -87,15 +86,13 @@ Sentry MCP server configured at `https://mcp.sentry.dev/mcp`. The source of trut
 ## Skill Tree Navigation
 
 **How it works:**
-- 3 router skills (always visible in agent metadata): `sentry-sdk-setup`, `sentry-workflow`, `sentry-feature-setup`
+- Router skills (always visible in agent metadata) group related skills; `sentry-feature-setup` is the last remaining one as the library migrates to flat standalone skills
 - All other skills are hidden with `disable-model-invocation: true` — loaded on-demand when a router points to them
 - `src/SKILL_TREE.md` is the flat sitemap listing every skill
 - This keeps startup metadata at ~300 tokens instead of ~1,600+ as the library grows
 - Tools that don't support `disable-model-invocation` simply see all skills (same as before)
 
 **Categories:**
-- `sdk-setup` — platform/language SDK setup wizards (router: `sentry-sdk-setup`)
-- `workflow` — debugging, code review, issue management (router: `sentry-workflow`)
 - `feature-setup` — specific feature configuration (router: `sentry-feature-setup`)
 - `internal` — contributor tools, no router
 

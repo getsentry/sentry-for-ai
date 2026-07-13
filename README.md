@@ -99,12 +99,6 @@ To build any target locally, run `src/plugins/<agent>/build.sh <output-dir>`
 | `sentry-instrument` | Add Sentry to a project, or wire up any signal — error monitoring, tracing, logging, metrics, profiling, session replay, user feedback, cron check-ins, and AI/LLM monitoring. Detects your platform and pulls the code from the reference library. |
 | `sentry-debug-issue` | Find a Sentry issue, pull full context, optionally run Seer root-cause / autofix, apply the fix, and resolve it |
 
-### Workflow
-
-| Skill | What it does |
-|-------|--------------|
-| `sentry-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
-
 ### Feature Setup
 
 | Skill | What it does |
@@ -127,7 +121,7 @@ To build any target locally, run `src/plugins/<agent>/build.sh <output-dir>`
 
 The plugin configures the [Sentry MCP server](https://mcp.sentry.dev) automatically on install. No extra setup needed.
 
-Some workflow skills require the [GitHub CLI](https://cli.github.com/):
+Some skills require the [GitHub CLI](https://cli.github.com/):
 
 ```bash
 brew install gh    # macOS
