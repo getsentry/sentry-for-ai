@@ -13,8 +13,7 @@ code review with Sentry context, and monitoring configuration.
 ## Install
 
 ```bash
-codex plugin marketplace add getsentry/plugin-codex
-codex plugin add sentry@sentry-plugin-marketplace
+codex plugin add sentry@openai-curated
 ```
 
 ## What's included
