@@ -62,7 +62,7 @@ After detecting the environment, assess how many files need changes. If the code
 
 ### Enable Span Streaming
 
-**Prerequisites:** `sentry-sdk` `>=2.62.0` with tracing enabled (`traces_sample_rate` or `traces_sampler` configured).
+**Prerequisites:** `sentry-sdk` `>=2.66.0` with tracing enabled (`traces_sample_rate` or `traces_sampler` configured).
 
 Add the top-level `trace_lifecycle` option in ALL occurences of `sentry_sdk.init()`:
 
@@ -640,7 +640,7 @@ with start_span(name="my operation", attributes={"sentry.op": "task"}) as span:
 
 #### Migration Checklist
 
-- [ ] SDK version is `>=2.62.0`
+- [ ] SDK version is `>=2.66.0`
 - [ ] Added top-level `trace_lifecycle="stream"` to `sentry_sdk.init()`
 - [ ] `sentry_sdk.start_span()` migrated to `sentry_sdk.traces.start_span()`
 - [ ] `sentry_sdk.start_transaction()` migrated to `sentry_sdk.traces.start_span()`
