@@ -1,0 +1,12 @@
+# New-project scope: sane defaults (errors + tracing).
+# Heavier signals (profiling, replay, logs, metrics) route to sentry-instrument.
+needs:
+  - sdks/index.md
+  - sdks/*/index.md
+  - sdks/*/error-monitoring.md
+  - sdks/*/tracing.md
+  - concepts/errors.md
+  - concepts/tracing.md
+  - first-error-setup.md
+  - new-project.md
+  - setup-verification.md

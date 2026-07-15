@@ -1,114 +1,114 @@
 [
   {
-    "skill": "sentry-android-sdk",
+    "sdk": "android",
     "repo": "getsentry/sentry-android",
     "path_filter": "",
     "team": "getsentry/team-mobile"
   },
   {
-    "skill": "sentry-browser-sdk",
+    "sdk": "browser",
     "repo": "getsentry/sentry-javascript",
     "path_filter": "packages/browser/ packages/core/",
     "team": "getsentry/team-javascript-sdks"
   },
   {
-    "skill": "sentry-cloudflare-sdk",
+    "sdk": "cloudflare",
     "repo": "getsentry/sentry-javascript",
     "path_filter": "packages/cloudflare/ packages/core/",
     "team": "getsentry/team-javascript-sdks"
   },
   {
-    "skill": "sentry-cocoa-sdk",
+    "sdk": "cocoa",
     "repo": "getsentry/sentry-cocoa",
     "path_filter": "",
     "team": "getsentry/team-mobile"
   },
   {
-    "skill": "sentry-dotnet-sdk",
+    "sdk": "dotnet",
     "repo": "getsentry/sentry-dotnet",
     "path_filter": "",
     "team": "getsentry/team-web-sdk-backend"
   },
   {
-    "skill": "sentry-elixir-sdk",
+    "sdk": "elixir",
     "repo": "getsentry/sentry-elixir",
     "path_filter": "",
     "team": "getsentry/team-web-sdk-backend"
   },
   {
-    "skill": "sentry-flutter-sdk",
+    "sdk": "flutter",
     "repo": "getsentry/sentry-dart",
     "path_filter": "",
     "team": "getsentry/team-mobile-cross-platform"
   },
   {
-    "skill": "sentry-go-sdk",
+    "sdk": "go",
     "repo": "getsentry/sentry-go",
     "path_filter": "",
     "team": "getsentry/team-web-sdk-backend"
   },
   {
-    "skill": "sentry-nestjs-sdk",
+    "sdk": "nestjs",
     "repo": "getsentry/sentry-javascript",
     "path_filter": "packages/nestjs/ packages/node/ packages/core/",
     "team": "getsentry/team-javascript-sdks"
   },
   {
-    "skill": "sentry-nextjs-sdk",
+    "sdk": "nextjs",
     "repo": "getsentry/sentry-javascript",
     "path_filter": "packages/nextjs/ packages/node/ packages/react/ packages/core/",
     "team": "getsentry/team-javascript-sdks"
   },
   {
-    "skill": "sentry-node-sdk",
+    "sdk": "node",
     "repo": "getsentry/sentry-javascript",
     "path_filter": "packages/node/ packages/bun/ packages/deno/ packages/core/",
     "team": "getsentry/team-javascript-sdks"
   },
   {
-    "skill": "sentry-php-sdk",
+    "sdk": "php",
     "repo": "getsentry/sentry-php",
     "path_filter": "",
     "team": "getsentry/team-web-sdk-backend"
   },
   {
-    "skill": "sentry-python-sdk",
+    "sdk": "python",
     "repo": "getsentry/sentry-python",
     "path_filter": "",
     "team": "getsentry/owners-python-sdk"
   },
   {
-    "skill": "sentry-react-native-sdk",
+    "sdk": "react-native",
     "repo": "getsentry/sentry-react-native",
     "path_filter": "",
     "team": "getsentry/team-mobile-cross-platform"
   },
   {
-    "skill": "sentry-react-router-framework-sdk",
+    "sdk": "react-router-framework",
     "repo": "getsentry/sentry-javascript",
     "path_filter": "packages/react-router/ packages/profiling-node/ packages/core/",
     "team": "getsentry/team-javascript-sdks"
   },
   {
-    "skill": "sentry-react-sdk",
+    "sdk": "react",
     "repo": "getsentry/sentry-javascript",
     "path_filter": "packages/react/ packages/browser/ packages/core/",
     "team": "getsentry/team-javascript-sdks"
   },
   {
-    "skill": "sentry-ruby-sdk",
+    "sdk": "ruby",
     "repo": "getsentry/sentry-ruby",
     "path_filter": "",
     "team": "getsentry/team-web-sdk-backend"
   },
   {
-    "skill": "sentry-svelte-sdk",
+    "sdk": "svelte",
     "repo": "getsentry/sentry-javascript",
     "path_filter": "packages/svelte/ packages/sveltekit/ packages/browser/ packages/core/",
     "team": "getsentry/team-javascript-sdks"
   },
   {
-    "skill": "sentry-tanstack-start-sdk",
+    "sdk": "tanstack-start",
     "repo": "getsentry/sentry-javascript",
     "path_filter": "packages/tanstackstart-react/ packages/core/",
     "team": "getsentry/team-javascript-sdks"

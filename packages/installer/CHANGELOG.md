@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4
+
+- Add a `remove` subcommand to uninstall the Sentry plugin from your agents.
+- After a successful install, offer to copy a get-started prompt to your
+  clipboard so there's an obvious first thing to try.
+
 ## 0.1.3
 
 - Lead the README with the install command and add a demo to the npm package

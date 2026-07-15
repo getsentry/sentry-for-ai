@@ -1,4 +1,4 @@
-import { checkbox } from "@inquirer/prompts";
+import { checkbox, confirm } from "@inquirer/prompts";
 import { ListrInquirerPromptAdapter } from "@listr2/prompt-adapter-inquirer";
 import {
   color,
@@ -21,6 +21,7 @@ import {
   type InstallResult,
 } from "./run";
 import type { OutputSink } from "./system";
+import { copyToClipboard } from "./clipboard";
 
 const BANNER_LINES = [
   "█▀ █▀▀ █▄░█ ▀█▀ █▀█ █▄█   █▀▀ █▀█ █▀█   ▄▀█ █",
@@ -142,6 +143,16 @@ interface FlowMode {
    * affected agents to restart.
    */
   closing(names: string[]): string;
+  /**
+   * When set (install only), offer to copy a get-started prompt to the clipboard
+   * after at least one agent was acted on. Remove has nothing to get started.
+   */
+  getStarted?: {
+    /** Confirm-prompt question. */
+    message: string;
+    /** The text copied to the clipboard when the user accepts. */
+    prompt: string;
+  };
 }
 
 // "Claude Code", "Claude Code and Codex", "Claude Code, Codex, and Grok".
@@ -204,6 +215,39 @@ async function promptForAgents(
   });
 
   return eligible.filter((detection) => selectedIds.includes(detection.harness.id));
+}
+
+// Offer to copy the get-started prompt to the clipboard, defaulting to yes.
+// Declining (or cancelling the prompt) skips quietly; when the copy is
+// unavailable (no clipboard tool), the prompt text is printed so it can be
+// copied by hand. Only runs in install mode with at least one agent acted on.
+async function promptGetStarted(
+  getStarted: NonNullable<FlowMode["getStarted"]>,
+  task: TaskWrapper,
+): Promise<void> {
+  let wantsCopy: boolean;
+  try {
+    wantsCopy = await task.prompt(ListrInquirerPromptAdapter).run(confirm, {
+      message: getStarted.message,
+      default: true,
+      theme: { prefix: color.blue("◇") },
+    });
+  } catch (err) {
+    if (!isCancel(err)) throw err;
+    task.skip("Skipped");
+    return;
+  }
+
+  if (!wantsCopy) {
+    task.skip("Maybe next time");
+    return;
+  }
+
+  const copied = await copyToClipboard(getStarted.prompt);
+  task.title = copied
+    ? "Copied a get-started prompt to your clipboard"
+    : "Copy this prompt to get started";
+  task.stdout().write(`\n${color.gray(getStarted.prompt)}\n`);
 }
 
 // Translate one harness action (install/update or remove) into Listr task
@@ -278,6 +322,10 @@ const installMode: FlowMode = {
   closing: (names) => {
     const speak = names.length === 1 ? "agent now speaks" : "agents now speak";
     return `\nDone. Restart ${listFormatter.format(names)}. ${color.dim(`Your ${speak} Sentry.`)}`;
+  },
+  getStarted: {
+    message: "Would you like to copy a prompt to get started with Sentry?",
+    prompt: "Use the `sentry-get-started` skill for this project.",
   },
 };
 
@@ -382,6 +430,15 @@ async function runFlow(
           },
         );
       },
+    },
+    {
+      title: "Get started with Sentry",
+      // Install-only, and only worth asking once an agent actually learned
+      // Sentry. Non-interactive runs never prompt.
+      enabled: (ctx) =>
+        interactive && !ctx.cancelled && !!mode.getStarted && ctx.affected.length > 0,
+      rendererOptions: { persistentOutput: true },
+      task: (_ctx, task) => promptGetStarted(mode.getStarted!, task),
     },
   ];
 
