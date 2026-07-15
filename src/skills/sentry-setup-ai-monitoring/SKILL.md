@@ -1,6 +1,6 @@
 ---
 name: sentry-setup-ai-monitoring
-description: Setup Sentry AI Agent Monitoring in any project. Use when asked to monitor LLM calls, track AI agents, track conversations, or instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI/Pydantic AI. Detects installed AI SDKs and configures appropriate integrations.
+description: Setup Sentry AI Agent Monitoring in any project. Use when asked to monitor LLM calls, track AI agents, track conversations, or instrument OpenAI/Anthropic/Vercel AI/LangChain/Google GenAI/Pydantic AI/Laravel AI. Detects installed AI SDKs and configures appropriate integrations.
 license: Apache-2.0
 category: feature-setup
 parent: sentry-feature-setup
@@ -29,7 +29,7 @@ If the app has multi-turn chats, set a conversation ID by default anywhere it ma
 
 ## Data Capture Warning
 
-**Prompt and output recording captures user content that is likely PII.** In JavaScript, genAI input/output capture is **on by default** (governed by `dataCollection.genAI`); in Python it is enabled via `send_default_pii=True`. Before relying on this capture (or per-integration overrides — `recordInputs`/`recordOutputs` in JS, `include_prompts` in Python), confirm:
+**Prompt and output recording captures user content that is likely PII.** In JavaScript, genAI input/output capture is **on by default** (governed by `dataCollection.genAI`); in Python it is enabled via `send_default_pii=True`; in Laravel it is enabled via `SENTRY_SEND_DEFAULT_PII=true`. Before relying on this capture (or per-integration overrides — `recordInputs`/`recordOutputs` in JS, `include_prompts` in Python), confirm:
 
 - The application's privacy policy permits capturing user prompts and model responses
 - Captured data complies with applicable regulations (GDPR, CCPA, etc.)
@@ -47,6 +47,10 @@ grep -E '"(openai|@anthropic-ai/sdk|ai|@langchain|@google/genai)"' package.json
 
 # Python
 grep -E '(openai|anthropic|langchain|huggingface)' requirements.txt pyproject.toml 2>/dev/null
+
+# PHP / Laravel
+grep -E '"(laravel/ai|openai-php|openai/|anthropic|llm)' composer.json 2>/dev/null
+ls artisan 2>/dev/null && echo "Laravel detected"
 ```
 
 ## Sampling Check
@@ -59,6 +63,9 @@ grep -E 'tracesSampleRate|tracesSampler' sentry.*.config.* instrument.* src/inst
 
 # Python
 grep -E 'traces_sample_rate|traces_sampler' *.py **/*.py 2>/dev/null
+
+# PHP / Laravel
+grep -E 'SENTRY_TRACES_SAMPLE_RATE|traces_sample_rate|traces_sampler' .env config/sentry.php 2>/dev/null
 ```
 
 **If `tracesSampleRate` / `traces_sample_rate` is below 1.0 AND no `tracesSampler` / `traces_sampler` is configured:**
@@ -98,6 +105,14 @@ Integrations auto-enable when the AI package is installed — no explicit regist
 | `pydantic-ai` | Yes | |
 | `litellm` | **No** | Requires explicit integration |
 | `mcp` (Model Context Protocol) | Yes | |
+
+### PHP / Laravel
+
+| Package | Integration | Min Sentry SDK | Auto? |
+|---------|-------------|----------------|-------|
+| `laravel/ai` | Laravel AI instrumentation in `sentry/sentry-laravel` | 4.27.0 | Yes |
+
+Laravel AI support requires Laravel 12.x or later, `sentry/sentry-laravel` 4.27.0 or later, and tracing enabled.
 
 ## JavaScript Configuration
 
@@ -210,6 +225,42 @@ sentry_sdk.init(
     # integrations=[OpenAIIntegration(include_prompts=True)],
 )
 ```
+
+## PHP / Laravel AI Configuration
+
+Laravel AI instrumentation auto-enables when both `sentry/sentry-laravel` and `laravel/ai` are installed and tracing is active.
+
+```bash
+composer require sentry/sentry-laravel "^4.27.0"
+composer require laravel/ai
+php artisan vendor:publish --provider="Laravel\Ai\AiServiceProvider"
+php artisan migrate
+```
+
+Enable tracing in `.env`:
+
+```ini
+SENTRY_TRACES_SAMPLE_RATE=1.0
+```
+
+To include LLM prompts, tool arguments, and responses after explicit user confirmation, enable PII capture:
+
+```ini
+SENTRY_SEND_DEFAULT_PII=true
+```
+
+Sentry treats LLM and tool inputs/outputs as PII and does not capture them by default. Do not enable `SENTRY_SEND_DEFAULT_PII=true` without confirming the Data Capture Warning above.
+
+The Laravel integration captures these span types automatically:
+
+| Span op | Purpose |
+|---------|---------|
+| `gen_ai.invoke_agent` | Agent prompt lifecycle |
+| `gen_ai.chat` | AI provider chat requests |
+| `gen_ai.execute_tool` | Laravel AI tool executions |
+| `gen_ai.embeddings` | Embedding generation |
+
+For detailed Laravel setup, verification, Conversations behavior, and feature flags, read `${SKILL_ROOT}/../../references/sdks/php/ai-monitoring.md`.
 
 ## Manual Instrumentation
 
@@ -340,11 +391,11 @@ Find it at **Explore > Conversations** in Sentry.
 
 - Tracing enabled with `tracesSampleRate > 0`
 - Gen AI span streaming is on by default — `streamGenAiSpans` defaults to `true` since JS SDK 10.61.0 and `stream_gen_ai_spans` defaults to `True` since Python SDK 2.64.0. This sends AI spans as standalone items, so spans with large inputs/outputs don't hit transaction payload size limits and get dropped. (The options are available since JS 10.53.0 / Python 2.60.0 if you need to set them explicitly on older SDKs.)
-- **Input and output capture enabled** — Conversations reconstructs the chat from `gen_ai.input.messages` and `gen_ai.output.messages` attributes. In JS this is on by default (via `dataCollection`); in Python, set `send_default_pii=True`. Without it, conversations appear empty.
+- **Input and output capture enabled** — Conversations reconstructs the chat from `gen_ai.input.messages` and `gen_ai.output.messages` attributes. In JS this is on by default (via `dataCollection`); in Python, set `send_default_pii=True`; in Laravel, set `SENTRY_SEND_DEFAULT_PII=true`. Without it, conversations appear empty.
 
 ### Setting a Conversation ID
 
-Some integrations (OpenAI Agents SDK for Python, OpenAI SDK for Node) infer the conversation ID automatically. For all others, set it manually.
+Some integrations (OpenAI Agents SDK for Python, OpenAI SDK for Node, Laravel AI agents using `Conversational` + `RemembersConversations`) infer the conversation ID automatically. For all others, set it manually.
 
 Use a short, opaque identifier — alphanumeric characters with dashes or underscores only. Never use a URL, email address, or other free-form text as the conversation ID: Sentry uses it as a URL path segment, and a value containing a slash breaks Conversations for that session.
 
@@ -429,7 +480,8 @@ These are independent concepts:
 | AI spans not appearing | Verify `tracesSampleRate > 0`, check SDK version |
 | Token counts missing | Some providers don't return tokens for streaming |
 | Negative or wrong costs in dashboard | Cached/reasoning tokens are subsets of totals — see Token Usage and Cost Calculation |
-| Prompts not captured | In JS, genAI capture is on by default — ensure you haven't set `dataCollection: { genAI: { inputs: false } }`, or pass `recordInputs: true` explicitly. In Python, set `send_default_pii=True`; use `include_prompts` only for explicit overrides |
+| Prompts not captured | In JS, genAI capture is on by default — ensure you haven't set `dataCollection: { genAI: { inputs: false } }`, or pass `recordInputs: true` explicitly. In Python, set `send_default_pii=True`; in Laravel, set `SENTRY_SEND_DEFAULT_PII=true`. Use `include_prompts` only for explicit Python overrides |
 | Vercel AI not working | Add `experimental_telemetry` to each call |
-| Conversations view empty | Ensure Gen AI span streaming is enabled (default since JS SDK 10.61.0 / Python SDK 2.64.0), genAI input/output capture enabled (on by default in JS via `dataCollection`; `send_default_pii=True` in Python), and a conversation ID is set |
+| Laravel AI spans not appearing | Verify `sentry/sentry-laravel >=4.27.0`, `laravel/ai` is installed, and `SENTRY_TRACES_SAMPLE_RATE > 0` |
+| Conversations view empty | Ensure Gen AI span streaming is enabled (default since JS SDK 10.61.0 / Python SDK 2.64.0), genAI input/output capture enabled (on by default in JS via `dataCollection`; `send_default_pii=True` in Python; `SENTRY_SEND_DEFAULT_PII=true` in Laravel), and a conversation ID is set |
 | User column shows "Unknown" | Call `Sentry.setUser()` (JS) or `sentry_sdk.set_user()` (Python) once per request or session |

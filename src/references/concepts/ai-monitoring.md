@@ -8,9 +8,9 @@ usage, cost, and latency. It is built on [tracing](tracing.md), so tracing must
 be on (`tracesSampleRate`/`traces_sample_rate` > 0) — without spans there is
 nothing to attach `gen_ai` data to.
 
-Auto-instrumented for detected AI SDKs on **JavaScript and Python only** (OpenAI,
+Auto-instrumented for detected AI SDKs on **JavaScript, Python, and Laravel** (OpenAI,
 Anthropic, Vercel AI, LangChain/LangGraph, Google GenAI, HuggingFace, Pydantic
-AI; `litellm` needs explicit registration). Every other platform is manual
+AI, and Laravel AI; `litellm` needs explicit registration). Every other platform is manual
 `gen_ai.*` instrumentation, or unsupported — the platform `index.md` says which.
 
 ## What the artifact shows
@@ -37,10 +37,12 @@ one trace can hold spans from multiple conversations — the two are independent
 with dashes or underscores only (a UUID, or a prefixed id like `conv_5j66Up…`).
 Never use a URL, email, or other free-form text: Sentry uses the id as a URL path
 segment, so a value containing a slash breaks Conversations for that session.
-Some integrations infer the id automatically (Python OpenAI Agents, Node OpenAI);
-everything else sets it explicitly. The view also needs input/output capture and
-gen_ai span streaming (both on by default on recent SDKs) or it renders empty,
-and a `setUser`/`set_user` call to populate the User column.
+Some integrations infer the id automatically (Python OpenAI Agents, Node OpenAI,
+Laravel AI agents using `Conversational` + `RemembersConversations`); everything
+else sets it explicitly. The view also needs input/output capture and gen_ai span
+streaming (both on by default on recent JS/Python SDKs; Laravel AI spans are
+emitted directly) or it renders empty, and a `setUser`/`set_user` call to populate
+the User column where supported.
 
 ## Token accounting (avoid negative costs)
 
@@ -54,14 +56,15 @@ total makes Sentry subtract past zero and show a negative cost.
 
 Prompts and model outputs are user content and are **likely PII**. JavaScript
 captures input/output by default (governed by `dataCollection.genAI`); Python
-gates it behind `send_default_pii=True`. Confirm the privacy policy and
-regulations allow it and **ask the user before enabling capture** — see
+gates it behind `send_default_pii=True`; Laravel gates it behind
+`SENTRY_SEND_DEFAULT_PII=true`. Confirm the privacy policy and regulations allow
+it and **ask the user before enabling capture** — see
 [data-scrubbing.md](data-scrubbing.md).
 
 ## Setup essentials
 
 - Tracing must be on; then detect the AI SDK and let auto-instrumentation handle
-  it (JS/Python), or instrument `gen_ai.*` spans manually.
+  it (JS/Python/Laravel AI), or instrument `gen_ai.*` spans manually.
 - Sample AI traces at **100%**: an agent run is sampled as one span tree, so a
   dropped root loses every child `gen_ai` span. Keep `gen_ai` traffic at 1.0 via
   a `tracesSampler` while sampling the rest lower — see [reduce-volume.md](reduce-volume.md).

@@ -144,6 +144,11 @@ All controlled per-feature in the `breadcrumbs` sub-array:
 | `tracing.missing_routes` | `SENTRY_TRACE_MISSING_ROUTES_ENABLED` | `false` | Track 404 routes as transactions |
 | `tracing.continue_after_response` | `SENTRY_TRACE_CONTINUE_AFTER_RESPONSE` | `true` | Continue traces after response |
 | `tracing.default_integrations` | `SENTRY_TRACE_DEFAULT_INTEGRATIONS_ENABLED` | `true` | Register default tracing integrations |
+| `tracing.features.gen_ai` | `SENTRY_TRACE_GEN_AI_ENABLED` | `true` | Capture Laravel AI spans (requires `laravel/ai`, Sentry Laravel >=4.27.0) |
+| `tracing.features.gen_ai_invoke_agent` | `SENTRY_TRACE_GEN_AI_INVOKE_AGENT_ENABLED` | `true` | Capture Laravel AI agent invocation spans |
+| `tracing.features.gen_ai_chat` | `SENTRY_TRACE_GEN_AI_CHAT_ENABLED` | `true` | Capture Laravel AI chat/provider request spans |
+| `tracing.features.gen_ai_execute_tool` | `SENTRY_TRACE_GEN_AI_EXECUTE_TOOL_ENABLED` | `true` | Capture Laravel AI tool execution spans |
+| `tracing.features.gen_ai_embeddings` | `SENTRY_TRACE_GEN_AI_EMBEDDINGS_ENABLED` | `true` | Capture Laravel AI embedding spans |
 
 ---
 
@@ -167,6 +172,22 @@ The Laravel SDK auto-instruments the following (via `EventHandler` + feature int
 | Lighthouse GraphQL | (graphql spans) | Requires `nuwave/lighthouse` |
 | Folio routes | breadcrumb + transaction name | Requires `laravel/folio` |
 | Filesystem disk operations | (file spans) | Opt-in, see below |
+| Laravel AI agent invocations | `gen_ai.invoke_agent` | `sentry/sentry-laravel` >=4.27.0 + `laravel/ai` |
+| Laravel AI chat requests | `gen_ai.chat` | `sentry/sentry-laravel` >=4.27.0 + `laravel/ai` |
+| Laravel AI tool executions | `gen_ai.execute_tool` | `sentry/sentry-laravel` >=4.27.0 + `laravel/ai` |
+| Laravel AI embeddings | `gen_ai.embeddings` | `sentry/sentry-laravel` >=4.27.0 + `laravel/ai` |
+
+### Laravel AI Instrumentation
+
+Laravel AI instrumentation auto-enables when `laravel/ai` is installed and tracing is enabled. It captures agent invocations, provider chat requests, tool executions, embeddings, token usage, provider/model metadata, and conversation IDs.
+
+To capture prompts, responses, tool arguments, tool results, and embeddings input, explicitly enable PII capture after confirming the application's privacy requirements:
+
+```ini
+SENTRY_SEND_DEFAULT_PII=true
+```
+
+For setup and verification steps, read `./ai-monitoring.md`.
 
 ### Filesystem Disk Instrumentation (Opt-in)
 
