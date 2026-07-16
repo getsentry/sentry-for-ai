@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Accept an optional install instruction and include it in the prompt offered
+  for copying after installation.
+
 ## 0.1.4
 
 - Add a `remove` subcommand to uninstall the Sentry plugin from your agents.

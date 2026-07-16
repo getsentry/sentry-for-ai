@@ -85,6 +85,9 @@ export interface RunOptions {
   // When false, skip the selector and install every detected agent (CI smoke
   // tests, unattended runs). The selection task is disabled in this mode.
   interactive?: boolean;
+  // When provided, use this instruction to build the prompt offered after a
+  // successful install.
+  instruction?: string;
 }
 
 interface Ctx {
@@ -308,6 +311,15 @@ function actionTask(ctx: Ctx, detection: Detection, mode: FlowMode): ListrTask<C
   };
 }
 
+const DEFAULT_GET_STARTED_PROMPT = "Use the `sentry-get-started` skill for this project.";
+const INSTALLED_PROMPT_PREFIX = "The Sentry plugin has just been installed.";
+
+export function getStartedPrompt(instruction?: string): string {
+  const trimmed = instruction?.trim();
+
+  return trimmed ? `${INSTALLED_PROMPT_PREFIX} ${trimmed}` : DEFAULT_GET_STARTED_PROMPT;
+}
+
 // Install (and update) targets every detected agent, with a shimmering tagline.
 const installMode: FlowMode = {
   header: introTitle,
@@ -325,7 +337,7 @@ const installMode: FlowMode = {
   },
   getStarted: {
     message: "Would you like to copy a prompt to get started with Sentry?",
-    prompt: "Use the `sentry-get-started` skill for this project.",
+    prompt: DEFAULT_GET_STARTED_PROMPT,
   },
 };
 
@@ -345,7 +357,15 @@ const removeMode: FlowMode = {
 };
 
 export function runInstaller(harnesses: Harness[], options: RunOptions = {}): Promise<boolean> {
-  return runFlow(harnesses, installMode, options);
+  const mode = {
+    ...installMode,
+    getStarted: {
+      ...installMode.getStarted!,
+      prompt: getStartedPrompt(options.instruction),
+    },
+  };
+
+  return runFlow(harnesses, mode, options);
 }
 
 export function runRemover(harnesses: Harness[], options: RunOptions = {}): Promise<boolean> {

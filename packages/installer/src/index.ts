@@ -50,11 +50,18 @@ const install = defineCommand({
     name: "install",
     description: "Install the Sentry plugin into your detected AI coding assistants",
   },
-  args: agentSelectionArgs,
+  args: {
+    instruction: {
+      type: "positional",
+      description: "Instruction to include in the prompt copied after installation",
+      required: false,
+    },
+    ...agentSelectionArgs,
+  },
   async run({ args }) {
     const interactive = args.interactive && !args.yes;
     try {
-      const ok = await runInstaller(harnesses, { interactive });
+      const ok = await runInstaller(harnesses, { interactive, instruction: args.instruction });
       process.exit(ok ? 0 : 1);
     } catch (err) {
       // Unexpected error outside the Listr runner: capture and flush before exit
