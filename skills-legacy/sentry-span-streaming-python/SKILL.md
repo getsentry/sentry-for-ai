@@ -62,9 +62,9 @@ After detecting the environment, assess how many files need changes. If the code
 
 ### Enable Span Streaming
 
-**Prerequisites:** `sentry-sdk` `>=2.62.0` with tracing enabled (`traces_sample_rate` or `traces_sampler` configured).
+**Prerequisites:** `sentry-sdk` `>=2.66.0` with tracing enabled (`traces_sample_rate` or `traces_sampler` configured).
 
-Add `trace_lifecycle` to `_experiments` in ALL occurences of `sentry_sdk.init()`:
+Add the top-level `trace_lifecycle` option in ALL occurences of `sentry_sdk.init()`:
 
 ```python
 import sentry_sdk
@@ -79,9 +79,7 @@ sentry_sdk.init(
 sentry_sdk.init(
     dsn="...",
     traces_sample_rate=1.0,
-    _experiments={
-        "trace_lifecycle": "stream",
-    },
+    trace_lifecycle="stream",
 )
 ```
 
@@ -474,7 +472,7 @@ def traces_sampler(sampling_context):
 
 sentry_sdk.init(
     traces_sampler=traces_sampler,
-    _experiments={"trace_lifecycle": "stream"},
+    trace_lifecycle="stream",
 )
 ```
 
@@ -516,34 +514,34 @@ import re
 import sentry_sdk
 
 sentry_sdk.init(
-    _experiments={
-        "trace_lifecycle": "stream",
-        "ignore_spans": [
-            # String match against span name
-            "/health",
+    trace_lifecycle="stream",
+    ignore_spans=[
+        # String match against span name
+        "/health",
 
-            # Regex match against span name
-            re.compile(r"/flow/.*"),
+        # Regex match against span name
+        re.compile(r"/flow/.*"),
 
-            # Match by attributes (all must match)
-            {
-                "attributes": {
-                    "service.id": "15def9a",
-                    "flow.pipeline": "legacy",
-                }
+        # Match by attributes (all must match)
+        {
+            "attributes": {
+                "service.id": "15def9a",
+                "flow.pipeline": "legacy",
+            }
+        },
+
+        # Match by name and attributes
+        {
+            "name": re.compile(r"/flow/.*"),
+            "attributes": {
+                "service.id": re.compile(r".*\.facade"),
             },
-
-            # Match by name and attributes
-            {
-                "name": re.compile(r"/flow/.*"),
-                "attributes": {
-                    "service.id": re.compile(r".*\.facade"),
-                },
-            },
-        ],
-    },
+        },
+    ],
 )
 ```
+
+`ignore_spans` only takes effect when `trace_lifecycle="stream"` is enabled. If it is set without span streaming, the SDK emits a warning and the option is ignored.
 
 Only the span name and attributes set at creation time are available for matching — attributes added later in the span's lifetime are not considered.
 
@@ -584,8 +582,8 @@ def postprocess_span(span, hint):
     return span
 
 sentry_sdk.init(
+    trace_lifecycle="stream",
     _experiments={
-        "trace_lifecycle": "stream",
         "before_send_span": postprocess_span,
     },
 )
@@ -614,6 +612,7 @@ Instruct the user to verify:
 | `AttributeError` on `containing_transaction` | Attribute removed in streaming mode | Use `span._segment` |
 | `AttributeError` on `get_trace_context` | Method removed in streaming mode | Use `span.trace_id` / `span.span_id` directly, or `span._get_trace_context()` |
 | `before_send_transaction` not called | Expected in streaming mode | Migrate logic to `before_send_span` or `ignore_spans` |
+| Warning: `ignore_spans` only works with `trace_lifecycle` set to `stream` | `ignore_spans` set without span streaming enabled | Enable streaming with `trace_lifecycle="stream"`, or remove `ignore_spans` |
 | `before_send_transaction` logic relied on late-set attributes (e.g. status code) | These attributes aren't available at span creation time | Remove the logic or use server-side filtering (Sentry inbound filters / Relay rules) |
 
 ### Quick Reference
@@ -626,9 +625,7 @@ import sentry_sdk
 sentry_sdk.init(
     dsn="__DSN__",
     traces_sample_rate=1.0,
-    _experiments={
-        "trace_lifecycle": "stream",
-    },
+    trace_lifecycle="stream",
 )
 ```
 
@@ -643,8 +640,8 @@ with start_span(name="my operation", attributes={"sentry.op": "task"}) as span:
 
 #### Migration Checklist
 
-- [ ] SDK version is `>=2.62.0`
-- [ ] Added `_experiments={"trace_lifecycle": "stream"}` to `sentry_sdk.init()`
+- [ ] SDK version is `>=2.66.0`
+- [ ] Added top-level `trace_lifecycle="stream"` to `sentry_sdk.init()`
 - [ ] `sentry_sdk.start_span()` migrated to `sentry_sdk.traces.start_span()`
 - [ ] `sentry_sdk.start_transaction()` migrated to `sentry_sdk.traces.start_span()`
 - [ ] `span.start_child()` migrated to `sentry_sdk.traces.start_span()`
