@@ -642,6 +642,7 @@ If a frontend exists without Sentry, suggest the matching skill:
 | `SentryGlobalFilter` (unified)     | 8.40.0              |
 | `Sentry.logger` API (`enableLogs`) | 9.41.0              |
 | `profileSessionSampleRate`         | 10.27.0             |
+| `experimentalUseDiagnosticsChannelInjection()` (experimental orchestrion instrumentation) | 10.66.0 |
 | Node.js requirement                | ≥ 18                |
 | Node.js for ESM `--import`         | ≥ 18.19.0           |
 | NestJS compatibility               | 8.x – 11.x          |
