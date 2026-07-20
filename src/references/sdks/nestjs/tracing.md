@@ -33,6 +33,32 @@
 
 Sentry is the OpenTelemetry provider — any OTel instrumentation automatically flows into Sentry.
 
+### Experimental: orchestrion (diagnostics-channel) instrumentation
+
+SDK ≥ 10.66.0 ships an experimental alternative to the OTel-based `nestIntegration`: a
+diagnostics-channel-based instrumentation path ("orchestrion"). Opt in by calling
+`Sentry.experimentalUseDiagnosticsChannelInjection()` **before** `Sentry.init()`:
+
+```typescript
+// instrument.ts
+import * as Sentry from "@sentry/nestjs";
+
+Sentry.experimentalUseDiagnosticsChannelInjection();
+
+Sentry.init({
+  dsn: "YOUR_DSN",
+  tracesSampleRate: 1.0,
+});
+```
+
+- Produces the same span tree as the OTel path (`app_creation`, `request_context`, `handler`,
+  `middleware.nestjs[.guard|.pipe|.interceptor|.exception_filter]`, `@OnEvent`/`@Cron` spans) —
+  only the span `origin` changes (e.g. `auto.http.otel.nestjs` → `auto.http.orchestrion.nestjs`).
+- No bundler/build step required for plain Node apps; the function installs Node diagnostics-channel
+  module hooks at runtime.
+- **Experimental** — may change or be removed in any release. Do not recommend by default; only
+  mention if a user is explicitly investigating orchestrion/diagnostics-channel instrumentation.
+
 ## Code Examples
 
 ### Enable tracing
