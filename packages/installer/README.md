@@ -22,11 +22,12 @@ Restart your AI tools afterward to load the plugin.
 ## Options
 
 ```bash
-npx @sentry/ai install                  # interactive — pick which agents to set up
-npx @sentry/ai install --no-interactive # install into every detected agent
+npx @sentry/ai install                         # interactive — pick which agents to set up
+npx @sentry/ai install "Setup logging"         # copy a custom prompt after installation
+npx @sentry/ai install --no-interactive        # install into every detected agent
 ```
 
-The non-interactive mode is intended for CI and unattended runs.
+When an instruction follows `install`, the installer offers to copy a prompt such as `The Sentry plugin has just been installed. Setup logging` after installation. Without an instruction, it offers the default get-started prompt. The non-interactive mode is intended for CI and unattended runs and skips this prompt.
 
 ## What it installs
 

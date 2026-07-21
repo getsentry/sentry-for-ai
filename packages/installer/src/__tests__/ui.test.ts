@@ -1,6 +1,25 @@
 import { describe, expect, it, vi } from "vitest";
-import { runInstaller, runRemover } from "../ui";
+import { getStartedPrompt, runInstaller, runRemover } from "../ui";
 import { fakeHarness } from "./fake-harness";
+
+describe("getStartedPrompt", () => {
+  it("uses the default prompt when no instruction is provided", () => {
+    expect(getStartedPrompt()).toBe("Use the `sentry-get-started` skill for this project.");
+  });
+
+  it("builds a prompt from the install instruction", () => {
+    expect(getStartedPrompt("Setup logging")).toBe(
+      "The Sentry plugin has just been installed. Setup logging",
+    );
+  });
+
+  it("trims the instruction and ignores whitespace-only input", () => {
+    expect(getStartedPrompt("  Setup tracing.  ")).toBe(
+      "The Sentry plugin has just been installed. Setup tracing.",
+    );
+    expect(getStartedPrompt("   ")).toBe("Use the `sentry-get-started` skill for this project.");
+  });
+});
 
 // These cover the non-interactive path, which skips the prompt and installs
 // every detected agent. The interactive selector is exercised manually.
