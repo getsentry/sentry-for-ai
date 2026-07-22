@@ -66,7 +66,7 @@ Based on detection results, classify each `Sentry.init` call as:
 
 ## Phase 2: Migrate
 
-**Prerequisites:** Sentry JavaScript SDK `>=10.61.0` with tracing enabled (`tracesSampleRate` or `tracesSampler` configured).
+**Prerequisites:** Sentry JavaScript SDK `>=10.66.0` with tracing enabled (`tracesSampleRate` or `tracesSampler` configured).
 
 Apply changes to each `Sentry.init` call. Work through each file identified above.
 
@@ -226,7 +226,7 @@ Sentry.getCurrentScope().setTag('job', 'sync-orders')
 Sentry.getCurrentScope().setAttribute('job', 'sync-orders')
 ```
 
-`setAttribute(s)` is available from SDK `>=10.61.0` — confirm the prerequisite version before applying this step.
+`setAttribute(s)` is available from SDK `>=10.66.0` — confirm the prerequisite version before applying this step.
 
 ### 2.4 Remove or Replace `beforeSendTransaction`
 
@@ -430,7 +430,7 @@ Sentry.init({
 
 ### Full Migration Checklist
 
-- [ ] SDK version is `>=10.61.0`
+- [ ] SDK version is `>=10.66.0`
 - [ ] Server configs: added `traceLifecycle: 'stream'`
 - [ ] Browser configs: added `spanStreamingIntegration()`
 - [ ] `beforeSendSpan` callbacks wrapped with `Sentry.withStreamedSpan()`
