@@ -4,8 +4,9 @@
 > Durable Object instrumentation: v8.x+
 > `instrumentPrototypeMethods`: v10.x+
 > Workflow instrumentation: v10.x+
-> D1 instrumentation: v8.x+
+> D1 automatic (`env`-based) instrumentation: v10.x+
 > Durable Object Storage instrumentation: v10.x+
+> RPC trace propagation (`enableRpcTracePropagation`): v10.52.0+
 
 ---
 
@@ -122,6 +123,33 @@ class MyDurableObjectBase extends DurableObject<Env> {
 }
 ```
 
+### Classes Built on Durable Objects (Agents SDK)
+
+`instrumentDurableObjectWithSentry` also works with classes that extend a Durable Object base — including the [Cloudflare Agents SDK](https://developers.cloudflare.com/agents/) `Agent` and `AIChatAgent` classes (which are Durable Objects under the hood). Wrap and export them the same way:
+
+```typescript
+import * as Sentry from "@sentry/cloudflare";
+import { AIChatAgent } from "@cloudflare/ai-chat";
+
+class MyChatAgentBase extends AIChatAgent<Env> {
+  // ...agent logic (RPC methods, onChatMessage, etc.)
+}
+
+export const MyChatAgent = Sentry.instrumentDurableObjectWithSentry(
+  (env: Env) => ({
+    dsn: env.SENTRY_DSN,
+    tracesSampleRate: 1.0,
+  }),
+  MyChatAgentBase,
+);
+```
+
+Since Agents use the instance name as a stable identifier, `this.name` is a natural conversation ID for AI monitoring — pass it to `Sentry.setConversationId(this.name)` (see the Workers AI section in `./tracing.md`).
+
+### RPC Trace Propagation
+
+Trace context isn't propagated across Durable Object RPC calls by default. To connect a caller Worker and a DO into a single distributed trace, set `enableRpcTracePropagation: true` on **both** the caller (`withSentry`) and the DO (`instrumentDurableObjectWithSentry`) — recommended whenever you use Durable Objects. See [RPC Trace Propagation in `./tracing.md`](./tracing.md#rpc-trace-propagation) for the full setup.
+
 ---
 
 ## Workflows
@@ -196,7 +224,7 @@ The SDK generates a deterministic trace ID from the workflow instance ID. This m
 
 ### Overview
 
-`instrumentD1WithSentry` wraps a Cloudflare D1 database binding to automatically create spans and breadcrumbs for all queries.
+D1 bindings are **automatically instrumented** when accessed through the handler's `env`. As long as your Worker is wrapped with `withSentry` (or the DO/Workflow is wrapped), every query on `env.DB` creates spans and breadcrumbs — no manual wrapping needed.
 
 ### Setup
 
@@ -210,17 +238,16 @@ export default Sentry.withSentry(
   }),
   {
     async fetch(request, env, ctx) {
-      // Wrap the D1 binding
-      const db = Sentry.instrumentD1WithSentry(env.DB);
-
-      // Use as normal — all queries are traced
-      const users = await db.prepare("SELECT * FROM users WHERE active = ?").bind(1).all();
+      // env.DB is already instrumented — use it directly
+      const users = await env.DB.prepare("SELECT * FROM users WHERE active = ?").bind(1).all();
 
       return new Response(JSON.stringify(users.results));
     },
   } satisfies ExportedHandler<Env>,
 );
 ```
+
+> **Deprecated:** the explicit `Sentry.instrumentD1WithSentry(env.DB)` wrapper still works but is **deprecated and will be removed in v11**. Access `env.DB` directly instead — it's instrumented automatically.
 
 ### Instrumented Methods
 
@@ -230,21 +257,25 @@ export default Sentry.withSentry(
 | `statement.run()` | SQL query text | Execute with metadata return |
 | `statement.all()` | SQL query text | Returns all rows with metadata |
 | `statement.raw()` | SQL query text | Returns raw row arrays |
+| `db.batch([...])` | SQL of the batched statements | Executes multiple statements in one transaction |
+| `db.exec(sql)` | SQL query text | Executes raw SQL |
 
 All methods create:
 - A `db.query` span with the SQL statement as the span name
 - A breadcrumb in the `query` category
 - Span attributes: `cloudflare.d1.query_type`, `cloudflare.d1.duration`, `cloudflare.d1.rows_read`, `cloudflare.d1.rows_written`
 
+`db.batch()` and `db.exec()` additionally set:
+- `db.operation.name` — `batch` or `exec`
+- `db.operation.batch.size` — number of statements (for `batch`)
+
 ### Bind Support
 
 The instrumentation follows through `statement.bind()`:
 
 ```typescript
-const db = Sentry.instrumentD1WithSentry(env.DB);
-
 // bind() returns a new statement — it's also instrumented
-const result = await db
+const result = await env.DB
   .prepare("INSERT INTO users (name, email) VALUES (?, ?)")
   .bind("Alice", "alice@example.com")
   .run();
@@ -252,20 +283,19 @@ const result = await db
 
 ### Limitations
 
-- `db.exec()` and `db.batch()` are **not** instrumented — only prepared statements
 - Query parameters are not captured in span data (to avoid PII leakage)
 
 ---
 
 ## Best Practices
 
-1. **Instrument D1 once per request** — call `instrumentD1WithSentry(env.DB)` at the top of your handler and use the wrapped binding throughout.
+1. **Access D1 via `env`** — use `env.DB` directly; it's auto-instrumented. Don't reach for the deprecated `instrumentD1WithSentry` wrapper.
 
 2. **Export wrapped classes** — always export the instrumented class (`Sentry.instrumentDurableObjectWithSentry(...)`) as the binding target, not the base class.
 
 3. **Use `instrumentPrototypeMethods` selectively** — it wraps all prototype methods which adds overhead. Use an array of method names if you only need specific RPC methods.
 
-4. **Don't wrap already-wrapped objects** — calling `instrumentD1WithSentry` twice on the same binding is harmless (it checks for existing instrumentation) but unnecessary.
+4. **Enable RPC trace propagation for cross-Worker traces** — set `enableRpcTracePropagation: true` on both caller and receiver when you want DO/service-binding RPC calls in one trace (see [RPC Trace Propagation](#rpc-trace-propagation)).
 
 5. **Workflow error handling** — step errors are captured with `handled: true` since Workflows may retry steps. The dedupe integration is automatically disabled.
 
@@ -277,7 +307,7 @@ const result = await db
 |-------|----------|
 | DO errors not captured | Ensure you exported the instrumented class, not the base class |
 | RPC methods not creating spans | Enable `instrumentPrototypeMethods: true` or list specific methods |
-| D1 queries not traced | Call `instrumentD1WithSentry(env.DB)` before executing queries |
+| D1 queries not traced | Access the binding via `env.DB` (auto-instrumented by `withSentry`) and ensure `tracesSampleRate` is set |
 | Workflow spans disconnected | Verify all steps in the same workflow instance share the same trace (automatic) |
 | Storage operations not traced | Ensure you're using `instrumentDurableObjectWithSentry` — storage instrumentation is included |
-| `db.batch()` not creating spans | Expected — batch and exec are not instrumented; use prepared statements |
+| DO / service-binding RPC calls in separate traces | Set `enableRpcTracePropagation: true` on both caller and receiver |

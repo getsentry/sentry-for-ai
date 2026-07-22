@@ -2,7 +2,7 @@
 
 Opinionated wizard that scans your Cloudflare project and guides you through complete Sentry setup for Workers, Pages, Durable Objects, Queues, Workflows, and Hono.
 
-> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.55.0).
+> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.67.0).
 > Always verify against [docs.sentry.io/platforms/javascript/guides/cloudflare/](https://docs.sentry.io/platforms/javascript/guides/cloudflare/) before implementing.
 
 ---
@@ -63,11 +63,13 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 | Hono framework? | Recommend standalone `@sentry/hono` package (v10.55.0+) for cleaner integration |
 | `@sentry/cloudflare` already installed? | Skip install, go to feature config |
 | Durable Objects configured? | Recommend `instrumentDurableObjectWithSentry` |
-| D1 databases bound? | Recommend `instrumentD1WithSentry` |
+| D1 databases bound? | Auto-instrumented by `withSentry` when accessed via `env.DB` (no manual wrap) |
 | Queues configured? | `withSentry` auto-instruments queue handlers |
 | Workflows configured? | Recommend `instrumentWorkflowWithSentry` |
 | Cron triggers configured? | `withSentry` auto-instruments scheduled handlers; recommend Crons monitoring |
-| `nodejs_als` or `nodejs_compat` flag set? | **Required** — SDK needs `AsyncLocalStorage` |
+| `nodejs_als` or `nodejs_compat` flag set? | **Required** — SDK needs `AsyncLocalStorage`. Recommend `nodejs_compat` generally, and with it the `@sentry/cloudflare/nodejs_compat` entrypoint (drop-in swap, unlocks Prisma + Vercel AI SDK v7, becomes default in v11) |
+| Prisma ORM used? | Recommend `prismaIntegration` via the `/nodejs_compat` entrypoint — see `./nodejs-compat.md` |
+| Workers AI (`env.AI`) used? | Auto-instrumented by `withSentry` — creates `gen_ai` spans (v10.67.0+) |
 | AI/LLM libraries? | Recommend AI Monitoring integrations |
 | Companion frontend? | Trigger Phase 4 cross-link |
 
@@ -144,7 +146,18 @@ compatibility_flags = ["nodejs_als"]
 }
 ```
 
-> `nodejs_als` is lighter — it only enables `AsyncLocalStorage`. Use `nodejs_compat` if your code also needs other Node.js APIs.
+> `nodejs_als` is the minimum — it only enables `AsyncLocalStorage`. **`nodejs_compat` is generally recommended:** it's a superset of `nodejs_als` and unlocks the `/nodejs_compat` entrypoint below (more integrations and features), which becomes the SDK default in v11. Prefer `nodejs_compat` unless you have a specific reason to keep the runtime minimal.
+
+#### `/nodejs_compat` Entrypoint (recommended)
+
+When your Worker runs with the `nodejs_compat` flag, use the dedicated `@sentry/cloudflare/nodejs_compat` entrypoint instead of the default one. It's a drop-in import swap — everything (`withSentry`, `sentryPagesPlugin`, etc.) works the same — but it unlocks additional Node.js-only functionality on Cloudflare, such as the `prismaIntegration` and Vercel AI SDK v7 support:
+
+```typescript
+// Drop-in replacement — everything else works the same
+import * as Sentry from "@sentry/cloudflare/nodejs_compat";
+```
+
+**For new projects, default to this entrypoint** (add the `nodejs_compat` flag and import from `@sentry/cloudflare/nodejs_compat` from the start). Requires SDK v10.64.0+. It becomes the **default entrypoint in v11**, so adopting it now is the recommended path and eases the upgrade. See `./nodejs-compat.md` for full setup (Prisma).
 
 #### Install
 
@@ -183,6 +196,22 @@ export default Sentry.withSentry(
 - The first argument is a callback that receives `env` — use this to read secrets like `SENTRY_DSN`
 - The SDK reads DSN, environment, release, debug, tunnel, and traces sample rate from `env` automatically (see [Environment Variables](#environment-variables))
 - `withSentry` wraps all exported handlers — you do not need separate wrappers for `scheduled`, `queue`, etc.
+
+#### Automatic Binding Instrumentation
+
+`withSentry` (and `sentryPagesPlugin`) wraps the `env` object so that supported bindings are **automatically instrumented on access** — no manual wrapping needed. As long as your handler uses the `env` passed in by the SDK:
+
+| Binding | Auto-instrumented | Docs status |
+|---------|-------------------|-------------|
+| **D1** (`env.DB`) | Query spans + breadcrumbs | Documented |
+| **Workers AI** (`env.AI`) | `gen_ai` spans (v10.67.0+) | Documented |
+| **Queue producers** | Producer send spans | Verified in SDK source; not yet in published docs |
+| **R2 buckets** | Object operation spans | Verified in SDK source; not yet in published docs |
+| **RateLimit** | `limit()` spans | Verified in SDK source; not yet in published docs |
+
+> Because D1 is auto-instrumented via `env`, the manual `instrumentD1WithSentry` wrapper is no longer needed (it's deprecated and slated for removal in v11). See `./durable-objects.md`.
+>
+> To link Durable Object and service-binding (JSRPC) calls into one trace, set `enableRpcTracePropagation: true` on both caller and receiver — **recommended** whenever you use RPC, Durable Objects, or Workflows. See [RPC Trace Propagation](#configuration-reference) and `./tracing.md`.
 
 #### Pages Setup
 
@@ -371,10 +400,11 @@ Load the corresponding reference file and follow its steps:
 | Feature | Reference file | Load when... |
 |---------|---------------|-------------|
 | Error Monitoring | `./error-monitoring.md` | Always (baseline) — unhandled exceptions, manual capture, scopes, enrichment |
-| Tracing | `./tracing.md` | HTTP request tracing, outbound fetch spans, D1 query spans, distributed tracing |
+| Tracing | `./tracing.md` | HTTP request tracing, outbound fetch spans, D1/Workers AI spans, distributed tracing, RPC trace propagation |
 | Logging | `./logging.md` | Structured logs via `Sentry.logger.*`, log-to-trace correlation |
 | Crons | `./crons.md` | Scheduled handler monitoring, `withMonitor`, check-in API |
-| Durable Objects | `./durable-objects.md` | Instrument Durable Object classes for error capture and spans |
+| Durable Objects / Workflows / D1 | `./durable-objects.md` | Instrument Durable Object and Workflow classes; D1 auto-instrumentation |
+| Node.js Compat | `./nodejs-compat.md` | `nodejs_compat` flag set, or Prisma / Vercel AI SDK v7 detected — `/nodejs_compat` entrypoint, `prismaIntegration` |
 
 For each feature: read the reference file, follow its steps exactly, and verify before moving on.
 
@@ -402,6 +432,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 | `tracePropagationTargets` | `(string\|RegExp)[]` | all URLs | Control which outbound requests get trace headers |
 | `skipOpenTelemetrySetup` | `boolean` | `false` | Opt-out of OpenTelemetry compatibility tracer |
 | `instrumentPrototypeMethods` | `boolean \| string[]` | `false` | Durable Object: instrument prototype methods for RPC spans |
+| `enableRpcTracePropagation` | `boolean` | `false` | Links RPC calls (Worker↔DO, Worker↔Worker service bindings) into one trace. **Recommended** when using RPC / Durable Objects / Workflows — set on **both** caller and receiver (v10.52.0+). See `./tracing.md` |
 
 ### Data Collection Reference
 
@@ -443,6 +474,8 @@ These are registered automatically by `getDefaultIntegrations()`:
 | `requestDataIntegration` | Attach request data to events |
 | `consoleIntegration` | Capture `console.*` calls as breadcrumbs |
 
+> **Not default:** `prismaIntegration` is available on Cloudflare **only** via the `@sentry/cloudflare/nodejs_compat` entrypoint and must be added manually. See `./nodejs-compat.md`.
+
 ---
 
 ## Verification
@@ -473,7 +506,8 @@ Deploy and trigger the route, then check your [Sentry Issues dashboard](https://
 | Errors captured | Throw in a fetch handler, verify in Sentry |
 | Tracing working | Check Performance tab for HTTP spans |
 | Source maps working | Check stack trace shows readable file/line names |
-| D1 spans (if configured) | Run a D1 query, check for `db.query` spans |
+| D1 spans (if configured) | Run a D1 query via `env.DB` (auto-instrumented), check for `db.query` spans |
+| Workers AI spans (if configured) | Call `env.AI.run(...)`, check for `gen_ai` spans |
 | Scheduled monitoring (if configured) | Trigger a cron, check Crons dashboard |
 
 ---
@@ -524,7 +558,9 @@ Connecting frontend and backend with linked Sentry projects enables **distribute
 | Events lost on short-lived requests | SDK not flushing before worker terminates | Ensure `withSentry` or `sentryPagesPlugin` wraps your handler — they use `ctx.waitUntil()` to flush |
 | Hono errors not captured | Hono app not instrumented | Use `@sentry/hono/cloudflare` — import `sentry` middleware and call `app.use(sentry(app, options))` |
 | Durable Object errors missing | DO class not instrumented | Wrap class with `Sentry.instrumentDurableObjectWithSentry()` — see `./durable-objects.md` |
-| D1 queries not creating spans | D1 binding not instrumented | Wrap binding with `Sentry.instrumentD1WithSentry(env.DB)` before use |
+| D1 queries not creating spans | Not using the SDK-provided `env`, or accessing DB outside the wrapped handler | Use the `env` passed into your handler — `withSentry` auto-instruments D1 bindings on access. No manual wrapping needed |
+| Spans inside `waitUntil()` missing | Root span already ended before the background task ran | Wrap deferred work in `Sentry.startSpan({ ..., forceTransaction: true }, ...)` — see `./tracing.md` |
+| Traces not linked across RPC / DO calls | RPC trace propagation not enabled | Set `enableRpcTracePropagation: true` on **both** caller and receiver (v10.52.0+) — see `./tracing.md` |
 | Scheduled handler not monitored | `withSentry` not wrapping the handler | Ensure `export default Sentry.withSentry(...)` wraps your entire exported handler object |
 | Release not auto-detected | `CF_VERSION_METADATA` binding not configured | Add `[version_metadata]` with `binding = "CF_VERSION_METADATA"` to `wrangler.toml` |
 | Duplicate events in Workflows | Dedupe integration filtering step failures | SDK automatically disables dedupe for Workflows; verify you use `instrumentWorkflowWithSentry` |
