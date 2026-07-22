@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
 
 - Accept an optional install instruction and include it in the prompt offered
   for copying after installation.
