@@ -37,7 +37,6 @@ Debug production issues and maintain code quality with Sentry context.
 
 | Use when | Skill |
 |---|---|
-| Upgrade the Sentry JavaScript SDK across major versions | [`sentry-sdk-upgrade`](skills/sentry-sdk-upgrade/SKILL.md) |
 
 ## Feature Setup
 
