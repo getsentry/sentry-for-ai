@@ -55,4 +55,6 @@ copy_skills "$CONTENT_ROOT" "$PLUGIN/skills"
 # every hidden leaf (skills the source marked disable-model-invocation: true).
 python3 "$SRC_DIR/hide-skills.py" "$PLUGIN/skills"
 
+
+check_skill_links "$PLUGIN"
 echo "Built Codex dist into $TARGET_DIR (plugins/$PLUGIN_NAME)."

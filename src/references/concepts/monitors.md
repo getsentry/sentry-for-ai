@@ -63,4 +63,4 @@ verifying after creation.
 - [`crons.md`](crons.md)
 - [`metrics.md`](metrics.md)
 - [`releases.md`](releases.md)
-- [`search-query-language.md`](search-query-language.md)
+- [`search-query-language.md`](../search-query-language.md)

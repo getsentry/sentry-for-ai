@@ -1,12 +1,16 @@
 # New-project scope: sane defaults (errors + tracing).
-# Heavier signals (profiling, replay, logs, metrics) route to sentry-instrument.
+# Heavier signals (profiling, replay, logs, metrics) route to sentry-instrument,
+# so only the SDK files for the default signals ship here.
 needs:
   - sdks/index.md
   - sdks/*/index.md
   - sdks/*/error-monitoring.md
   - sdks/*/tracing.md
-  - concepts/errors.md
-  - concepts/tracing.md
+  # The whole concepts web, even though this skill only reads errors and tracing:
+  # those two link the others, and a pointer that resolves in the source repo has
+  # to resolve in the built skill too.
+  - concepts/*.md
+  - search-query-language.md
   - first-error-setup.md
   - new-project.md
   - setup-verification.md

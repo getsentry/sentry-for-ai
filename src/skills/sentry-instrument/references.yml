@@ -2,8 +2,11 @@ needs:
   # Whole SDK tree (platform is chosen at runtime); STRUCTURE.md is excluded.
   - sdks/index.md
   - sdks/*/*.md
-  - concepts/choosing-a-signal.md
-  - concepts/{errors,tracing,logging,metrics,profiling,session-replay,user-feedback,crons,ai-monitoring}.md
+  # The whole concepts web. These docs cross-link each other, so shipping a
+  # subset leaves pointers dangling in the built skill; SKILL.md decides what
+  # actually gets read.
+  - concepts/*.md
+  - search-query-language.md
   - first-error-setup.md
   - new-project.md
   - setup-verification.md

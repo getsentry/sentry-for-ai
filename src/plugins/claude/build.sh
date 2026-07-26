@@ -37,4 +37,6 @@ rsync -a assets/ "$TARGET_DIR/assets/"
 cp "$SRC_DIR/README.md" "$TARGET_DIR/README.md"
 cp LICENSE "$TARGET_DIR/LICENSE"
 
+
+check_skill_links "$TARGET_DIR"
 echo "Built Claude dist into $TARGET_DIR (root plugin, content from $CONTENT_ROOT)."

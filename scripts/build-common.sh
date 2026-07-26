@@ -35,6 +35,43 @@ copy_skills() {
     fi
 }
 
+# Fail the build if any skill points at a Markdown file that isn't in the built
+# tree. A skill only ships what its references.yml declares, so a reference that
+# links a sibling the manifest omits reads fine in the source repo and dangles in
+# every published plugin. Run this last — after both the skills and SKILL_TREE.md
+# are in place — and pass the directory breadcrumbs resolve against, so
+# `../../SKILL_TREE.md` from skills/<name>/SKILL.md is checked where it lands.
+#   check_skill_links <plugin_root>
+check_skill_links() {
+    python3 - "$1" <<'PY'
+import os, re, sys
+
+root = sys.argv[1]
+broken = []
+for dirpath, _, filenames in os.walk(root):
+    for filename in filenames:
+        if not filename.endswith(".md"):
+            continue
+        path = os.path.join(dirpath, filename)
+        with open(path, encoding="utf-8") as handle:
+            body = handle.read()
+        # Local links to .md files; skip URLs and pure anchors.
+        for match in re.finditer(r"\]\((?!https?://|#)([^)#]+\.md)", body):
+            target = os.path.normpath(os.path.join(dirpath, match.group(1)))
+            if not os.path.exists(target):
+                broken.append(f"  {os.path.relpath(path, root)} -> {match.group(1)}")
+
+if broken:
+    print(f"ERROR: {len(broken)} skill link(s) point outside the built tree:", file=sys.stderr)
+    print("\n".join(sorted(broken)), file=sys.stderr)
+    print(
+        "\nAdd the target to the skill's references.yml, or drop the link.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+PY
+}
+
 # Copy SKILL_TREE.md from a content root, if present.
 #   copy_skill_tree <content_root> <dest_path>
 copy_skill_tree() {

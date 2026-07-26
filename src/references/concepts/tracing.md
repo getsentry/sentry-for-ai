@@ -41,4 +41,4 @@ down to the function level.
 
 - [`profiling.md`](profiling.md)
 - [`reduce-volume.md`](reduce-volume.md) — sampling is the main lever.
-- [`search-query-language.md`](search-query-language.md) — span properties for querying traces.
+- [`search-query-language.md`](../search-query-language.md) — span properties for querying traces.

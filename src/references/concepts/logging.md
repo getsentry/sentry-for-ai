@@ -70,4 +70,4 @@ or record an expected validation failure without adding context.
 
 - [`data-scrubbing.md`](data-scrubbing.md)
 - [`reduce-volume.md`](reduce-volume.md)
-- [`search-query-language.md`](search-query-language.md) — querying logs.
+- [`search-query-language.md`](../search-query-language.md) — querying logs.

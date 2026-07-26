@@ -27,5 +27,5 @@ own **issues**, so a real UX problem can exist with no exception behind it.
 
 - [`data-scrubbing.md`](data-scrubbing.md)
 - [`reduce-volume.md`](reduce-volume.md)
-- [`search-query-language.md`](search-query-language.md) — replay properties (`count_rage_clicks`,
+- [`search-query-language.md`](../search-query-language.md) — replay properties (`count_rage_clicks`,
   `click.*`, `count_errors`, …).
