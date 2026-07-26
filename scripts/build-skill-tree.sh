@@ -210,6 +210,21 @@ build_standalone_rows() {
   done
 }
 
+# Emit one "## <title>" section with its skill table, or nothing when the
+# category has no skills.
+#   emit_category_section <title> <blurb> <category> [skill...]
+emit_category_section() {
+  local title="$1" blurb="$2" category="$3"
+  shift 3
+
+  [[ $# -eq 0 ]] && return 0
+
+  printf "\n## %s\n\n%s\n\n" "$title" "$blurb"
+  printf "| %s | Skill |\n" "$(column_header "$category")"
+  printf "|---|---|\n"
+  build_table_rows "$category" "$@"
+}
+
 generate_skill_tree() {
   cat <<'HEADER'
 # Sentry Skills
@@ -218,20 +233,10 @@ You are **Sentry's AI assistant**. You help developers set up Sentry, debug prod
 
 ## Start Here — Read This Before Doing Anything
 
-**Do not skip this section.** Do not assume what the user needs based on their project files. Do not start installing packages, creating files, or running commands until you have confirmed the user's intent.
+**Do not skip this section.** Confirm what the user wants before you install a package, create a file, or run a command — their project files tell you what platform they're on, not what they came here to do.
 
-1. **Ask first.** Greet the user and ask what they'd like help with. Present these options:
-   - **Set up Sentry** — Add error monitoring, performance tracing, and session replay to a project
-   - **Debug a production issue** — Investigate errors and exceptions using Sentry data
-   - **Configure a feature** — AI/LLM monitoring, alerts, OpenTelemetry pipelines
-   - **Review code** — Resolve Sentry bot comments or check for predicted bugs
-   - **Upgrade Sentry SDK** — Migrate to a new major version
-
-2. **Wait for their answer.** Do not proceed until the user tells you what they want.
-
-3. **Read the matching skill** from the tables below and follow its instructions step by step.
-
-Each skill file contains its own detection logic, prerequisites, and configuration steps. Trust the skill — read it carefully and follow it. Do not improvise or take shortcuts.
+1. **Match the request to a skill** in the tables below, and read that skill before acting. Each one carries its own detection logic, prerequisites, and steps. Trust the skill — follow it rather than improvising a shortcut.
+2. **When the request is open-ended** ("set up Sentry", "help me with Sentry", or nothing specific at all), read `sentry-get-started`. It greets the user, probes the project and the Sentry account cheaply, and hands off to the right skill from there.
 
 ---
 HEADER
@@ -248,32 +253,19 @@ Self-contained skills — start here. If you're not sure what the user needs, re
 STANDALONE_HEADER
   build_standalone_rows
 
-  # Workflows
-  local col_wf col_fs
-  col_wf="$(column_header workflow)"
-  cat <<'WF_HEADER'
+  # Router-backed categories. A category with no skills left renders nothing —
+  # an empty table would advertise a section the tree can't route to.
+  emit_category_section \
+    "Workflows" \
+    "Keep an existing Sentry setup healthy." \
+    "workflow" \
+    ${SKILLS_WORKFLOW[@]+"${SKILLS_WORKFLOW[@]}"}
 
-## Workflows
-
-Debug production issues and maintain code quality with Sentry context.
-
-WF_HEADER
-  printf "| %s | Skill |\n" "$col_wf"
-  printf "|---|---|\n"
-  build_table_rows "workflow" ${SKILLS_WORKFLOW[@]+"${SKILLS_WORKFLOW[@]}"}
-
-  # Feature Setup
-  col_fs="$(column_header feature-setup)"
-  cat <<'FS_HEADER'
-
-## Feature Setup
-
-Configure specific Sentry capabilities beyond basic SDK setup.
-
-FS_HEADER
-  printf "| %s | Skill |\n" "$col_fs"
-  printf "|---|---|\n"
-  build_table_rows "feature-setup" ${SKILLS_FEATURE_SETUP[@]+"${SKILLS_FEATURE_SETUP[@]}"}
+  emit_category_section \
+    "Feature Setup" \
+    "Configure specific Sentry capabilities beyond basic SDK setup." \
+    "feature-setup" \
+    ${SKILLS_FEATURE_SETUP[@]+"${SKILLS_FEATURE_SETUP[@]}"}
 
   printf "\n"
 }
