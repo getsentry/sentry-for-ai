@@ -92,7 +92,7 @@ To build any target locally, run `src/plugins/<agent>/build.sh <output-dir>`
 | `sentry-get-started` | Guided entry point — orients to your current Sentry setup and routes to the right skill |
 | `sentry-instrument` | Add Sentry to a project, or wire up any signal — error monitoring, tracing, logging, metrics, profiling, session replay, user feedback, cron check-ins, and AI/LLM monitoring. Detects your platform and pulls the code from the reference library. |
 | `sentry-debug-issue` | Find a Sentry issue, pull full context, optionally run Seer root-cause / autofix, apply the fix, and resolve it |
-| `sentry-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
+| `sentry-js-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
 
 ### Feature Setup
 

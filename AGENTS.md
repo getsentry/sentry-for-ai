@@ -40,7 +40,7 @@ breadcrumb, or `disable-model-invocation`; the description is the routing signal
 | `sentry-get-started` | Guided entry point — orients to the current setup, runs first-error setup for a new project, routes everything else |
 | `sentry-instrument` | Wire up any signal on any platform: errors, tracing, logging, metrics, profiling, session replay, user feedback, crons, AI/LLM monitoring |
 | `sentry-debug-issue` | Take one Sentry issue from report to shipped fix, optionally via Seer |
-| `sentry-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
+| `sentry-js-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
 
 ### Feature Setup
 Behind the `sentry-feature-setup` router.

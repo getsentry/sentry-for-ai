@@ -1,5 +1,5 @@
 ---
-name: sentry-sdk-upgrade
+name: sentry-js-sdk-upgrade
 description: Upgrade the Sentry JavaScript SDK across major versions. Use when asked to upgrade Sentry, migrate to a newer version, fix deprecated Sentry APIs, or resolve breaking changes after a Sentry version bump.
 license: Apache-2.0
 ---
