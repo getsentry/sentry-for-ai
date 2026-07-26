@@ -65,11 +65,17 @@ grep -rn "new BrowserTracing\|new Replay\|startTransaction\|configureScope\|Hand
 # v8 patterns (need v8→v9 migration)
 grep -rn "from '@sentry/utils'\|from '@sentry/types'" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" -l
 grep -rn "getCurrentHub\|enableTracing\|captureUserFeedback\|@WithSentry\|autoSessionTracking" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" -l
+
+# v9 patterns (need v9→v10 migration)
+grep -rn "from '@sentry/types'" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" -l
+grep -rn "logger\.\(info\|log\|warn\|error\)" --include="*.ts" --include="*.js" -l   # internal @sentry/core logger, now `debug`
 ```
 
 ### 1.5 Determine Target Version
 
-If the user didn't specify a target version, recommend the latest major version (v9 as of this writing). If the user has already bumped package versions but has broken code, detect the target from `package.json`.
+If the user has already bumped package versions but has broken code, detect the target from `package.json`.
+
+If they didn't name a target, **find the current latest major before recommending one** — don't assume the newest version this skill happens to describe. Check the [Sentry JavaScript changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md) or `npm view @sentry/core version`, then confirm the recommendation with the user.
 
 ## Phase 2: Recommend
 
@@ -84,10 +90,12 @@ For multi-hop migrations, apply code changes incrementally but update package ve
 
 ### 2.2 Present Breaking Changes Summary
 
-Load the appropriate version-specific reference:
+Load the reference for each hop in the path:
 - v7→v8: [references/v7-to-v8.md](references/v7-to-v8.md)
 - v8→v9: [references/v8-to-v9.md](references/v8-to-v9.md)
 - v9→v10: [references/v9-to-v10.md](references/v9-to-v10.md)
+
+**A reference can lag the SDK.** If the hop's reference says the target major isn't released yet, or covers less than the packages in `package.json` clearly need, treat it as incomplete: fetch the official migration guide at `https://docs.sentry.io/platforms/javascript/migration/` for that hop and work from it, telling the user which source you're using. Never present a hop as change-free just because its reference is thin.
 
 Present a concrete summary of changes needed, categorized by complexity:
 
@@ -216,10 +224,15 @@ Mention features available in the new version that the user might want to enable
 
 **v9 new features**: Structured logging (`Sentry.logger.*`), improved source maps handling, simplified configuration
 
+For a target this list doesn't cover, read the release notes for that major rather than leaving it out — the changelog link below is the source.
+
 ### 4.3 Related Resources
 
-- [Official Migration Guide (v7→v8)](https://docs.sentry.io/platforms/javascript/migration/v7-to-v8/)
-- [Official Migration Guide (v8→v9)](https://docs.sentry.io/platforms/javascript/migration/v8-to-v9/)
+- [Migration guides, all hops](https://docs.sentry.io/platforms/javascript/migration/)
 - [Sentry JavaScript SDK Changelog](https://github.com/getsentry/sentry-javascript/blob/develop/CHANGELOG.md)
+
+## What "done" looks like
+
+Every `@sentry/*` package is on the target major, the build and type-check pass, and Sentry has been confirmed still capturing after the upgrade — a test error from the running app **seen in Sentry**, not just a clean build. Any API removed with no equivalent has been named for the user rather than silently dropped.
 
 If the user has other Sentry SDKs (Python, Ruby, Go, etc.) that also need upgrading, note that this skill covers JavaScript SDK only.

@@ -15,13 +15,6 @@ Create alerts via Sentry's workflow engine API.
 
 **Note:** This API is currently in **beta** and may be subject to change. It is part of New Monitors and Alerts and may not be viewable in the legacy Alerts UI.
 
-## Invoke This Skill When
-
-- User asks to "create a Sentry alert" or "set up notifications"
-- User wants to be emailed or notified when issues match certain conditions
-- User mentions priority alerts, de-escalation alerts, or workflow automations
-- User wants to configure Slack, PagerDuty, or email notifications for Sentry issues
-
 ## Prerequisites
 
 - `curl` available in shell
@@ -186,6 +179,8 @@ If the org lacks the `workflow-engine-ui` feature flag, the alert appears at:
 ```
 https://{org_slug}.sentry.io/alerts/rules/
 ```
+
+**Completion criterion:** the POST returned `201`, the workflow `id` from the response has been read back with `GET /workflows/{id}/`, and the user has the UI link. A `201` alone isn't the finish line — read it back so a silently mis-shaped payload surfaces here rather than the next time the alert should have fired.
 
 ## Managing Alerts
 

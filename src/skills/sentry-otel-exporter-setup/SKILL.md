@@ -15,7 +15,19 @@ disable-model-invocation: true
 
 Configure the OpenTelemetry Collector to send traces and logs to Sentry using the Sentry Exporter.
 
-## Setup Overview
+## How this setup runs
+
+Every step ends on a **recorded decision** — the user's answer, plus the concrete
+path or version it produced. Later steps read those recorded values rather than
+re-deriving them, so ask, wait for the answer, write it down, and only then move on.
+Four values get recorded and reused throughout:
+
+| Recorded value | Set in | Read by |
+|---|---|---|
+| Collector path (`otelcol-contrib` or `./otelcol-contrib`) and numeric version | Step 2 | Steps 6, 7 |
+| Config file path (existing file or new `collector-config.yaml`) | Steps 1, 4 | Steps 6, 7 |
+| Env file path | Step 5 | Steps 6, 7 |
+| Auto-create-projects choice | Step 3 | Step 4 |
 
 Copy this checklist to track your progress:
 
@@ -26,9 +38,10 @@ OTel Exporter Setup:
 - [ ] Step 3: Configure project creation settings
 - [ ] Step 4: Write collector config
 - [ ] Step 5: Add environment variable placeholders
-- [ ] Step 6: Run the collector
-- [ ] Step 7: Verify setup
-- [ ] Step 8: Enable trace connectedness with OTLPIntegration (Python/Ruby/Node.js)
+- [ ] Step 6: Validate the config and confirm readiness to run
+- [ ] Step 7: Run the collector
+- [ ] Step 8: Verify setup
+- [ ] Step 9: Enable trace connectedness with OTLPIntegration (Python/Ruby/Node.js)
 ```
 
 ## Step 1: Check for Existing Configuration
@@ -39,7 +52,7 @@ Search for existing OpenTelemetry Collector configs by looking for YAML files co
 - **Modify existing config**: Add Sentry Exporter to the existing file (recommended to avoid duplicates)
 - **Create separate config**: Keep existing config unchanged and create a new one for testing
 
-**Wait for the user's answer and record their choice before proceeding to Step 2.** The rest of the workflow depends on this decision.
+**Record the config file path** their answer implies. The rest of the workflow depends on this decision.
 
 **If no config exists**: Note that you'll create a new `collector-config.yaml` in Step 4, then proceed to Step 2.
 
@@ -97,7 +110,7 @@ Perform these steps for the user—do not just show them the commands.
    - **Yes, delete it**: Remove the tarball
    - **No, keep it**: Leave the tarball in place
 
-**Wait for the user's response.** Only delete if they explicitly choose to:
+Delete it only on an explicit yes:
 ```bash
 rm otelcol-contrib_<numeric_version>_<os>_<arch>.tar.gz
 ```
@@ -113,21 +126,19 @@ docker pull otel/opentelemetry-collector-contrib:<numeric_version>
 
 Example: For GitHub tag `v0.145.0`, use `docker pull otel/opentelemetry-collector-contrib:0.145.0`.
 
-The `docker run` command comes later in Step 6 after the config is created.
+The `docker run` command comes later in Step 7 after the config is created.
 
 ## Step 3: Configure Sentry Project Creation
 
-Ask the user whether to enable automatic Sentry project creation. Do not recommend either option:
+Ask the user whether to enable automatic Sentry project creation, and let them pick — present both options neutrally rather than recommending one:
 - **Yes**: Projects created from service.name. Requires at least one team in your Sentry org. All new projects are assigned to the first team found. Initial data may be dropped during creation.
 - **No**: Projects must exist in Sentry before telemetry arrives.
-
-**Wait for the user's answer before proceeding to Step 4.**
 
 **If user chooses Yes**: Warn them that the exporter will scan all projects and use the first team it finds. All auto-created projects will be assigned to that team. If they don't have any teams yet, they should create one in Sentry first.
 
 ## Step 4: Write Collector Config
 
-**Use the decision from Step 1** - if the user chose to modify an existing config, edit that file. If they chose to create a separate config, create a new file. **Record the config file path** for use in Steps 5 and 6.
+**Use the config file path recorded in Step 1** — if the user chose to modify an existing config, edit that file; if they chose a separate config, create the new one and record its path.
 
 Fetch the latest configuration from the Sentry Exporter documentation:
 
@@ -152,27 +163,23 @@ For troubleshooting during setup, add a `debug` exporter with `verbosity: detail
 
 ## Step 5: Add Environment Variable Placeholders
 
-The Sentry Exporter requires two environment variables. You will add placeholder values that the user fills in themselves—never actual credentials.
+The Sentry Exporter requires two environment variables. You write the **keys with placeholder values**; the user supplies the real credentials themselves.
 
-**Language constraint**: NEVER say "add credentials", "add environment variables", or "add the token" without explicitly stating these are **placeholders**. Always clarify the user fills them in later.
+**Say "placeholder" every time you mention this work**, so the user always knows no real credential is being written:
 
-DO NOT say:
-- "Let me add the environment variables"
-- "I'll add the credentials to your .env"
-- "Adding the Sentry auth token"
-
-SAY INSTEAD:
 - "I'll add placeholder environment variables for you to fill in"
-- "Adding placeholder values—you'll replace these with your actual credentials"
+- "Adding placeholder values — you'll replace these with your actual credentials"
 - "I'll set up the env var keys with placeholder values"
 
-Search for existing `.env` files in the project using glob `**/.env`. **Always ask the user which file to use**—do not infer from context or guess based on open files.
+The one hard rule: the value you write is always a placeholder. A real token or org slug reaches the file only by the user's own hand.
+
+Search for existing `.env` files in the project using glob `**/.env`. **Ask the user which file to use** — their answer decides it, not the file layout or which files happen to be open.
 
 Present the discovered options:
 - **[path to discovered .env file]**: Add to existing file (list each discovered path)
 - **Create new at root**: Create .env in project root
 
-**Wait for the user's explicit selection.** Do not proceed until they choose. Record the env file path for use in Steps 5 (validation) and 6 (running).
+**Record the env file path** they choose.
 
 Add these placeholder values to the chosen file:
 
@@ -195,19 +202,19 @@ After adding the placeholders, tell the user how to get their real values from S
 
 Ensure the chosen `.env` file is in `.gitignore`.
 
-### Wait for user to set credentials
+## Step 6: Validate the Config and Confirm Readiness
 
-After explaining how to get the values, ask the user to confirm when they've updated the `.env` file:
-- **Yes, credentials are set**: Proceed to validate and run the collector
-- **Not yet**: I'll wait while you update the .env file
+### Confirm the credentials are in place
 
-If user selects "Not yet", wait and ask again. Do not proceed to Step 6 until credentials are confirmed.
+Ask the user to confirm when they've updated the `.env` file:
+- **Yes, credentials are set**: Continue to validation below
+- **Not yet**: Wait, then ask again
+
+Validation reads the real values, so it only runs once they confirm.
 
 ### Validate config
 
-Once credentials are set, validate the configuration using the appropriate method based on the installation choice from Step 2.
-
-**Use the config file path from Step 1** (either the existing config you modified or the new `collector-config.yaml`).
+Validate using the method that matches the installation choice recorded in Step 2, against the config file path recorded in Step 1 (the existing config you modified, or the new `collector-config.yaml`).
 
 #### Binary validation
 
@@ -231,32 +238,17 @@ docker run --rm \
   validate --config /etc/otelcol-contrib/config.yaml
 ```
 
-Use the `.env` file path chosen in Step 5.
+**If validation fails:** read the error, fix the config, and re-run validation until it passes.
 
-**If validation fails:**
-1. Review the error message carefully
-2. Fix the issues in the config file
-3. Run validation again
-4. Repeat until validation passes
+**Completion criterion:** validation passes, and the user has answered whether they're ready to run the collector:
+- **Yes, run it now**: Continue to Step 7
+- **Not yet**: Wait — they may want to review the config or prepare their environment first
 
-**Once validation passes**, ask the user if they're ready to run the collector:
-- **Yes, run it now**: Proceed to Step 6 and start the collector
-- **Not yet**: Wait. The user may want to review the config or prepare their environment first.
+## Step 7: Run the Collector
 
-**Wait for the user's confirmation before proceeding to Step 6.**
+**The user runs the collector themselves** — give them the command rather than executing it.
 
-## Step 6: Run the Collector
-
-**Only reach this step after the user confirms they're ready to run the collector.**
-
-**Give the user the run command but do not execute it automatically.** The user will run it themselves.
-
-Provide the appropriate command based on the installation method chosen in Step 2.
-
-**Use the actual paths chosen earlier:**
-- **Config file**: From Step 1 (existing config or new `collector-config.yaml`)
-- **Env file**: From Step 5 (the `.env` file the user selected)
-- **Collector path**: From Step 2 (either `otelcol-contrib` if on PATH, or `./otelcol-contrib` if local)
+Build the command from the values recorded earlier: the collector path and numeric version from Step 2, the config file path from Step 1, and the env file path from Step 5.
 
 ### Binary
 
@@ -288,21 +280,19 @@ docker run -d \
 
 Use the same numeric version (without `v` prefix) that was pulled in Step 2.
 
-After providing the command, tell the user to run it when they're ready, then proceed to Step 7 for verification.
+After providing the command, tell the user to run it when they're ready, then proceed to Step 8 for verification.
 
-## Step 7: Verify Setup
+## Step 8: Verify Setup
 
 1. Check collector logs for successful startup (no errors about invalid config or failed connections)
 2. Look for log messages indicating connection to Sentry
 3. Send test telemetry from an instrumented service and verify it appears in Sentry
 
-**Success criteria:**
-- Collector starts without errors
-- Traces and/or logs appear in Sentry within 60 seconds of sending
-
 If using Docker, check logs with `docker logs otel-collector`.
 
-## Step 8: Enable Trace Connectedness with OTLPIntegration
+**Completion criterion:** the collector starts clean, and a trace or log sent through it has been **seen in Sentry** — within about 60 seconds of sending. If nothing arrives, work the Troubleshooting table below; "check your Sentry dashboard" is not a finish line.
+
+## Step 9: Enable Trace Connectedness with OTLPIntegration
 
 If the user's application uses a Sentry SDK (Python, Ruby, or Node.js), recommend enabling the OTLPIntegration. This ensures **trace connectedness** — linking OTel traces to Sentry errors, logs, crons, and metrics — and sets up distributed tracing propagation automatically.
 
