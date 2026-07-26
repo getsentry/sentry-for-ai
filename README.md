@@ -36,12 +36,6 @@ Which issues are affecting the most users?
 Fix the recent Sentry errors
 ```
 
-**Review code with Sentry context** — Automatically resolve bugs that Sentry or Seer flag in pull request comments.
-
-```
-Review PR #118 and fix the Sentry comments
-```
-
 **Configure monitoring** — Set up alerts, instrument AI/LLM calls, connect OpenTelemetry pipelines.
 
 ```
@@ -98,18 +92,12 @@ To build any target locally, run `src/plugins/<agent>/build.sh <output-dir>`
 | `sentry-get-started` | Guided entry point — orients to your current Sentry setup and routes to the right skill |
 | `sentry-instrument` | Add Sentry to a project, or wire up any signal — error monitoring, tracing, logging, metrics, profiling, session replay, user feedback, cron check-ins, and AI/LLM monitoring. Detects your platform and pulls the code from the reference library. |
 | `sentry-debug-issue` | Find a Sentry issue, pull full context, optionally run Seer root-cause / autofix, apply the fix, and resolve it |
-
-### Workflow
-
-| Skill | What it does |
-|-------|--------------|
 | `sentry-sdk-upgrade` | Upgrade the Sentry JavaScript SDK across major versions |
 
 ### Feature Setup
 
 | Skill | What it does |
 |-------|--------------|
-| `sentry-setup-ai-monitoring` | Instrument OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI |
 | `sentry-otel-exporter-setup` | Configure OTel Collector with the Sentry exporter for multi-project routing |
 | `sentry-create-alert` | Create alerts via the Sentry workflow engine API |
 | `sentry-snapshots-cocoa` | Set up Sentry Snapshots for Apple/Cocoa projects |
