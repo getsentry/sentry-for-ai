@@ -65,13 +65,67 @@ it and **ask the user before enabling capture** — see
 
 - Tracing must be on; then detect the AI SDK and let auto-instrumentation handle
   it (JS/Python/Laravel AI), or instrument `gen_ai.*` spans manually.
-- Sample AI traces at **100%**: an agent run is sampled as one span tree, so a
-  dropped root loses every child `gen_ai` span. Keep `gen_ai` traffic at 1.0 via
-  a `tracesSampler` while sampling the rest lower — see [reduce-volume.md](reduce-volume.md).
+- Sample AI traces at **100%** — see Sampling below.
 - Set a `gen_ai.conversation.id` wherever multi-turn chats need grouping.
+
+## Sampling — keep the agent run whole
+
+An agent run is sampled as one span tree: the sampler runs on the **root span
+only** and children inherit unconditionally, so a dropped root loses every child
+`gen_ai` span. At any rate below 1.0 you lose whole agent executions, not a
+representative slice of them.
+
+Two shapes, and a sampler has to handle both:
+
+- **The `gen_ai` span is the root** (cron, queue consumer, CLI) — the sampler
+  sees `gen_ai.*` directly and can match on it.
+- **The `gen_ai` spans are children of an HTTP transaction** (most web apps) —
+  `POST /api/chat` is sampled before any AI code runs, so the AI route itself is
+  what needs to be kept at 1.0.
+
+```javascript
+Sentry.init({
+  tracesSampler: ({ name, attributes, inheritOrSampleWith }) => {
+    // Standalone gen_ai root spans
+    if (attributes?.['sentry.op']?.startsWith('gen_ai.') || attributes?.['gen_ai.system']) {
+      return 1.0;
+    }
+    // HTTP routes that trigger AI calls
+    if (name?.includes('/api/chat') || name?.includes('/api/agent')) {
+      return 1.0;
+    }
+    return inheritOrSampleWith(0.2); // the app's baseline rate
+  },
+});
+```
+
+```python
+def traces_sampler(sampling_context):
+    tx = sampling_context.get("transaction_context", {})
+    op, name = tx.get("op", ""), tx.get("name", "")
+
+    if op.startswith("gen_ai."):
+        return 1.0
+    if op == "http.server" and any(p in name for p in ["/api/chat", "/api/agent"]):
+        return 1.0
+
+    parent = sampling_context.get("parent_sampled")
+    if parent is not None:
+        return float(parent)
+    return 0.2  # the app's baseline rate
+```
+
+When AI *is* the product, skip the sampler and set the rate to 1.0 outright.
+When 100% tracing isn't affordable, emit a metric and a log per LLM call instead
+— both are independent of trace sampling, so cost and usage stay complete even
+where spans are dropped (see [metrics.md](metrics.md) and [logging.md](logging.md)).
+
+Symptom to recognize: `gen_ai` spans missing even though the sampler returns 1.0
+for them means the parent HTTP transaction was sampled lower — the route needs
+the rule, not the span.
 
 ## Related
 
 - [`tracing.md`](tracing.md) — AI monitoring is tracing; spans are the substrate.
 - [`data-scrubbing.md`](data-scrubbing.md) — prompt/output capture is the PII decision.
-- [`reduce-volume.md`](reduce-volume.md) — the `tracesSampler` that keeps AI at 100%.
+- [`reduce-volume.md`](reduce-volume.md) — sampling the rest of the traffic down.

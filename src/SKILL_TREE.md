@@ -29,7 +29,7 @@ Self-contained skills — start here. If you're not sure what the user needs, re
 |---|---|
 | [`sentry-debug-issue`](skills/sentry-debug-issue/SKILL.md) | Debug and fix a Sentry issue — find it (by link, ID, or search), pull full context (stack trace, breadcrumbs, trace, logs), optionally run Seer root-cause / autofix, apply the code fix, and resolve it via a `Fixes PROJECT-NAME-12A` commit/PR. Use when working a known error or hunting one down to fix. |
 | [`sentry-get-started`](skills/sentry-get-started/SKILL.md) | Guided entry point for using Sentry through your agent. Orients you to your current setup and, for a new project, sets up Sentry end to end with sane defaults — provision a project, install the SDK (errors, tracing, and whatever it enables by default), and confirm real telemetry reaches Sentry. Routes other intents (adding more signals, fixing issues) to the right skill. |
-| [`sentry-instrument`](skills/sentry-instrument/SKILL.md) | Instrument an application with Sentry — detect the platform, install and initialize the SDK if needed, and wire up any signal — error monitoring, tracing/performance, logging, metrics, profiling, session replay, user feedback, cron check-ins, and AI/LLM monitoring. Use to add Sentry to a project or to capture more than errors. |
+| [`sentry-instrument`](skills/sentry-instrument/SKILL.md) | Instrument an application with Sentry — detect the platform, install and initialize the SDK if needed, and wire up any signal — error monitoring, tracing/performance, logging, metrics, profiling, session replay, user feedback, cron check-ins, and AI/LLM monitoring (OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI, Pydantic AI, Laravel AI, agent and token tracking, Conversations). Use to add Sentry to a project or to capture more than errors. |
 
 ## Workflows
 
@@ -47,5 +47,4 @@ Configure specific Sentry capabilities beyond basic SDK setup.
 |---|---|
 | Create Sentry alerts using the workflow engine API | [`sentry-create-alert`](skills/sentry-create-alert/SKILL.md) |
 | Configure the OpenTelemetry Collector with Sentry Exporter for multi-project routing and automatic project creation | [`sentry-otel-exporter-setup`](skills/sentry-otel-exporter-setup/SKILL.md) |
-| Setup Sentry AI Agent Monitoring in any project | [`sentry-setup-ai-monitoring`](skills/sentry-setup-ai-monitoring/SKILL.md) |
 | Full Sentry Snapshots setup for Apple/Cocoa projects | [`sentry-snapshots-cocoa`](skills/sentry-snapshots-cocoa/SKILL.md) |
