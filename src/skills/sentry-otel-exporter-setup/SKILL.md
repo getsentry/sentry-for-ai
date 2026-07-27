@@ -64,7 +64,7 @@ The Sentry Exporter requires **otelcol-contrib v0.145.0 or later**.
 
 1. Run `which otelcol-contrib` to check if it's on PATH, or check for `./otelcol-contrib` in the project
 2. If found, run the appropriate version command and parse the version number
-3. **Record the collector path** (e.g., `otelcol-contrib` if on PATH, or `./otelcol-contrib` if local) for use in later steps
+3. **Record the collector path** (e.g., `otelcol-contrib` if on PATH, or `./otelcol-contrib` if local) and the **numeric version** you parsed (without the `v` prefix, e.g. `0.145.0`) for use in later steps
 
 | Existing Version | Action |
 |------------------|--------|
@@ -127,6 +127,11 @@ docker pull otel/opentelemetry-collector-contrib:<numeric_version>
 Example: For GitHub tag `v0.145.0`, use `docker pull otel/opentelemetry-collector-contrib:0.145.0`.
 
 The `docker run` command comes later in Step 7 after the config is created.
+
+**Before leaving Step 2**, make sure both the collector path and the numeric
+version are recorded — whether they came from an existing collector or from the
+install you just performed. Steps 6 and 7 build their validate and `docker run`
+commands from both values and have no other source for them.
 
 ## Step 3: Configure Sentry Project Creation
 

@@ -75,6 +75,24 @@ only** and children inherit unconditionally, so a dropped root loses every child
 `gen_ai` span. At any rate below 1.0 you lose whole agent executions, not a
 representative slice of them.
 
+**Check the current rate, and ask before raising it.** Grep the app's Sentry
+config for what's already set:
+
+```bash
+# JavaScript
+grep -E 'tracesSampleRate|tracesSampler' sentry.*.config.* instrument.* src/instrument.* app/instrument.* 2>/dev/null
+# Python
+grep -rE 'traces_sample_rate|traces_sampler' --include='*.py' . 2>/dev/null
+# PHP / Laravel
+grep -E 'SENTRY_TRACES_SAMPLE_RATE|traces_sample_rate|traces_sampler' .env config/sentry.php 2>/dev/null
+```
+
+If the rate is below 1.0 and no sampler is configured, tell the user their
+current rate, that a dropped root span loses every child `gen_ai` span, and that
+the sampler below keeps AI traces at 1.0 while leaving other traffic where it is
+— then wait for their answer. Raising trace volume is their cost decision, the
+same as the PII gate above.
+
 Two shapes, and a sampler has to handle both:
 
 - **The `gen_ai` span is the root** (cron, queue consumer, CLI) — the sampler
