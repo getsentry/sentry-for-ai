@@ -54,7 +54,7 @@ Search for existing OpenTelemetry Collector configs by looking for YAML files co
 
 **Record the config file path** their answer implies. The rest of the workflow depends on this decision.
 
-**If no config exists**: Note that you'll create a new `collector-config.yaml` in Step 4, then proceed to Step 2.
+**If no config exists**: Record `collector-config.yaml` as the config file path — you'll write the file itself in Step 4 — then proceed to Step 2.
 
 ## Step 2: Check Collector Version
 
@@ -138,7 +138,7 @@ Ask the user whether to enable automatic Sentry project creation, and let them p
 
 ## Step 4: Write Collector Config
 
-**Use the config file path recorded in Step 1** — if the user chose to modify an existing config, edit that file; if they chose a separate config, create the new one and record its path.
+**Use the config file path recorded in Step 1** — if the user chose to modify an existing config, edit that file; otherwise create the file at the recorded path. If the path you actually wrote differs from the one recorded in Step 1, update the recorded value now: Steps 6 and 7 read it, and they have no other source for it.
 
 Fetch the latest configuration from the Sentry Exporter documentation:
 
@@ -214,7 +214,7 @@ Validation reads the real values, so it only runs once they confirm.
 
 ### Validate config
 
-Validate using the method that matches the installation choice recorded in Step 2, against the config file path recorded in Step 1 (the existing config you modified, or the new `collector-config.yaml`).
+Validate using the method that matches the installation choice recorded in Step 2, against the config file path recorded in Steps 1 and 4 (the existing config you modified, or the new `collector-config.yaml` you wrote).
 
 #### Binary validation
 
@@ -248,7 +248,7 @@ docker run --rm \
 
 **The user runs the collector themselves** — give them the command rather than executing it.
 
-Build the command from the values recorded earlier: the collector path and numeric version from Step 2, the config file path from Step 1, and the env file path from Step 5.
+Build the command from the values recorded earlier: the collector path and numeric version from Step 2, the config file path from Steps 1 and 4, and the env file path from Step 5.
 
 ### Binary
 
