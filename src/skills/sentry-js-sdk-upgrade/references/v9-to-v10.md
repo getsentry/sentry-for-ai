@@ -26,6 +26,10 @@ These were deprecated in v9 and will likely be removed in v10:
 + debug.log('message');
 ```
 
+Rename only the binding imported from `@sentry/core` and its call sites in that
+file. `Sentry.logger.*` — the public structured logging API added in v9 — keeps
+its name, and so does any application logger that happens to be called `logger`.
+
 ## Preparation
 
 Before the hop:

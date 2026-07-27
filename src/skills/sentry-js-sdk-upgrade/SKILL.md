@@ -68,7 +68,10 @@ grep -rn "getCurrentHub\|enableTracing\|captureUserFeedback\|@WithSentry\|autoSe
 
 # v9 patterns (need v9→v10 migration)
 grep -rn "from '@sentry/types'" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" -l
-grep -rn "logger\.\(info\|log\|warn\|error\)" --include="*.ts" --include="*.js" -l   # internal @sentry/core logger, now `debug`
+# Internal @sentry/core `logger` export, renamed to `debug` in v10. Match the
+# import binding, not call sites: `Sentry.logger.*` is the public structured
+# logging API and is unaffected, as are any app loggers named `logger`.
+grep -rn "import {[^}]*logger[^}]*} from '@sentry/\|{[^}]*logger[^}]*} = require('@sentry/" --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" -l
 ```
 
 ### 1.5 Determine Target Version
