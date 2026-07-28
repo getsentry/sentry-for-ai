@@ -45,7 +45,11 @@ cat wrangler.toml 2>/dev/null | grep -i 'compatibility_flags'
 cat wrangler.jsonc 2>/dev/null | grep -i 'compatibility_flags'
 
 # Detect AI/LLM libraries
-cat package.json 2>/dev/null | grep -E '"openai"|"@anthropic-ai"|"ai"|"@google/generative-ai"|"@langchain"'
+cat package.json 2>/dev/null | grep -E '"openai"|"@anthropic-ai"|"ai"|"@google/genai"|"@langchain"|"langchain"'
+
+# Detect Vite build (enables build-time AI/DB instrumentation via the Sentry Vite plugin)
+ls vite.config.ts vite.config.js vite.config.mts 2>/dev/null
+cat package.json 2>/dev/null | grep -E '"@cloudflare/vite-plugin"'
 
 # Detect logging libraries
 cat package.json 2>/dev/null | grep -E '"pino"|"winston"'
@@ -69,8 +73,9 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 | Cron triggers configured? | `withSentry` auto-instruments scheduled handlers; recommend Crons monitoring |
 | `nodejs_als` or `nodejs_compat` flag set? | **Required** — SDK needs `AsyncLocalStorage`. Recommend `nodejs_compat` generally, and with it the `@sentry/cloudflare/nodejs_compat` entrypoint (drop-in swap, unlocks Prisma + Vercel AI SDK v7, becomes default in v11) |
 | Prisma ORM used? | Recommend `prismaIntegration` via the `/nodejs_compat` entrypoint — see `./nodejs-compat.md` |
-| Workers AI (`env.AI`) used? | Auto-instrumented by `withSentry` — creates `gen_ai` spans (v10.67.0+) |
-| AI/LLM libraries? | Recommend AI Monitoring integrations |
+| Workers AI (`env.AI`) used? | Auto-instrumented by `withSentry` — creates `gen_ai` spans (v10.67.0+). See `./ai-monitoring.md` |
+| AI/LLM libraries? | Recommend Agent Tracing — see `./ai-monitoring.md`. On workerd, `openai`/`@anthropic-ai/sdk`/`@google/genai` need the Vite plugin or manual client wrapping |
+| Builds with Vite (or could)? | Recommend `sentryCloudflareVitePlugin` (v10.68.0+, experimental) — build-time instrumentation of bundled AI/DB packages. See `./ai-monitoring.md` |
 | Companion frontend? | Trigger Phase 4 cross-link |
 
 ---
@@ -89,7 +94,7 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 - ⚡ **D1 Instrumentation** — automatic query spans and breadcrumbs; recommend when D1 is bound
 - ⚡ **Durable Objects** — automatic error capture and spans for DO methods; recommend when DOs are configured
 - ⚡ **Workflows** — automatic span creation for workflow steps; recommend when Workflows are configured
-- ⚡ **AI Monitoring** — Vercel AI SDK, OpenAI, Anthropic, LangChain; recommend when AI libraries detected
+- ⚡ **AI / Agent Tracing** — Workers AI, OpenAI, Anthropic, Google Gen AI, Vercel AI SDK, LangChain, LangGraph; recommend when AI libraries or `env.AI` detected
 
 **Recommendation logic:**
 
@@ -102,7 +107,7 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 | D1 Instrumentation | D1 database bindings present |
 | Durable Objects | Durable Object bindings configured |
 | Workflows | Workflow bindings configured |
-| AI Monitoring | App uses Vercel AI SDK, OpenAI, Anthropic, or LangChain |
+| AI / Agent Tracing | App uses Workers AI (`env.AI`), OpenAI, Anthropic, Google Gen AI, Vercel AI SDK, LangChain, or LangGraph |
 | Metrics | App needs custom counters, gauges, or distributions |
 
 Propose: *"I recommend setting up Error Monitoring + Tracing. Want me to also add D1 instrumentation and Crons monitoring?"*
@@ -374,6 +379,8 @@ export default defineConfig({
 
 `SENTRY_AUTH_TOKEN` is a build-time secret. The `npx @sentry/wizard@latest -i sourcemaps` shortcut noted above automates this setup.
 
+> Don't confuse `@sentry/vite-plugin` (`sentryVitePlugin` — source map upload) with `sentryCloudflareVitePlugin` from `@sentry/cloudflare/vite` (build-time instrumentation of bundled AI/DB dependencies, v10.68.0+ experimental). They are complementary and can run in the same `vite.config.ts`. See `./ai-monitoring.md` for the latter.
+
 ---
 
 ### Automatic Release Detection
@@ -404,6 +411,7 @@ Load the corresponding reference file and follow its steps:
 | Logging | `./logging.md` | Structured logs via `Sentry.logger.*`, log-to-trace correlation |
 | Crons | `./crons.md` | Scheduled handler monitoring, `withMonitor`, check-in API |
 | Durable Objects / Workflows / D1 | `./durable-objects.md` | Instrument Durable Object and Workflow classes; D1 auto-instrumentation |
+| AI / Agent Tracing | `./ai-monitoring.md` | AI/LLM libraries or Workers AI detected — `gen_ai` spans, Vite plugin build-time instrumentation, Conversations, manual agent spans |
 | Node.js Compat | `./nodejs-compat.md` | `nodejs_compat` flag set, or Prisma / Vercel AI SDK v7 detected — `/nodejs_compat` entrypoint, `prismaIntegration` |
 
 For each feature: read the reference file, follow its steps exactly, and verify before moving on.
@@ -507,7 +515,7 @@ Deploy and trigger the route, then check your [Sentry Issues dashboard](https://
 | Tracing working | Check Performance tab for HTTP spans |
 | Source maps working | Check stack trace shows readable file/line names |
 | D1 spans (if configured) | Run a D1 query via `env.DB` (auto-instrumented), check for `db.query` spans |
-| Workers AI spans (if configured) | Call `env.AI.run(...)`, check for `gen_ai` spans |
+| Workers AI spans (if configured) | Call `env.AI.run(...)`, check for `gen_ai` spans (see `./ai-monitoring.md`) |
 | Scheduled monitoring (if configured) | Trigger a cron, check Crons dashboard |
 
 ---

@@ -138,7 +138,7 @@ See `./durable-objects.md` for full D1 coverage (prepared statements, `batch`, `
 
 ### Workers AI Spans
 
-The Cloudflare Workers AI binding (`env.AI`) is auto-instrumented by `withSentry` (v10.67.0+). Calls to `env.AI.run(...)` create `gen_ai` spans following Sentry's AI Agent Monitoring conventions — capturing model, request parameters, and token usage:
+The Cloudflare Workers AI binding (`env.AI`) is auto-instrumented by `withSentry` (v10.67.0+). Calls to `env.AI.run(...)` create `gen_ai` spans following Sentry's Agent Tracing conventions — capturing model, request parameters, and token usage. For the full agent tracing setup — OpenAI/Anthropic/Google Gen AI/Vercel AI/LangChain instrumentation, the build-time Vite plugin, and manual `gen_ai.*` spans — see `./ai-monitoring.md`.
 
 ```typescript
 // env.AI is auto-instrumented — creates a gen_ai span
