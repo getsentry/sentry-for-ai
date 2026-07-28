@@ -112,6 +112,8 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 
 Propose: *"I recommend setting up Error Monitoring + Tracing. Want me to also add D1 instrumentation and Crons monitoring?"*
 
+**Exception — AI apps:** when Workers AI or an LLM SDK is detected, conversation tracking is **not optional** — include it in the baseline proposal alongside Error Monitoring + Tracing, and implement it in the same pass (see `./ai-monitoring.md`). An AI setup that produces spans but no Conversations is incomplete.
+
 ---
 
 ## Phase 3: Guide
@@ -202,6 +204,25 @@ export default Sentry.withSentry(
 - The SDK reads DSN, environment, release, debug, tunnel, and traces sample rate from `env` automatically (see [Environment Variables](#environment-variables))
 - `withSentry` wraps all exported handlers — you do not need separate wrappers for `scheduled`, `queue`, etc.
 
+#### AI apps: set a conversation ID (required, same edit)
+
+If this Worker makes AI calls (`env.AI.run(...)` or an LLM SDK), `withSentry` gives you `gen_ai` spans automatically — but **never a conversation ID**, so multi-turn chats won't group and Sentry's Conversations view stays empty. This is part of the Workers setup, not a follow-up: add `Sentry.setConversationId()` in the same edit that adds `withSentry`.
+
+1. The client generates a stable session ID once per chat session (e.g. `crypto.randomUUID()`) and sends it with every AI request
+2. The handler sets it **before** any AI calls:
+
+```typescript
+async fetch(request, env, ctx) {
+  const { conversationId, messages } = await request.json();
+  Sentry.setConversationId(conversationId); // before env.AI.run / LLM calls
+
+  const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { messages });
+  return new Response(JSON.stringify(result));
+}
+```
+
+See `./ai-monitoring.md` for user attribution (`setUser`), the Agents SDK pattern, and non-Workers-AI providers.
+
 #### Automatic Binding Instrumentation
 
 `withSentry` (and `sentryPagesPlugin`) wraps the `env` object so that supported bindings are **automatically instrumented on access** — no manual wrapping needed. As long as your handler uses the `env` passed in by the SDK:
@@ -209,11 +230,13 @@ export default Sentry.withSentry(
 | Binding | Auto-instrumented | Docs status |
 |---------|-------------------|-------------|
 | **D1** (`env.DB`) | Query spans + breadcrumbs | Documented |
-| **Workers AI** (`env.AI`) | `gen_ai` spans (v10.67.0+) | Documented |
+| **Workers AI** (`env.AI`) | `gen_ai` spans (v10.67.0+) — spans only; conversation grouping needs the extra step below | Documented |
 | **Queue producers** | Producer send spans | Verified in SDK source; not yet in published docs |
 | **R2 buckets** | Object operation spans | Verified in SDK source; not yet in published docs |
 | **RateLimit** | `limit()` spans | Verified in SDK source; not yet in published docs |
 
+> **Required step for AI apps:** auto-instrumentation produces `gen_ai` spans but never sets a conversation ID, so multi-turn chats don't group and Sentry's Conversations view stays empty. If the app makes AI calls (`env.AI` or an LLM SDK), wiring `Sentry.setConversationId()` is part of *this* setup — do it in the same edit as `withSentry`, don't defer it. Read `./ai-monitoring.md` (Tracking Conversations) for the pattern: client generates a stable session ID, handler calls `Sentry.setConversationId(id)` before any AI calls. Skipping this is the most common gap in Cloudflare AI setups.
+>
 > Because D1 is auto-instrumented via `env`, the manual `instrumentD1WithSentry` wrapper is no longer needed (it's deprecated and slated for removal in v11). See `./durable-objects.md`.
 >
 > To link Durable Object and service-binding (JSRPC) calls into one trace, set `enableRpcTracePropagation: true` on both caller and receiver — **recommended** whenever you use RPC, Durable Objects, or Workflows. See [RPC Trace Propagation](#configuration-reference) and `./tracing.md`.
