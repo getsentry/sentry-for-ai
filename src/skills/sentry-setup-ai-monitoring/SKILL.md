@@ -148,6 +148,10 @@ Sentry.init({
 });
 ```
 
+### Cloudflare Workers (no runtime patching)
+
+The Workers runtime (`workerd`) does not support monkey-patching, so Node.js-style auto-instrumentation does not apply. Workers AI (`env.AI`) is auto-instrumented by `withSentry` (v10.67.0+); `openai`, `@anthropic-ai/sdk`, `@google/genai`, and `ai` need either the build-time Sentry Cloudflare Vite plugin (v10.68.0+, experimental) or manual client wrapping; LangChain/LangGraph are manual-only. Read `${SKILL_ROOT}/../../references/sdks/cloudflare/ai-monitoring.md` for the full setup.
+
 ### Browser / Next.js OpenAI (manual wrapping required)
 
 In browser-side code or Next.js meta-framework apps, auto-instrumentation is not available. Wrap the client manually:

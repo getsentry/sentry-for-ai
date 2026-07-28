@@ -45,7 +45,11 @@ cat wrangler.toml 2>/dev/null | grep -i 'compatibility_flags'
 cat wrangler.jsonc 2>/dev/null | grep -i 'compatibility_flags'
 
 # Detect AI/LLM libraries
-cat package.json 2>/dev/null | grep -E '"openai"|"@anthropic-ai"|"ai"|"@google/generative-ai"|"@langchain"'
+cat package.json 2>/dev/null | grep -E '"openai"|"@anthropic-ai"|"ai"|"@google/genai"|"@langchain"|"langchain"'
+
+# Detect Vite build (enables build-time AI/DB instrumentation via the Sentry Vite plugin)
+ls vite.config.ts vite.config.js vite.config.mts 2>/dev/null
+cat package.json 2>/dev/null | grep -E '"@cloudflare/vite-plugin"'
 
 # Detect logging libraries
 cat package.json 2>/dev/null | grep -E '"pino"|"winston"'
@@ -69,8 +73,9 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 | Cron triggers configured? | `withSentry` auto-instruments scheduled handlers; recommend Crons monitoring |
 | `nodejs_als` or `nodejs_compat` flag set? | **Required** — SDK needs `AsyncLocalStorage`. Recommend `nodejs_compat` generally, and with it the `@sentry/cloudflare/nodejs_compat` entrypoint (drop-in swap, unlocks Prisma + Vercel AI SDK v7, becomes default in v11) |
 | Prisma ORM used? | Recommend `prismaIntegration` via the `/nodejs_compat` entrypoint — see `./nodejs-compat.md` |
-| Workers AI (`env.AI`) used? | Auto-instrumented by `withSentry` — creates `gen_ai` spans (v10.67.0+) |
-| AI/LLM libraries? | Recommend AI Monitoring integrations |
+| Workers AI (`env.AI`) used? | Auto-instrumented by `withSentry` — creates `gen_ai` spans (v10.67.0+). **Chat-style app?** Also wire `Sentry.setConversationId()` so multi-turn sessions group in Conversations — see `./ai-monitoring.md` |
+| AI/LLM libraries? | Recommend Agent Tracing — see `./ai-monitoring.md`. On workerd, `openai`/`@anthropic-ai/sdk`/`@google/genai` need the Vite plugin or manual client wrapping |
+| Builds with Vite (or could)? | Recommend `sentryCloudflareVitePlugin` (v10.68.0+, experimental) — build-time instrumentation of bundled AI/DB packages. See `./ai-monitoring.md` |
 | Companion frontend? | Trigger Phase 4 cross-link |
 
 ---
@@ -89,7 +94,7 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 - ⚡ **D1 Instrumentation** — automatic query spans and breadcrumbs; recommend when D1 is bound
 - ⚡ **Durable Objects** — automatic error capture and spans for DO methods; recommend when DOs are configured
 - ⚡ **Workflows** — automatic span creation for workflow steps; recommend when Workflows are configured
-- ⚡ **AI Monitoring** — Vercel AI SDK, OpenAI, Anthropic, LangChain; recommend when AI libraries detected
+- ⚡ **AI / Agent Tracing** — Workers AI, OpenAI, Anthropic, Google Gen AI, Vercel AI SDK, LangChain, LangGraph; recommend when AI libraries or `env.AI` detected. For chat apps, include conversation tracking (`setConversationId`) in the same pass — spans alone leave the Conversations view empty
 
 **Recommendation logic:**
 
@@ -102,10 +107,12 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 | D1 Instrumentation | D1 database bindings present |
 | Durable Objects | Durable Object bindings configured |
 | Workflows | Workflow bindings configured |
-| AI Monitoring | App uses Vercel AI SDK, OpenAI, Anthropic, or LangChain |
+| AI / Agent Tracing | App uses Workers AI (`env.AI`), OpenAI, Anthropic, Google Gen AI, Vercel AI SDK, LangChain, or LangGraph |
 | Metrics | App needs custom counters, gauges, or distributions |
 
 Propose: *"I recommend setting up Error Monitoring + Tracing. Want me to also add D1 instrumentation and Crons monitoring?"*
+
+**Exception — AI apps:** when Workers AI or an LLM SDK is detected, conversation tracking is **not optional** — include it in the baseline proposal alongside Error Monitoring + Tracing, and implement it in the same pass (see `./ai-monitoring.md`). An AI setup that produces spans but no Conversations is incomplete.
 
 ---
 
@@ -197,6 +204,25 @@ export default Sentry.withSentry(
 - The SDK reads DSN, environment, release, debug, tunnel, and traces sample rate from `env` automatically (see [Environment Variables](#environment-variables))
 - `withSentry` wraps all exported handlers — you do not need separate wrappers for `scheduled`, `queue`, etc.
 
+#### AI apps: set a conversation ID (required, same edit)
+
+If this Worker makes AI calls (`env.AI.run(...)` or an LLM SDK), `withSentry` gives you `gen_ai` spans automatically — but **never a conversation ID**, so multi-turn chats won't group and Sentry's Conversations view stays empty. This is part of the Workers setup, not a follow-up: add `Sentry.setConversationId()` in the same edit that adds `withSentry`.
+
+1. The client generates a stable session ID once per chat session (e.g. `crypto.randomUUID()`) and sends it with every AI request
+2. The handler sets it **before** any AI calls:
+
+```typescript
+async fetch(request, env, ctx) {
+  const { conversationId, messages } = await request.json();
+  Sentry.setConversationId(conversationId); // before env.AI.run / LLM calls
+
+  const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { messages });
+  return new Response(JSON.stringify(result));
+}
+```
+
+See `./ai-monitoring.md` for user attribution (`setUser`), the Agents SDK pattern, and non-Workers-AI providers.
+
 #### Automatic Binding Instrumentation
 
 `withSentry` (and `sentryPagesPlugin`) wraps the `env` object so that supported bindings are **automatically instrumented on access** — no manual wrapping needed. As long as your handler uses the `env` passed in by the SDK:
@@ -204,11 +230,13 @@ export default Sentry.withSentry(
 | Binding | Auto-instrumented | Docs status |
 |---------|-------------------|-------------|
 | **D1** (`env.DB`) | Query spans + breadcrumbs | Documented |
-| **Workers AI** (`env.AI`) | `gen_ai` spans (v10.67.0+) | Documented |
+| **Workers AI** (`env.AI`) | `gen_ai` spans (v10.67.0+) — spans only; conversation grouping needs the extra step below | Documented |
 | **Queue producers** | Producer send spans | Verified in SDK source; not yet in published docs |
 | **R2 buckets** | Object operation spans | Verified in SDK source; not yet in published docs |
 | **RateLimit** | `limit()` spans | Verified in SDK source; not yet in published docs |
 
+> **Required step for AI apps:** auto-instrumentation produces `gen_ai` spans but never sets a conversation ID, so multi-turn chats don't group and Sentry's Conversations view stays empty. If the app makes AI calls (`env.AI` or an LLM SDK), wiring `Sentry.setConversationId()` is part of *this* setup — do it in the same edit as `withSentry`, don't defer it. Read `./ai-monitoring.md` (Tracking Conversations) for the pattern: client generates a stable session ID, handler calls `Sentry.setConversationId(id)` before any AI calls. Skipping this is the most common gap in Cloudflare AI setups.
+>
 > Because D1 is auto-instrumented via `env`, the manual `instrumentD1WithSentry` wrapper is no longer needed (it's deprecated and slated for removal in v11). See `./durable-objects.md`.
 >
 > To link Durable Object and service-binding (JSRPC) calls into one trace, set `enableRpcTracePropagation: true` on both caller and receiver — **recommended** whenever you use RPC, Durable Objects, or Workflows. See [RPC Trace Propagation](#configuration-reference) and `./tracing.md`.
@@ -374,6 +402,8 @@ export default defineConfig({
 
 `SENTRY_AUTH_TOKEN` is a build-time secret. The `npx @sentry/wizard@latest -i sourcemaps` shortcut noted above automates this setup.
 
+> Don't confuse `@sentry/vite-plugin` (`sentryVitePlugin` — source map upload) with `sentryCloudflareVitePlugin` from `@sentry/cloudflare/vite` (build-time instrumentation of bundled AI/DB dependencies, v10.68.0+ experimental). They are complementary and can run in the same `vite.config.ts`. See `./ai-monitoring.md` for the latter.
+
 ---
 
 ### Automatic Release Detection
@@ -404,6 +434,7 @@ Load the corresponding reference file and follow its steps:
 | Logging | `./logging.md` | Structured logs via `Sentry.logger.*`, log-to-trace correlation |
 | Crons | `./crons.md` | Scheduled handler monitoring, `withMonitor`, check-in API |
 | Durable Objects / Workflows / D1 | `./durable-objects.md` | Instrument Durable Object and Workflow classes; D1 auto-instrumentation |
+| AI / Agent Tracing | `./ai-monitoring.md` | AI/LLM libraries or Workers AI detected — `gen_ai` spans, Vite plugin build-time instrumentation, Conversations, manual agent spans |
 | Node.js Compat | `./nodejs-compat.md` | `nodejs_compat` flag set, or Prisma / Vercel AI SDK v7 detected — `/nodejs_compat` entrypoint, `prismaIntegration` |
 
 For each feature: read the reference file, follow its steps exactly, and verify before moving on.
@@ -507,7 +538,8 @@ Deploy and trigger the route, then check your [Sentry Issues dashboard](https://
 | Tracing working | Check Performance tab for HTTP spans |
 | Source maps working | Check stack trace shows readable file/line names |
 | D1 spans (if configured) | Run a D1 query via `env.DB` (auto-instrumented), check for `db.query` spans |
-| Workers AI spans (if configured) | Call `env.AI.run(...)`, check for `gen_ai` spans |
+| Workers AI spans (if configured) | Call `env.AI.run(...)`, check for `gen_ai` spans (see `./ai-monitoring.md`) |
+| Conversations (chat apps) | Send two requests with the same `Sentry.setConversationId(...)` value, check they group in Explore > Conversations |
 | Scheduled monitoring (if configured) | Trigger a cron, check Crons dashboard |
 
 ---
