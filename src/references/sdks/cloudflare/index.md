@@ -73,7 +73,7 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 | Cron triggers configured? | `withSentry` auto-instruments scheduled handlers; recommend Crons monitoring |
 | `nodejs_als` or `nodejs_compat` flag set? | **Required** — SDK needs `AsyncLocalStorage`. Recommend `nodejs_compat` generally, and with it the `@sentry/cloudflare/nodejs_compat` entrypoint (drop-in swap, unlocks Prisma + Vercel AI SDK v7, becomes default in v11) |
 | Prisma ORM used? | Recommend `prismaIntegration` via the `/nodejs_compat` entrypoint — see `./nodejs-compat.md` |
-| Workers AI (`env.AI`) used? | Auto-instrumented by `withSentry` — creates `gen_ai` spans (v10.67.0+). See `./ai-monitoring.md` |
+| Workers AI (`env.AI`) used? | Auto-instrumented by `withSentry` — creates `gen_ai` spans (v10.67.0+). **Chat-style app?** Also wire `Sentry.setConversationId()` so multi-turn sessions group in Conversations — see `./ai-monitoring.md` |
 | AI/LLM libraries? | Recommend Agent Tracing — see `./ai-monitoring.md`. On workerd, `openai`/`@anthropic-ai/sdk`/`@google/genai` need the Vite plugin or manual client wrapping |
 | Builds with Vite (or could)? | Recommend `sentryCloudflareVitePlugin` (v10.68.0+, experimental) — build-time instrumentation of bundled AI/DB packages. See `./ai-monitoring.md` |
 | Companion frontend? | Trigger Phase 4 cross-link |
@@ -94,7 +94,7 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 - ⚡ **D1 Instrumentation** — automatic query spans and breadcrumbs; recommend when D1 is bound
 - ⚡ **Durable Objects** — automatic error capture and spans for DO methods; recommend when DOs are configured
 - ⚡ **Workflows** — automatic span creation for workflow steps; recommend when Workflows are configured
-- ⚡ **AI / Agent Tracing** — Workers AI, OpenAI, Anthropic, Google Gen AI, Vercel AI SDK, LangChain, LangGraph; recommend when AI libraries or `env.AI` detected
+- ⚡ **AI / Agent Tracing** — Workers AI, OpenAI, Anthropic, Google Gen AI, Vercel AI SDK, LangChain, LangGraph; recommend when AI libraries or `env.AI` detected. For chat apps, include conversation tracking (`setConversationId`) in the same pass — spans alone leave the Conversations view empty
 
 **Recommendation logic:**
 
@@ -516,6 +516,7 @@ Deploy and trigger the route, then check your [Sentry Issues dashboard](https://
 | Source maps working | Check stack trace shows readable file/line names |
 | D1 spans (if configured) | Run a D1 query via `env.DB` (auto-instrumented), check for `db.query` spans |
 | Workers AI spans (if configured) | Call `env.AI.run(...)`, check for `gen_ai` spans (see `./ai-monitoring.md`) |
+| Conversations (chat apps) | Send two requests with the same `Sentry.setConversationId(...)` value, check they group in Explore > Conversations |
 | Scheduled monitoring (if configured) | Trigger a cron, check Crons dashboard |
 
 ---

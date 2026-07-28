@@ -95,7 +95,24 @@ export default Sentry.withSentry(
 );
 ```
 
-No extra setup. Workers AI does **not** infer a conversation ID — see [Tracking Conversations](#tracking-conversations).
+**Auto-instrumentation covers the spans — not the grouping.** Workers AI does **not** infer a conversation ID, so without one every `env.AI.run(...)` call lands as an isolated span and the Conversations view stays empty. For any chat-style app, set a conversation ID as part of this setup — don't treat it as a later add-on:
+
+1. Generate a stable session ID on the client (e.g. `crypto.randomUUID()` once per chat session) and send it with every AI request
+2. In the handler, call `Sentry.setConversationId(id)` **before** any `env.AI.run(...)` calls
+
+```typescript
+async fetch(request, env, ctx) {
+  const { conversationId, messages } = await request.json();
+
+  // Before any AI calls — groups this request's gen_ai spans into a Conversation
+  Sentry.setConversationId(conversationId);
+
+  const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { messages });
+  return new Response(JSON.stringify(result));
+}
+```
+
+See [Tracking Conversations](#tracking-conversations) for scope semantics, user attribution, and the Agents SDK pattern.
 
 ---
 
