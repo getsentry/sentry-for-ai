@@ -2,7 +2,7 @@
 
 Opinionated wizard that scans your Cloudflare project and guides you through complete Sentry setup for Workers, Pages, Durable Objects, Queues, Workflows, and Hono.
 
-> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.67.0).
+> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.68.0).
 > Always verify against [docs.sentry.io/platforms/javascript/guides/cloudflare/](https://docs.sentry.io/platforms/javascript/guides/cloudflare/) before implementing.
 
 ---
@@ -50,6 +50,14 @@ cat package.json 2>/dev/null | grep -E '"openai"|"@anthropic-ai"|"ai"|"@google/g
 # Detect logging libraries
 cat package.json 2>/dev/null | grep -E '"pino"|"winston"'
 
+# Detect build tooling
+ls vite.config.ts vite.config.js 2>/dev/null && echo "Vite detected"
+ls wrangler.toml wrangler.jsonc wrangler.json 2>/dev/null
+
+# Check for Vite plugin (Cloudflare + Sentry)
+cat package.json 2>/dev/null | grep -E '"@cloudflare/vite-plugin"'
+cat package.json 2>/dev/null | grep -E '"@sentry/cloudflare"'
+
 # Check for companion frontend
 ls frontend/ web/ client/ 2>/dev/null
 cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
@@ -71,6 +79,8 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 | Prisma ORM used? | Recommend `prismaIntegration` via the `/nodejs_compat` entrypoint — see `./nodejs-compat.md` |
 | Workers AI (`env.AI`) used? | Auto-instrumented by `withSentry` — creates `gen_ai` spans (v10.67.0+) |
 | AI/LLM libraries? | Recommend AI Monitoring integrations |
+| Vite build tooling? | Recommend Sentry Cloudflare Vite plugin (`@sentry/cloudflare/vite`) for build-time instrumentation |
+| Wrangler-only build? | Recommend migrating to Vite for build-time instrumentation; fall back to manual `withSentry` setup |
 | Companion frontend? | Trigger Phase 4 cross-link |
 
 ---
@@ -110,6 +120,48 @@ Propose: *"I recommend setting up Error Monitoring + Tracing. Want me to also ad
 ---
 
 ## Phase 3: Guide
+
+### Option 0: Build Tooling (Recommended)
+
+**For new projects, recommend building with Vite and the Sentry Cloudflare Vite plugin.** It instruments bundled dependencies (like database clients) at build time without monkey-patching, giving you more traces in the Workers runtime:
+
+```bash
+npm install @sentry/cloudflare
+```
+
+Add the `@cloudflare/vite-plugin` and `@sentry/cloudflare/vite` to your `vite.config.ts`:
+
+```typescript
+// vite.config.ts
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { sentryCloudflareVitePlugin } from "@sentry/cloudflare/vite";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    cloudflare(),
+    sentryCloudflareVitePlugin({
+      _experimental: {
+        useDiagnosticsChannelInjection: true,
+      },
+    }),
+  ],
+});
+```
+
+The plugin handles build-time dependency instrumentation only — continue with Option 2 to wrap your handler with `withSentry`. (An experimental `autoInstrumentation` option can wrap the Worker for you at build time; see `./vite-plugin.md`.)
+
+**If the project already uses `wrangler` directly:** recommend migrating to Vite (see `./vite-plugin.md` — [Migrating From Wrangler](./vite-plugin.md#migrating-from-wrangler)). The manual setup below still works with plain Wrangler.
+
+Build and deploy:
+
+```bash
+vite build && wrangler deploy
+```
+
+See `./vite-plugin.md` for full details, including the experimental auto-instrumentation option, all config options, and source-map integration.
+
+---
 
 ### Option 1: Source Maps Wizard
 
@@ -348,21 +400,31 @@ interface Env {
 
 #### Source Maps Setup
 
-Source maps make production stack traces readable. Most Cloudflare projects build with Vite via Wrangler — wire the Sentry Vite plugin so maps upload on build:
+Source maps make production stack traces readable. How you set them up depends on your build tooling:
+
+**Vite (with `@sentry/cloudflare/vite` plugin):** Combine the Sentry Cloudflare Vite plugin with `@sentry/vite-plugin`:
 
 ```bash
 npm install @sentry/vite-plugin --save-dev
 ```
 
 ```typescript
-import { defineConfig } from "vite";
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { sentryCloudflareVitePlugin } from "@sentry/cloudflare/vite";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   build: {
     sourcemap: true,
   },
   plugins: [
+    cloudflare(),
+    sentryCloudflareVitePlugin({
+      _experimental: {
+        useDiagnosticsChannelInjection: true,
+      },
+    }),
     sentryVitePlugin({
       org: "___ORG_SLUG___",
       project: "___PROJECT_SLUG___",
@@ -371,6 +433,8 @@ export default defineConfig({
   ],
 });
 ```
+
+**Wrangler-only:** Use the standalone `@sentry/vite-plugin`:
 
 `SENTRY_AUTH_TOKEN` is a build-time secret. The `npx @sentry/wizard@latest -i sourcemaps` shortcut noted above automates this setup.
 
@@ -405,6 +469,7 @@ Load the corresponding reference file and follow its steps:
 | Crons | `./crons.md` | Scheduled handler monitoring, `withMonitor`, check-in API |
 | Durable Objects / Workflows / D1 | `./durable-objects.md` | Instrument Durable Object and Workflow classes; D1 auto-instrumentation |
 | Node.js Compat | `./nodejs-compat.md` | `nodejs_compat` flag set, or Prisma / Vercel AI SDK v7 detected — `/nodejs_compat` entrypoint, `prismaIntegration` |
+| Build Tooling (Vite) | `./vite-plugin.md` | Vite detected or recommended — Sentry Cloudflare Vite plugin, build-time dependency instrumentation, optional auto-instrumentation, migration from Wrangler |
 
 For each feature: read the reference file, follow its steps exactly, and verify before moving on.
 

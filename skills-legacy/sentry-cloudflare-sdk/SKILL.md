@@ -88,6 +88,8 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 | Cron triggers configured? | `withSentry` auto-instruments scheduled handlers; recommend Crons monitoring |
 | `nodejs_als` or `nodejs_compat` flag set? | **Required** — SDK needs `AsyncLocalStorage` |
 | AI/LLM libraries? | Recommend AI Monitoring integrations |
+| Vite build tooling? | Recommend Sentry Cloudflare Vite plugin (`@sentry/cloudflare/vite`) for build-time instrumentation |
+| Wrangler-only build? | Recommend migrating to Vite; fall back to manual `withSentry` |
 | Companion frontend? | Trigger Phase 4 cross-link |
 
 ---
@@ -127,6 +129,59 @@ Propose: *"I recommend setting up Error Monitoring + Tracing. Want me to also ad
 ---
 
 ## Phase 3: Guide
+
+### Option 0: Vite + Sentry Cloudflare Vite Plugin (Recommended)
+
+**For new projects, recommend building with Vite and the Sentry Cloudflare Vite plugin.** It auto-instruments your Worker at build time and traces bundled dependencies without monkey-patching:
+
+```bash
+npm install @sentry/cloudflare
+```
+
+Add the `@cloudflare/vite-plugin` and `@sentry/cloudflare/vite` to your `vite.config.ts`:
+
+```typescript
+// vite.config.ts
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { sentryCloudflareVitePlugin } from "@sentry/cloudflare/vite";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    cloudflare(),
+    sentryCloudflareVitePlugin({
+      _experimental: {
+        autoInstrumentation: true,
+        useDiagnosticsChannelInjection: true,
+      },
+    }),
+  ],
+});
+```
+
+With `autoInstrumentation: true`, the plugin wraps your Worker entry with `withSentry()` at build time — no need to edit your application code. For configuration, create a co-located `instrument.server.ts` (optional):
+
+```typescript
+// instrument.server.ts (next to your worker entry)
+import { defineCloudflareOptions } from "@sentry/cloudflare";
+
+export default defineCloudflareOptions((env) => ({
+  dsn: env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
+}));
+```
+
+If no `instrument.server.*` file exists, the SDK reads all configuration from the Worker's `env` bindings at runtime.
+
+**If the project already uses `wrangler` directly:** recommend migrating to Vite. The manual setup below still works with plain Wrangler.
+
+Build and deploy:
+
+```bash
+vite build && wrangler deploy
+```
+
+---
 
 ### Option 1: Source Maps Wizard
 
@@ -338,21 +393,32 @@ interface Env {
 
 #### Source Maps Setup
 
-Source maps make production stack traces readable. Most Cloudflare projects build with Vite via Wrangler — wire the Sentry Vite plugin so maps upload on build:
+Source maps make production stack traces readable. How you set them up depends on your build tooling:
+
+**Vite (with `@sentry/cloudflare/vite` plugin):** Combine the Sentry Cloudflare Vite plugin with `@sentry/vite-plugin`:
 
 ```bash
 npm install @sentry/vite-plugin --save-dev
 ```
 
 ```typescript
-import { defineConfig } from "vite";
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { sentryCloudflareVitePlugin } from "@sentry/cloudflare/vite";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   build: {
     sourcemap: true,
   },
   plugins: [
+    cloudflare(),
+    sentryCloudflareVitePlugin({
+      _experimental: {
+        autoInstrumentation: true,
+        useDiagnosticsChannelInjection: true,
+      },
+    }),
     sentryVitePlugin({
       org: "___ORG_SLUG___",
       project: "___PROJECT_SLUG___",
@@ -361,6 +427,8 @@ export default defineConfig({
   ],
 });
 ```
+
+**Wrangler-only:** Use the standalone `@sentry/vite-plugin`:
 
 `SENTRY_AUTH_TOKEN` is a build-time secret. For creating the token and wiring it into CI, see [`sentry-source-maps`](../sentry-source-maps/SKILL.md). The `npx @sentry/wizard@latest -i sourcemaps` shortcut noted above automates this setup.
 
