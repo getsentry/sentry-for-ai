@@ -134,7 +134,7 @@ For classes built on the [Cloudflare Agents SDK](https://developers.cloudflare.c
 
 - **Callable RPC spans** — a span (op `rpc`) for each `@callable()` method invoked over WebSocket, with `cloudflare.agent.class` / `cloudflare.agent.name` attributes
 - **Automatic conversation IDs** — sets the conversation ID on the scope for each chat turn (`onChatMessage`) and each callable RPC call, defaulting to the agent instance name, so `gen_ai` spans group in Conversations without any `setConversationId` call
-- **Conversation rotation on chat clear** — when the user clears the chat (`message:clear`), the SDK rotates to a fresh conversation ID while the instance (and its MCP/OAuth state) stays put
+- **Conversation rotation on chat clear** — when the chat is cleared (`clearHistory()` from `useAgentChat`, or anything that emits the [`message:clear` observability event](https://developers.cloudflare.com/agents/runtime/operations/observability/#channels)), the SDK rotates to a fresh conversation ID while the instance (and its MCP/OAuth state) stays put
 
 ```typescript
 import { Agent, callable } from "agents";
