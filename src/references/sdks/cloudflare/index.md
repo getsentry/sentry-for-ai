@@ -2,7 +2,7 @@
 
 Opinionated wizard that scans your Cloudflare project and guides you through complete Sentry setup for Workers, Pages, Durable Objects, Queues, Workflows, and Hono.
 
-> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.67.0).
+> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.69.0).
 > Always verify against [docs.sentry.io/platforms/javascript/guides/cloudflare/](https://docs.sentry.io/platforms/javascript/guides/cloudflare/) before implementing.
 
 ---
@@ -47,6 +47,9 @@ cat wrangler.jsonc 2>/dev/null | grep -i 'compatibility_flags'
 # Detect AI/LLM libraries
 cat package.json 2>/dev/null | grep -E '"openai"|"@anthropic-ai"|"ai"|"@google/genai"|"@langchain"|"langchain"'
 
+# Detect Cloudflare Agents SDK
+cat package.json 2>/dev/null | grep -E '"agents"|"@cloudflare/ai-chat"'
+
 # Detect Vite build (enables build-time AI/DB instrumentation via the Sentry Vite plugin)
 ls vite.config.ts vite.config.js vite.config.mts 2>/dev/null
 cat package.json 2>/dev/null | grep -E '"@cloudflare/vite-plugin"'
@@ -67,13 +70,14 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 | Hono framework? | Recommend standalone `@sentry/hono` package (v10.55.0+) for cleaner integration |
 | `@sentry/cloudflare` already installed? | Skip install, go to feature config |
 | Durable Objects configured? | Recommend `instrumentDurableObjectWithSentry` |
+| Cloudflare Agents SDK (`agents`, `@cloudflare/ai-chat`)? | Recommend `instrumentAgentWithSentry` (v10.69.0+) — DO instrumentation plus `@callable()` RPC spans and **automatic conversation IDs**. See `./durable-objects.md` |
 | D1 databases bound? | Auto-instrumented by `withSentry` when accessed via `env.DB` (no manual wrap) |
 | Queues configured? | `withSentry` auto-instruments queue handlers |
 | Workflows configured? | Recommend `instrumentWorkflowWithSentry` |
 | Cron triggers configured? | `withSentry` auto-instruments scheduled handlers; recommend Crons monitoring |
 | `nodejs_als` or `nodejs_compat` flag set? | **Required** — SDK needs `AsyncLocalStorage`. Recommend `nodejs_compat` generally, and with it the `@sentry/cloudflare/nodejs_compat` entrypoint (drop-in swap, unlocks Prisma + Vercel AI SDK v7, becomes default in v11) |
 | Prisma ORM used? | Recommend `prismaIntegration` via the `/nodejs_compat` entrypoint — see `./nodejs-compat.md` |
-| Workers AI (`env.AI`) used? | Auto-instrumented by `withSentry` — creates `gen_ai` spans (v10.67.0+). **Chat-style app?** Also wire `Sentry.setConversationId()` so multi-turn sessions group in Conversations — see `./ai-monitoring.md` |
+| Workers AI (`env.AI`) used? | Auto-instrumented by `withSentry` — creates `gen_ai` spans (v10.67.0+). **Chat-style app?** Also wire `Sentry.setConversationId()` so multi-turn sessions group in Conversations (automatic for Agents SDK classes wrapped with `instrumentAgentWithSentry`, v10.69.0+) — see `./ai-monitoring.md` |
 | AI/LLM libraries? | Recommend Agent Tracing — see `./ai-monitoring.md`. On workerd, `openai`/`@anthropic-ai/sdk`/`@google/genai` need the Vite plugin or manual client wrapping |
 | Builds with Vite (or could)? | Recommend `sentryCloudflareVitePlugin` (v10.68.0+, experimental) — build-time instrumentation of bundled AI/DB packages. See `./ai-monitoring.md` |
 | Companion frontend? | Trigger Phase 4 cross-link |
@@ -206,7 +210,7 @@ export default Sentry.withSentry(
 
 #### AI apps: set a conversation ID (required, same edit)
 
-If this Worker makes AI calls (`env.AI.run(...)` or an LLM SDK), `withSentry` gives you `gen_ai` spans automatically — but **never a conversation ID**, so multi-turn chats won't group and Sentry's Conversations view stays empty. This is part of the Workers setup, not a follow-up: add `Sentry.setConversationId()` in the same edit that adds `withSentry`.
+If this Worker makes AI calls (`env.AI.run(...)` or an LLM SDK), `withSentry` gives you `gen_ai` spans automatically — but **never a conversation ID**, so multi-turn chats won't group and Sentry's Conversations view stays empty. This is part of the Workers setup, not a follow-up: add `Sentry.setConversationId()` in the same edit that adds `withSentry`. (Exception: Cloudflare Agents SDK classes wrapped with `instrumentAgentWithSentry` get conversation IDs automatically, v10.69.0+ — see `./durable-objects.md`.)
 
 1. The client generates a stable session ID once per chat session (e.g. `crypto.randomUUID()`) and sends it with every AI request
 2. The handler sets it **before** any AI calls:
@@ -499,13 +503,19 @@ These are registered automatically by `getDefaultIntegrations()`:
 | `dedupeIntegration` | Prevent duplicate events (disabled for Workflows) |
 | `inboundFiltersIntegration` | Filter events by type, message, URL |
 | `functionToStringIntegration` | Preserve original function names |
+| `conversationIdIntegration` | Stamp `gen_ai.conversation.id` (set via `setConversationId`) onto AI spans |
 | `linkedErrorsIntegration` | Follow `cause` chains in errors |
 | `fetchIntegration` | Trace outbound `fetch()` calls, create breadcrumbs |
 | `honoIntegration` | **Deprecated in v10.55.0** — use `@sentry/hono` package instead. Auto-capture Hono `onError` exceptions |
+| `httpServerIntegration` | Incoming HTTP request handling |
 | `requestDataIntegration` | Attach request data to events |
 | `consoleIntegration` | Capture `console.*` calls as breadcrumbs |
 
-> **Not default:** `prismaIntegration` is available on Cloudflare **only** via the `@sentry/cloudflare/nodejs_compat` entrypoint and must be added manually. See `./nodejs-compat.md`.
+> **Not default:** `prismaIntegration` is available on Cloudflare **only** via the `@sentry/cloudflare/nodejs_compat` entrypoint and must be added manually (see `./nodejs-compat.md`). `spotlightIntegration` (v10.69.0+) forwards events to a local [Spotlight](https://spotlightjs.com/) sidecar for local development — add it manually in dev:
+>
+> ```typescript
+> integrations: [Sentry.spotlightIntegration()], // default sidecar: http://localhost:8969/stream
+> ```
 
 ---
 
@@ -589,7 +599,7 @@ Connecting frontend and backend with linked Sentry projects enables **distribute
 | Stack traces show minified code | Source maps not uploaded | Configure `@sentry/vite-plugin` or run `npx @sentry/wizard -i sourcemaps`; verify `SENTRY_AUTH_TOKEN` in CI |
 | Events lost on short-lived requests | SDK not flushing before worker terminates | Ensure `withSentry` or `sentryPagesPlugin` wraps your handler — they use `ctx.waitUntil()` to flush |
 | Hono errors not captured | Hono app not instrumented | Use `@sentry/hono/cloudflare` — import `sentry` middleware and call `app.use(sentry(app, options))` |
-| Durable Object errors missing | DO class not instrumented | Wrap class with `Sentry.instrumentDurableObjectWithSentry()` — see `./durable-objects.md` |
+| Durable Object errors missing | DO class not instrumented | Wrap class with `Sentry.instrumentDurableObjectWithSentry()` (Agents SDK classes: `instrumentAgentWithSentry`, v10.69.0+) — see `./durable-objects.md` |
 | D1 queries not creating spans | Not using the SDK-provided `env`, or accessing DB outside the wrapped handler | Use the `env` passed into your handler — `withSentry` auto-instruments D1 bindings on access. No manual wrapping needed |
 | Spans inside `waitUntil()` missing | Root span already ended before the background task ran | Wrap deferred work in `Sentry.startSpan({ ..., forceTransaction: true }, ...)` — see `./tracing.md` |
 | Traces not linked across RPC / DO calls | RPC trace propagation not enabled | Set `enableRpcTracePropagation: true` on **both** caller and receiver (v10.52.0+) — see `./tracing.md` |

@@ -6,6 +6,7 @@
 > Workflow instrumentation: v10.x+
 > D1 automatic (`env`-based) instrumentation: v10.x+
 > Durable Object Storage instrumentation: v10.x+
+> Agents SDK instrumentation (`instrumentAgentWithSentry`): v10.69.0+
 > RPC trace propagation (`enableRpcTracePropagation`): v10.52.0+
 
 ---
@@ -109,6 +110,8 @@ export const MyDurableObject = Sentry.instrumentDurableObjectWithSentry(
 
 Durable Object Storage operations (`get`, `put`, `delete`, `list`) are automatically instrumented when using `instrumentDurableObjectWithSentry`. Each storage operation creates a span.
 
+> Framework-internal storage operations are filtered out automatically (v10.69.0+): keys prefixed with `cf_`, `cf:`, `__ps_`, or `/` (used internally by the Agents SDK and PartyServer) don't create spans, so your traces show only your own storage access.
+
 ```typescript
 class MyDurableObjectBase extends DurableObject<Env> {
   async fetch(request: Request): Promise<Response> {
@@ -123,28 +126,42 @@ class MyDurableObjectBase extends DurableObject<Env> {
 }
 ```
 
-### Classes Built on Durable Objects (Agents SDK)
+### Cloudflare Agents SDK (`instrumentAgentWithSentry`)
 
-`instrumentDurableObjectWithSentry` also works with classes that extend a Durable Object base — including the [Cloudflare Agents SDK](https://developers.cloudflare.com/agents/) `Agent` and `AIChatAgent` classes (which are Durable Objects under the hood). Wrap and export them the same way:
+> `instrumentAgentWithSentry`: v10.69.0+
+
+For classes built on the [Cloudflare Agents SDK](https://developers.cloudflare.com/agents/) (`Agent` from `agents`, `AIChatAgent` from `@cloudflare/ai-chat`, `McpAgent` from `agents/mcp`), use the dedicated `instrumentAgentWithSentry` wrapper. Agents are Durable Objects under the hood, so it applies everything `instrumentDurableObjectWithSentry` does (request transactions, `alarm`, WebSocket handlers, RPC trace propagation, SQL spans) **plus** Agent-specific telemetry:
+
+- **Callable RPC spans** — a span (op `rpc`) for each `@callable()` method invoked over WebSocket, with `cloudflare.agent.class` / `cloudflare.agent.name` attributes
+- **Automatic conversation IDs** — sets the conversation ID on the scope for each chat turn (`onChatMessage`) and each callable RPC call, defaulting to the agent instance name, so `gen_ai` spans group in Conversations without any `setConversationId` call
+- **Conversation rotation on chat clear** — when the chat is cleared (`clearHistory()` from `useAgentChat`, or anything that emits the [`message:clear` observability event](https://developers.cloudflare.com/agents/runtime/operations/observability/#channels)), the SDK rotates to a fresh conversation ID while the instance (and its MCP/OAuth state) stays put
 
 ```typescript
+import { Agent, callable } from "agents";
 import * as Sentry from "@sentry/cloudflare";
-import { AIChatAgent } from "@cloudflare/ai-chat";
 
-class MyChatAgentBase extends AIChatAgent<Env> {
-  // ...agent logic (RPC methods, onChatMessage, etc.)
+class MyAgentBase extends Agent<Env> {
+  @callable()
+  async greet(name: string): Promise<string> {
+    return `Hello, ${name}!`;
+  }
 }
 
-export const MyChatAgent = Sentry.instrumentDurableObjectWithSentry(
+export const MyAgent = Sentry.instrumentAgentWithSentry(
   (env: Env) => ({
     dsn: env.SENTRY_DSN,
     tracesSampleRate: 1.0,
+    enableRpcTracePropagation: true,
   }),
-  MyChatAgentBase,
+  MyAgentBase,
 );
 ```
 
-Since Agents use the instance name as a stable identifier, `this.name` is a natural conversation ID for AI monitoring — pass it to `Sentry.setConversationId(this.name)` (see the Workers AI section in `./tracing.md`).
+When building with the Sentry Vite plugin's `autoInstrumentation`, Agent classes are detected and wrapped with `instrumentAgentWithSentry` automatically (v10.69.0+) — see `./ai-monitoring.md`.
+
+The automatic conversation ID uses the agent instance name — correct when one instance is one chat session (e.g. `useAgent({ name: chatSessionId })`). If your instances are per-user or a shared singleton like `"default"`, override it with your own chat session ID via `Sentry.setConversationId(id)` at the start of `onChatMessage` — see `./ai-monitoring.md`.
+
+On SDK versions before 10.69.0, wrap Agent classes with `instrumentDurableObjectWithSentry` instead and call `Sentry.setConversationId()` manually in the handler.
 
 ### RPC Trace Propagation
 
