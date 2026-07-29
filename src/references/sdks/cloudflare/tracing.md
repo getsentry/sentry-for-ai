@@ -6,6 +6,7 @@
 > OpenTelemetry compatibility tracer: v10.x+
 > RPC trace propagation (`enableRpcTracePropagation`): v10.52.0+
 > Workers AI (`env.AI`) `gen_ai` spans: v10.67.0+
+> Agents SDK auto conversation IDs (`instrumentAgentWithSentry`): v10.69.0+
 
 ---
 
@@ -153,7 +154,7 @@ const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
 
 The Workers AI instrumentation does **not** infer the conversation ID automatically. To group multi-turn AI calls into a single [Conversation](https://docs.sentry.io/product/ai/monitoring/conversations/), set the ID manually with `Sentry.setConversationId(id)`. It's applied as the `gen_ai.conversation.id` attribute to **all AI spans within the current scope**, so call it once at the start of a request handler — before any `env.AI.run(...)` calls — and every AI span for that request is grouped. Pass `null` to unset it.
 
-When you use the [Cloudflare Agents SDK](https://developers.cloudflare.com/agents/), each agent instance already has a stable identifier — its Durable Object instance name, `this.name` — which is a natural conversation ID. Set it at the top of the handler (`onRequest` for `Agent`, `onChatMessage` for `AIChatAgent`) so every AI call triggered while handling that message shares the ID:
+When you use the [Cloudflare Agents SDK](https://developers.cloudflare.com/agents/), prefer `instrumentAgentWithSentry` (v10.69.0+) — it sets the conversation ID automatically for every chat turn and `@callable()` RPC call, and rotates it when the chat is cleared. See `./durable-objects.md`. On older SDK versions, or when you need to control the ID yourself, set it manually at the top of the handler (`onRequest` for `Agent`, `onChatMessage` for `AIChatAgent`) so every AI call triggered while handling that message shares the ID. Use your chat session ID — `this.name` works when one agent instance is one chat session, but not when instances are per-user or a shared singleton like `"default"`:
 
 ```typescript
 import * as Sentry from "@sentry/cloudflare";
@@ -178,7 +179,7 @@ class MyChatAgentBase extends AIChatAgent<Env> {
   }
 }
 
-export const MyChatAgent = Sentry.instrumentDurableObjectWithSentry(
+export const MyChatAgent = Sentry.instrumentAgentWithSentry(
   (env: Env) => ({
     dsn: env.SENTRY_DSN,
     tracesSampleRate: 1.0,
@@ -187,7 +188,7 @@ export const MyChatAgent = Sentry.instrumentDurableObjectWithSentry(
 );
 ```
 
-For a plain `Agent`, the pattern is the same — call `Sentry.setConversationId(this.name)` at the top of `onRequest` before your `this.env.AI.run(...)` calls. Grouped calls appear in the [Conversations](https://docs.sentry.io/product/ai/monitoring/conversations/) view, where you can inspect token usage, latency, and errors across the whole conversation.
+(With `instrumentAgentWithSentry` the explicit `setConversationId(this.name)` call above is redundant — shown for the manual/override case.) For a plain `Agent`, the pattern is the same — call `Sentry.setConversationId(id)` at the top of `onRequest` before your `this.env.AI.run(...)` calls. Grouped calls appear in the [Conversations](https://docs.sentry.io/product/ai/monitoring/conversations/) view, where you can inspect token usage, latency, and errors across the whole conversation.
 
 ---
 

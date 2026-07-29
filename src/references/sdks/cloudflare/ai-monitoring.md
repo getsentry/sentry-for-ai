@@ -171,7 +171,7 @@ Both `vite build` and `vite dev` are instrumented. When the option is disabled o
 
 ### Auto-Instrumentation (Experimental)
 
-The plugin can also wrap your Worker at build time so you don't need `withSentry` in your code. With `autoInstrumentation` enabled, it reads your Wrangler config, wraps the default export with `Sentry.withSentry()`, and wraps configured Durable Object and Workflow classes with the matching `instrument*WithSentry` helper:
+The plugin can also wrap your Worker at build time so you don't need `withSentry` in your code. With `autoInstrumentation` enabled, it reads your Wrangler config (probing `wrangler.json`, `wrangler.jsonc`, `wrangler.toml` at the Vite root — set the top-level `wranglerConfigPath` option for a custom name, v10.69.0+), wraps the default export with `Sentry.withSentry()`, and wraps configured classes with the matching helper: Durable Objects with `instrumentDurableObjectWithSentry`, Workflows with `instrumentWorkflowWithSentry`, and — since v10.69.0 — Cloudflare Agents SDK classes (`Agent`, `AIChatAgent`, `McpAgent`) with `instrumentAgentWithSentry`, which also gives them automatic conversation IDs (see [Tracking Conversations](#tracking-conversations)):
 
 ```typescript
 // vite.config.ts
@@ -351,7 +351,15 @@ Some integrations infer the ID automatically. For everything else — **includin
 Sentry.setConversationId("conv_abc123");
 ```
 
-With the [Cloudflare Agents SDK](https://developers.cloudflare.com/agents/), each agent instance has a stable identifier — its Durable Object instance name, `this.name` — which is a natural conversation ID. Set it at the top of the handler (`onRequest` for `Agent`, `onChatMessage` for `AIChatAgent`); see `./tracing.md` for a full `AIChatAgent` example with `instrumentDurableObjectWithSentry`.
+**Choose a real chat session ID** — a UUID or `conv_...` value your app creates when the user starts a chat. Don't use a user ID, room name, or a shared identifier: those group unrelated chats into one conversation.
+
+#### Cloudflare Agents SDK: automatic (v10.69.0+)
+
+Wrap Agents SDK classes (`Agent`, `AIChatAgent`, `McpAgent`) with `instrumentAgentWithSentry` and the conversation ID is set for you — on every chat turn (`onChatMessage`) and every `@callable()` RPC call, defaulting to the agent instance name, and rotating to a fresh ID when the user clears the chat. The Vite plugin's `autoInstrumentation` applies this wrapper automatically. See `./durable-objects.md` for the full API.
+
+The automatic ID is the agent instance name, which is correct when one instance is one chat session (e.g. `useAgent({ name: chatSessionId })`). If your instances are per-user or a shared singleton like `"default"`, override it with your own session ID via `Sentry.setConversationId(id)` at the start of `onChatMessage`, before any model or tool calls.
+
+On SDK versions before 10.69.0 (or with `instrumentDurableObjectWithSentry`), set the ID manually — see `./tracing.md` for a full `AIChatAgent` example.
 
 ### Identifying Users
 
@@ -521,7 +529,10 @@ async fetch(request, env, ctx) {
 | Vercel AI spans missing | Integration not added, or telemetry not enabled per call | Add `Sentry.vercelAIIntegration()` to `integrations` and `experimental_telemetry: { isEnabled: true }` on every call |
 | Vercel AI SDK v7 not working | Default entrypoint doesn't support v7 | Use `@sentry/cloudflare/nodejs_compat` (SDK >=10.64.0) — see `./nodejs-compat.md` |
 | Workers AI calls not traced | `env` accessed outside the wrapped handler, or SDK < 10.67.0 | Use the `env` passed into the handler; upgrade the SDK |
+| Direct `env.AI.run` spans missing after a Vercel AI SDK call | SDK < 10.69.0 bug: one `ai` SDK call suppressed direct `env.AI.run` spans for the rest of the isolate | Upgrade to 10.69.0+ |
 | LangChain/LangGraph not traced | Expecting Vite plugin coverage | Not covered by channel injection — use `createLangChainCallbackHandler` / `instrumentLangGraph` |
+| Agents SDK chats not grouping | Agent wrapped with `instrumentDurableObjectWithSentry`, or SDK < 10.69.0 | Wrap with `instrumentAgentWithSentry` (v10.69.0+) for automatic conversation IDs, or call `setConversationId` manually in `onChatMessage` |
+| One giant conversation across users | Agent instance name is per-user or a shared singleton (e.g. `"default"`) | Use one agent instance per chat session, or override with `Sentry.setConversationId(chatSessionId)` per turn |
 | Prompts/responses not captured | genAI capture disabled | Don't set `dataCollection: { genAI: { inputs: false } }`, or pass `recordInputs`/`recordOutputs: true` explicitly |
 | Conversations view empty | No conversation ID, or gen_ai streaming disabled | Call `Sentry.setConversationId()` before AI calls; keep `streamGenAiSpans` at its default (`true`) |
 | Self-hosted: gen_ai spans dropped | Standalone gen_ai envelopes not ingested | Set `streamGenAiSpans: false` |
