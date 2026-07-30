@@ -397,44 +397,53 @@ describe("pi harness", () => {
     expect(await harness.isInstalled()).toBe(false);
   });
 
-  it("installs from the Pi distribution repository", async () => {
+  it("installs from the Pi distribution repository without trusting project resources", async () => {
     const system = fakeSystem({ run: () => ok });
     const outcome = await createPi(system).install();
 
     expect(outcome).toMatchObject({
       kind: "done",
-      command: "pi install git:github.com/getsentry/plugin-pi",
+      command: "pi install git:github.com/getsentry/plugin-pi --no-approve",
     });
-    expect(system.run).toHaveBeenCalledWith("pi install git:github.com/getsentry/plugin-pi");
+    expect(system.run).toHaveBeenCalledWith(
+      "pi install git:github.com/getsentry/plugin-pi --no-approve",
+    );
   });
 
-  it("updates through Pi's package manager", async () => {
+  it("updates through Pi's package manager without trusting project resources", async () => {
     const system = fakeSystem({ run: () => ok });
     const outcome = await createPi(system).update();
 
     expect(outcome).toMatchObject({
       kind: "done",
-      command: "pi update git:github.com/getsentry/plugin-pi",
+      command: "pi update git:github.com/getsentry/plugin-pi --no-approve",
     });
-    expect(system.run).toHaveBeenCalledWith("pi update git:github.com/getsentry/plugin-pi");
+    expect(system.run).toHaveBeenCalledWith(
+      "pi update git:github.com/getsentry/plugin-pi --no-approve",
+    );
   });
 
-  it("removes through Pi's package manager", async () => {
+  it("removes through Pi's package manager without trusting project resources", async () => {
     const system = fakeSystem({ run: () => ok });
     const outcome = await createPi(system).remove();
 
     expect(outcome).toMatchObject({
       kind: "done",
-      command: "pi remove git:github.com/getsentry/plugin-pi",
+      command: "pi remove git:github.com/getsentry/plugin-pi --no-approve",
     });
-    expect(system.run).toHaveBeenCalledWith("pi remove git:github.com/getsentry/plugin-pi");
+    expect(system.run).toHaveBeenCalledWith(
+      "pi remove git:github.com/getsentry/plugin-pi --no-approve",
+    );
   });
 
   it("forwards the output sink to package commands", async () => {
     const system = fakeSystem({ run: () => ok });
     const sink = {} as NodeJS.WritableStream;
     await createPi(system).install(sink);
-    expect(system.run).toHaveBeenCalledWith("pi install git:github.com/getsentry/plugin-pi", sink);
+    expect(system.run).toHaveBeenCalledWith(
+      "pi install git:github.com/getsentry/plugin-pi --no-approve",
+      sink,
+    );
   });
 });
 

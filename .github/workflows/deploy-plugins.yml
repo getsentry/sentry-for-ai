@@ -94,6 +94,9 @@ jobs:
 
   deploy:
     needs: build
+    # A failed build omits only that agent's artifact. Run the deploy matrix for
+    # the remaining artifacts instead of treating the build matrix as one gate.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:

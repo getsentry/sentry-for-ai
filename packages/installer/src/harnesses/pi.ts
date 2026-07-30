@@ -3,9 +3,9 @@ import type { Harness, InstallOutcome } from "./types";
 import { detectOnPath, runCommand } from "./shell";
 
 const PACKAGE_SOURCE = "git:github.com/getsentry/plugin-pi";
-const INSTALL_COMMAND = `pi install ${PACKAGE_SOURCE}`;
-const UPDATE_COMMAND = `pi update ${PACKAGE_SOURCE}`;
-const REMOVE_COMMAND = `pi remove ${PACKAGE_SOURCE}`;
+const INSTALL_COMMAND = `pi install ${PACKAGE_SOURCE} --no-approve`;
+const UPDATE_COMMAND = `pi update ${PACKAGE_SOURCE} --no-approve`;
+const REMOVE_COMMAND = `pi remove ${PACKAGE_SOURCE} --no-approve`;
 
 function listsSentryPiPackage(output: string | undefined): boolean {
   if (!output) {
