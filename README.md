@@ -2,7 +2,7 @@
 
 > [!IMPORTANT]
 > **This is a skill _source_ repository — not something you install directly.**
-> The skills here are built from this source into installable plugins for
+> The skills here are built from this source into installable distributions for
 > [Claude Code](https://github.com/getsentry/plugin-claude),
 > [Cursor](https://github.com/getsentry/plugin-cursor),
 > [Codex](https://github.com/getsentry/plugin-codex),
@@ -55,11 +55,11 @@ Set up OTel Collector with Sentry exporter
 ## Distribution
 
 This repository is the single source of truth for all skills, but it is not
-itself an installable plugin. Each assistant needs the plugin in a slightly
-different shape, so the per-agent plugins are **built** from it by the build
-scripts under `src/plugins/<agent>/build.sh`. CI runs these on every push and
-deploys each result to its own **distribution repository**, whose root is
-exactly that agent's plugin:
+itself an installable distribution. Each assistant needs the integration in a
+slightly different shape, so the per-agent distributions are **built** from it
+by the build scripts under `src/plugins/<agent>/build.sh`. CI runs these on
+every push and deploys each result to its own **distribution repository**,
+whose root is exactly that agent's installable bundle or native plugin:
 
 | Agent       | Distribution repository                                                  |
 | ----------- | ------------------------------------------------------------------------ |

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# build.sh - Build the OpenCode V1 distribution of the Sentry plugin.
+# build.sh - Build the OpenCode V1 Sentry skill and MCP distribution.
 #
 # OpenCode discovers SKILL.md files recursively below a configured skill source.
 # The distribution therefore keeps the shared skills under skills/ and includes

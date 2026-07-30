@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# build.sh - Build the OpenCode V2 beta distribution of the Sentry plugin.
+# build.sh - Build the OpenCode V2 beta Sentry skill and MCP distribution.
 #
 # V2 discovers skills recursively below skills/ and uses a different MCP shape
 # from V1. It also ignores disable-model-invocation; its native replacement is

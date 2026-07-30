@@ -42,7 +42,7 @@ For each detected assistant, the installer uses its native package command or in
 | OpenCode V1 | Clones [`getsentry/plugin-opencode`](https://github.com/getsentry/plugin-opencode) into OpenCode's global skills and adds the V1 Sentry MCP entry |
 | OpenCode V2 | Clones [`getsentry/plugin-opencode2`](https://github.com/getsentry/plugin-opencode2) into OpenCode's global skills and adds the V2 Sentry MCP entry |
 
-Each per-agent plugin is built and published from the [`sentry-for-ai`](https://github.com/getsentry/sentry-for-ai) repository, which is the source of truth for all skills.
+Each per-agent distribution is built and published from the [`sentry-for-ai`](https://github.com/getsentry/sentry-for-ai) repository, which is the source of truth for all skills.
 
 ## Removing the plugin
 

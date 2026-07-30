@@ -1,10 +1,11 @@
 import { dirname, join } from "node:path";
 import { applyEdits, findNodeAtLocation, modify, parseTree } from "jsonc-parser";
+import mcp from "../../../../mcp.json";
 import type { OutputSink, SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
 import { detectOnPath, runCommand } from "./shell";
 
-const MCP_URL = "https://mcp.sentry.dev/mcp?utm_source=plugin";
+const MCP_URL = mcp.mcpServers.sentry.url;
 
 interface OpenCodeHarnessOptions {
   id: string;

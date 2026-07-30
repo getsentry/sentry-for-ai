@@ -4,6 +4,10 @@ The Sentry skill bundle for [OpenCode V1](https://opencode.ai/docs/). It
 teaches OpenCode how to set up Sentry, debug production issues through the
 Sentry MCP server, and configure monitoring features.
 
+This is an installer-managed skill and MCP bundle, not an OpenCode runtime
+plugin. Installation uses OpenCode's global skill discovery and MCP
+configuration surfaces separately.
+
 > [!IMPORTANT]
 > This repository is generated. It is built from
 > [getsentry/sentry-for-ai](https://github.com/getsentry/sentry-for-ai) and

@@ -11,11 +11,9 @@
 # PATH to satisfy detection and verify the real clone (this is what exercises
 # the per-OS path handling, including Windows).
 #
-# OpenCode V2 currently recommends WSL on Windows and cannot share V1's MCP
-# config shape, so it runs in a separate Linux smoke job. The OpenCode target
-# repositories are replaced with temporary local git repositories in both jobs;
-# this tests the real clone flow before those generated repositories are first
-# deployed.
+# The OpenCode target repositories are replaced with temporary local git
+# repositories in both jobs; this tests the real clone flow before those
+# generated repositories are first deployed.
 
 name: Smoke installer
 
@@ -134,6 +132,8 @@ jobs:
 
           echo "All agents have the Sentry plugin."
 
+  # OpenCode V2 currently recommends WSL on Windows and cannot share V1's MCP
+  # config shape, so exercise it separately from the cross-platform V1 matrix.
   smoke-opencode2:
     name: OpenCode V2 beta
     runs-on: ubuntu-latest

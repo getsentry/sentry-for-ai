@@ -1,14 +1,14 @@
-# Deploy per-agent plugin distributions to their own repositories.
+# Deploy per-agent distributions to their own repositories.
 #
 # This repository is the single source of truth (skills + routing metadata,
-# feeding skills.sentry.dev). Each AI assistant needs the plugin in a different
-# shape, so this workflow builds each one and deploys it to a dedicated
-# repository whose ROOT is exactly that agent's plugin:
+# feeding skills.sentry.dev). Each AI assistant needs the integration in a
+# different shape, so this workflow builds each one and deploys it to a
+# dedicated repository whose root is exactly that agent's distribution:
 #
-#   claude -> getsentry/plugin-claude
-#   cursor -> getsentry/plugin-cursor
-#   codex  -> getsentry/plugin-codex
-#   grok   -> getsentry/plugin-grok
+#   claude    -> getsentry/plugin-claude
+#   cursor    -> getsentry/plugin-cursor
+#   codex     -> getsentry/plugin-codex
+#   grok      -> getsentry/plugin-grok
 #   opencode  -> getsentry/plugin-opencode
 #   opencode2 -> getsentry/plugin-opencode2
 #

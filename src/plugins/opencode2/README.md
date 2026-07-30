@@ -5,6 +5,10 @@ The Sentry skill bundle for the
 set up Sentry, debug production issues through the Sentry MCP server, and
 configure monitoring features.
 
+This is an installer-managed skill and MCP bundle, not an OpenCode runtime
+plugin. V2 plugins can register skills but cannot register an MCP server, so
+installation configures those two surfaces separately.
+
 > [!IMPORTANT]
 > This repository is generated. It is built from
 > [getsentry/sentry-for-ai](https://github.com/getsentry/sentry-for-ai) and
