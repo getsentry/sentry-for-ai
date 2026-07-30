@@ -9,15 +9,16 @@
 #   cursor -> getsentry/plugin-cursor
 #   codex  -> getsentry/plugin-codex
 #   grok   -> getsentry/plugin-grok
+#   pi     -> getsentry/plugin-pi
 #
 # Marketplaces consume `getsentry/plugin-<agent>` by git ref. Each job builds its
 # agent's tree from this repo, then commits it onto the target repo's `main`,
-# replacing the previous contents. The four jobs target four different repos,
+# replacing the previous contents. The five jobs target five different repos,
 # so they run in parallel without contention.
 #
 # Cross-repo writes use a GitHub App token scoped per-job to a single plugin
 # repo; the default GITHUB_TOKEN cannot push to other repositories. The app must
-# be installed on the org with contents:write on the three plugin repos, its ID
+# be installed on the org with contents:write on the five plugin repos, its ID
 # stored as the PLUGIN_DEPLOY_APP_ID variable and its private key as the
 # PLUGIN_DEPLOY_KEY secret. Each target repo must already exist with `main` as
 # its default branch.
@@ -49,7 +50,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        agent: [claude, cursor, codex, grok]
+        agent: [claude, cursor, codex, grok, pi]
     concurrency:
       group: deploy-plugin-${{ matrix.agent }}
       cancel-in-progress: false
@@ -68,6 +69,16 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+
+      - name: Set up Node for Pi validation
+        if: matrix.agent == 'pi'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+
+      - name: Install Pi CLI
+        if: matrix.agent == 'pi'
+        run: npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 
       - name: Build and deploy plugin-${{ matrix.agent }}
         env:

@@ -4,8 +4,8 @@
 # (--no-interactive) so it installs the Sentry plugin for every detected agent
 # without a prompt, and verifies each plugin actually landed.
 #
-# Claude Code, Codex, and Grok ship cross-platform npm CLIs, so they get a real
-# install against their default marketplaces. Cursor has no headless CLI to
+# Claude Code, Codex, Grok, and Pi ship cross-platform npm CLIs, so they get a
+# real install against their package sources. Cursor has no headless CLI to
 # install in CI, but our Cursor install is only a `git clone` of the public
 # plugin repo into ~/.cursor/plugins/local/sentry — so we put a `cursor` stub on
 # PATH to satisfy detection and verify the real clone (this is what exercises
@@ -57,8 +57,8 @@ jobs:
       - name: Build
         run: pnpm --filter @sentry/ai build
 
-      - name: Install Claude Code, Codex, and Grok CLIs
-        run: npm install -g @anthropic-ai/claude-code @openai/codex @xai-official/grok
+      - name: Install Claude Code, Codex, Grok, and Pi CLIs
+        run: npm install -g @anthropic-ai/claude-code @openai/codex @xai-official/grok @earendil-works/pi-coding-agent
 
       - name: Put a Cursor stub on PATH
         run: |
@@ -95,5 +95,9 @@ jobs:
 
           echo "== cursor =="
           node -e "const p=require('path').join(require('os').homedir(),'.cursor','plugins','local','sentry'); if(!require('fs').existsSync(p)){console.error('cursor: plugin dir missing at '+p);process.exit(1)} console.log(p)"
+
+          echo "== pi =="
+          pi list --no-approve
+          pi list --no-approve | grep -iq 'getsentry/plugin-pi' || { echo "pi: sentry package missing"; exit 1; }
 
           echo "All agents have the Sentry plugin."

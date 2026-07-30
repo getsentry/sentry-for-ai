@@ -1,0 +1,52 @@
+{
+  "name": "@sentry/pi-plugin",
+  "version": "1.2.0",
+  "description": "Sentry skills and MCP integration for Pi",
+  "type": "module",
+  "license": "MIT",
+  "author": {
+    "name": "Sentry",
+    "url": "https://sentry.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/getsentry/plugin-pi.git"
+  },
+  "keywords": [
+    "pi-package",
+    "sentry",
+    "debugging",
+    "monitoring",
+    "error-tracking"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "pi-mcp-adapter": "2.15.0"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    }
+  },
+  "pi": {
+    "extensions": [
+      "./extensions/sentry-mcp.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  },
+  "files": [
+    "assets",
+    "extensions",
+    "skills",
+    "SKILL_TREE.md",
+    "README.md",
+    "LICENSE"
+  ]
+}
