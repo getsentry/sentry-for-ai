@@ -1,4 +1,5 @@
 import { dirname, join } from "node:path";
+import { applyEdits, findNodeAtLocation, modify, parseTree } from "jsonc-parser";
 import type { OutputSink, SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
 import { detectOnPath, runCommand } from "./shell";
@@ -12,6 +13,7 @@ interface OpenCodeHarnessOptions {
   repository: string;
   mcpCommand: string;
   mcpConfigPath: string;
+  incompatibleMcpConfigPath: string[];
   marker: string;
   incompatibleMarker: string;
   supersededBy?: string;
@@ -37,12 +39,53 @@ async function removeBundle(system: SystemDeps, output?: OutputSink): Promise<st
   return command;
 }
 
+function markerPath(system: SystemDeps, marker: string): string {
+  return join(bundleDir(system), marker);
+}
+
+function removeIncompatibleMcpConfig(
+  system: SystemDeps,
+  incompatibleMcpConfigPath: string[],
+): boolean {
+  const configDir = join(system.homedir, ".config", "opencode");
+  let removed = false;
+
+  for (const filename of ["opencode.json", "opencode.jsonc"]) {
+    const configPath = join(configDir, filename);
+    if (!system.exists(configPath)) {
+      continue;
+    }
+
+    const original = system.readTextFile(configPath);
+    const tree = parseTree(original);
+    if (!tree || !findNodeAtLocation(tree, incompatibleMcpConfigPath)) {
+      continue;
+    }
+
+    const edits = modify(original, incompatibleMcpConfigPath, undefined, {
+      formattingOptions: { insertSpaces: true, tabSize: 2 },
+    });
+    if (edits.length === 0) {
+      continue;
+    }
+
+    system.writeTextFile(configPath, applyEdits(original, edits));
+    removed = true;
+  }
+
+  return removed;
+}
+
 export function createOpenCodeHarness(
   system: SystemDeps,
   options: OpenCodeHarnessOptions,
 ): Harness {
-  const configureMcp = (output?: OutputSink) =>
-    runCommand(system, `${options.mcpCommand} "${MCP_URL}"`, output);
+  const hasOwnBundle = () => system.exists(markerPath(system, options.marker));
+  const hasIncompatibleBundle = () => system.exists(markerPath(system, options.incompatibleMarker));
+  const configureMcp = async (output?: OutputSink) => {
+    removeIncompatibleMcpConfig(system, options.incompatibleMcpConfigPath);
+    await runCommand(system, `${options.mcpCommand} "${MCP_URL}"`, output);
+  };
 
   return {
     id: options.id,
@@ -59,7 +102,10 @@ export function createOpenCodeHarness(
       return !options.supersededBy || !(await detectOnPath(system, options.supersededBy));
     },
 
-    isInstalled: async () => system.exists(join(bundleDir(system), options.marker)),
+    // The active OpenCode CLI owns the shared bundle even when it was installed
+    // by the other version. This keeps removal available and lets installation
+    // replace an incompatible checkout instead of hiding it.
+    isInstalled: async () => hasOwnBundle() || hasIncompatibleBundle(),
 
     canInstall: async () =>
       (await detectOnPath(system, "git"))
@@ -67,15 +113,36 @@ export function createOpenCodeHarness(
         : { ok: false, reason: `git is required to clone the ${options.name} bundle` },
 
     cleanup: async (output) => {
-      if (!system.exists(join(bundleDir(system), options.incompatibleMarker))) {
-        return null;
+      const incompatibleBundle = hasIncompatibleBundle();
+      const partialBundle = system.exists(bundleDir(system)) && !hasOwnBundle();
+      const incompatibleMcp = removeIncompatibleMcpConfig(
+        system,
+        options.incompatibleMcpConfigPath,
+      );
+
+      if (incompatibleBundle || partialBundle) {
+        await removeBundle(system, output);
       }
 
-      await removeBundle(system, output);
-      return "Removed the incompatible Sentry OpenCode bundle";
+      if (incompatibleBundle) {
+        return "Removed the incompatible Sentry OpenCode bundle and MCP configuration";
+      }
+      if (partialBundle) {
+        return "Removed a partial Sentry OpenCode installation";
+      }
+      if (incompatibleMcp) {
+        return "Removed the incompatible Sentry OpenCode MCP configuration";
+      }
+      return null;
     },
 
     install: async (output): Promise<InstallOutcome> => {
+      // Recover when install is called directly after a failed clone, without
+      // relying on the orchestration layer to have run cleanup first.
+      if (system.exists(bundleDir(system)) && !hasOwnBundle()) {
+        await removeBundle(system, output);
+      }
+
       await ensureParentDirectory(system, output);
       const command = `git clone ${options.repository} "${bundleDir(system)}"`;
       await runCommand(system, command, output);
@@ -84,6 +151,17 @@ export function createOpenCodeHarness(
     },
 
     update: async (output): Promise<InstallOutcome> => {
+      if (!hasOwnBundle()) {
+        if (system.exists(bundleDir(system))) {
+          await removeBundle(system, output);
+        }
+        await ensureParentDirectory(system, output);
+        const command = `git clone ${options.repository} "${bundleDir(system)}"`;
+        await runCommand(system, command, output);
+        await configureMcp(output);
+        return { kind: "done", command };
+      }
+
       const command = `git -C "${bundleDir(system)}" pull`;
       await runCommand(system, command, output);
       await configureMcp(output);

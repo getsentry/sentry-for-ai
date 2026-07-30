@@ -10,6 +10,7 @@ export function createOpenCode(system: SystemDeps): Harness {
     repository: "https://github.com/getsentry/plugin-opencode.git",
     mcpCommand: "opencode mcp add sentry --url",
     mcpConfigPath: "mcp.sentry",
+    incompatibleMcpConfigPath: ["mcp", "servers", "sentry"],
     marker: ".sentry-opencode-v1",
     incompatibleMarker: ".sentry-opencode-v2",
     supersededBy: "opencode2",

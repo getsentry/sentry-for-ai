@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { getNodeValue, parseTree } from "jsonc-parser";
 import { describe, expect, it } from "vitest";
 import type { ShellResult } from "../system";
 import { createClaude } from "../harnesses/claude";
@@ -370,6 +371,8 @@ interface OpenCodeHarnessCase {
   repository: string;
   mcpCommand: string;
   mcpConfigPath: string;
+  configWithIncompatibleMcp: string;
+  incompatibleMcpConfigPath: string[];
   marker: string;
   incompatibleMarker: string;
   create: (system: ReturnType<typeof fakeSystem>) => Harness;
@@ -380,6 +383,7 @@ function testOpenCodeHarness(testCase: OpenCodeHarnessCase) {
     const target = "/home/user/.config/opencode/skills/sentry";
     const marker = `${target}/${testCase.marker}`;
     const incompatibleMarker = `${target}/${testCase.incompatibleMarker}`;
+    const configPath = "/home/user/.config/opencode/opencode.jsonc";
 
     it(`detects when the ${testCase.binary} binary is on PATH`, async () => {
       const system = fakeSystem({
@@ -405,9 +409,11 @@ function testOpenCodeHarness(testCase: OpenCodeHarnessCase) {
       expect(await harness.isInstalled()).toBe(false);
     });
 
-    it("does not count the other OpenCode version's bundle as installed", async () => {
-      const harness = testCase.create(fakeSystem({ homedir: "/home/user", existing: [target] }));
-      expect(await harness.isInstalled()).toBe(false);
+    it("reports the other OpenCode version's shared bundle as installed", async () => {
+      const harness = testCase.create(
+        fakeSystem({ homedir: "/home/user", existing: [target, incompatibleMarker] }),
+      );
+      expect(await harness.isInstalled()).toBe(true);
     });
 
     it("removes an incompatible bundle before installation", async () => {
@@ -427,10 +433,28 @@ function testOpenCodeHarness(testCase: OpenCodeHarnessCase) {
       expect(system.run).not.toHaveBeenCalledWith(`rm -rf "${target}"`);
     });
 
-    it("does not remove an unmarked user directory", async () => {
+    it("removes an unmarked partial installation before cloning", async () => {
       const system = fakeSystem({ homedir: "/home/user", existing: [target] });
-      expect(await testCase.create(system).cleanup!()).toBeNull();
-      expect(system.run).not.toHaveBeenCalledWith(`rm -rf "${target}"`);
+      const cleaned = await testCase.create(system).cleanup!();
+
+      expect(cleaned).toContain("partial");
+      expect(system.run).toHaveBeenCalledWith(`rm -rf "${target}"`);
+    });
+
+    it("removes the incompatible MCP shape while preserving JSONC", async () => {
+      const system = fakeSystem({
+        homedir: "/home/user",
+        files: { [configPath]: testCase.configWithIncompatibleMcp },
+      });
+      const cleaned = await testCase.create(system).cleanup!();
+
+      expect(cleaned).toContain("MCP");
+      expect(system.writeTextFile).toHaveBeenCalledOnce();
+      const written = (system.writeTextFile as any).mock.calls[0][1] as string;
+      expect(written).toContain("// keep this comment");
+      expect(getNodeValue(parseTree(written)!)).not.toHaveProperty(
+        testCase.incompatibleMcpConfigPath.join("."),
+      );
     });
 
     it("requires git to install", async () => {
@@ -456,6 +480,29 @@ function testOpenCodeHarness(testCase: OpenCodeHarnessCase) {
       expect(system.run).toHaveBeenCalledWith(
         `${testCase.mcpCommand} "https://mcp.sentry.dev/mcp?utm_source=plugin"`,
       );
+    });
+
+    it("recovers from a partial directory when install is called directly", async () => {
+      const system = fakeSystem({ homedir: "/home/user", existing: [target] });
+      await testCase.create(system).install();
+
+      expect(system.run).toHaveBeenCalledWith(`rm -rf "${target}"`);
+      expect(system.run).toHaveBeenCalledWith(`git clone ${testCase.repository} "${target}"`);
+    });
+
+    it("replaces the other version's bundle instead of pulling it", async () => {
+      const system = fakeSystem({
+        homedir: "/home/user",
+        existing: [target, incompatibleMarker],
+      });
+      const outcome = await testCase.create(system).update();
+
+      expect(outcome).toMatchObject({
+        kind: "done",
+        command: `git clone ${testCase.repository} "${target}"`,
+      });
+      expect(system.run).toHaveBeenCalledWith(`rm -rf "${target}"`);
+      expect(system.run).not.toHaveBeenCalledWith(`git -C "${target}" pull`);
     });
 
     it("pulls the bundle and restores MCP configuration on update", async () => {
@@ -514,6 +561,9 @@ testOpenCodeHarness({
   repository: "https://github.com/getsentry/plugin-opencode.git",
   mcpCommand: "opencode mcp add sentry --url",
   mcpConfigPath: "mcp.sentry",
+  configWithIncompatibleMcp:
+    '{\n  // keep this comment\n  "mcp": {\n    "servers": {\n      "sentry": { "type": "remote" }\n    }\n  }\n}',
+  incompatibleMcpConfigPath: ["mcp", "servers", "sentry"],
   marker: ".sentry-opencode-v1",
   incompatibleMarker: ".sentry-opencode-v2",
   create: createOpenCode,
@@ -525,6 +575,9 @@ testOpenCodeHarness({
   repository: "https://github.com/getsentry/plugin-opencode2.git",
   mcpCommand: "opencode2 mcp add sentry --global --url",
   mcpConfigPath: "mcp.servers.sentry",
+  configWithIncompatibleMcp:
+    '{\n  // keep this comment\n  "mcp": {\n    "sentry": { "type": "remote" }\n  }\n}',
+  incompatibleMcpConfigPath: ["mcp", "sentry"],
   marker: ".sentry-opencode-v2",
   incompatibleMarker: ".sentry-opencode-v1",
   create: createOpenCode2,
@@ -535,6 +588,22 @@ describe("OpenCode version precedence", () => {
     const system = fakeSystem({ run: () => ok });
     expect(await createOpenCode(system).detect()).toBe(false);
     expect(await createOpenCode2(system).detect()).toBe(true);
+  });
+
+  it("lets the preferred V2 harness remove a V1 bundle", async () => {
+    const target = "/home/user/.config/opencode/skills/sentry";
+    const system = fakeSystem({
+      homedir: "/home/user",
+      run: () => ok,
+      existing: [target, `${target}/.sentry-opencode-v1`],
+    });
+    const v2 = createOpenCode2(system);
+
+    expect(await createOpenCode(system).detect()).toBe(false);
+    expect(await v2.detect()).toBe(true);
+    expect(await v2.isInstalled()).toBe(true);
+    await v2.remove();
+    expect(system.run).toHaveBeenCalledWith(`rm -rf "${target}"`);
   });
 });
 
