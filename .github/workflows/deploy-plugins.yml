@@ -11,10 +11,12 @@
 #   grok   -> getsentry/plugin-grok
 #   pi     -> getsentry/plugin-pi
 #
-# Marketplaces consume `getsentry/plugin-<agent>` by git ref. Each job builds its
-# agent's tree from this repo, then commits it onto the target repo's `main`,
-# replacing the previous contents. The five jobs target five different repos,
-# so they run in parallel without contention.
+# Marketplaces consume `getsentry/plugin-<agent>` by git ref. Each build job
+# validates its agent's tree without deployment credentials and uploads it as an
+# artifact. A separate deploy job then mints a repository-scoped token and
+# commits only that validated artifact onto the target repo's `main`. The five
+# matrix entries target five different repos, so they run in parallel without
+# contention.
 #
 # Cross-repo writes use a GitHub App token scoped per-job to a single plugin
 # repo; the default GITHUB_TOKEN cannot push to other repositories. The app must
@@ -44,28 +46,16 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
         agent: [claude, cursor, codex, grok, pi]
-    concurrency:
-      group: deploy-plugin-${{ matrix.agent }}
-      cancel-in-progress: false
     steps:
       - name: Checkout source
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-
-      - name: Mint deploy token
-        id: token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          app-id: ${{ vars.PLUGIN_DEPLOY_APP_ID }}
-          private-key: ${{ secrets.PLUGIN_DEPLOY_KEY }}
-          owner: getsentry
-          repositories: plugin-${{ matrix.agent }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
@@ -78,9 +68,60 @@ jobs:
 
       - name: Install Pi CLI
         if: matrix.agent == 'pi'
-        run: npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+        run: npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.83.0
 
-      - name: Build and deploy plugin-${{ matrix.agent }}
+      - name: Build plugin-${{ matrix.agent }}
+        env:
+          AGENT: ${{ matrix.agent }}
+        run: |
+          set -euo pipefail
+
+          DIST_DIR="$(mktemp -d)/dist"
+          "src/plugins/${AGENT}/build.sh" "$DIST_DIR"
+          "src/plugins/${AGENT}/validate.sh" "$DIST_DIR"
+
+          mkdir -p "artifacts/${AGENT}"
+          rsync -a --delete "$DIST_DIR/" "artifacts/${AGENT}/"
+
+      - name: Upload validated plugin-${{ matrix.agent }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: plugin-${{ matrix.agent }}-${{ github.sha }}
+          path: artifacts/${{ matrix.agent }}/
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: [claude, cursor, codex, grok, pi]
+    concurrency:
+      group: deploy-plugin-${{ matrix.agent }}
+      cancel-in-progress: false
+    steps:
+      - name: Download validated plugin-${{ matrix.agent }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: plugin-${{ matrix.agent }}-${{ github.sha }}
+          path: artifact
+
+      # Mint the write credential only after every third-party package and
+      # artifact action has finished executing in this job.
+      - name: Mint deploy token
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.PLUGIN_DEPLOY_APP_ID }}
+          private-key: ${{ secrets.PLUGIN_DEPLOY_KEY }}
+          owner: getsentry
+          repositories: plugin-${{ matrix.agent }}
+
+      - name: Deploy plugin-${{ matrix.agent }}
         env:
           AGENT: ${{ matrix.agent }}
           SRC_SHA: ${{ github.sha }}
@@ -96,14 +137,10 @@ jobs:
           git -C "$WORKTREE" config user.name "github-actions[bot]"
           git -C "$WORKTREE" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Rewrite the whole tree: clear tracked content (preserve the .git
-          # dir), then repopulate from source via the agent's build script.
+          # Rewrite the whole tree from the already validated artifact. No build
+          # tool or third-party package executes while GH_TOKEN is in scope.
           git -C "$WORKTREE" rm -rfq --ignore-unmatch .
-          "src/plugins/${AGENT}/build.sh" "$WORKTREE"
-
-          # Validate the built tree against the agent's schema/validator before
-          # it can be deployed.
-          "src/plugins/${AGENT}/validate.sh" "$WORKTREE"
+          rsync -a --delete --exclude='.git/' artifact/ "$WORKTREE/"
 
           # Commit only if something changed.
           git -C "$WORKTREE" add -A
