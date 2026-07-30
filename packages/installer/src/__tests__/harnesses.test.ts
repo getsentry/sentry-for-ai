@@ -370,7 +370,7 @@ interface OpenCodeHarnessCase {
   binary: string;
   repository: string;
   mcpCommand: string;
-  mcpConfigPath: string;
+  mcpConfigPath: string[];
   configWithIncompatibleMcp: string;
   incompatibleMcpConfigPath: string[];
   marker: string;
@@ -516,15 +516,22 @@ function testOpenCodeHarness(testCase: OpenCodeHarnessCase) {
       );
     });
 
-    it("removes the bundle and explains the remaining MCP entry", async () => {
-      const system = fakeSystem({ homedir: "/home/user", existing: [target, marker] });
+    it("removes the bundle and both possible MCP entries", async () => {
+      const config =
+        '{\n  // keep this comment\n  "mcp": {\n    "sentry": { "type": "remote" },\n    "servers": {\n      "sentry": { "type": "remote" },\n      "other": { "type": "remote" }\n    }\n  }\n}';
+      const system = fakeSystem({
+        homedir: "/home/user",
+        existing: [target, marker],
+        files: { [configPath]: config },
+      });
       const outcome = await testCase.create(system).remove();
 
-      expect(outcome).toMatchObject({
-        kind: "done",
-        command: `rm -rf "${target}"`,
-        note: expect.stringContaining(testCase.mcpConfigPath),
-      });
+      expect(outcome).toEqual({ kind: "done", command: `rm -rf "${target}"` });
+      const written = (system.writeTextFile as any).mock.calls[0][1] as string;
+      expect(written).toContain("// keep this comment");
+      expect(getNodeValue(parseTree(written)!)).not.toHaveProperty("mcp.sentry");
+      expect(getNodeValue(parseTree(written)!)).not.toHaveProperty("mcp.servers.sentry");
+      expect(getNodeValue(parseTree(written)!)).toHaveProperty("mcp.servers.other");
     });
 
     it("uses native directory commands on Windows", async () => {
@@ -560,7 +567,7 @@ testOpenCodeHarness({
   binary: "opencode",
   repository: "https://github.com/getsentry/plugin-opencode.git",
   mcpCommand: "opencode mcp add sentry --url",
-  mcpConfigPath: "mcp.sentry",
+  mcpConfigPath: ["mcp", "sentry"],
   configWithIncompatibleMcp:
     '{\n  // keep this comment\n  "mcp": {\n    "servers": {\n      "sentry": { "type": "remote" }\n    }\n  }\n}',
   incompatibleMcpConfigPath: ["mcp", "servers", "sentry"],
@@ -574,7 +581,7 @@ testOpenCodeHarness({
   binary: "opencode2",
   repository: "https://github.com/getsentry/plugin-opencode2.git",
   mcpCommand: "opencode2 mcp add sentry --global --url",
-  mcpConfigPath: "mcp.servers.sentry",
+  mcpConfigPath: ["mcp", "servers", "sentry"],
   configWithIncompatibleMcp:
     '{\n  // keep this comment\n  "mcp": {\n    "sentry": { "type": "remote" }\n  }\n}',
   incompatibleMcpConfigPath: ["mcp", "sentry"],

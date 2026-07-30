@@ -12,7 +12,7 @@ interface OpenCodeHarnessOptions {
   binary: string;
   repository: string;
   mcpCommand: string;
-  mcpConfigPath: string;
+  mcpConfigPath: string[];
   incompatibleMcpConfigPath: string[];
   marker: string;
   incompatibleMarker: string;
@@ -43,10 +43,7 @@ function markerPath(system: SystemDeps, marker: string): string {
   return join(bundleDir(system), marker);
 }
 
-function removeIncompatibleMcpConfig(
-  system: SystemDeps,
-  incompatibleMcpConfigPath: string[],
-): boolean {
+function removeMcpConfigPaths(system: SystemDeps, mcpConfigPaths: string[][]): boolean {
   const configDir = join(system.homedir, ".config", "opencode");
   let removed = false;
 
@@ -56,21 +53,25 @@ function removeIncompatibleMcpConfig(
       continue;
     }
 
-    const original = system.readTextFile(configPath);
-    const tree = parseTree(original);
-    if (!tree || !findNodeAtLocation(tree, incompatibleMcpConfigPath)) {
-      continue;
+    let contents = system.readTextFile(configPath);
+    let changed = false;
+    for (const mcpConfigPath of mcpConfigPaths) {
+      const tree = parseTree(contents);
+      if (!tree || !findNodeAtLocation(tree, mcpConfigPath)) {
+        continue;
+      }
+
+      const edits = modify(contents, mcpConfigPath, undefined, {
+        formattingOptions: { insertSpaces: true, tabSize: 2 },
+      });
+      contents = applyEdits(contents, edits);
+      changed = true;
     }
 
-    const edits = modify(original, incompatibleMcpConfigPath, undefined, {
-      formattingOptions: { insertSpaces: true, tabSize: 2 },
-    });
-    if (edits.length === 0) {
-      continue;
+    if (changed) {
+      system.writeTextFile(configPath, contents);
+      removed = true;
     }
-
-    system.writeTextFile(configPath, applyEdits(original, edits));
-    removed = true;
   }
 
   return removed;
@@ -83,7 +84,7 @@ export function createOpenCodeHarness(
   const hasOwnBundle = () => system.exists(markerPath(system, options.marker));
   const hasIncompatibleBundle = () => system.exists(markerPath(system, options.incompatibleMarker));
   const configureMcp = async (output?: OutputSink) => {
-    removeIncompatibleMcpConfig(system, options.incompatibleMcpConfigPath);
+    removeMcpConfigPaths(system, [options.incompatibleMcpConfigPath]);
     await runCommand(system, `${options.mcpCommand} "${MCP_URL}"`, output);
   };
 
@@ -115,10 +116,7 @@ export function createOpenCodeHarness(
     cleanup: async (output) => {
       const incompatibleBundle = hasIncompatibleBundle();
       const partialBundle = system.exists(bundleDir(system)) && !hasOwnBundle();
-      const incompatibleMcp = removeIncompatibleMcpConfig(
-        system,
-        options.incompatibleMcpConfigPath,
-      );
+      const incompatibleMcp = removeMcpConfigPaths(system, [options.incompatibleMcpConfigPath]);
 
       if (incompatibleBundle || partialBundle) {
         await removeBundle(system, output);
@@ -170,11 +168,8 @@ export function createOpenCodeHarness(
 
     remove: async (output): Promise<InstallOutcome> => {
       const command = await removeBundle(system, output);
-      return {
-        kind: "done",
-        command,
-        note: `The CLI has no MCP remove command; delete ${options.mcpConfigPath} from your OpenCode config to remove Sentry completely.`,
-      };
+      removeMcpConfigPaths(system, [options.mcpConfigPath, options.incompatibleMcpConfigPath]);
+      return { kind: "done", command };
     },
   };
 }
