@@ -423,8 +423,19 @@ function testOpenCodeHarness(testCase: OpenCodeHarnessCase) {
       });
       const cleaned = await testCase.create(system).cleanup!();
 
-      expect(cleaned).toContain("incompatible");
+      expect(cleaned).toBe("Removed the incompatible Sentry OpenCode bundle");
       expect(system.run).toHaveBeenCalledWith(`rm -rf "${target}"`);
+    });
+
+    it("reports both incompatible bundle and MCP cleanup when both occur", async () => {
+      const system = fakeSystem({
+        homedir: "/home/user",
+        existing: [target, incompatibleMarker],
+        files: { [configPath]: testCase.configWithIncompatibleMcp },
+      });
+      const cleaned = await testCase.create(system).cleanup!();
+
+      expect(cleaned).toBe("Removed the incompatible Sentry OpenCode bundle and MCP configuration");
     });
 
     it("leaves its own bundle untouched during cleanup", async () => {

@@ -123,7 +123,9 @@ export function createOpenCodeHarness(
       }
 
       if (incompatibleBundle) {
-        return "Removed the incompatible Sentry OpenCode bundle and MCP configuration";
+        return incompatibleMcp
+          ? "Removed the incompatible Sentry OpenCode bundle and MCP configuration"
+          : "Removed the incompatible Sentry OpenCode bundle";
       }
       if (partialBundle) {
         return "Removed a partial Sentry OpenCode installation";
