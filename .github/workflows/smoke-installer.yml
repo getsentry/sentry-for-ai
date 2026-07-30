@@ -82,22 +82,26 @@ jobs:
           set -euo pipefail
 
           echo "== claude =="
-          claude plugin list
-          claude plugin list | grep -iq sentry || { echo "claude: sentry plugin missing"; exit 1; }
+          claude_plugins=$(claude plugin list)
+          printf '%s\n' "$claude_plugins"
+          printf '%s\n' "$claude_plugins" | grep -iq sentry || { echo "claude: sentry plugin missing"; exit 1; }
 
           echo "== codex =="
-          codex plugin list
-          codex plugin list | grep -iq sentry || { echo "codex: sentry plugin missing"; exit 1; }
+          codex_plugins=$(codex plugin list)
+          printf '%s\n' "$codex_plugins"
+          printf '%s\n' "$codex_plugins" | grep -iq sentry || { echo "codex: sentry plugin missing"; exit 1; }
 
           echo "== grok =="
-          grok plugin list
-          grok plugin list | grep -iq sentry || { echo "grok: sentry plugin missing"; exit 1; }
+          grok_plugins=$(grok plugin list)
+          printf '%s\n' "$grok_plugins"
+          printf '%s\n' "$grok_plugins" | grep -iq sentry || { echo "grok: sentry plugin missing"; exit 1; }
 
           echo "== cursor =="
           node -e "const p=require('path').join(require('os').homedir(),'.cursor','plugins','local','sentry'); if(!require('fs').existsSync(p)){console.error('cursor: plugin dir missing at '+p);process.exit(1)} console.log(p)"
 
           echo "== pi =="
-          pi list --no-approve
-          pi list --no-approve | grep -iq 'getsentry/plugin-pi' || { echo "pi: sentry package missing"; exit 1; }
+          pi_plugins=$(pi list --no-approve)
+          printf '%s\n' "$pi_plugins"
+          printf '%s\n' "$pi_plugins" | grep -iq 'getsentry/plugin-pi' || { echo "pi: sentry package missing"; exit 1; }
 
           echo "All agents have the Sentry plugin."
