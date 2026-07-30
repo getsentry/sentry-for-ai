@@ -117,11 +117,12 @@ export function createOpenCodeHarness(
     cleanup: async (output) => {
       const incompatibleBundle = hasIncompatibleBundle();
       const partialBundle = system.exists(bundleDir(system)) && !hasOwnBundle();
-      const incompatibleMcp = removeMcpConfigPaths(system, [options.incompatibleMcpConfigPath]);
 
       if (incompatibleBundle || partialBundle) {
         await removeBundle(system, output);
       }
+
+      const incompatibleMcp = removeMcpConfigPaths(system, [options.incompatibleMcpConfigPath]);
 
       if (incompatibleBundle) {
         return incompatibleMcp

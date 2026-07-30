@@ -438,6 +438,18 @@ function testOpenCodeHarness(testCase: OpenCodeHarnessCase) {
       expect(cleaned).toBe("Removed the incompatible Sentry OpenCode bundle and MCP configuration");
     });
 
+    it("preserves MCP configuration when incompatible bundle removal fails", async () => {
+      const system = fakeSystem({
+        homedir: "/home/user",
+        existing: [target, incompatibleMarker],
+        files: { [configPath]: testCase.configWithIncompatibleMcp },
+        run: () => ({ ok: false, stderr: "bundle is locked" }),
+      });
+
+      await expect(testCase.create(system).cleanup!()).rejects.toThrow("bundle is locked");
+      expect(system.writeTextFile).not.toHaveBeenCalled();
+    });
+
     it("leaves its own bundle untouched during cleanup", async () => {
       const system = fakeSystem({ homedir: "/home/user", existing: [target, marker] });
       expect(await testCase.create(system).cleanup!()).toBeNull();
