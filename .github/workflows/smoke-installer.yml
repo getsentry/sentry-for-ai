@@ -4,12 +4,18 @@
 # (--no-interactive) so it installs the Sentry plugin for every detected agent
 # without a prompt, and verifies each plugin actually landed.
 #
-# Claude Code, Codex, and Grok ship cross-platform npm CLIs, so they get a real
-# install against their default marketplaces. Cursor has no headless CLI to
+# Claude Code, Codex, Grok, OpenCode V1, and Pi ship cross-platform npm CLIs, so
+# they get real CLI installs. Cursor has no headless CLI to
 # install in CI, but our Cursor install is only a `git clone` of the public
 # plugin repo into ~/.cursor/plugins/local/sentry — so we put a `cursor` stub on
 # PATH to satisfy detection and verify the real clone (this is what exercises
 # the per-OS path handling, including Windows).
+#
+# OpenCode V2 currently recommends WSL on Windows and cannot share V1's MCP
+# config shape, so it runs in a separate Linux smoke job. The OpenCode target
+# repositories are replaced with temporary local git repositories in both jobs;
+# this tests the real clone flow before those generated repositories are first
+# deployed.
 
 name: Smoke installer
 
@@ -57,8 +63,24 @@ jobs:
       - name: Build
         run: pnpm --filter @sentry/ai build
 
-      - name: Install Claude Code, Codex, and Grok CLIs
-        run: npm install -g @anthropic-ai/claude-code @openai/codex @xai-official/grok
+      - name: Install Claude Code, Codex, Grok, OpenCode V1, and Pi CLIs
+        run: npm install -g @anthropic-ai/claude-code @openai/codex @xai-official/grok opencode-ai@1.18.0 @earendil-works/pi-coding-agent
+
+      - name: Prepare local OpenCode V1 distribution
+        run: |
+          set -euo pipefail
+          repo="$RUNNER_TEMP/plugin-opencode"
+          mkdir -p "$repo/skills/sentry-installer-smoke"
+          printf '1\n' > "$repo/.sentry-opencode-v1"
+          printf '%s\n' '---' 'name: sentry-installer-smoke' 'description: Verify the Sentry OpenCode installer' '---' '' '# Sentry installer smoke' > "$repo/skills/sentry-installer-smoke/SKILL.md"
+          git -C "$repo" init -q
+          git -C "$repo" config user.name smoke-test
+          git -C "$repo" config user.email smoke@example.com
+          git -C "$repo" add .
+          git -C "$repo" commit -qm 'test: seed OpenCode bundle'
+          repo_url="$(node -e 'console.log(require("node:url").pathToFileURL(process.argv[1]).href)' "$repo")"
+          git config --global protocol.file.allow always
+          git config --global "url.${repo_url}.insteadOf" https://github.com/getsentry/plugin-opencode.git
 
       - name: Put a Cursor stub on PATH
         run: |
@@ -96,4 +118,76 @@ jobs:
           echo "== cursor =="
           node -e "const p=require('path').join(require('os').homedir(),'.cursor','plugins','local','sentry'); if(!require('fs').existsSync(p)){console.error('cursor: plugin dir missing at '+p);process.exit(1)} console.log(p)"
 
+          echo "== pi =="
+          pi list --no-approve
+          pi list --no-approve | grep -iq 'getsentry/plugin-pi' || { echo "pi: sentry package missing"; exit 1; }
+
+          echo "== opencode =="
+          opencode debug skill > "$RUNNER_TEMP/opencode-skills.json"
+          grep -q 'sentry-installer-smoke' "$RUNNER_TEMP/opencode-skills.json" || { echo "opencode: sentry skill missing"; exit 1; }
+          node - <<'NODE'
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const os = require("node:os");
+          const root = path.join(os.homedir(), ".config", "opencode");
+          const file = ["opencode.json", "opencode.jsonc"].map((name) => path.join(root, name)).find(fs.existsSync);
+          if (!file) throw new Error("opencode: global config missing");
+          const config = JSON.parse(fs.readFileSync(file, "utf8"));
+          if (!config.mcp?.sentry?.url?.includes("mcp.sentry.dev")) throw new Error("opencode: Sentry MCP missing");
+          NODE
+
           echo "All agents have the Sentry plugin."
+
+  smoke-opencode2:
+    name: OpenCode V2 beta
+    runs-on: ubuntu-latest
+    env:
+      SENTRY_DSN: ""
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: pnpm/action-setup@a15d269cd4658e1107c09f1fabf4cbd7bd1f308a # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @sentry/ai build
+      - run: npm install -g @opencode-ai/cli@0.0.0-next-16420
+
+      - name: Prepare local OpenCode V2 distribution
+        run: |
+          set -euo pipefail
+          repo="$RUNNER_TEMP/plugin-opencode2"
+          mkdir -p "$repo/skills/sentry-installer-smoke"
+          printf '2\n' > "$repo/.sentry-opencode-v2"
+          printf '%s\n' '---' 'name: sentry-installer-smoke' 'description: Verify the Sentry OpenCode V2 installer' 'metadata:' '  opencode/autoinvoke: "false"' '---' '' '# Sentry installer smoke' > "$repo/skills/sentry-installer-smoke/SKILL.md"
+          git -C "$repo" init -q
+          git -C "$repo" config user.name smoke-test
+          git -C "$repo" config user.email smoke@example.com
+          git -C "$repo" add .
+          git -C "$repo" commit -qm 'test: seed OpenCode V2 bundle'
+          repo_url="$(node -e 'console.log(require("node:url").pathToFileURL(process.argv[1]).href)' "$repo")"
+          git config --global protocol.file.allow always
+          git config --global "url.${repo_url}.insteadOf" https://github.com/getsentry/plugin-opencode2.git
+
+      - name: Run installer (non-interactive)
+        run: node packages/installer/dist/index.js install --no-interactive
+
+      - name: Verify OpenCode V2 installation
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const os = require("node:os");
+          const bundle = path.join(os.homedir(), ".config", "opencode", "skills", "sentry", "skills", "sentry-installer-smoke", "SKILL.md");
+          if (!fs.existsSync(bundle)) throw new Error(`opencode2: Sentry skill missing at ${bundle}`);
+          const root = path.join(os.homedir(), ".config", "opencode");
+          const file = ["opencode.json", "opencode.jsonc"].map((name) => path.join(root, name)).find(fs.existsSync);
+          if (!file) throw new Error("opencode2: global config missing");
+          const config = JSON.parse(fs.readFileSync(file, "utf8"));
+          if (!config.mcp?.servers?.sentry?.url?.includes("mcp.sentry.dev")) throw new Error("opencode2: Sentry MCP missing");
+          NODE

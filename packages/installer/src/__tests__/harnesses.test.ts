@@ -5,6 +5,10 @@ import { createClaude } from "../harnesses/claude";
 import { createCodex } from "../harnesses/codex";
 import { createCursor } from "../harnesses/cursor";
 import { createGrok } from "../harnesses/grok";
+import { createOpenCode } from "../harnesses/opencode";
+import { createOpenCode2 } from "../harnesses/opencode2";
+import { createPi } from "../harnesses/pi";
+import type { Harness } from "../harnesses/types";
 import { fakeSystem } from "./fake-system";
 
 const ok: ShellResult = { ok: true };
@@ -358,6 +362,256 @@ describe("grok harness", () => {
   it("throws when the install fails", async () => {
     const harness = createGrok(fakeSystem({ run: () => ({ ok: false, stderr: "nope" }) }));
     await expect(harness.install()).rejects.toThrow("nope");
+  });
+});
+
+interface OpenCodeHarnessCase {
+  label: string;
+  binary: string;
+  repository: string;
+  mcpCommand: string;
+  mcpConfigPath: string;
+  marker: string;
+  incompatibleMarker: string;
+  create: (system: ReturnType<typeof fakeSystem>) => Harness;
+}
+
+function testOpenCodeHarness(testCase: OpenCodeHarnessCase) {
+  describe(`${testCase.label} harness`, () => {
+    const target = "/home/user/.config/opencode/skills/sentry";
+    const marker = `${target}/${testCase.marker}`;
+    const incompatibleMarker = `${target}/${testCase.incompatibleMarker}`;
+
+    it(`detects when the ${testCase.binary} binary is on PATH`, async () => {
+      const system = fakeSystem({
+        run: (command) => (command === `which ${testCase.binary}` ? ok : notFound),
+      });
+      expect(await testCase.create(system).detect()).toBe(true);
+    });
+
+    it(`does not detect when ${testCase.binary} is missing`, async () => {
+      const harness = testCase.create(fakeSystem({ run: () => notFound }));
+      expect(await harness.detect()).toBe(false);
+    });
+
+    it("reports installed when the shared bundle directory exists", async () => {
+      const harness = testCase.create(
+        fakeSystem({ homedir: "/home/user", existing: [target, marker] }),
+      );
+      expect(await harness.isInstalled()).toBe(true);
+    });
+
+    it("reports not installed when the shared bundle directory is absent", async () => {
+      const harness = testCase.create(fakeSystem({ homedir: "/home/user" }));
+      expect(await harness.isInstalled()).toBe(false);
+    });
+
+    it("does not count the other OpenCode version's bundle as installed", async () => {
+      const harness = testCase.create(fakeSystem({ homedir: "/home/user", existing: [target] }));
+      expect(await harness.isInstalled()).toBe(false);
+    });
+
+    it("removes an incompatible bundle before installation", async () => {
+      const system = fakeSystem({
+        homedir: "/home/user",
+        existing: [target, incompatibleMarker],
+      });
+      const cleaned = await testCase.create(system).cleanup!();
+
+      expect(cleaned).toContain("incompatible");
+      expect(system.run).toHaveBeenCalledWith(`rm -rf "${target}"`);
+    });
+
+    it("leaves its own bundle untouched during cleanup", async () => {
+      const system = fakeSystem({ homedir: "/home/user", existing: [target, marker] });
+      expect(await testCase.create(system).cleanup!()).toBeNull();
+      expect(system.run).not.toHaveBeenCalledWith(`rm -rf "${target}"`);
+    });
+
+    it("does not remove an unmarked user directory", async () => {
+      const system = fakeSystem({ homedir: "/home/user", existing: [target] });
+      expect(await testCase.create(system).cleanup!()).toBeNull();
+      expect(system.run).not.toHaveBeenCalledWith(`rm -rf "${target}"`);
+    });
+
+    it("requires git to install", async () => {
+      const unavailable = testCase.create(fakeSystem({ run: () => notFound }));
+      expect((await unavailable.canInstall()).ok).toBe(false);
+
+      const available = testCase.create(
+        fakeSystem({ run: (command) => (command === "which git" ? ok : notFound) }),
+      );
+      expect(await available.canInstall()).toEqual({ ok: true });
+    });
+
+    it("clones the bundle and configures the native MCP shape", async () => {
+      const system = fakeSystem({ homedir: "/home/user" });
+      const outcome = await testCase.create(system).install();
+
+      expect(outcome).toMatchObject({
+        kind: "done",
+        command: `git clone ${testCase.repository} "${target}"`,
+      });
+      expect(system.run).toHaveBeenCalledWith('mkdir -p "/home/user/.config/opencode/skills"');
+      expect(system.run).toHaveBeenCalledWith(`git clone ${testCase.repository} "${target}"`);
+      expect(system.run).toHaveBeenCalledWith(
+        `${testCase.mcpCommand} "https://mcp.sentry.dev/mcp?utm_source=plugin"`,
+      );
+    });
+
+    it("pulls the bundle and restores MCP configuration on update", async () => {
+      const system = fakeSystem({ homedir: "/home/user", existing: [target, marker] });
+      const outcome = await testCase.create(system).update();
+
+      expect(outcome).toMatchObject({ kind: "done", command: `git -C "${target}" pull` });
+      expect(system.run).toHaveBeenCalledWith(`git -C "${target}" pull`);
+      expect(system.run).toHaveBeenCalledWith(
+        `${testCase.mcpCommand} "https://mcp.sentry.dev/mcp?utm_source=plugin"`,
+      );
+    });
+
+    it("removes the bundle and explains the remaining MCP entry", async () => {
+      const system = fakeSystem({ homedir: "/home/user", existing: [target, marker] });
+      const outcome = await testCase.create(system).remove();
+
+      expect(outcome).toMatchObject({
+        kind: "done",
+        command: `rm -rf "${target}"`,
+        note: expect.stringContaining(testCase.mcpConfigPath),
+      });
+    });
+
+    it("uses native directory commands on Windows", async () => {
+      const homedir = "C:\\Users\\user";
+      const windowsTarget = join(homedir, ".config", "opencode", "skills", "sentry");
+      const parent = join(homedir, ".config", "opencode", "skills");
+      const system = fakeSystem({ homedir, platform: "win32" });
+      const harness = testCase.create(system);
+
+      await harness.install();
+      expect(system.run).toHaveBeenCalledWith(`if not exist "${parent}" mkdir "${parent}"`);
+
+      await harness.remove();
+      expect(system.run).toHaveBeenCalledWith(`rmdir /s /q "${windowsTarget}"`);
+    });
+
+    it("forwards the output sink to every install command", async () => {
+      const system = fakeSystem({ homedir: "/home/user" });
+      const sink = {} as NodeJS.WritableStream;
+      await testCase.create(system).install(sink);
+
+      expect(system.run).toHaveBeenCalledWith(`git clone ${testCase.repository} "${target}"`, sink);
+      expect(system.run).toHaveBeenCalledWith(
+        `${testCase.mcpCommand} "https://mcp.sentry.dev/mcp?utm_source=plugin"`,
+        sink,
+      );
+    });
+  });
+}
+
+testOpenCodeHarness({
+  label: "OpenCode V1",
+  binary: "opencode",
+  repository: "https://github.com/getsentry/plugin-opencode.git",
+  mcpCommand: "opencode mcp add sentry --url",
+  mcpConfigPath: "mcp.sentry",
+  marker: ".sentry-opencode-v1",
+  incompatibleMarker: ".sentry-opencode-v2",
+  create: createOpenCode,
+});
+
+testOpenCodeHarness({
+  label: "OpenCode V2",
+  binary: "opencode2",
+  repository: "https://github.com/getsentry/plugin-opencode2.git",
+  mcpCommand: "opencode2 mcp add sentry --global --url",
+  mcpConfigPath: "mcp.servers.sentry",
+  marker: ".sentry-opencode-v2",
+  incompatibleMarker: ".sentry-opencode-v1",
+  create: createOpenCode2,
+});
+
+describe("OpenCode version precedence", () => {
+  it("prefers V2 when both explicit binaries are installed", async () => {
+    const system = fakeSystem({ run: () => ok });
+    expect(await createOpenCode(system).detect()).toBe(false);
+    expect(await createOpenCode2(system).detect()).toBe(true);
+  });
+});
+
+describe("pi harness", () => {
+  it("detects when the pi binary is on PATH", async () => {
+    const harness = createPi(fakeSystem({ run: () => ok }));
+    expect(await harness.detect()).toBe(true);
+  });
+
+  it("does not detect when which fails", async () => {
+    const harness = createPi(fakeSystem({ run: () => notFound }));
+    expect(await harness.detect()).toBe(false);
+  });
+
+  it("reports installed when pi list includes our git package", async () => {
+    const harness = createPi(
+      fakeSystem({
+        run: () => ({
+          ok: true,
+          stdout: "User packages:\n  git:github.com/getsentry/plugin-pi",
+        }),
+      }),
+    );
+    expect(await harness.isInstalled()).toBe(true);
+  });
+
+  it("reports not installed when pi list lacks our package", async () => {
+    const harness = createPi(
+      fakeSystem({ run: () => ({ ok: true, stdout: "User packages:\n  npm:other-package" }) }),
+    );
+    expect(await harness.isInstalled()).toBe(false);
+  });
+
+  it("reports not installed when pi list fails", async () => {
+    const harness = createPi(fakeSystem({ run: () => notFound }));
+    expect(await harness.isInstalled()).toBe(false);
+  });
+
+  it("installs from the Pi distribution repository", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const outcome = await createPi(system).install();
+
+    expect(outcome).toMatchObject({
+      kind: "done",
+      command: "pi install git:github.com/getsentry/plugin-pi",
+    });
+    expect(system.run).toHaveBeenCalledWith("pi install git:github.com/getsentry/plugin-pi");
+  });
+
+  it("updates through Pi's package manager", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const outcome = await createPi(system).update();
+
+    expect(outcome).toMatchObject({
+      kind: "done",
+      command: "pi update git:github.com/getsentry/plugin-pi",
+    });
+    expect(system.run).toHaveBeenCalledWith("pi update git:github.com/getsentry/plugin-pi");
+  });
+
+  it("removes through Pi's package manager", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const outcome = await createPi(system).remove();
+
+    expect(outcome).toMatchObject({
+      kind: "done",
+      command: "pi remove git:github.com/getsentry/plugin-pi",
+    });
+    expect(system.run).toHaveBeenCalledWith("pi remove git:github.com/getsentry/plugin-pi");
+  });
+
+  it("forwards the output sink to package commands", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const sink = {} as NodeJS.WritableStream;
+    await createPi(system).install(sink);
+    expect(system.run).toHaveBeenCalledWith("pi install git:github.com/getsentry/plugin-pi", sink);
   });
 });
 
