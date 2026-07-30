@@ -1,8 +1,8 @@
 # End-to-end smoke test of the installer across Linux, macOS, and Windows.
 #
 # Installs the real agent CLIs, then runs the installer in non-interactive mode
-# (--no-interactive) so it installs the Sentry plugin for every detected agent
-# without a prompt, and verifies each plugin actually landed.
+# (--no-interactive) so it installs the Sentry integration for every detected
+# agent without a prompt, and verifies each distribution actually landed.
 #
 # Claude Code, Codex, Grok, and OpenCode V1 ship cross-platform npm CLIs, so
 # they get real CLI installs. Cursor has no headless CLI to
@@ -25,10 +25,12 @@ on:
     branches: [main]
     paths:
       - "packages/installer/**"
+      - "mcp.json"
       - ".github/workflows/smoke-installer.yml"
   pull_request:
     paths:
       - "packages/installer/**"
+      - "mcp.json"
       - ".github/workflows/smoke-installer.yml"
   workflow_dispatch:
 
