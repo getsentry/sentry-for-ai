@@ -4,7 +4,7 @@ Install the [Sentry plugin](https://github.com/getsentry/sentry-for-ai) into you
 
 The plugin teaches your assistant Sentry — how to set it up in any project, how to find and fix production issues, and how to configure alerts, AI monitoring, and more. This package detects which assistants you have installed and wires the plugin into each one for you.
 
-Supports **Claude Code**, **Codex**, **Cursor**, **Grok**, **OpenCode V1**, **OpenCode V2**, and **Pi**.
+Supports **Claude Code**, **Codex**, **Cursor**, **Grok**, **OpenCode V1**, and **OpenCode V2**.
 
 ```bash
 npx @sentry/ai install
@@ -22,11 +22,12 @@ Restart your AI tools afterward to load the plugin.
 ## Options
 
 ```bash
-npx @sentry/ai install                  # interactive — pick which agents to set up
-npx @sentry/ai install --no-interactive # install into every detected agent
+npx @sentry/ai install                         # interactive — pick which agents to set up
+npx @sentry/ai install "Setup logging"         # copy a custom prompt after installation
+npx @sentry/ai install --no-interactive        # install into every detected agent
 ```
 
-The non-interactive mode is intended for CI and unattended runs.
+When an instruction follows `install`, the installer offers to copy a prompt such as `The Sentry plugin has just been installed. Setup logging` after installation. Without an instruction, it offers the default get-started prompt. The non-interactive mode is intended for CI and unattended runs and skips this prompt.
 
 ## What it installs
 
@@ -40,7 +41,6 @@ For each detected assistant, the installer uses its native package command or in
 | Grok        | `grok plugin install getsentry/plugin-grok`                                   |
 | OpenCode V1 | Clones [`getsentry/plugin-opencode`](https://github.com/getsentry/plugin-opencode) into OpenCode's global skills and adds the V1 Sentry MCP entry |
 | OpenCode V2 | Clones [`getsentry/plugin-opencode2`](https://github.com/getsentry/plugin-opencode2) into OpenCode's global skills and adds the V2 Sentry MCP entry |
-| Pi          | `pi install git:github.com/getsentry/plugin-pi`                               |
 
 Each per-agent plugin is built and published from the [`sentry-for-ai`](https://github.com/getsentry/sentry-for-ai) repository, which is the source of truth for all skills.
 

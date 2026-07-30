@@ -4,7 +4,7 @@
 # (--no-interactive) so it installs the Sentry plugin for every detected agent
 # without a prompt, and verifies each plugin actually landed.
 #
-# Claude Code, Codex, Grok, OpenCode V1, and Pi ship cross-platform npm CLIs, so
+# Claude Code, Codex, Grok, and OpenCode V1 ship cross-platform npm CLIs, so
 # they get real CLI installs. Cursor has no headless CLI to
 # install in CI, but our Cursor install is only a `git clone` of the public
 # plugin repo into ~/.cursor/plugins/local/sentry — so we put a `cursor` stub on
@@ -63,8 +63,8 @@ jobs:
       - name: Build
         run: pnpm --filter @sentry/ai build
 
-      - name: Install Claude Code, Codex, Grok, OpenCode V1, and Pi CLIs
-        run: npm install -g @anthropic-ai/claude-code @openai/codex @xai-official/grok opencode-ai@1.18.0 @earendil-works/pi-coding-agent
+      - name: Install Claude Code, Codex, Grok, and OpenCode V1 CLIs
+        run: npm install -g @anthropic-ai/claude-code @openai/codex @xai-official/grok opencode-ai@1.18.0
 
       - name: Prepare local OpenCode V1 distribution
         run: |
@@ -117,10 +117,6 @@ jobs:
 
           echo "== cursor =="
           node -e "const p=require('path').join(require('os').homedir(),'.cursor','plugins','local','sentry'); if(!require('fs').existsSync(p)){console.error('cursor: plugin dir missing at '+p);process.exit(1)} console.log(p)"
-
-          echo "== pi =="
-          pi list --no-approve
-          pi list --no-approve | grep -iq 'getsentry/plugin-pi' || { echo "pi: sentry package missing"; exit 1; }
 
           echo "== opencode =="
           opencode debug skill > "$RUNNER_TEMP/opencode-skills.json"

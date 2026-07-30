@@ -7,7 +7,6 @@ import { createCursor } from "../harnesses/cursor";
 import { createGrok } from "../harnesses/grok";
 import { createOpenCode } from "../harnesses/opencode";
 import { createOpenCode2 } from "../harnesses/opencode2";
-import { createPi } from "../harnesses/pi";
 import type { Harness } from "../harnesses/types";
 import { fakeSystem } from "./fake-system";
 
@@ -536,82 +535,6 @@ describe("OpenCode version precedence", () => {
     const system = fakeSystem({ run: () => ok });
     expect(await createOpenCode(system).detect()).toBe(false);
     expect(await createOpenCode2(system).detect()).toBe(true);
-  });
-});
-
-describe("pi harness", () => {
-  it("detects when the pi binary is on PATH", async () => {
-    const harness = createPi(fakeSystem({ run: () => ok }));
-    expect(await harness.detect()).toBe(true);
-  });
-
-  it("does not detect when which fails", async () => {
-    const harness = createPi(fakeSystem({ run: () => notFound }));
-    expect(await harness.detect()).toBe(false);
-  });
-
-  it("reports installed when pi list includes our git package", async () => {
-    const harness = createPi(
-      fakeSystem({
-        run: () => ({
-          ok: true,
-          stdout: "User packages:\n  git:github.com/getsentry/plugin-pi",
-        }),
-      }),
-    );
-    expect(await harness.isInstalled()).toBe(true);
-  });
-
-  it("reports not installed when pi list lacks our package", async () => {
-    const harness = createPi(
-      fakeSystem({ run: () => ({ ok: true, stdout: "User packages:\n  npm:other-package" }) }),
-    );
-    expect(await harness.isInstalled()).toBe(false);
-  });
-
-  it("reports not installed when pi list fails", async () => {
-    const harness = createPi(fakeSystem({ run: () => notFound }));
-    expect(await harness.isInstalled()).toBe(false);
-  });
-
-  it("installs from the Pi distribution repository", async () => {
-    const system = fakeSystem({ run: () => ok });
-    const outcome = await createPi(system).install();
-
-    expect(outcome).toMatchObject({
-      kind: "done",
-      command: "pi install git:github.com/getsentry/plugin-pi",
-    });
-    expect(system.run).toHaveBeenCalledWith("pi install git:github.com/getsentry/plugin-pi");
-  });
-
-  it("updates through Pi's package manager", async () => {
-    const system = fakeSystem({ run: () => ok });
-    const outcome = await createPi(system).update();
-
-    expect(outcome).toMatchObject({
-      kind: "done",
-      command: "pi update git:github.com/getsentry/plugin-pi",
-    });
-    expect(system.run).toHaveBeenCalledWith("pi update git:github.com/getsentry/plugin-pi");
-  });
-
-  it("removes through Pi's package manager", async () => {
-    const system = fakeSystem({ run: () => ok });
-    const outcome = await createPi(system).remove();
-
-    expect(outcome).toMatchObject({
-      kind: "done",
-      command: "pi remove git:github.com/getsentry/plugin-pi",
-    });
-    expect(system.run).toHaveBeenCalledWith("pi remove git:github.com/getsentry/plugin-pi");
-  });
-
-  it("forwards the output sink to package commands", async () => {
-    const system = fakeSystem({ run: () => ok });
-    const sink = {} as NodeJS.WritableStream;
-    await createPi(system).install(sink);
-    expect(system.run).toHaveBeenCalledWith("pi install git:github.com/getsentry/plugin-pi", sink);
   });
 });
 
