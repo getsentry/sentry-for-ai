@@ -64,6 +64,10 @@ you detected:
 > "Now that this is heading to production — since you're on <platform>, we'll want
 > <source maps / debug symbols / …> so real-user stack traces stay readable. Here's what that takes."
 
+If the user wants it done now, [`debug-artifacts/index.md`](debug-artifacts/index.md) routes to the
+procedure for this platform's artifact family — you don't have to hand the task off. Wiring it into
+the build here is cheaper than diagnosing an unreadable production trace later.
+
 Also **scrutinize the verified issue**: pull it with `get_issue_details` and check the frames show
 actual source (file, line, function), not minified or unsymbolicated noise. Degraded frames even
 locally are a strong signal production will be worse.

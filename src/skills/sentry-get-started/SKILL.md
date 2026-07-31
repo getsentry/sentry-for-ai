@@ -62,7 +62,9 @@ Confirming one real error in Sentry is the job that matters until it works.
 **Run [`references/first-error-setup.md`](references/first-error-setup.md) end to end** — it's the
 shared spine: detect the platform, provision a project, install the SDK with sane defaults (errors,
 tracing, and whatever the SDK turns on by default), verify a real error lands, work the user toward
-production, and confirm production stack traces will be readable. You'll also
+production, and confirm production stack traces will be readable — for which
+[`references/debug-artifacts/index.md`](references/debug-artifacts/index.md) has the per-platform
+source-map and debug-file procedure, so you can wire it rather than only flag it. You'll also
 want to immediately read [`references/sdks/index.md`](references/sdks/index.md) and
 [`references/concepts/errors.md`](references/concepts/errors.md) so you have the catalog and the
 baseline-signal context in hand before you start.

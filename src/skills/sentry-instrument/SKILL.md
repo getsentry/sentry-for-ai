@@ -57,7 +57,9 @@ to Step 3.
 
 Under **first-error** scope you're done after the spine. Under **full setup**, continue: the spine
 already set up errors + tracing and flagged source maps, so propose the rest of a solid baseline
-(releases, plus any signals that fit the app) and wire what the user accepts via Step 3.
+(releases, plus any signals that fit the app) and wire what the user accepts via Step 3. If they take
+the stack-trace half, [`references/debug-artifacts/index.md`](references/debug-artifacts/index.md)
+carries the per-platform artifact upload — source maps for JS, dSYM/ProGuard/R8 for native and mobile.
 
 ## Step 3 — Wire the signal(s)
 
@@ -99,7 +101,9 @@ them:
 - Ship it to production.
 - Add a signal — logging, session replay, or profiling are common next steps (tracing is already in the base `init`).
 - Harden the setup — readable stack traces (source maps for JS, debug symbols for native/mobile) and
-  releases are the natural pair.
+  releases are the natural pair. If they take it, you can do it here:
+  [`references/debug-artifacts/index.md`](references/debug-artifacts/index.md) routes to the
+  procedure per platform.
 - Start using the data.
 
 ## What "done" looks like

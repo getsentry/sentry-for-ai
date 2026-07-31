@@ -79,6 +79,9 @@ Arrival isn't the whole story. If `get_issue_details` shows **minified** frames 
 **unsymbolicated** frames (native/mobile), the event arrived but the stack trace isn't yet readable.
 Say so plainly — readable stack traces need source maps (JS) or debug symbols (native/mobile) — and
 treat it as not-yet-done rather than calling it complete.
+[`debug-artifacts/index.md`](debug-artifacts/index.md) has the fix, per platform; note that uploading
+artifacts now won't repair *this* event on its own (native events can be reprocessed, source maps
+can't), so re-verify on a new one.
 
 ### 5. Fallback
 

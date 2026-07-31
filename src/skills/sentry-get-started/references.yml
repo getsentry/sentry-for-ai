@@ -5,6 +5,8 @@ needs:
   - sdks/*/index.md
   - sdks/*/error-monitoring.md
   - sdks/*/tracing.md
+  # Readable production stack traces, flagged during first-error setup.
+  - debug-artifacts/*.md
   # Whole concepts dir + the query grammar so the docs' cross-links resolve;
   # errors.md and tracing.md are the two this scope actually reads.
   - concepts/*.md
