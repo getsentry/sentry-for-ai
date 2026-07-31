@@ -32,8 +32,8 @@ Each SDK has a reference tree:
 
 Read `sdks/[sdk]/index.md` **first** — it owns detection, install, the recommended `init`, and a
 feature catalog table that links to each signal's file (and marks unsupported ones). Then read only
-the signal files you need. The exact format both files follow is documented in
-[`STRUCTURE.md`](STRUCTURE.md).
+the signal files you need. The exact format both files follow is documented in `STRUCTURE.md`, an
+internal authoring contract that is not shipped with the skills.
 
 ## Detect the platform first
 

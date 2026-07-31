@@ -33,4 +33,4 @@ pollute prod health, and finalize the release + record the deploy at deploy time
 ## Related
 
 - [`monitors.md`](monitors.md) — release-health / crash-rate monitors build on this.
-- [`search-query-language.md`](search-query-language.md) — `release`, `firstRelease`, `release.stage`.
+- [`search-query-language.md`](../search-query-language.md) — `release`, `firstRelease`, `release.stage`.

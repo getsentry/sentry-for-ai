@@ -29,4 +29,4 @@ replay-grade masking to screenshots — they capture whatever is on screen.
 
 - [`session-replay.md`](session-replay.md)
 - [`data-scrubbing.md`](data-scrubbing.md)
-- [`search-query-language.md`](search-query-language.md) — user-feedback properties.
+- [`search-query-language.md`](../search-query-language.md) — user-feedback properties.
