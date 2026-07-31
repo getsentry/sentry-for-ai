@@ -109,7 +109,6 @@ To build any target locally, run `src/plugins/<agent>/build.sh <output-dir>`
 
 | Skill | What it does |
 |-------|--------------|
-| `sentry-setup-ai-monitoring` | Instrument OpenAI, Anthropic, LangChain, Vercel AI, Google GenAI |
 | `sentry-otel-exporter-setup` | Configure OTel Collector with the Sentry exporter for multi-project routing |
 | `sentry-create-alert` | Create alerts via the Sentry workflow engine API |
 | `sentry-snapshots-cocoa` | Set up Sentry Snapshots for Apple/Cocoa projects |

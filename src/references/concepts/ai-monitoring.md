@@ -13,6 +13,14 @@ Anthropic, Vercel AI, LangChain/LangGraph, Google GenAI, HuggingFace, Pydantic
 AI, and Laravel AI; `litellm` needs explicit registration). Every other platform is manual
 `gen_ai.*` instrumentation, or unsupported — the platform `index.md` says which.
 
+**Auto-instrumentation is runtime-dependent, not just language-dependent.** It
+patches the AI client at require/import time, so it only applies on a patchable
+runtime. On workerd (Cloudflare Workers) and in browser/client-side code there is
+nothing to patch — those need build-time instrumentation (the Cloudflare Vite
+plugin) or a manual client wrapper (`Sentry.instrumentOpenAiClient` and
+friends). Check the platform's `ai-monitoring.md` before assuming "it's
+JavaScript, so it's automatic".
+
 ## What the artifact shows
 
 A trace *is* the agent run: a `gen_ai.invoke_agent` span parents the
@@ -22,8 +30,10 @@ views surface it: the **AI Agents** dashboard and **Explore > Conversations**.
 
 The span `op` is `gen_ai.{operation}` — `chat`, `embeddings`,
 `generate_content`, `text_completion` for calls, plus `invoke_agent`,
-`execute_tool`, `handoff`. Attributes accept primitives only; arrays/objects are
-JSON-stringified. The canonical attribute set is the [Sentry gen_ai
+`execute_tool`, `handoff`. The span **name** repeats the operation with its
+subject: `chat gpt-4o`, `invoke_agent Weather Agent`, `execute_tool get_weather`,
+`handoff from triage to billing`. Attributes accept primitives only;
+arrays/objects are JSON-stringified. The canonical attribute set is the [Sentry gen_ai
 conventions](https://getsentry.github.io/sentry-conventions/attributes/gen_ai/) —
 the SDK docs can lag, and attributes marked deprecated there should not be set.
 
@@ -52,6 +62,24 @@ already includes `.input_tokens.cached`, and `gen_ai.usage.output_tokens`
 already includes `.output_tokens.reasoning`. Reporting a subset larger than its
 total makes Sentry subtract past zero and show a negative cost.
 
+## Input/output message shape
+
+`gen_ai.input.messages` and `gen_ai.output.messages` are JSON-stringified arrays of
+`{role, parts}`, where each part is `{type, content}` — part types include `text`,
+`reasoning`, `tool_call`, and `tool_call_response`.
+
+Extended thinking (Anthropic `thinking`, Gemini `thought`, DeepSeek
+`reasoning_content`) belongs in a **`reasoning` part, never folded into a `text`
+part**: Sentry surfaces reasoning separately and filters it out of the user-facing
+Conversations view, so thinking passed as `text` shows up as if the model said it.
+When prior thinking is fed back into a multi-turn request, keep those same
+`reasoning` parts in the assistant messages inside `gen_ai.input.messages`.
+
+The system prompt is separate from the messages — it goes in
+`gen_ai.system_instructions` — as is the tool catalog offered to the model,
+`gen_ai.tool.definitions`. Both are model input and carry the same PII weight as
+the messages.
+
 ## PII
 
 Prompts and model outputs are user content and are **likely PII**. JavaScript
@@ -65,13 +93,35 @@ it and **ask the user before enabling capture** — see
 
 - Tracing must be on; then detect the AI SDK and let auto-instrumentation handle
   it (JS/Python/Laravel AI), or instrument `gen_ai.*` spans manually.
-- Sample AI traces at **100%**: an agent run is sampled as one span tree, so a
-  dropped root loses every child `gen_ai` span. Keep `gen_ai` traffic at 1.0 via
-  a `tracesSampler` while sampling the rest lower — see [reduce-volume.md](reduce-volume.md).
+- Sample AI traces at **100%** — see Sampling below.
 - Set a `gen_ai.conversation.id` wherever multi-turn chats need grouping.
+
+## Sampling
+
+An agent run is one span tree and the sampling decision is made at the **root**;
+children inherit it unconditionally. Drop the root and every `gen_ai` child goes
+with it — so at any rate below 1.0 you lose whole agent runs, not a fraction of
+each. Which root depends on the app:
+
+- **The `gen_ai` span is itself the root** (cron job, queue consumer, CLI): the
+  sampler function sees the `gen_ai.*` op directly — match on it and return 1.0.
+- **The `gen_ai` spans hang off an HTTP transaction** (most web apps): the sampler
+  never runs for them, because the request was already sampled before any AI code
+  executed. Keep the AI-serving routes at 1.0 instead.
+
+If AI is the core product, skip the sampler and keep tracing at 1.0 outright.
+
+**Read the app's current rate before changing it, and ask.** If tracing is below
+1.0 with no sampler configured, say what the current rate is and what a dropped
+root costs, then wait for an answer — raising trace volume is the user's cost
+decision, the same as the PII gate above.
+
+When 100% tracing isn't affordable, metrics and logs are sampled independently of
+traces: emit token counts and per-call log records on every LLM call to keep full
+cost/usage coverage alongside sampled traces.
 
 ## Related
 
 - [`tracing.md`](tracing.md) — AI monitoring is tracing; spans are the substrate.
 - [`data-scrubbing.md`](data-scrubbing.md) — prompt/output capture is the PII decision.
-- [`reduce-volume.md`](reduce-volume.md) — the `tracesSampler` that keeps AI at 100%.
+- [`reduce-volume.md`](reduce-volume.md) — the volume/cost tradeoff across signals.

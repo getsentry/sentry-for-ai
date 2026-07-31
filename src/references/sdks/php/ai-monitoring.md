@@ -4,7 +4,7 @@
 
 Sentry's Laravel AI integration automatically instruments Laravel AI agents, model calls, tools, embeddings, token usage, model/provider metadata, and conversation IDs. Use this reference when a Laravel app has `laravel/ai` installed or the user asks to monitor Laravel AI agents.
 
-For non-Laravel PHP AI libraries, use manual `gen_ai.*` spans following the conventions in `sentry-setup-ai-monitoring`.
+For non-Laravel PHP AI libraries, use manual `gen_ai.*` spans following the standard Sentry AI instrumentation conventions.
 
 ---
 
