@@ -5,8 +5,10 @@ needs:
   - sdks/*/index.md
   - sdks/*/error-monitoring.md
   - sdks/*/tracing.md
-  - concepts/errors.md
-  - concepts/tracing.md
+  # Whole concepts dir + the query grammar so the docs' cross-links resolve;
+  # errors.md and tracing.md are the two this scope actually reads.
+  - concepts/*.md
+  - search-query-language.md
   - first-error-setup.md
   - new-project.md
   - setup-verification.md
