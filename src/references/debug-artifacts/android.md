@@ -58,6 +58,6 @@ Gradle-plugin adoption is genuinely blocked, and read the current sentry-cli doc
 | Frames still obfuscated after a release build | `autoUploadProguardMapping` not enabled, or minification runs in a variant the plugin doesn't cover | Enable it; confirm the release variant is the one shipped |
 | Debug builds look fine, release doesn't | Expected — obfuscation only runs for release | Always test symbolication on a release build |
 | Kotlin frames readable, native frames not | Only the mapping was uploaded | Enable native symbol upload |
-| Nothing uploads, build green | Token unset — see `auth-token.md` | Add `SENTRY_AUTH_TOKEN` to the build environment |
+| Nothing uploads, build green | Token unset — see `../auth-token.md` | Add `SENTRY_AUTH_TOKEN` to the build environment |
 | Worked, then stopped after a version bump | Plugin option renamed across a major, now silently ignored | Re-check option names against the plugin docs for your version |
 | Frames readable, no code context | `includeSourceContext` off | Enable it and re-check a new event |

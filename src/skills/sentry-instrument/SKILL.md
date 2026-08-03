@@ -101,9 +101,12 @@ them:
 - Ship it to production.
 - Add a signal — logging, session replay, or profiling are common next steps (tracing is already in the base `init`).
 - Harden the setup — readable stack traces (source maps for JS, debug symbols for native/mobile) and
-  releases are the natural pair. If they take it, you can do it here:
-  [`references/debug-artifacts/index.md`](references/debug-artifacts/index.md) routes to the
-  procedure per platform.
+  releases are the natural pair, and you can do both here:
+  [`references/debug-artifacts/index.md`](references/debug-artifacts/index.md) routes to the artifact
+  procedure per platform, and [`references/releases/index.md`](references/releases/index.md) routes to
+  releases — the `release`/`environment` tag at minimum (a one-option change worth making before
+  anything ships), and the CI pipeline with commits and deploys if the user wants it. For a release
+  feature that's already wired but not working, `sentry-setup-releases` is the diagnostic entry point.
 - Start using the data.
 
 ## What "done" looks like

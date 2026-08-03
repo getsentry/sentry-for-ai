@@ -1,0 +1,17 @@
+needs:
+  # The release procedures themselves (shared with sentry-instrument / sentry-get-started,
+  # which set the tag and can wire the pipeline as part of a production-ready setup).
+  - releases/*.md
+  - auth-token.md
+  # Platform detection + the build-tool config the release name is wired into
+  # (bundler plugin options, the Gradle `sentry {}` block) — chosen at runtime.
+  - sdks/index.md
+  - sdks/*/index.md
+  # Readable in-app frames are a prerequisite for suspect commits, and
+  # setup-verification.md links into this tree.
+  - debug-artifacts/*.md
+  # Whole concepts dir + the query grammar so the docs' cross-links resolve;
+  # releases.md is the one this skill actually reads.
+  - concepts/*.md
+  - search-query-language.md
+  - setup-verification.md

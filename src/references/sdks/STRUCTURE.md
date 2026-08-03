@@ -55,7 +55,10 @@ Some setup is not owned by a platform tree at all — project/DSN provisioning, 
 loop, source maps / debug symbols, releases, data scrubbing, and volume tuning. Keep these out of the
 SDK references entirely; do not document or link them here. Source maps and debug files (dSYM,
 ProGuard/R8, NDK symbols, Dart obfuscation maps) live in `references/debug-artifacts/` — the upload
-procedure, the auth token, and artifact matching are all there, per family. The one exception is the **SDK-side hook**
+procedure and artifact matching are all there, per family. Releases live in
+`references/releases/` — naming, the per-platform `release`/`environment` tag, the CI pipeline, commit
+association, and suspect commits. The build-time auth token both groups need is
+`references/auth-token.md`. The one exception is the **SDK-side hook**
 for those topics — the `authToken` line, `beforeSend`, sample-rate options, the `release` /
 `environment` `init` options — which may appear as a normal config option, described in place without
 a pointer to any other doc.

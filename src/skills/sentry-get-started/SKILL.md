@@ -87,8 +87,14 @@ options with your interactive prompt; the user can also just say what they want:
   **`sentry-instrument`** skill.
 - **Fix or investigate an issue** — work a known error or hunt one down: find it, pull its context,
   root-cause with Seer, and ship the fix. → the **`sentry-debug-issue`** skill.
-- **Improve / harden** (source maps, releases, scrubbing, volume, OTel) and **Monitors & alerts** →
-  not built as skills yet; be honest and offer to read through the docs.
+- **Make stack traces readable** — source maps, or debug files for native/mobile. → the
+  **`sentry-fix-stack-traces`** skill.
+- **Track releases and deploys** — tie events to a version, create the release in CI with its
+  commits, wire suspect commits. → the **`sentry-setup-releases`** skill, or do it here from
+  [`references/releases/index.md`](references/releases/index.md); the `release`/`environment` tag in
+  particular belongs in setup itself.
+- **Improve / harden** (scrubbing, volume, OTel) and **Monitors & alerts** → not built as skills yet;
+  be honest and offer to read through the docs.
 
 ## Honesty about coverage
 

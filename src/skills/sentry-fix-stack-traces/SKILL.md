@@ -47,7 +47,7 @@ invocation — so open it for the config side.
 
 Route from [`references/debug-artifacts/index.md`](references/debug-artifacts/index.md) to the
 platform file for the artifact family, and read
-[`references/debug-artifacts/auth-token.md`](references/debug-artifacts/auth-token.md) first — every
+[`references/auth-token.md`](references/auth-token.md) first — every
 path needs a token, and a missing one usually fails **silently** rather than breaking the build.
 
 Two rules decide whether this works in practice:

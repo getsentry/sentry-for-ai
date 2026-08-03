@@ -47,7 +47,9 @@ plainly, but don't take deploy actions without their consent:**
   Dockerfile/Procfile, a hosting platform (Vercel, Fly, Render, Heroku, …), or a deploy section in
   `AGENTS.md`/`CLAUDE.md` — use it. Walk the user through (or offer to make) the changes to ship the
   Sentry-instrumented build, making sure the DSN and the `release`/`environment` values are set in
-  the production environment, not just locally.
+  the production environment, not just locally. [`releases/index.md`](releases/index.md) routes to the
+  per-platform way to set those two — do it here rather than leaving events tagged "unknown release";
+  it is a one-option change, and every release feature depends on it.
 - **Otherwise**, advocate plainly and ask: getting Sentry into production is the most important next
   step because real user errors are where the payoff is — how do you deploy this, and can I help wire
   it in?
