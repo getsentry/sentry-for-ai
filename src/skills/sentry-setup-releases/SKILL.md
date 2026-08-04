@@ -27,7 +27,7 @@ a release feature that isn't working.
 entirely on which half is missing. Read the diagnosis table in
 [`references/releases/index.md`](references/releases/index.md) and answer its two questions:
 
-- **Are events tagged?** Pull a recent event via the MCP (`search_issues`, then `get_issue_details`)
+- **Are events tagged?** Pull a recent event via the MCP (`search_issues`, then `get_sentry_resource`)
   and read its `release` tag. Note the exact value — you will compare it character for character.
 - **Does the release object exist under that name?** This is a **different question**, and an event
   search cannot answer it — `release:<value>` only tells you events carry the tag, which you already
@@ -85,8 +85,9 @@ A release setup is only verified by a real deploy — a local run proves nothing
 Adapting [`references/setup-verification.md`](references/setup-verification.md):
 
 1. Run the pipeline through CI and deploy.
-2. Trigger a real event from the deployed build and confirm via `get_issue_details` that its `release`
-   tag **exactly matches** the created release. This is the check that catches the mismatch failure.
+2. Trigger a real event from the deployed build and confirm via `get_sentry_resource` that the
+   `release` value in its **Tags** section **exactly matches** the created release. This is the check
+   that catches the mismatch failure.
 3. Confirm the release has commits and a deploy attached — `get_release_details` for that version
    (or `sentry-cli deploys list --release "$VERSION"` from the terminal).
 4. Confirm an issue from that release shows a suspect commit — or name precisely which prerequisite is

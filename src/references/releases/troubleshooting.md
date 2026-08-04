@@ -39,11 +39,13 @@ sentry-cli deploys list --release "$VERSION"        # did the deploy get recorde
 
 The two halves need two different tools, and using the wrong one is how a mismatch gets missed.
 
-**The tagging half** — `search_events` and `search_issues` accept the release fields:
+**The tagging half** — the release fields, but they aren't interchangeable between tools:
 
-- `release:<exact-name>` — do events exist under the name CI created? Zero hits here, combined with a
-  release object that *does* have commits, is the mismatch signature.
+- `release:<exact-name>` — works on both. Do events exist under the name CI created? Zero hits here,
+  combined with a release object that *does* have commits, is the mismatch signature.
 - `firstRelease:<name>` — did this issue first appear in that release (regression detection working).
+  **`search_issues` only.** On `search_events` it is silently rewritten to `release:`, which returns
+  plausible hits for a different question — check `## Executed Search` if you're unsure what ran.
 
 The grammar is in [`../search-query-language.md`](../search-query-language.md).
 

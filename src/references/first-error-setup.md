@@ -70,7 +70,7 @@ If the user wants it done now, [`debug-artifacts/index.md`](debug-artifacts/inde
 procedure for this platform's artifact family — you don't have to hand the task off. Wiring it into
 the build here is cheaper than diagnosing an unreadable production trace later.
 
-Also **scrutinize the verified issue**: pull it with `get_issue_details` and check the frames show
+Also **scrutinize the verified issue**: pull it with `get_sentry_resource` and check the frames show
 actual source (file, line, function), not minified or unsymbolicated noise. Degraded frames even
 locally are a strong signal production will be worse.
 

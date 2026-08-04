@@ -37,9 +37,10 @@ Avoid mentioning that you're "orienting" yourself — that's clear from the pros
 
 Then gather three cheap signals (don't over-investigate):
 
-1. **Is the Sentry MCP connected & authed?** Try `whoami` / `find_organizations`.
+1. **Is the Sentry MCP connected & authed?** Call `find_organizations` (or `whoami`, which is a
+   catalog tool — `execute_sentry_tool(name='whoami', arguments={})`).
 2. **Does this repo already use Sentry?** Grep for `@sentry`, `sentry-sdk`, `sentry_sdk`, or a DSN.
-3. **Do they have a Sentry project?** `find_projects` (also confirms auth).
+3. **Do they have a Sentry project?** `find_projects`, using an org slug from step 1.
 
 ### If the MCP is not authed
 
