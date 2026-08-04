@@ -67,6 +67,10 @@ until the root compat surface is removed.
   `execute_sentry_tool` if they aren’t directly exposed
 - GitHub CLI (`gh`) required for PR-related skills
 - Avoid emojis in skill/command content — keep output platform-neutral
+- In a Markdown table cell, write pipes inside a code span as `\|` and keep backticks
+  out of one entirely (say “used as a tagged template literal” and put the real syntax
+  in a fenced block). Both are what GFM requires, and a cell that breaks either one comes
+  back from the formatter rewritten
 
 ## Skill Tree Navigation
 
@@ -111,17 +115,33 @@ Two rules keep it factored:
    triggers cleanly.
 3. If it needs shared references, add a `references.yml` manifest listing them (globs
    allowed).
-4. Run `scripts/build-skill-tree.sh` to regenerate `src/SKILL_TREE.md` and validate.
-5. Run `scripts/validate-built-links.sh` to confirm the links resolve once built.
-6. CI runs both on every PR.
+4. Run `scripts/lint.sh` — it regenerates `src/SKILL_TREE.md`, validates the links, and
+   formats what you wrote.
 
-**Validation:**
-- `scripts/build-skill-tree.sh` — regenerates `src/SKILL_TREE.md` and validates each
-  skill’s frontmatter
-- `scripts/build-skill-tree.sh --check` — CI mode, fails if `src/SKILL_TREE.md` is stale
-  or validation errors exist
-- `scripts/validate-built-links.sh` — builds every agent’s plugin and fails on any
-  relative link that doesn’t resolve in the built tree
+**Linting:**
+
+`scripts/lint.sh` is the entrypoint.
+It runs [prek](https://github.com/j178/prek) over `.pre-commit-config.yaml`, pinned and
+fetched through `uvx`, so there is nothing to install first.
+
+```bash
+scripts/lint.sh                        # every hook over every file
+scripts/lint.sh run --files a.md b.md  # scope to some files
+scripts/lint.sh run flowmark           # one hook by id
+scripts/lint.sh install                # run the hooks from git commit
+```
+
+Most hooks fix rather than report — [flowmark](https://github.com/jlevy/flowmark)
+rewrites Markdown, `build-skill-tree.sh` regenerates the index — so a non-zero exit
+usually means files changed and are waiting to be reviewed and staged.
+The Lint workflow runs the same hooks on every pull request and pushes what they wrote
+back to the branch, which makes running it by hand optional.
+
+The two hooks that carry repo-specific rules:
+- `skill-tree` runs `scripts/build-skill-tree.sh`, which regenerates `src/SKILL_TREE.md`
+  and validates each skill’s frontmatter
+- `built-links` runs `scripts/validate-built-links.sh`, which builds every agent’s
+  plugin and fails on any relative link that doesn’t resolve in the built tree
 
 Link checking runs against the **built** tree on purpose.
 A skill’s `references/...` links only exist after hydration, so the source tree can’t

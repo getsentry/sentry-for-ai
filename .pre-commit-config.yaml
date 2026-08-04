@@ -1,0 +1,63 @@
+# Hook definitions for prek (https://github.com/j178/prek), a drop-in
+# pre-commit runner. `scripts/lint.sh` is the entrypoint, locally and in CI.
+#
+# Hooks here fix what they can rather than reporting it: flowmark rewrites
+# Markdown, build-skill-tree.sh regenerates the index. A hook that changes a
+# file exits non-zero, so the commit stops and the fix is already staged for
+# review.
+
+default_install_hook_types: ['pre-commit']
+default_stages: [pre-commit]
+
+# Superseded per-SDK wizard skills, frozen and excluded from the plugin build.
+# Reformatting them would be churn against content nothing ships.
+exclude: ^skills-legacy/
+
+repos:
+  # Markdown formatting. Scope lives in .flowmarkignore, which this hook honors
+  # because its own manifest passes --force-exclude.
+  - repo: https://github.com/jlevy/flowmark
+    rev: v0.7.3
+    hooks:
+      - id: flowmark
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Markdown belongs to flowmark alone. It writes a trailing space on the
+      # blank lines inside a blockquote, so these two would strip what flowmark
+      # rewrites on the next run, forever.
+      - id: end-of-file-fixer
+        exclude_types: [markdown]
+      - id: trailing-whitespace
+        exclude_types: [markdown]
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: check-executables-have-shebangs
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+        args: ['--maxkb=1024']
+
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.29.3
+    hooks:
+      - id: check-github-workflows
+
+  # The repo's own validators, so `scripts/lint.sh` is the whole lint surface.
+  # Both read the tree as a whole rather than the files handed to them.
+  - repo: local
+    hooks:
+      - id: skill-tree
+        name: regenerate src/SKILL_TREE.md
+        entry: scripts/build-skill-tree.sh
+        language: system
+        pass_filenames: false
+        files: ^src/skills/.*/SKILL\.md$
+      - id: built-links
+        name: validate links in every built plugin
+        entry: scripts/validate-built-links.sh
+        language: system
+        pass_filenames: false
+        files: ^src/(skills|references)/
