@@ -1,12 +1,19 @@
 # SnapshotPreviews Details
 
-Use this reference when the project uses Sentry's first-party SnapshotPreviews library and needs SnapshotPreviews-specific metadata, rendering preferences, selective rendering, or troubleshooting.
+Use this reference when the project uses Sentry’s first-party SnapshotPreviews library
+and needs SnapshotPreviews-specific metadata, rendering preferences, selective
+rendering, or troubleshooting.
 
-Wizard setup, target disambiguation, and manual fallback live in `wizard-setup.md`. Shared upload guidance for `sentry-cli`, Fastlane, manifests, and CI lives in `snapshots.md`.
+Wizard setup, target disambiguation, and manual fallback live in `wizard-setup.md`.
+Shared upload guidance for `sentry-cli`, Fastlane, manifests, and CI lives in
+`snapshots.md`.
 
 ## Metadata and Rendering Preferences
 
-Add `SnapshotPreferences` to the preview-declaring target only when default SnapshotPreviews sidecar metadata is insufficient. See Sentry's SnapshotPreviews metadata docs: https://docs.sentry.io/platforms/apple/snapshots/snapshotpreviews-metadata/
+Add `SnapshotPreferences` to the preview-declaring target only when default
+SnapshotPreviews sidecar metadata is insufficient.
+See Sentry’s SnapshotPreviews metadata docs:
+https://docs.sentry.io/platforms/apple/snapshots/snapshotpreviews-metadata/
 
 ```swift
 import SnapshotPreferences
@@ -19,7 +26,7 @@ import SnapshotPreferences
 ```
 
 | Modifier | Use when |
-|---|---|
+| --- | --- |
 | `.snapshotTags([String: String])` | Sentry needs searchable filters beyond defaults. |
 | `.snapshotAdditionalContext([String: Any])` | Reviewers need extra sidecar context. |
 | `.snapshotDiffThreshold(Float?)` | A deterministic snapshot still has tolerated visual noise. |
@@ -30,12 +37,14 @@ import SnapshotPreferences
 Rules:
 
 - Prefer deterministic previews over thresholds.
-- Avoid live network, timers, animations, current-clock dates, locale-dependent data, and real user data.
+- Avoid live network, timers, animations, current-clock dates, locale-dependent data,
+  and real user data.
 - Use fixed fixtures and mocked dependencies.
 
 ## Selective Rendering
 
-Use for PRs that should render only changed/high-signal SnapshotPreviews while preserving Sentry comparison semantics.
+Use for PRs that should render only changed/high-signal SnapshotPreviews while
+preserving Sentry comparison semantics.
 
 1. Generate the full image-name manifest without rendering:
 
@@ -47,9 +56,12 @@ xcodebuild test \
   -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
 ```
 
-2. Render the subset with `snapshotPreviews()`, `snapshotPreviewModules()`, `excludedSnapshotPreviews()`, `excludedSnapshotPreviewModules()`, or `-only-testing:` while `TEST_RUNNER_SNAPSHOTS_EXPORT_DIR` is set.
+2. Render the subset with `snapshotPreviews()`, `snapshotPreviewModules()`,
+   `excludedSnapshotPreviews()`, `excludedSnapshotPreviewModules()`, or `-only-testing:`
+   while `TEST_RUNNER_SNAPSHOTS_EXPORT_DIR` is set.
 
-3. Upload the rendered subset using the full manifest. Read `snapshots.md` for the upload command and manifest flags.
+3. Upload the rendered subset using the full manifest.
+   Read `snapshots.md` for the upload command and manifest flags.
 
 Rules:
 
@@ -63,20 +75,22 @@ Rules:
 Do not duplicate workflow templates here.
 
 | CI shape | Read |
-|---|---|
+| --- | --- |
 | One simulator destination | `github-actions-simple.md` |
 | Multiple simulators/device families, parallel rendering, large suites | `github-actions-fanout.md` |
 
 Before writing workflows:
 
-- Verify current runner image, Xcode path, SDKs, and simulator names from existing CI or current runner docs.
+- Verify current runner image, Xcode path, SDKs, and simulator names from existing CI or
+  current runner docs.
 - Use `fetch-depth: 0` so `sentry-cli` can resolve base/head commits.
-- Prefer existing Fastlane upload lanes when present; upload configuration lives in `snapshots.md`.
+- Prefer existing Fastlane upload lanes when present; upload configuration lives in
+  `snapshots.md`.
 
 ## Troubleshooting
 
 | Issue | Fix |
-|---|---|
+| --- | --- |
 | No generated tests/previews | Confirm previews are loaded by the hosted app/test process, build conditions match, and test target depends on `SnapshottingTests`. |
 | Package-only project | Ask for the host app/test target; standalone `swift test` rendering is not supported. |
 | Export directory empty | Set `TEST_RUNNER_SNAPSHOTS_EXPORT_DIR`; ensure `TEST_RUNNER_SNAPSHOTS_ALL_IMAGE_NAMES_FILE` is not also set. |

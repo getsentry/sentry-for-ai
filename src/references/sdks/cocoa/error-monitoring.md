@@ -1,13 +1,12 @@
 # Error Monitoring — Sentry Cocoa SDK
 
-> Minimum SDK: `sentry-cocoa` v7.0.0+
-> Swift Error improvements: v8.7.0+
-> HTTP client error capture: v8.0.0+
+> Minimum SDK: `sentry-cocoa` v7.0.0+ Swift Error improvements: v8.7.0+ HTTP client
+> error capture: v8.0.0+
 
 ## Configuration
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `enableCrashHandler` | `Bool` | `true` | Master switch for crash reporting (signal handlers, Mach exceptions, C++) |
 | `sampleRate` | `Float` (0.0–1.0) | `1.0` | Percentage of error events sent |
 | `attachStacktrace` | `Bool` | `true` | Attach stack traces to all captured messages |
@@ -69,7 +68,8 @@ SentrySDK.capture(event: event)
 
 ### Swift Error enum — human-readable titles (v8.7.0+)
 
-By default, Swift error enum cases appear as `LoginError - Code: 1`. To get readable titles, conform to `CustomNSError`:
+By default, Swift error enum cases appear as `LoginError - Code: 1`. To get readable
+titles, conform to `CustomNSError`:
 
 ```swift
 enum LoginError: Error {
@@ -94,11 +94,12 @@ extension LoginError: CustomNSError {
 SentrySDK.capture(error: LoginError.wrongUser(id: "12345"))
 ```
 
-> Use `NSDebugDescriptionErrorKey`, NOT `NSLocalizedDescriptionKey`. Localized strings vary by device locale and create duplicate issues.
+> Use `NSDebugDescriptionErrorKey`, NOT `NSLocalizedDescriptionKey`. Localized strings
+> vary by device locale and create duplicate issues.
 
 ### Capture with per-event scope
 
-The scope callback receives an isolated copy — changes don't affect global state:
+The scope callback receives an isolated copy — changes don’t affect global state:
 
 ```swift
 SentrySDK.capture(error: error) { scope in
@@ -134,7 +135,7 @@ SentrySDK.resumeAppHangTracking()
 V2 exception types:
 
 | Type | Meaning |
-|------|---------|
+| --- | --- |
 | `App Hang Fully Blocked` | Main thread completely frozen |
 | `App Hang Non Fully Blocked` | App stuck but still renders some frames |
 | `Fatal App Hang Fully Blocked` | Force-quit / watchdog kill during full block |
@@ -301,7 +302,8 @@ SentrySDK.start { options in
 }
 ```
 
-`"{{ default }}"` substitutes Sentry's standard hash, allowing you to *extend* rather than fully replace default grouping.
+`"{{ default }}"` substitutes Sentry’s standard hash, allowing you to *extend* rather
+than fully replace default grouping.
 
 ### onLastRunStatusDetermined callback
 
@@ -327,7 +329,8 @@ When `enableCrashHandler = true` (default), the SDK installs:
 - **C++ exception handlers** — `std::terminate` interception
 - **Objective-C uncaught exception handler** — `NSSetUncaughtExceptionHandler`
 
-> Warning: Always test crash reporting **without a debugger attached**. The debugger intercepts signals and prevents the SDK from capturing crashes.
+> Warning: Always test crash reporting **without a debugger attached**. The debugger
+> intercepts signals and prevents the SDK from capturing crashes.
 
 ### macOS — uncaught NSException reporting
 
@@ -365,19 +368,24 @@ SentrySDK.configureScope { scope in
 
 ## Best Practices
 
-- Set `releaseName` to a consistent value (e.g., `CFBundleShortVersionString + "+" + CFBundleVersion`) for regression tracking between deployments
-- Use `NSDebugDescriptionErrorKey` — not `NSLocalizedDescriptionKey` — for error user info to avoid locale-based duplicate issues
-- Use `beforeSend` to strip PII (`event.request?.cookies = nil`) when `sendDefaultPii = false`
-- Use `onLastRunStatusDetermined` only for lightweight operations (flag writes); heavy logic risks a cascading crash
+- Set `releaseName` to a consistent value (e.g.,
+  `CFBundleShortVersionString + "+" + CFBundleVersion`) for regression tracking between
+  deployments
+- Use `NSDebugDescriptionErrorKey` — not `NSLocalizedDescriptionKey` — for error user
+  info to avoid locale-based duplicate issues
+- Use `beforeSend` to strip PII (`event.request?.cookies = nil`) when
+  `sendDefaultPii = false`
+- Use `onLastRunStatusDetermined` only for lightweight operations (flag writes); heavy
+  logic risks a cascading crash
 - Disable app hang tracking for **Widgets and Live Activities** to avoid false positives
 - Use `initialScope` to set global context before the first event fires
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Crashes not appearing in Sentry | Test without debugger attached; debugger intercepts signals |
-| Swift errors show "Code: 1" | Conform to `CustomNSError` and provide `NSDebugDescriptionErrorKey` in `errorUserInfo` |
+| Swift errors show “Code: 1” | Conform to `CustomNSError` and provide `NSDebugDescriptionErrorKey` in `errorUserInfo` |
 | Duplicate issues from localization | Use `NSDebugDescriptionErrorKey`, not `NSLocalizedDescriptionKey` |
 | App hang events too noisy | Raise `appHangTimeoutInterval`; or filter in `beforeSend` by exception type |
 | HTTP errors not captured | Verify `enableCaptureFailedRequests = true` and `failedRequestStatusCodes` covers the status code |

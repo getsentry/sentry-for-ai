@@ -1,23 +1,24 @@
 # Sentry SDK references
 
-The per-platform HOW — the code for installing Sentry and wiring up each signal. There is one
-reference tree per SDK under `sdks/[sdk]/`: an `index.md` (detect, install, `init`, feature catalog)
-plus one file per supported signal. This is the mechanics layer: the actual install commands,
-`Sentry.init()` options, and the code to wire up each capability.
+The per-platform HOW — the code for installing Sentry and wiring up each signal.
+There is one reference tree per SDK under `sdks/[sdk]/`: an `index.md` (detect, install,
+`init`, feature catalog) plus one file per supported signal.
+This is the mechanics layer: the actual install commands, `Sentry.init()` options, and
+the code to wire up each capability.
 
 ## What Sentry can capture
 
 A quick orientation so you know which signal file to open.
 
 | Signal | What it is |
-|---|---|
+| --- | --- |
 | **Error Monitoring** | Unhandled exceptions and crashes, grouped into issues with stack traces, breadcrumbs, and context. The baseline — always set up first. |
 | **Tracing & Performance** | Distributed traces and spans across services and requests, showing where time goes and how a request flows end to end. |
 | **Profiling** | Function-level CPU/wall-clock samples tied to traces — which lines are slow. Requires tracing. |
 | **Logging** | Structured application logs sent to Sentry and correlated with errors and traces. |
 | **Metrics** | Counters, gauges, and distributions for operational metrics — request rates, queue depths, cache hit ratios, and other system-health signals. |
 | **Cron Monitoring** | Check-in code for scheduled/recurring jobs. |
-| **Session Replay** | A video-like reproduction of a user's session (browser and mobile) leading up to an error. |
+| **Session Replay** | A video-like reproduction of a user’s session (browser and mobile) leading up to an error. |
 | **User Feedback** | A widget or API to collect user-submitted reports, optionally attached to an event. |
 | **AI / LLM Monitoring** | Spans, token usage, and tool calls for LLM SDKs (OpenAI, Anthropic, Vercel AI, LangChain, Google GenAI, Laravel AI). |
 
@@ -25,27 +26,31 @@ A quick orientation so you know which signal file to open.
 
 Each SDK has a reference tree:
 
-    sdks/[sdk]/index.md          # overview, detect, install, init, feature catalog
-    sdks/[sdk]/error-monitoring.md
-    sdks/[sdk]/tracing.md
-    sdks/[sdk]/<signal>.md        # one file per supported signal
+```
+sdks/[sdk]/index.md          # overview, detect, install, init, feature catalog
+sdks/[sdk]/error-monitoring.md
+sdks/[sdk]/tracing.md
+sdks/[sdk]/<signal>.md        # one file per supported signal
+```
 
-Read `sdks/[sdk]/index.md` **first** — it owns detection, install, the recommended `init`, and a
-feature catalog table that links to each signal's file (and marks unsupported ones). Then read only
-the signal files you need. The exact format both files follow is documented in `STRUCTURE.md`, an
-internal authoring contract that is not shipped with the skills.
+Read `sdks/[sdk]/index.md` **first** — it owns detection, install, the recommended
+`init`, and a feature catalog table that links to each signal’s file (and marks
+unsupported ones). Then read only the signal files you need.
+The exact format both files follow is documented in `STRUCTURE.md`, an internal
+authoring contract that is not shipped with the skills.
 
 ## Detect the platform first
 
-Detect the platform from project files (`package.json`, `go.mod`, `requirements.txt`, `Gemfile`,
-`*.csproj`, `build.gradle`, `pubspec.yaml`, etc.) using the catalog below, then open that SDK's
-`index.md` and follow it. Each `index.md` carries its own detection logic, prerequisites, and
-step-by-step configuration.
+Detect the platform from project files (`package.json`, `go.mod`, `requirements.txt`,
+`Gemfile`, `*.csproj`, `build.gradle`, `pubspec.yaml`, etc.)
+using the catalog below, then open that SDK’s `index.md` and follow it.
+Each `index.md` carries its own detection logic, prerequisites, and step-by-step
+configuration.
 
 ### SDK catalog
 
 | Platform | SDK slug | Reference |
-|---|---|---|
+| --- | --- | --- |
 | Android | `android` | `sdks/android/index.md` |
 | browser JavaScript | `browser` | `sdks/browser/index.md` |
 | Cloudflare Workers and Pages | `cloudflare` | `sdks/cloudflare/index.md` |
@@ -74,9 +79,11 @@ When multiple SDKs could match, prefer the more specific one:
 - **Cloudflare** (`wrangler.toml` or `wrangler.jsonc`) → `cloudflare` over `node`
 - **NestJS** (`@nestjs/core`) → `nestjs` over `node`
 - **Next.js** → `nextjs` over `react` or `node`
-- **React Router Framework** (`@sentry/react-router` or `@react-router/*`) → `react-router-framework` over `react`
+- **React Router Framework** (`@sentry/react-router` or `@react-router/*`) →
+  `react-router-framework` over `react`
 - **TanStack Start React** (`@tanstack/react-start`) → `tanstack-start` over `react`
-- **Flutter** (`pubspec.yaml` with `flutter:` dependency or `sentry_flutter`) → `flutter`
+- **Flutter** (`pubspec.yaml` with `flutter:` dependency or `sentry_flutter`) →
+  `flutter`
 - **React Native** → `react-native` over `react`
 - **PHP** with Laravel or Symfony → `php`
 - **Elixir** (`mix.exs` detected) → `elixir`
@@ -87,7 +94,7 @@ When multiple SDKs could match, prefer the more specific one:
 ### Quick lookup
 
 | Keywords | SDK slug |
-|---|---|
+| --- | --- |
 | android, kotlin, java, jetpack compose | `android` |
 | browser, vanilla js, javascript, jquery, cdn, wordpress, static site | `browser` |
 | cloudflare, cloudflare workers, cloudflare pages, wrangler, durable objects, d1 | `cloudflare` |

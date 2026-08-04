@@ -1,17 +1,19 @@
 # Error Monitoring — Sentry Browser SDK
 
-> Minimum SDK: `@sentry/browser` ≥7.0.0  
-> `makeBrowserOfflineTransport` requires `@sentry/browser` ≥7.48.0  
-> `linkedErrorsIntegration` `cause` chain requires Error.cause support (Chrome 93+, Firefox 91+)
+> Minimum SDK: `@sentry/browser` ≥7.0.0\
+> `makeBrowserOfflineTransport` requires `@sentry/browser` ≥7.48.0\
+> `linkedErrorsIntegration` `cause` chain requires Error.cause support (Chrome 93+,
+> Firefox 91+)
 
----
+* * *
 
 ## How Automatic Capture Works
 
-The browser SDK hooks into the browser environment and captures errors from multiple layers automatically:
+The browser SDK hooks into the browser environment and captures errors from multiple
+layers automatically:
 
 | Layer | Mechanism | Integration |
-|-------|-----------|-------------|
+| --- | --- | --- |
 | Uncaught synchronous exceptions | `window.onerror` | `globalHandlersIntegration` (default on) |
 | Unhandled promise rejections | `window.onunhandledrejection` | `globalHandlersIntegration` (default on) |
 | Errors in `setTimeout` / `setInterval` / `requestAnimationFrame` / `addEventListener` | Patched browser APIs | `browserApiErrorsIntegration` (default on) |
@@ -19,20 +21,22 @@ The browser SDK hooks into the browser environment and captures errors from mult
 
 ### What Requires Manual Instrumentation
 
-The global handlers only catch errors that **escape** your code. These are silently swallowed without manual calls:
+The global handlers only catch errors that **escape** your code.
+These are silently swallowed without manual calls:
 
 - Errors caught by your own `try/catch` blocks
 - Business-logic failures (validation errors, unexpected states)
 - Async errors in `.then()` chains where `.catch()` is attached
-- User-visible conditions that aren't exceptions (use `captureMessage`)
+- User-visible conditions that aren’t exceptions (use `captureMessage`)
 
----
+* * *
 
 ## Core Capture APIs
 
 ### `Sentry.captureException(error, captureContext?)`
 
-Captures an exception and sends it to Sentry. Prefer `Error` objects — they include stack traces.
+Captures an exception and sends it to Sentry.
+Prefer `Error` objects — they include stack traces.
 
 ```javascript
 import * as Sentry from "@sentry/browser";
@@ -67,7 +71,7 @@ Sentry.captureException("Something went wrong as a string");
 **`CaptureContext` shape:**
 
 | Field | Type | Description |
-|-------|------|-------------|
+| --- | --- | --- |
 | `level` | `"fatal" \| "error" \| "warning" \| "log" \| "info" \| "debug"` | Severity override for this event |
 | `tags` | `Record<string, string>` | Indexed, filterable key-value pairs |
 | `extra` | `Record<string, unknown>` | Unindexed supplementary data |
@@ -75,7 +79,7 @@ Sentry.captureException("Something went wrong as a string");
 | `contexts` | `Record<string, Record<string, unknown>>` | Named structured context blocks |
 | `fingerprint` | `string[]` | Custom issue grouping key |
 
----
+* * *
 
 ### `Sentry.captureMessage(message, levelOrContext?)`
 
@@ -95,13 +99,16 @@ Sentry.captureMessage("User performed invalid action", {
 });
 ```
 
-> Set `attachStacktrace: true` in `Sentry.init()` to automatically attach a stack trace to message events.
+> Set `attachStacktrace: true` in `Sentry.init()` to automatically attach a stack trace
+> to message events.
 
----
+* * *
 
 ### `Sentry.captureEvent(event)`
 
-Sends a fully constructed Sentry event object. Use `captureException` or `captureMessage` in application code; use `captureEvent` for custom integrations or forwarding from legacy loggers.
+Sends a fully constructed Sentry event object.
+Use `captureException` or `captureMessage` in application code; use `captureEvent` for
+custom integrations or forwarding from legacy loggers.
 
 ```javascript
 Sentry.captureEvent({
@@ -114,7 +121,7 @@ Sentry.captureEvent({
 });
 ```
 
----
+* * *
 
 ### Utility APIs
 
@@ -132,14 +139,15 @@ await Sentry.close(2000);
 if (Sentry.isEnabled()) { /* ... */ }
 ```
 
----
+* * *
 
 ## Scope Management
 
-Sentry uses three nested scope types. Data from all three is merged before each event is sent.
+Sentry uses three nested scope types.
+Data from all three is merged before each event is sent.
 
 | Scope | API | Lifetime | Use Case |
-|-------|-----|----------|----------|
+| --- | --- | --- | --- |
 | **Global** | `getGlobalScope()` | Entire application | App-wide constants: version, build ID, region |
 | **Isolation** | `getIsolationScope()` | Per page load (browser) | User info, session data, tags set via top-level `setTag()` |
 | **Current** | `withScope()` | Per-event / narrowest | Per-operation data: one API call, one form submit |
@@ -149,13 +157,17 @@ Sentry uses three nested scope types. Data from all three is merged before each 
 Global Scope → Isolation Scope → Current Scope → Event-level CaptureContext
 ```
 
-> **Browser note:** In a browser there is no per-request isolation, so the isolation scope effectively behaves like the global scope. The distinction matters in server-side runtimes (Node.js, Deno, Cloudflare Workers).
+> **Browser note:** In a browser there is no per-request isolation, so the isolation
+> scope effectively behaves like the global scope.
+> The distinction matters in server-side runtimes (Node.js, Deno, Cloudflare Workers).
 
----
+* * *
 
 ### `withScope` — Per-Event Scoping (Recommended)
 
-Forks the current scope, runs your callback with the fork, and discards it when done. This is the preferred way to attach data to a single event without polluting broader scope.
+Forks the current scope, runs your callback with the fork, and discards it when done.
+This is the preferred way to attach data to a single event without polluting broader
+scope.
 
 ```javascript
 Sentry.withScope((scope) => {
@@ -172,7 +184,7 @@ Sentry.withScope((scope) => {
 Sentry.captureMessage("This event has no payment tags");
 ```
 
----
+* * *
 
 ### Scope Methods
 
@@ -204,7 +216,7 @@ scope.addEventProcessor((event) => { /* modify or drop */ return event; });
 scope.clear(); // reset all scope data
 ```
 
----
+* * *
 
 ## Event Enrichment
 
@@ -212,7 +224,8 @@ scope.clear(); // reset all scope data
 
 Tags power filtering, search, and tag distribution maps in the Sentry UI.
 
-**Constraints:** Key ≤32 chars (`a-zA-Z0-9_.:-`, no spaces). Value ≤200 chars, no newlines.
+**Constraints:** Key ≤32 chars (`a-zA-Z0-9_.:-`, no spaces).
+Value ≤200 chars, no newlines.
 
 ```javascript
 // Single tag — applied to all subsequent events (isolation scope)
@@ -234,11 +247,12 @@ Sentry.withScope((scope) => {
 });
 ```
 
----
+* * *
 
 ### Context — Rich Unindexed Structured Data
 
-Context is **not indexed or searchable** but displays in full on the event details page. Use it for rich structured data you need for debugging but don't need to filter on.
+Context is **not indexed or searchable** but displays in full on the event details page.
+Use it for rich structured data you need for debugging but don’t need to filter on.
 
 ```javascript
 Sentry.setContext("shopping_cart", {
@@ -259,9 +273,10 @@ Sentry.setContext("device", {
 Sentry.setContext("shopping_cart", null);
 ```
 
-> **Depth limit:** Nested context objects are normalized to **3 levels deep** by default. Use `normalizeDepth` in `init()` to change this.
+> **Depth limit:** Nested context objects are normalized to **3 levels deep** by
+> default. Use `normalizeDepth` in `init()` to change this.
 
----
+* * *
 
 ### User Information
 
@@ -282,7 +297,7 @@ Sentry.setUser(null);
 Sentry.setUser({ ip_address: "{{auto}}" });
 ```
 
----
+* * *
 
 ### `initialScope` — Set Context at Startup
 
@@ -307,16 +322,17 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Breadcrumbs
 
-Breadcrumbs create a trail of events leading up to an issue. They're buffered locally and attached to the next event sent to Sentry.
+Breadcrumbs create a trail of events leading up to an issue.
+They’re buffered locally and attached to the next event sent to Sentry.
 
 ### Automatic Breadcrumbs
 
 | Source | What is captured |
-|--------|-----------------|
+| --- | --- |
 | `console` | `console.log`, `warn`, `error`, `debug` calls |
 | `dom` | Click and keypress events on DOM elements |
 | `fetch` | All `fetch()` HTTP requests (URL, method, status) |
@@ -363,7 +379,7 @@ Sentry.addBreadcrumb({
 **Breadcrumb schema:**
 
 | Field | Type | Description |
-|-------|------|-------------|
+| --- | --- | --- |
 | `message` | `string` | Human-readable description |
 | `type` | `"default" \| "debug" \| "error" \| "info" \| "navigation" \| "http" \| "query" \| "ui" \| "user"` | Breadcrumb type |
 | `level` | `"fatal" \| "error" \| "warning" \| "log" \| "info" \| "debug"` | Severity |
@@ -371,7 +387,7 @@ Sentry.addBreadcrumb({
 | `data` | `Record<string, unknown>` | Arbitrary structured payload |
 | `timestamp` | `number` | Unix timestamp; auto-set if omitted |
 
----
+* * *
 
 ### Breadcrumb Configuration
 
@@ -413,13 +429,15 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Hooks — `beforeSend`, `beforeSendTransaction`, `beforeBreadcrumb`
 
 ### `beforeSend` — Modify or Drop Error Events
 
-Called last, just before an error event is sent. All scope data has already been applied. Return the event to send it, or `null` to drop it.
+Called last, just before an error event is sent.
+All scope data has already been applied.
+Return the event to send it, or `null` to drop it.
 
 ```javascript
 Sentry.init({
@@ -467,13 +485,13 @@ Sentry.init({
 **`hint` object properties:**
 
 | Property | Type | Description |
-|----------|------|-------------|
+| --- | --- | --- |
 | `originalException` | `unknown` | The original exception that triggered the event |
 | `syntheticException` | `Error \| null` | Synthetic Error generated for string/non-Error captures |
 | `event_id` | `string` | The generated event ID |
 | `data` | `Record<string, unknown>` | Arbitrary extra data |
 
----
+* * *
 
 ### `beforeSendTransaction` — Modify or Drop Transaction Events
 
@@ -495,11 +513,12 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Event Processors
 
-Event processors intercept every event before it's sent. Unlike `beforeSend`, multiple processors can be registered and run in series.
+Event processors intercept every event before it’s sent.
+Unlike `beforeSend`, multiple processors can be registered and run in series.
 
 ```javascript
 // Global event processor — runs on ALL events
@@ -532,24 +551,26 @@ Sentry.withScope((scope) => {
 });
 ```
 
-**Key differences vs. `beforeSend`:**
+**Key differences vs.
+`beforeSend`:**
 
 | Feature | `addEventProcessor` | `beforeSend` |
-|---------|---------------------|--------------|
+| --- | --- | --- |
 | Execution order | Unspecified among processors | **Always last** (after all processors) |
 | Multiple allowed | ✅ Unlimited | ❌ Only one |
 | Scope-level support | ✅ Yes | ❌ Global init only |
 | Async support | ✅ (slower) | ✅ |
 
----
+* * *
 
 ## Fingerprinting
 
-Every event has a fingerprint array. Events with the same fingerprint are grouped into the same issue.
+Every event has a fingerprint array.
+Events with the same fingerprint are grouped into the same issue.
 
 ### Extending Default Grouping
 
-Use `{{ default }}` to keep Sentry's default grouping and add extra discriminators:
+Use `{{ default }}` to keep Sentry’s default grouping and add extra discriminators:
 
 ```javascript
 Sentry.init({
@@ -568,7 +589,8 @@ Sentry.init({
 
 ### Overriding Default Grouping
 
-Omit `{{ default }}` to completely replace the auto-generated fingerprint (collapses all matching errors into one issue):
+Omit `{{ default }}` to completely replace the auto-generated fingerprint (collapses all
+matching errors into one issue):
 
 ```javascript
 Sentry.init({
@@ -609,7 +631,7 @@ Sentry.withScope((scope) => {
 **Fingerprint variables:**
 
 | Variable | Resolves to |
-|----------|------------|
+| --- | --- |
 | `{{ default }}` | The auto-generated Sentry fingerprint |
 | `{{ transaction }}` | The transaction name |
 | `{{ function }}` | The function name in the stack trace |
@@ -617,7 +639,7 @@ Sentry.withScope((scope) => {
 | `{{ module }}` | The module name |
 | `{{ value }}` | The exception value/message |
 
----
+* * *
 
 ## Event Filtering
 
@@ -670,14 +692,14 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Default Integrations
 
 ### Auto-Enabled Browser Integrations (9 total)
 
 | Integration | Purpose | Key Config |
-|-------------|---------|------------|
+| --- | --- | --- |
 | `breadcrumbsIntegration` | Records breadcrumbs from console, DOM, fetch, XHR, history | `console`, `dom`, `fetch`, `history`, `xhr` |
 | `browserApiErrorsIntegration` | Wraps `setTimeout`, `setInterval`, `requestAnimationFrame`, `addEventListener` in try/catch | `setTimeout`, `setInterval`, `requestAnimationFrame`, `eventTarget` |
 | `browserSessionIntegration` | Tracks release health (session per page load / route change) | `lifecycle: "route" \| "page"` |
@@ -728,13 +750,14 @@ const { captureConsoleIntegration } = await import("@sentry/browser");
 Sentry.addIntegration(captureConsoleIntegration({ levels: ["error", "warn"] }));
 ```
 
----
+* * *
 
 ## Transport
 
 ### Default Transport
 
-The browser SDK uses a `fetch`-based transport. Events are sent as POST requests to the Sentry ingestion endpoint.
+The browser SDK uses a `fetch`-based transport.
+Events are sent as POST requests to the Sentry ingestion endpoint.
 
 ### Offline Transport — IndexedDB Queue
 
@@ -761,7 +784,9 @@ Sentry.init({
 });
 ```
 
-Your server endpoint forwards the payload to Sentry's ingestion URL. See [Dealing with Ad-Blockers](https://docs.sentry.io/platforms/javascript/troubleshooting/#dealing-with-ad-blockers) for a full tunneling server implementation.
+Your server endpoint forwards the payload to Sentry’s ingestion URL. See
+[Dealing with Ad-Blockers](https://docs.sentry.io/platforms/javascript/troubleshooting/#dealing-with-ad-blockers)
+for a full tunneling server implementation.
 
 ### Custom Transport
 
@@ -797,34 +822,42 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Best Practices
 
-- **Set user context after authentication** — call `Sentry.setUser()` after login completes, not in `Sentry.init`.
+- **Set user context after authentication** — call `Sentry.setUser()` after login
+  completes, not in `Sentry.init`.
 - **Clear user on logout** — always call `Sentry.setUser(null)` when the user signs out.
-- **Use `withScope` for per-event context** — avoid mutating the isolation scope for temporary data.
-- **Use tags for filterable data, context for debugging data** — tags are indexed; context is not.
-- **Filter noise early** — use `ignoreErrors` and `denyUrls` to drop known-bad events before `beforeSend`.
-- **Avoid capturing in render paths** — wrap Sentry calls in event handlers or `try/catch` blocks.
-- **Set `release` and `environment`** — required for source map resolution and environment-aware alerting.
-- **Use `beforeSend` for PII scrubbing** — never send emails, credit card numbers, or passwords as tags/extra.
-- **Use `{{ default }}` in fingerprints** to extend, not replace, Sentry's grouping when appropriate.
+- **Use `withScope` for per-event context** — avoid mutating the isolation scope for
+  temporary data.
+- **Use tags for filterable data, context for debugging data** — tags are indexed;
+  context is not.
+- **Filter noise early** — use `ignoreErrors` and `denyUrls` to drop known-bad events
+  before `beforeSend`.
+- **Avoid capturing in render paths** — wrap Sentry calls in event handlers or
+  `try/catch` blocks.
+- **Set `release` and `environment`** — required for source map resolution and
+  environment-aware alerting.
+- **Use `beforeSend` for PII scrubbing** — never send emails, credit card numbers, or
+  passwords as tags/extra.
+- **Use `{{ default }}` in fingerprints** to extend, not replace, Sentry’s grouping when
+  appropriate.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Errors from browser extensions captured | Add `/extensions\//i`, `/^chrome:\/\//i`, `/^safari-extension:\/\//i` to `denyUrls` |
 | `ResizeObserver loop` flooding issues | Add `"ResizeObserver loop limit exceeded"` to `ignoreErrors` |
 | Script errors with no details | Cross-origin scripts without CORS headers appear as `"Script error."` — add CORS headers or use `allowUrls` |
 | Events sent twice | If using multiple `Sentry.init()` calls, only the first takes effect. Check for duplicate SDK instances. |
-| `beforeSend` returning `null` but events still sent | Check `beforeSendTransaction` — it's a separate hook for performance events |
-| User context missing on events | Call `Sentry.setUser()` after authentication completes; verify it's not being called before auth |
+| `beforeSend` returning `null` but events still sent | Check `beforeSendTransaction` — it’s a separate hook for performance events |
+| User context missing on events | Call `Sentry.setUser()` after authentication completes; verify it’s not being called before auth |
 | `configureScope is not a function` | Deprecated in SDK v8. Replace with `getIsolationScope()` or `withScope()` |
-| Tags not appearing on events | Verify the tag isn't being overwritten by a built-in Sentry tag (`browser`, `os`, `url`, `environment`, `release`) |
+| Tags not appearing on events | Verify the tag isn’t being overwritten by a built-in Sentry tag (`browser`, `os`, `url`, `environment`, `release`) |
 | High event volume from known errors | Add patterns to `ignoreErrors` or use `sampleRate` to reduce volume |
 | Unhandled rejections not captured | Verify `globalHandlersIntegration({ onunhandledrejection: true })` is active (it is by default) |
 | `linkedErrorsIntegration` not showing cause chain | Requires `Error.cause` support — Chrome 93+, Firefox 91+. Ensure the SDK version is ≥7.0.0. |

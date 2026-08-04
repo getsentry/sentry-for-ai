@@ -1,31 +1,32 @@
 # Error Monitoring — Sentry Next.js SDK
 
-> Minimum SDK: `@sentry/nextjs` ≥8.0.0  
-> `onRequestError` hook requires `@sentry/nextjs` ≥8.28.0 and Next.js 15+  
+> Minimum SDK: `@sentry/nextjs` ≥8.0.0\
+> `onRequestError` hook requires `@sentry/nextjs` ≥8.28.0 and Next.js 15+\
 > `withServerActionInstrumentation` available since `@sentry/nextjs` ≥8.0.0
 
----
+* * *
 
 ## Three-Runtime Architecture
 
-Next.js runs code in three separate environments. Sentry provides **distinct init files** for each:
+Next.js runs code in three separate environments.
+Sentry provides **distinct init files** for each:
 
 | File | Runtime | Captures |
-|------|---------|---------|
+| --- | --- | --- |
 | `instrumentation-client.ts` | Browser | Client-side errors, unhandled rejections |
 | `sentry.server.config.ts` | Node.js | API routes, Server Components, Server Actions |
 | `sentry.edge.config.ts` | Edge | Middleware, edge routes |
 
 All three use the same DSN but are configured independently.
 
----
+* * *
 
 ## Automatic vs Manual Error Capture
 
 ### What Is Captured Automatically
 
 | Error Type | Captured? | Mechanism |
-|-----------|-----------|-----------|
+| --- | --- | --- |
 | Unhandled client JS exceptions | ✅ Yes | `window.onerror` (GlobalHandlers integration) |
 | Unhandled promise rejections (client) | ✅ Yes | `window.onunhandledrejection` |
 | Server Component render errors (Next.js 15+) | ✅ Yes | `onRequestError` hook in `instrumentation.ts` |
@@ -39,7 +40,7 @@ All three use the same DSN but are configured independently.
 
 ### The Core Rule
 
-> **"If you catch an error and don't re-throw it, Sentry never sees it."**
+> **“If you catch an error and don’t re-throw it, Sentry never sees it.”**
 
 ```typescript
 // ✅ Automatically captured — unhandled, bubbles up
@@ -68,13 +69,14 @@ try {
 }
 ```
 
----
+* * *
 
 ## Client-Side Error Capture
 
 ### `Sentry.captureException(error, context?)`
 
-Captures an exception and sends it to Sentry. Prefer `Error` objects — they include stack traces.
+Captures an exception and sends it to Sentry.
+Prefer `Error` objects — they include stack traces.
 
 ```typescript
 // Basic
@@ -95,7 +97,7 @@ Sentry.captureException(error, {
 
 ### `Sentry.captureMessage(message, levelOrContext?)`
 
-Captures a plain message — useful for notable conditions that aren't exceptions.
+Captures a plain message — useful for notable conditions that aren’t exceptions.
 
 ```typescript
 // With severity level
@@ -112,7 +114,8 @@ Sentry.captureMessage("Payment method expired", {
 
 ### Unhandled Rejections
 
-Automatically captured by the `GlobalHandlers` integration. To customize:
+Automatically captured by the `GlobalHandlers` integration.
+To customize:
 
 ```typescript
 // instrumentation-client.ts
@@ -132,13 +135,14 @@ window.addEventListener("unhandledrejection", (event) => {
 });
 ```
 
----
+* * *
 
 ## Error Boundaries
 
 ### App Router: `app/error.tsx` (Segment-level)
 
-Each route segment can have its own `error.tsx`. Next.js catches these before Sentry — you **must** call `captureException` manually inside `useEffect`.
+Each route segment can have its own `error.tsx`. Next.js catches these before Sentry —
+you **must** call `captureException` manually inside `useEffect`.
 
 ```tsx
 // app/error.tsx  (also: app/dashboard/error.tsx, etc.)
@@ -168,11 +172,14 @@ export default function Error({
 }
 ```
 
-> **`digest`:** Server-side errors include a `digest` hash. Use it to correlate Sentry events with server logs.
+> **`digest`:** Server-side errors include a `digest` hash.
+> Use it to correlate Sentry events with server logs.
 
 ### App Router: `app/global-error.tsx` (Root Layout)
 
-Last-resort catch-all for root layout errors. Must render its own `<html>` and `<body>`. Use the `NextError` component for consistency with Next.js default error pages.
+Last-resort catch-all for root layout errors.
+Must render its own `<html>` and `<body>`. Use the `NextError` component for consistency
+with Next.js default error pages.
 
 ```tsx
 // app/global-error.tsx
@@ -221,7 +228,8 @@ app/
 
 ### React 18 and Earlier: `<Sentry.ErrorBoundary>`
 
-For client components using React 18 or earlier, wrap with `<Sentry.ErrorBoundary>` for additional control and fallback UIs:
+For client components using React 18 or earlier, wrap with `<Sentry.ErrorBoundary>` for
+additional control and fallback UIs:
 
 ```tsx
 "use client";
@@ -253,7 +261,8 @@ function CheckoutPage() {
 
 ### React 19+: `Sentry.reactErrorHandler()` with `createRoot`
 
-React 19 exposes hooks on `createRoot`. If you're using React 19 client components, pass `Sentry.reactErrorHandler()` to each hook:
+React 19 exposes hooks on `createRoot`. If you’re using React 19 client components, pass
+`Sentry.reactErrorHandler()` to each hook:
 
 ```tsx
 // In your client entry point or root layout setup
@@ -267,15 +276,17 @@ createRoot(container, {
 }).render(<App />);
 ```
 
-> **Use both together:** `reactErrorHandler()` is the global net; `<Sentry.ErrorBoundary>` provides scoped fallback UIs.
+> **Use both together:** `reactErrorHandler()` is the global net;
+> `<Sentry.ErrorBoundary>` provides scoped fallback UIs.
 
----
+* * *
 
 ## Pages Router Error Handling
 
 ### `pages/_error.tsx`
 
-Use `captureUnderscoreErrorException` — a helper that reads Next.js context and captures the error with correct status code.
+Use `captureUnderscoreErrorException` — a helper that reads Next.js context and captures
+the error with correct status code.
 
 ```tsx
 // pages/_error.tsx
@@ -315,13 +326,14 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 }
 ```
 
----
+* * *
 
 ## Server-Side Error Capture
 
 ### `onRequestError` Hook (Next.js 15+, SDK ≥8.28.0)
 
-Export `onRequestError` from `instrumentation.ts` to automatically capture Server Component errors without adding `captureException` everywhere:
+Export `onRequestError` from `instrumentation.ts` to automatically capture Server
+Component errors without adding `captureException` everywhere:
 
 ```typescript
 // instrumentation.ts
@@ -342,7 +354,8 @@ export const onRequestError = Sentry.captureRequestError;
 
 ### API Routes (App Router)
 
-Unhandled errors crash the request and are auto-captured. Caught errors must be captured manually:
+Unhandled errors crash the request and are auto-captured.
+Caught errors must be captured manually:
 
 ```typescript
 // app/api/users/route.ts
@@ -410,7 +423,8 @@ export async function createPost(formData: FormData) {
 
 #### `withServerActionInstrumentation` (Recommended)
 
-Automatically instruments server actions with tracing, attaches form data, and connects client/server traces:
+Automatically instruments server actions with tracing, attaches form data, and connects
+client/server traces:
 
 ```typescript
 // app/actions.ts
@@ -436,11 +450,12 @@ export async function submitForm(formData: FormData) {
 }
 ```
 
----
+* * *
 
 ## Edge Runtime Error Capture
 
-Edge runtime runs in Next.js middleware and edge API routes. Initialize Sentry via `sentry.edge.config.ts`:
+Edge runtime runs in Next.js middleware and edge API routes.
+Initialize Sentry via `sentry.edge.config.ts`:
 
 ```typescript
 // sentry.edge.config.ts
@@ -454,7 +469,8 @@ Sentry.init({
 });
 ```
 
-Errors in middleware are auto-captured via `onRequestError`. Caught errors require manual capture:
+Errors in middleware are auto-captured via `onRequestError`. Caught errors require
+manual capture:
 
 ```typescript
 // middleware.ts
@@ -480,11 +496,12 @@ export const config = {
 };
 ```
 
----
+* * *
 
 ## Scope Management
 
-Sentry merges three scope layers before sending each event. Later scopes override earlier ones:
+Sentry merges three scope layers before sending each event.
+Later scopes override earlier ones:
 
 ```
 Global → Isolation → Current → Event Sent
@@ -492,7 +509,8 @@ Global → Isolation → Current → Event Sent
 
 ### Global Scope
 
-Applied to every event. Use for universal data (app version, build ID):
+Applied to every event.
+Use for universal data (app version, build ID):
 
 ```typescript
 Sentry.getGlobalScope().setTag("app_version", "2.1.0");
@@ -501,7 +519,8 @@ Sentry.getGlobalScope().setContext("build", { sha: process.env.VERCEL_GIT_COMMIT
 
 ### Isolation Scope
 
-- **Server:** Forked per request — safe for per-request user data (no cross-contamination)
+- **Server:** Forked per request — safe for per-request user data (no
+  cross-contamination)
 - **Browser:** One per page load
 
 All top-level `Sentry.setXxx()` methods write to the isolation scope:
@@ -541,13 +560,13 @@ Sentry.withScope((scope) => {
 ### Scope Decision Guide
 
 | Goal | API |
-|------|-----|
+| --- | --- |
 | Data on ALL events (app version, build ID) | `Sentry.getGlobalScope().setTag(...)` |
 | Current request/page-load data | `Sentry.setTag(...)` (isolation scope) |
 | One specific capture only | `Sentry.withScope((scope) => { ... })` |
 | Inline on a single event | Second arg to `captureException(err, { tags: {...} })` |
 
----
+* * *
 
 ## Event Enrichment
 
@@ -568,7 +587,8 @@ Sentry.setTags({
 
 ### `setContext` (Structured, Non-searchable)
 
-Attaches arbitrary structured data visible in the issue detail view. Not indexed or searchable.
+Attaches arbitrary structured data visible in the issue detail view.
+Not indexed or searchable.
 
 ```typescript
 Sentry.setContext("checkout", {
@@ -582,7 +602,8 @@ Sentry.setContext("checkout", {
 Sentry.setContext("checkout", null);
 ```
 
-> **Depth:** Normalized to 3 levels deep by default. The `type` key is reserved — don't use it.
+> **Depth:** Normalized to 3 levels deep by default.
+> The `type` key is reserved — don’t use it.
 
 ### `setUser` (User Identity)
 
@@ -601,7 +622,8 @@ Sentry.setUser(null);
 
 ### `setExtra` / `setExtras` (Arbitrary Debug Data)
 
-Non-indexed supplementary data. Prefer `setContext` for structured objects with meaningful names.
+Non-indexed supplementary data.
+Prefer `setContext` for structured objects with meaningful names.
 
 ```typescript
 Sentry.setExtra("raw_api_response", responseText);
@@ -615,20 +637,20 @@ Sentry.setExtras({
 ### Tags vs Context vs Extra
 
 | Feature | Searchable? | Indexed? | Best For |
-|---------|------------|---------|---------|
+| --- | --- | --- | --- |
 | **Tags** | ✅ Yes | ✅ Yes | Filtering, grouping, alerting |
 | **Context** | ❌ No | ❌ No | Structured debug info (nested objects) |
 | **Extra** | ❌ No | ❌ No | Arbitrary debug values |
 | **User** | ✅ Partially | ✅ Yes | User attribution and filtering |
 
----
+* * *
 
 ## Breadcrumbs
 
 ### Automatic Breadcrumbs (Zero Config)
 
-| Type | What's Captured |
-|------|----------------|
+| Type | What’s Captured |
+| --- | --- |
 | `ui.click` | DOM element clicks |
 | `navigation` | URL changes, route transitions |
 | `http` | XHR/fetch requests (URL, method, status) |
@@ -668,7 +690,7 @@ Sentry.addBreadcrumb({
 ### Breadcrumb Properties
 
 | Key | Type | Values |
-|-----|------|--------|
+| --- | --- | --- |
 | `type` | string | `"default"` \| `"debug"` \| `"error"` \| `"info"` \| `"navigation"` \| `"http"` \| `"query"` \| `"ui"` \| `"user"` |
 | `category` | string | Dot-notation: `"auth"`, `"ui.click"`, `"api.request"` |
 | `message` | string | Human-readable description |
@@ -705,13 +727,15 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## `beforeSend` and Filtering Hooks
 
 ### `beforeSend` — Modify or Drop Error Events
 
-Last chance to modify or discard events. Runs after all event processors. Return `null` to drop.
+Last chance to modify or discard events.
+Runs after all event processors.
+Return `null` to drop.
 
 ```typescript
 Sentry.init({
@@ -740,7 +764,8 @@ Sentry.init({
 });
 ```
 
-> **Note:** Only one `beforeSend` is allowed. For multiple processors, use `addEventProcessor()`.
+> **Note:** Only one `beforeSend` is allowed.
+> For multiple processors, use `addEventProcessor()`.
 
 ### `beforeSendTransaction` — Modify or Drop Performance Events
 
@@ -784,11 +809,12 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Fingerprinting and Custom Grouping
 
-All events have a **fingerprint**. Events with the same fingerprint group into the same issue.
+All events have a **fingerprint**. Events with the same fingerprint group into the same
+issue.
 
 ### Per-Event Fingerprinting
 
@@ -836,13 +862,13 @@ Sentry.init({
 ### Template Variables
 
 | Variable | Description |
-|----------|-------------|
-| `{{ default }}` | Sentry's normally computed hash (extend rather than replace) |
+| --- | --- |
+| `{{ default }}` | Sentry’s normally computed hash (extend rather than replace) |
 | `{{ transaction }}` | Current transaction name |
 | `{{ function }}` | Top function in stack trace |
 | `{{ type }}` | Exception type |
 
----
+* * *
 
 ## Event Processors
 
@@ -868,16 +894,17 @@ Sentry.withScope((scope) => {
 });
 ```
 
-**Execution order:** All `addEventProcessor()` processors run first, then `beforeSend` runs last (guaranteed).
+**Execution order:** All `addEventProcessor()` processors run first, then `beforeSend`
+runs last (guaranteed).
 
----
+* * *
 
 ## Error Capture Quick Reference
 
 ### Scenario Coverage Table
 
 | Scenario | Auto Captured? | Solution |
-|----------|---------------|---------|
+| --- | --- | --- |
 | Unhandled client JS exception | ✅ Yes | — |
 | Unhandled promise rejection | ✅ Yes | — |
 | Server Component error (Next.js 15+) | ✅ Yes | `onRequestError` hook |
@@ -941,12 +968,12 @@ Sentry.init({ allowUrls: [/regex/] })
 Sentry.init({ denyUrls: [/regex/] })
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Errors not appearing from `error.tsx` | Add `Sentry.captureException(error)` in a `useEffect` — Next.js catches these before Sentry |
 | Server Component errors missing | Ensure `export const onRequestError = Sentry.captureRequestError` is in `instrumentation.ts`; requires SDK ≥8.28.0 + Next.js 15 |
 | Minified stack traces | Configure `authToken` in `withSentryConfig` for source map upload; use `digest` to correlate server logs with Sentry events |

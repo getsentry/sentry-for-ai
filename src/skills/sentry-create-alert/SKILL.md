@@ -3,16 +3,16 @@ name: sentry-create-alert
 description: Create Sentry alerts using the workflow engine API. Use when asked to create alerts, set up notifications, configure issue priority alerts, or build workflow automations. Supports email, Slack, PagerDuty, Discord, and other notification actions.
 license: Apache-2.0
 ---
-
 # Create Sentry Alert
 
-Create alerts via Sentry's workflow engine API.
+Create alerts via Sentry’s workflow engine API.
 
-**Note:** This API is currently in **beta** and may be subject to change. It is part of New Monitors and Alerts and may not be viewable in the legacy Alerts UI.
+**Note:** This API is currently in **beta** and may be subject to change.
+It is part of New Monitors and Alerts and may not be viewable in the legacy Alerts UI.
 
 ## Invoke This Skill When
 
-- User asks to "create a Sentry alert" or "set up notifications"
+- User asks to “create a Sentry alert” or “set up notifications”
 - User wants to be emailed or notified when issues match certain conditions
 - User mentions priority alerts, de-escalation alerts, or workflow automations
 - User wants to configure Slack, PagerDuty, or email notifications for Sentry issues
@@ -20,14 +20,15 @@ Create alerts via Sentry's workflow engine API.
 ## Prerequisites
 
 - `curl` available in shell
-- Sentry org auth token with `alerts:write` scope (also accepts `org:admin` or `org:write`)
+- Sentry org auth token with `alerts:write` scope (also accepts `org:admin` or
+  `org:write`)
 
 ## Phase 1: Gather Configuration
 
 Ask the user for any missing details:
 
 | Detail | Required | Example |
-|--------|----------|---------|
+| --- | --- | --- |
 | Org slug | Yes | `sentry`, `my-org` |
 | Auth token | Yes | `sntryu_...` (needs `alerts:write` scope) |
 | Region | Yes (default: `us`) | `us` → `us.sentry.io`, `de` → `de.sentry.io` |
@@ -69,10 +70,11 @@ for i in json.load(sys.stdin):
 
 ### Trigger Events
 
-Pick which issue events fire the workflow. Use `logicType: "any-short"` (triggers must always use this).
+Pick which issue events fire the workflow.
+Use `logicType: "any-short"` (triggers must always use this).
 
 | Type | Fires when |
-|------|-----------|
+| --- | --- |
 | `first_seen_event` | New issue created |
 | `regression_event` | Resolved issue recurs |
 | `reappeared_event` | Archived issue reappears |
@@ -80,12 +82,13 @@ Pick which issue events fire the workflow. Use `logicType: "any-short"` (trigger
 
 ### Filter Conditions
 
-Conditions that must pass before actions execute. Use `logicType: "all"`, `"any-short"`, or `"none"`.
+Conditions that must pass before actions execute.
+Use `logicType: "all"`, `"any-short"`, or `"none"`.
 
 **The `comparison` field is polymorphic** — its shape depends on the condition `type`:
 
 | Type | `comparison` format | Description |
-|------|---------------------|-------------|
+| --- | --- | --- |
 | `issue_priority_greater_or_equal` | `75` (bare integer) | Priority >= Low(25)/Medium(50)/High(75) |
 | `issue_priority_deescalating` | `true` (bare boolean) | Priority dropped below peak |
 | `event_frequency_count` | `{"value": 100, "interval": "1hr"}` | Event count in time window |
@@ -99,14 +102,15 @@ Conditions that must pass before actions execute. Use `logicType: "all"`, `"any-
 
 **Interval options:** `"1min"`, `"5min"`, `"15min"`, `"1hr"`, `"1d"`, `"1w"`, `"30d"`
 
-**Tag match types:** `"co"` (contains), `"nc"` (not contains), `"eq"`, `"ne"`, `"sw"` (starts with), `"ew"` (ends with), `"is"` (set), `"ns"` (not set)
+**Tag match types:** `"co"` (contains), `"nc"` (not contains), `"eq"`, `"ne"`, `"sw"`
+(starts with), `"ew"` (ends with), `"is"` (set), `"ns"` (not set)
 
 Set `conditionResult` to `false` to invert (fire when condition is NOT met).
 
 ### Actions
 
 | Type | Key Config |
-|------|-----------|
+| --- | --- |
 | `email` | `config.targetType`: `"user"` / `"team"` / `"issue_owners"`, `config.targetIdentifier`: `<id>` |
 | `slack` | `integrationId`: `<id>`, `config.targetDisplay`: `"#channel-name"` |
 | `pagerduty` | `integrationId`: `<id>`, `config.targetDisplay`: `<service_name>`, `data.priority`: `"critical"` |
@@ -152,9 +156,11 @@ Set `conditionResult` to `false` to invert (fire when condition is NOT met).
 }
 ```
 
-`frequency`: minutes between repeated notifications. Allowed values: `0`, `5`, `10`, `30`, `60`, `180`, `720`, `1440`.
+`frequency`: minutes between repeated notifications.
+Allowed values: `0`, `5`, `10`, `30`, `60`, `180`, `720`, `1440`.
 
-**Structure note:** `triggers.actions` is always `[]` — actions live inside `actionFilters[].actions`.
+**Structure note:** `triggers.actions` is always `[]` — actions live inside
+`actionFilters[].actions`.
 
 ## Phase 4: Create the Alert
 
@@ -202,7 +208,7 @@ curl -s -X DELETE "$API/workflows/{id}/" -H "$AUTH"
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | 401 Unauthorized | Token needs `alerts:write` scope |
 | 403 Forbidden | Token must belong to the target org |
 | 404 Not Found | Check org slug and region (`us` vs `de`) |

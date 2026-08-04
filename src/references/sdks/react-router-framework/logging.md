@@ -2,11 +2,12 @@
 
 > Minimum SDK: `@sentry/react-router` with Logs support
 
----
+* * *
 
 ## Enable logs
 
-Set `enableLogs: true` in both client and server initialization where you want log ingestion.
+Set `enableLogs: true` in both client and server initialization where you want log
+ingestion.
 
 ```tsx
 Sentry.init({
@@ -15,7 +16,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Logging APIs
 
@@ -33,7 +34,7 @@ Sentry.logger.error("Validation failed", {
 });
 ```
 
----
+* * *
 
 ## Correlation guidance
 
@@ -45,7 +46,7 @@ For better debugging:
 
 This improves issue/trace/log correlation in Sentry.
 
----
+* * *
 
 ## Verification
 
@@ -53,12 +54,12 @@ This improves issue/trace/log correlation in Sentry.
 2. Open **Logs** in Sentry.
 3. Filter by message/metadata and confirm ingestion.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not visible | Verify `enableLogs: true` in active init path |
 | Missing metadata | Pass structured objects as second logger argument |
 | Noisy logs | Reduce volume or gate lower-severity logs by environment |

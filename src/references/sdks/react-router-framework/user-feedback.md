@@ -2,7 +2,7 @@
 
 > Minimum SDK: `@sentry/react-router` with Feedback support
 
----
+* * *
 
 ## Feedback widget setup
 
@@ -21,7 +21,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Common options
 
@@ -38,7 +38,7 @@ Sentry.feedbackIntegration({
 });
 ```
 
----
+* * *
 
 ## Error-linked feedback dialog
 
@@ -51,7 +51,7 @@ Sentry.showReportDialog({
 });
 ```
 
----
+* * *
 
 ## Verification
 
@@ -59,12 +59,12 @@ Sentry.showReportDialog({
 2. Open **User Feedback** in Sentry.
 3. Confirm submissions appear and error-linked reports attach to events.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Feedback widget not visible | Ensure `feedbackIntegration()` is in client integrations |
 | Missing user context | Set Sentry user context before submitting feedback |
 | Feedback not linked to errors | Use `showReportDialog` with a real `eventId` |

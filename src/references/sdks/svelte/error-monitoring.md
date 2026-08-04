@@ -2,12 +2,12 @@
 
 > Minimum SDK: `@sentry/sveltekit` ≥7.0.0+ / `@sentry/svelte` ≥7.0.0+
 
----
+* * *
 
 ## How Automatic Capture Works
 
-| Layer | Mechanism | Fires when... |
-|-------|-----------|---------------|
+| Layer | Mechanism | Fires when … |
+| --- | --- | --- |
 | **Client (both)** | `globalHandlersIntegration` | `window.onerror`, unhandled `Promise` rejections |
 | **Client (both)** | `browserApiErrorsIntegration` | Errors thrown in `setTimeout`, `setInterval`, `requestAnimationFrame` |
 | **Server (SvelteKit)** | `handleErrorWithSentry()` in `hooks.server.ts` | Any unhandled error in a server hook, load function, or route handler |
@@ -16,7 +16,7 @@
 
 No configuration beyond the `Sentry.init()` call is required for baseline error capture.
 
----
+* * *
 
 ## SvelteKit Error Hooks
 
@@ -82,7 +82,7 @@ export const handleError = Sentry.handleErrorWithSentry(
 );
 ```
 
----
+* * *
 
 ## Manual Error Capture
 
@@ -118,7 +118,7 @@ Sentry.withScope((scope) => {
 });
 ```
 
----
+* * *
 
 ## Context Enrichment
 
@@ -149,7 +149,8 @@ Sentry.setTags({
 });
 ```
 
-Key constraints: ≤32 chars, alphanumeric + `_`, `.`, `:`, `-`. Value: ≤200 chars, no newlines.
+Key constraints: ≤32 chars, alphanumeric + `_`, `.`, `:`, `-`. Value: ≤200 chars, no
+newlines.
 
 ### Context Objects (structured, non-indexed)
 
@@ -185,7 +186,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Breadcrumbs
 
@@ -207,7 +208,8 @@ Sentry.addBreadcrumb({
 });
 ```
 
-**Auto-captured breadcrumbs (browser):** DOM clicks, keyboard events, XHR/fetch requests, console calls, navigation changes.
+**Auto-captured breadcrumbs (browser):** DOM clicks, keyboard events, XHR/fetch
+requests, console calls, navigation changes.
 
 ### Filter breadcrumbs with `beforeBreadcrumb`
 
@@ -225,7 +227,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## `beforeSend` — Filter and Scrub Events
 
@@ -260,11 +262,12 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Svelte Component Tracking (`@sentry/svelte` only)
 
-Component tracking wraps Svelte's lifecycle hooks and emits spans for each component's `init` and `update` phases.
+Component tracking wraps Svelte’s lifecycle hooks and emits spans for each component’s
+`init` and `update` phases.
 
 ### Automatic (preprocessor — all components)
 
@@ -302,11 +305,12 @@ Spans emitted:
 </script>
 ```
 
----
+* * *
 
 ## SvelteKit `+error.svelte` Integration
 
-SvelteKit renders `+error.svelte` for handled errors. You can surface the Sentry event ID in the error page for user feedback:
+SvelteKit renders `+error.svelte` for handled errors.
+You can surface the Sentry event ID in the error page for user feedback:
 
 ```svelte
 <!-- src/routes/+error.svelte -->
@@ -327,13 +331,15 @@ SvelteKit renders `+error.svelte` for handled errors. You can surface the Sentry
 <button onclick={showFeedback}>Report this issue</button>
 ```
 
----
+* * *
 
 ## Error Boundaries (Svelte 5+)
 
-> Requires Svelte 5 + `@sveltejs/kit` ≥2.x. Catches errors thrown in child components before they propagate to the page.
+> Requires Svelte 5 + `@sveltejs/kit` ≥2.x. Catches errors thrown in child components
+> before they propagate to the page.
 
-`<svelte:boundary>` prevents a component subtree from crashing the whole page and lets you report the error to Sentry and optionally display a fallback UI:
+`<svelte:boundary>` prevents a component subtree from crashing the whole page and lets
+you report the error to Sentry and optionally display a fallback UI:
 
 ```svelte
 <script>
@@ -353,10 +359,14 @@ SvelteKit renders `+error.svelte` for handled errors. You can surface the Sentry
 ```
 
 **Tips:**
-- `onerror` fires synchronously before Svelte tears down the subtree — safe to call `captureException` here
-- `reset` re-mounts the boundary subtree; pair it with `Sentry.lastEventId()` + `Sentry.showReportDialog()` for user feedback
-- Nest multiple boundaries to isolate independent widgets — a failure in one won't affect others
-- Works in both client and server-rendered pages; server-side errors are still captured via `hooks.server.ts`
+- `onerror` fires synchronously before Svelte tears down the subtree — safe to call
+  `captureException` here
+- `reset` re-mounts the boundary subtree; pair it with `Sentry.lastEventId()` +
+  `Sentry.showReportDialog()` for user feedback
+- Nest multiple boundaries to isolate independent widgets — a failure in one won’t
+  affect others
+- Works in both client and server-rendered pages; server-side errors are still captured
+  via `hooks.server.ts`
 
 ```svelte
 <!-- With user feedback dialog on reset -->
@@ -375,19 +385,21 @@ SvelteKit renders `+error.svelte` for handled errors. You can surface the Sentry
 </svelte:boundary>
 ```
 
----
+* * *
 
 ## Scopes: `withScope` vs Persistent Context
 
-> Minimum SDK: `@sentry/sveltekit` ≥8.0.0 for isolation scopes; ≥10.32.0 for `getGlobalScope`/`getIsolationScope`
+> Minimum SDK: `@sentry/sveltekit` ≥8.0.0 for isolation scopes; ≥10.32.0 for
+> `getGlobalScope`/`getIsolationScope`
 
 | API | Lifetime | Use case |
-|-----|----------|----------|
+| --- | --- | --- |
 | `Sentry.withScope(fn)` | Isolated to callback | One-off context for a single capture |
 | `Sentry.getIsolationScope()` | Per-request (SvelteKit server) | Persistent context scoped to one request |
 | `Sentry.getGlobalScope()` | Entire process lifetime | App-wide context (version tags, env) |
 
-> **Note:** `Sentry.configureScope()` is deprecated since SDK v8. Use `getIsolationScope()` or `getGlobalScope()` instead.
+> **Note:** `Sentry.configureScope()` is deprecated since SDK v8. Use
+> `getIsolationScope()` or `getGlobalScope()` instead.
 
 ```typescript
 // withScope — temporary, doesn't affect subsequent events
@@ -406,34 +418,37 @@ const globalScope = Sentry.getGlobalScope();
 globalScope.setTag("app.version", "1.0.0");
 ```
 
----
+* * *
 
 ## Svelte vs SvelteKit: Key Differences
 
 | Concern | Standalone Svelte | SvelteKit |
-|---------|-------------------|-----------|
+| --- | --- | --- |
 | Error hook files | None — errors via `window.onerror` only | `hooks.client.ts` + `hooks.server.ts` |
 | Server-side errors | N/A (client-only) | Auto via `handleErrorWithSentry()` |
 | Component errors | `window.onerror` catches uncaught ones | Same + SvelteKit route error handling |
 | `+error.svelte` | N/A | Add `Sentry.lastEventId()` for feedback |
 | Scope per request | N/A | SvelteKit isolation scope per request |
 
----
+* * *
 
 ## Best Practices
 
-- Export `handleError = Sentry.handleErrorWithSentry()` from **both** hook files in SvelteKit — server errors are missed if only one is set
+- Export `handleError = Sentry.handleErrorWithSentry()` from **both** hook files in
+  SvelteKit — server errors are missed if only one is set
 - User context is auto-populated by default via `dataCollection.userInfo` (SDK ≥10.57.0)
-- Use `Sentry.withScope()` for one-off context, `Sentry.getIsolationScope()` / `Sentry.getGlobalScope()` for persistent context
-- Scrub PII in `beforeSend` or use `dataCollection` options to control what data is collected
+- Use `Sentry.withScope()` for one-off context, `Sentry.getIsolationScope()` /
+  `Sentry.getGlobalScope()` for persistent context
+- Scrub PII in `beforeSend` or use `dataCollection` options to control what data is
+  collected
 - Set `debug: true` during development to verify events are being captured
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Server errors not appearing | Confirm `handleErrorWithSentry()` is exported from `hooks.server.ts` |
 | Client errors not appearing | Confirm `handleErrorWithSentry()` is exported from `hooks.client.ts` |
 | `ignoreErrors` patterns not working | Use `RegExp` for patterns with special chars; string values are treated as regex |

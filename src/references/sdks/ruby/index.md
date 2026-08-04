@@ -2,10 +2,11 @@
 
 Opinionated wizard that scans the project and guides through complete Sentry setup.
 
-> **Note:** SDK APIs below reflect sentry-ruby v6.6.2.
-> Always verify against [docs.sentry.io/platforms/ruby/](https://docs.sentry.io/platforms/ruby/) before implementing.
+> **Note:** SDK APIs below reflect sentry-ruby v6.6.2. Always verify against
+> [docs.sentry.io/platforms/ruby/](https://docs.sentry.io/platforms/ruby/) before
+> implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -45,23 +46,30 @@ cat package.json frontend/package.json web/package.json 2>/dev/null | grep -E '"
 ```
 
 **Route from what you find:**
-- **Competitor detected** (`appsignal`, `honeybadger`, `bugsnag`, `rollbar`, `airbrake`) → load `./migration.md` first; **delete the competitor initializer** as part of migration
+- **Competitor detected** (`appsignal`, `honeybadger`, `bugsnag`, `rollbar`, `airbrake`)
+  → load `./migration.md` first; **delete the competitor initializer** as part of
+  migration
 - **Sentry already present** → skip to Phase 2 to configure features
 - **Rails** → use `sentry-rails` + `config/initializers/sentry.rb`
 - **Rack/Sinatra** → `sentry-ruby` + `Sentry::Rack::CaptureExceptions` middleware
-- **Sidekiq** → add `sentry-sidekiq`; recommend Metrics if existing metric patterns found
+- **Sidekiq** → add `sentry-sidekiq`; recommend Metrics if existing metric patterns
+  found
 - **Yabeda detected** → add `sentry-yabeda`; routes Yabeda metrics to Sentry metrics
-- **Puma detected** → queue time capture is automatic (v6.4.0+), but the reverse proxy must set `X-Request-Start` header; see `./tracing.md` → "Request Queue Time"
-- **OTel tracing detected** (`opentelemetry-sdk` + instrumentations in Gemfile, or `OpenTelemetry::SDK.configure` in source) → use OTLP path: `config.otlp.enabled = true`; do **not** set `traces_sample_rate`; Sentry links errors to OTel traces automatically
+- **Puma detected** → queue time capture is automatic (v6.4.0+), but the reverse proxy
+  must set `X-Request-Start` header; see `./tracing.md` → “Request Queue Time”
+- **OTel tracing detected** (`opentelemetry-sdk` + instrumentations in Gemfile, or
+  `OpenTelemetry::SDK.configure` in source) → use OTLP path:
+  `config.otlp.enabled = true`; do **not** set `traces_sample_rate`; Sentry links errors
+  to OTel traces automatically
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Lead with a concrete proposal — don't ask open-ended questions:
+Lead with a concrete proposal — don’t ask open-ended questions:
 
-| Feature | Recommend when... |
-|---------|------------------|
+| Feature | Recommend when … |
+| --- | --- |
 | Error Monitoring | **Always** |
 | OTLP Integration | OTel tracing detected — **replaces** native Tracing |
 | Tracing | Rails / Sinatra / Rack / any HTTP framework; **skip if OTel tracing detected** |
@@ -70,11 +78,14 @@ Lead with a concrete proposal — don't ask open-ended questions:
 | Profiling | ⚠️ Beta — performance profiling requested; requires `stackprof` or `vernier` gem; **skip if OTel tracing detected** (requires `traces_sample_rate`, incompatible with OTLP) |
 | Crons | Scheduled jobs detected (ActiveJob, Sidekiq-Cron, Clockwork, Whenever) |
 
-**OTel tracing detected:** *"I see OpenTelemetry tracing in the project. I recommend Sentry's OTLP integration for tracing (via your existing OTel setup) + Error Monitoring + Sentry Logging [+ Metrics/Crons if applicable]. Shall I proceed?"*
+**OTel tracing detected:** *“I see OpenTelemetry tracing in the project.
+I recommend Sentry’s OTLP integration for tracing (via your existing OTel setup) + Error
+Monitoring + Sentry Logging [+ Metrics/Crons if applicable]. Shall I proceed?”*
 
-**No OTel:** *"I recommend Error Monitoring + Tracing + Logging [+ Metrics if applicable]. Shall I proceed?"*
+**No OTel:** *“I recommend Error Monitoring + Tracing + Logging
+[+ Metrics if applicable]. Shall I proceed?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
@@ -101,7 +112,7 @@ Run `bundle install`.
 ### Framework Integration
 
 | Framework / Runtime | Gem | Init location | Auto-instruments |
-|---------------------|-----|---------------|-----------------|
+| --- | --- | --- | --- |
 | Rails | `sentry-rails` | `config/initializers/sentry.rb` | Controllers, ActiveRecord, ActiveJob, ActionMailer |
 | Rack / Sinatra | `sentry-ruby` | Top of `config.ru` | Requests (via `Sentry::Rack::CaptureExceptions` middleware) |
 | Sidekiq | `sentry-sidekiq` | Sentry initializer or Sidekiq config | Worker execution → transactions |
@@ -167,10 +178,12 @@ SENTRY_RELEASE=my-app@1.0.0
 
 ### Feature reference files
 
-Walk through features one at a time. Load the reference file for each, follow its steps, and verify before moving to the next:
+Walk through features one at a time.
+Load the reference file for each, follow its steps, and verify before moving to the
+next:
 
-| Feature | Reference file | Load when... |
-|---------|---------------|-------------|
+| Feature | Reference file | Load when … |
+| --- | --- | --- |
 | Migration | `./migration.md` | Competitor gem found — load **before** installing Sentry |
 | Error Monitoring | `./error-monitoring.md` | Always |
 | Tracing | `./tracing.md` | HTTP handlers / distributed tracing |
@@ -181,14 +194,14 @@ Walk through features one at a time. Load the reference file for each, follow it
 
 For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Key `Sentry.init` Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `dsn` | String | `nil` | SDK disabled if empty; env: `SENTRY_DSN` |
 | `environment` | String | `nil` | e.g., `"production"`; env: `SENTRY_ENVIRONMENT` |
 | `release` | String | `nil` | e.g., `"myapp@1.0.0"`; env: `SENTRY_RELEASE` |
@@ -206,7 +219,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 | `otlp.enabled` | Boolean | `false` | Route OTel spans to Sentry via OTLP; **do not combine with** `traces_sample_rate` |
 | `otlp.collector_url` | String | `nil` | OTLP HTTP endpoint of an OTel Collector (e.g., `http://localhost:4318/v1/traces`); when set, spans are sent to the collector instead of directly to Sentry |
 | `org_id` | String | `nil` | Explicit org ID; overrides DSN-extracted value; useful for self-hosted/Relay setups (v6.5.0+) |
-| `strict_trace_continuation` | Boolean | `false` | Only continue incoming traces when `sentry-org_id` baggage matches SDK's org ID; prevents trace stitching from third-party services (v6.5.0+) |
+| `strict_trace_continuation` | Boolean | `false` | Only continue incoming traces when `sentry-org_id` baggage matches SDK’s org ID; prevents trace stitching from third-party services (v6.5.0+) |
 | `before_send` | Lambda | `nil` | Mutate or drop error events before sending |
 | `before_send_transaction` | Lambda | `nil` | Mutate or drop transaction events before sending |
 | `before_send_log` | Lambda | `nil` | Mutate or drop log events before sending |
@@ -214,14 +227,14 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Environment Variables
 
 | Variable | Maps to | Purpose |
-|----------|---------|---------|
+| --- | --- | --- |
 | `SENTRY_DSN` | `dsn` | Data Source Name |
 | `SENTRY_RELEASE` | `release` | App version (e.g., `my-app@1.0.0`) |
 | `SENTRY_ENVIRONMENT` | `environment` | Deployment environment |
 
 Options set in `Sentry.init` override environment variables.
 
----
+* * *
 
 ## Verification
 
@@ -231,16 +244,18 @@ npx @spotlightjs/spotlight          # browser UI at http://localhost:8969
 # or stream events to terminal:
 npx @spotlightjs/spotlight tail traces --format json
 ```
-`config.spotlight = Rails.env.development?` (already in the init block above) routes events to the local sidecar automatically.
+`config.spotlight = Rails.env.development?` (already in the init block above) routes
+events to the local sidecar automatically.
 
 **With a real DSN:**
 ```ruby
 Sentry.capture_message("Sentry Ruby SDK test")
 ```
 
-Nothing appears? Set `config.debug = true` and check stdout. Verify DSN format: `https://<key>@o<org>.ingest.sentry.io/<project>`.
+Nothing appears? Set `config.debug = true` and check stdout.
+Verify DSN format: `https://<key>@o<org>.ingest.sentry.io/<project>`.
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
@@ -249,21 +264,22 @@ cat package.json frontend/package.json web/package.json 2>/dev/null | grep -E '"
 ```
 
 | Frontend detected | Suggest |
-|-------------------|---------|
+| --- | --- |
 | React / Next.js | [`react`](../react/index.md) |
 | Svelte / SvelteKit | [`svelte`](../svelte/index.md) |
 | Vue | `@sentry/vue` — [docs.sentry.io/platforms/javascript/guides/vue/](https://docs.sentry.io/platforms/javascript/guides/vue/) |
 
-For trace stitching between Ruby backend and JS frontend, see `./tracing.md` → "Frontend trace stitching".
+For trace stitching between Ruby backend and JS frontend, see `./tracing.md` → “Frontend
+trace stitching”.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing | `config.debug = true`; verify DSN; ensure `Sentry.init` before first request |
-| Rails exceptions missing | Must use `sentry-rails` — `sentry-ruby` alone doesn't hook Rails error handlers |
+| Rails exceptions missing | Must use `sentry-rails` — `sentry-ruby` alone doesn’t hook Rails error handlers |
 | No traces (native) | Set `traces_sample_rate > 0`; ensure `sentry-rails` or `Sentry::Rack::CaptureExceptions` |
 | No traces (OTLP) | Verify `opentelemetry-exporter-otlp` gem is installed; do **not** set `traces_sample_rate` when using `otlp.enabled = true` |
 | Sidekiq jobs not traced | Add `sentry-sidekiq` gem |

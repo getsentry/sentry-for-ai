@@ -1,30 +1,36 @@
 # Error Monitoring — Sentry NestJS SDK
 
-> Minimum SDK: `@sentry/nestjs` ≥8.0.0  
-> `@SentryTraced()` requires ≥8.15.0 · `@SentryCron()` requires ≥8.16.0 · Event Emitter auto-instrumentation requires ≥8.39.0
+> Minimum SDK: `@sentry/nestjs` ≥8.0.0\
+> `@SentryTraced()` requires ≥8.15.0 · `@SentryCron()` requires ≥8.16.0 · Event Emitter
+> auto-instrumentation requires ≥8.39.0
 
----
+* * *
 
 ## How NestJS Error Capture Works
 
-NestJS routes all unhandled exceptions through its **exception filter pipeline** before they reach the response. This means errors don't bubble up to Node's uncaught exception handler — Sentry only sees them if you hook into that pipeline.
+NestJS routes all unhandled exceptions through its **exception filter pipeline** before
+they reach the response.
+This means errors don’t bubble up to Node’s uncaught exception handler — Sentry only
+sees them if you hook into that pipeline.
 
 The SDK provides two integration points:
 
 | Mechanism | Use When |
-|-----------|----------|
-| `SentryGlobalFilter` (via `APP_FILTER`) | You don't have a custom catch-all filter |
+| --- | --- |
+| `SentryGlobalFilter` (via `APP_FILTER`) | You don’t have a custom catch-all filter |
 | `@SentryExceptionCaptured()` decorator | You have an existing `@Catch()` filter you want to keep |
 
-Both internally use `isExpectedError()` — a duck-typing check that skips `HttpException` (4xx) and `RpcException` so only unexpected errors are reported.
+Both internally use `isExpectedError()` — a duck-typing check that skips `HttpException`
+(4xx) and `RpcException` so only unexpected errors are reported.
 
----
+* * *
 
 ## Exception Filter Setup
 
 ### Pattern A: `SentryGlobalFilter` (recommended for most apps)
 
-Register the filter globally in `AppModule`. It automatically handles HTTP, GraphQL, and RPC contexts.
+Register the filter globally in `AppModule`. It automatically handles HTTP, GraphQL, and
+RPC contexts.
 
 ```typescript
 // app.module.ts
@@ -45,11 +51,15 @@ import { SentryGlobalFilter } from "@sentry/nestjs/setup";
 export class AppModule {}
 ```
 
-> **Import path matters:** `SentryGlobalFilter` and `SentryModule` come from `@sentry/nestjs/setup`, not `@sentry/nestjs`. This separation ensures they're loaded after `Sentry.init()` runs (in `instrument.ts`), so OpenTelemetry instrumentation can patch NestJS before it's imported.
+> **Import path matters:** `SentryGlobalFilter` and `SentryModule` come from
+> `@sentry/nestjs/setup`, not `@sentry/nestjs`. This separation ensures they’re loaded
+> after `Sentry.init()` runs (in `instrument.ts`), so OpenTelemetry instrumentation can
+> patch NestJS before it’s imported.
 
 ### Pattern B: Decorate an existing catch-all filter
 
-If you already have a `@Catch()` filter, add `@SentryExceptionCaptured()` to its `catch` method instead of registering `SentryGlobalFilter`:
+If you already have a `@Catch()` filter, add `@SentryExceptionCaptured()` to its `catch`
+method instead of registering `SentryGlobalFilter`:
 
 ```typescript
 import { Catch, ExceptionFilter, ArgumentsHost } from "@nestjs/common";
@@ -67,7 +77,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
 ### Pattern C: Per-exception-type filter with manual capture
 
-For filters scoped to a specific exception type, call `Sentry.captureException()` explicitly:
+For filters scoped to a specific exception type, call `Sentry.captureException()`
+explicitly:
 
 ```typescript
 import { Catch, ArgumentsHost, BadRequestException } from "@nestjs/common";
@@ -85,14 +96,14 @@ export class DatabaseExceptionFilter extends BaseExceptionFilter {
 }
 ```
 
----
+* * *
 
-## What Is (and Isn't) Captured Automatically
+## What Is (and Isn’t) Captured Automatically
 
 ### HTTP context
 
 | Error Type | Captured? | Reason |
-|-----------|-----------|--------|
+| --- | --- | --- |
 | Unhandled exceptions from controllers | ✅ Yes | `SentryGlobalFilter` intercepts |
 | `HttpException` (4xx errors) | ❌ No | `isExpectedError()` skips them |
 | `HttpException` subclasses (`BadRequestException`, etc.) | ❌ No | Duck-typed as expected |
@@ -101,13 +112,16 @@ export class DatabaseExceptionFilter extends BaseExceptionFilter {
 
 ### GraphQL context
 
-`SentryGlobalFilter` detects `host.getType<string>() === 'graphql'` and adjusts behavior:
+`SentryGlobalFilter` detects `host.getType<string>() === 'graphql'` and adjusts
+behavior:
 
 - `HttpException` → re-thrown without capture (expected, NestJS handles formatting)
-- Any other `Error` → captured **and** re-thrown (so GraphQL can format the error response)
+- Any other `Error` → captured **and** re-thrown (so GraphQL can format the error
+  response)
 - Non-`Error` objects → captured **and** re-thrown
 
-> GraphQL errors are always re-thrown so the Apollo/Mercurius error formatter can run. This means they appear in Sentry **and** in the GraphQL error response.
+> GraphQL errors are always re-thrown so the Apollo/Mercurius error formatter can run.
+> This means they appear in Sentry **and** in the GraphQL error response.
 
 ### RPC / Microservices context
 
@@ -136,7 +150,8 @@ export class SentryRpcExceptionFilter implements RpcExceptionFilter<RpcException
 
 ### The Core Rule
 
-> **"Caught exceptions never reach the filter. If you catch and swallow an error, Sentry never sees it."**
+> **“Caught exceptions never reach the filter.
+> If you catch and swallow an error, Sentry never sees it.”**
 
 ```typescript
 // ✅ Automatically captured — reaches SentryGlobalFilter
@@ -165,7 +180,7 @@ try {
 }
 ```
 
----
+* * *
 
 ## Manual Error Capture
 
@@ -194,7 +209,7 @@ Sentry.captureException(error, {
 
 ### `Sentry.captureMessage(message, levelOrContext?)`
 
-Captures a plain message — useful for notable conditions that aren't exceptions.
+Captures a plain message — useful for notable conditions that aren’t exceptions.
 
 ```typescript
 // With severity level
@@ -209,11 +224,14 @@ Sentry.captureMessage("Cache miss rate above threshold", {
 });
 ```
 
----
+* * *
 
 ## How `isExpectedError()` Works
 
-The SDK uses duck-typing — not `instanceof` — to determine if an error is "expected" (should not be reported). This is intentional: importing `@nestjs/common` in the main entry point would load it before OpenTelemetry can patch it, breaking automatic instrumentation.
+The SDK uses duck-typing — not `instanceof` — to determine if an error is “expected”
+(should not be reported).
+This is intentional: importing `@nestjs/common` in the main entry point would load it
+before OpenTelemetry can patch it, breaking automatic instrumentation.
 
 ```typescript
 // Internal SDK logic (simplified)
@@ -240,18 +258,22 @@ function isExpectedError(exception: unknown): boolean {
 }
 ```
 
-**Implication:** If you create custom exception classes that mimic these method signatures, they will be treated as expected errors and skipped. Design your exception hierarchy accordingly.
+**Implication:** If you create custom exception classes that mimic these method
+signatures, they will be treated as expected errors and skipped.
+Design your exception hierarchy accordingly.
 
----
+* * *
 
 ## Scope Management
 
-The SDK uses Node's `AsyncLocalStorage` for automatic request isolation — each HTTP request gets its own scope so breadcrumbs and tags from one request don't contaminate another.
+The SDK uses Node’s `AsyncLocalStorage` for automatic request isolation — each HTTP
+request gets its own scope so breadcrumbs and tags from one request don’t contaminate
+another.
 
 ### Three Scope Levels
 
 | Scope | Lifetime | Use for |
-|-------|----------|---------|
+| --- | --- | --- |
 | **Global** | Process lifetime | App-wide metadata (version, build SHA) |
 | **Isolation** | One HTTP request | Per-request user, tags |
 | **Current** | One span | Per-span metadata |
@@ -260,7 +282,8 @@ Precedence when merging: Current > Isolation > Global.
 
 ### Top-Level Setters Write to Isolation Scope
 
-All `Sentry.setXxx()` shorthand methods write to the isolation scope — safe for per-request data:
+All `Sentry.setXxx()` shorthand methods write to the isolation scope — safe for
+per-request data:
 
 ```typescript
 // These are equivalent:
@@ -314,7 +337,8 @@ export class AppModule implements NestModule {
 
 ### `withScope` — Temporary Isolated Context
 
-Use `withScope` when you need context on a single capture without affecting other events:
+Use `withScope` when you need context on a single capture without affecting other
+events:
 
 ```typescript
 Sentry.withScope((scope) => {
@@ -329,7 +353,9 @@ Sentry.withScope((scope) => {
 
 ### Background Job Scope Isolation
 
-Background jobs (`@Cron`, `@Interval`, `@OnEvent`, `@Processor`) share the default isolation scope with HTTP requests. Without isolation, breadcrumbs from a cron job can leak into the next HTTP error event.
+Background jobs (`@Cron`, `@Interval`, `@OnEvent`, `@Processor`) share the default
+isolation scope with HTTP requests.
+Without isolation, breadcrumbs from a cron job can leak into the next HTTP error event.
 
 Wrap with `withIsolationScope()`:
 
@@ -355,9 +381,10 @@ export class ReportGenerationService {
 }
 ```
 
-Also applies to `@Interval()`, `@OnEvent()`, `@Processor()`, and any other background task handler.
+Also applies to `@Interval()`, `@OnEvent()`, `@Processor()`, and any other background
+task handler.
 
----
+* * *
 
 ## Context Enrichment
 
@@ -388,7 +415,8 @@ Sentry.setContext("order", {
 Sentry.setContext("order", null);
 ```
 
-> Normalized to 3 levels deep by default. The `type` key is reserved — don't use it.
+> Normalized to 3 levels deep by default.
+> The `type` key is reserved — don’t use it.
 
 ### User Identity
 
@@ -408,16 +436,17 @@ Sentry.setUser(null);
 ### Tags vs Context — Decision Guide
 
 | Feature | Searchable? | Best For |
-|---------|------------|---------|
+| --- | --- | --- |
 | **Tags** | ✅ Yes | Filtering, grouping, alerting |
 | **Context** | ❌ No | Structured debug info (nested objects) |
 | **User** | ✅ Partially | User attribution and filtering |
 
----
+* * *
 
 ## Breadcrumbs
 
-Breadcrumbs are automatically captured for HTTP requests, database queries, and console output. Add manual breadcrumbs for business-logic milestones:
+Breadcrumbs are automatically captured for HTTP requests, database queries, and console
+output. Add manual breadcrumbs for business-logic milestones:
 
 ```typescript
 Sentry.addBreadcrumb({
@@ -464,13 +493,14 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## `beforeSend` and Filtering Hooks
 
 ### `beforeSend` — Modify or Drop Error Events
 
-Last chance to modify or discard events. Return `null` to drop the event entirely.
+Last chance to modify or discard events.
+Return `null` to drop the event entirely.
 
 ```typescript
 Sentry.init({
@@ -523,11 +553,12 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Fingerprinting and Custom Grouping
 
-All events have a fingerprint. Events with the same fingerprint group into the same Sentry issue.
+All events have a fingerprint.
+Events with the same fingerprint group into the same Sentry issue.
 
 ### Per-Capture Fingerprinting
 
@@ -573,12 +604,12 @@ Sentry.init({
 ### Template Variables
 
 | Variable | Description |
-|----------|-------------|
-| `{{ default }}` | Sentry's normally computed hash (extend rather than replace) |
+| --- | --- |
+| `{{ default }}` | Sentry’s normally computed hash (extend rather than replace) |
 | `{{ transaction }}` | Current transaction/route name |
 | `{{ type }}` | Exception class name |
 
----
+* * *
 
 ## Event Processors
 
@@ -605,16 +636,17 @@ Sentry.withScope((scope) => {
 });
 ```
 
-**Execution order:** All `addEventProcessor()` callbacks run first, then `beforeSend` runs last.
+**Execution order:** All `addEventProcessor()` callbacks run first, then `beforeSend`
+runs last.
 
----
+* * *
 
 ## Configuration Reference
 
 Key `Sentry.init()` options for error monitoring (in `instrument.ts`):
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `dsn` | `string` | env `SENTRY_DSN` | Project identifier; SDK disabled if empty |
 | `environment` | `string` | `"production"` | Deployment environment tag |
 | `release` | `string` | env `SENTRY_RELEASE` | App version string |
@@ -628,12 +660,12 @@ Key `Sentry.init()` options for error monitoring (in `instrument.ts`):
 | `includeLocalVariables` | `boolean` | `false` | Capture stack-frame local variable values |
 | `debug` | `boolean` | `false` | Enable SDK debug logging |
 
----
+* * *
 
 ## Error Capture Scenario Reference
 
 | Scenario | Auto Captured? | Solution |
-|----------|---------------|---------|
+| --- | --- | --- |
 | Unhandled controller exception | ✅ Yes | `SentryGlobalFilter` intercepts |
 | `HttpException` (4xx, 5xx) | ❌ No | Expected by design; capture manually if needed |
 | `try/catch` with graceful return | ❌ No | `Sentry.captureException()` before return |
@@ -644,7 +676,7 @@ Key `Sentry.init()` options for error monitoring (in `instrument.ts`):
 | WebSocket gateway error | ❌ No | Catch manually in gateway methods |
 | Caught + swallowed error | ❌ No | Always call `captureException` before swallowing |
 
----
+* * *
 
 ## API Quick Reference
 
@@ -691,16 +723,16 @@ Sentry.init({ beforeBreadcrumb(breadcrumb, hint) { return breadcrumb | null } })
 Sentry.init({ ignoreErrors: ["string", /regex/] })
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | `HttpException` errors not appearing | Expected — by design. Call `Sentry.captureException()` manually if you want 4xx/5xx reported |
 | Unhandled controller errors not appearing | Ensure `SentryGlobalFilter` is registered via `APP_FILTER` in `AppModule`, and `SentryModule.forRoot()` is in imports |
 | Breadcrumbs from cron jobs appearing in HTTP errors | Wrap cron/event handlers with `Sentry.withIsolationScope()` |
-| GraphQL errors not appearing | `SentryGlobalFilter` handles this automatically — verify it's registered. Check if a custom exception filter intercepts before `SentryGlobalFilter` runs |
+| GraphQL errors not appearing | `SentryGlobalFilter` handles this automatically — verify it’s registered. Check if a custom exception filter intercepts before `SentryGlobalFilter` runs |
 | RPC errors appear with a warning | Use a dedicated `@Catch(RpcException)` filter and call `Sentry.captureException()` explicitly |
 | User context missing from events | Set `Sentry.setUser()` in middleware **before** the request reaches the controller; isolation scope is per-request |
 | `instrument.ts` import order error | `import "./instrument"` must be the **very first line** of `main.ts` — before any other imports |

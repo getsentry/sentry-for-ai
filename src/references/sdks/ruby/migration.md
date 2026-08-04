@@ -1,11 +1,11 @@
 # Migrating to Sentry — Ruby SDK
 
-> Minimum SDK: `sentry-ruby` v5.0.0+ (Rails: also add `sentry-rails`)
-> Covers migrations from: AppSignal, Honeybadger, Bugsnag, Rollbar, Airbrake
+> Minimum SDK: `sentry-ruby` v5.0.0+ (Rails: also add `sentry-rails`) Covers migrations
+> from: AppSignal, Honeybadger, Bugsnag, Rollbar, Airbrake
 
 ## Contents
 
-- [Step 1: Detect What's in the Codebase](#step-1-detect-whats-in-the-codebase)
+- [Step 1: Detect What’s in the Codebase](#step-1-detect-whats-in-the-codebase)
 - [AppSignal → Sentry](#appsignal--sentry)
 - [Honeybadger → Sentry](#honeybadger--sentry)
 - [Bugsnag → Sentry](#bugsnag--sentry)
@@ -14,7 +14,7 @@
 - [Universal Migration Checklist](#universal-migration-checklist)
 - [Troubleshooting](#troubleshooting)
 
-## Step 1: Detect What's in the Codebase
+## Step 1: Detect What’s in the Codebase
 
 ```bash
 # Find competitor gems
@@ -32,7 +32,7 @@ ls config/appsignal.yml \
    config/initializers/airbrake.rb 2>/dev/null
 ```
 
----
+* * *
 
 ## AppSignal → Sentry
 
@@ -52,7 +52,7 @@ gem "sentry-sidekiq"   # if Sidekiq
 ### API mapping
 
 | AppSignal | Sentry |
-|-----------|--------|
+| --- | --- |
 | `Appsignal.report_error(e)` | `Sentry.capture_exception(e)` |
 | `Appsignal.send_error(e)` | `Sentry.capture_exception(e)` |
 | `Appsignal.set_error(e)` | `Sentry.capture_exception(e)` |
@@ -86,7 +86,7 @@ Sentry.init do |config|
 end
 ```
 
----
+* * *
 
 ## Honeybadger → Sentry
 
@@ -100,12 +100,13 @@ gem "sentry-ruby"
 gem "sentry-rails"
 ```
 
-**Delete:** `config/honeybadger.yml`, `.honeybadger.yml`, `config/initializers/honeybadger.rb`
+**Delete:** `config/honeybadger.yml`, `.honeybadger.yml`,
+`config/initializers/honeybadger.rb`
 
 ### API mapping
 
 | Honeybadger | Sentry |
-|-------------|--------|
+| --- | --- |
 | `Honeybadger.notify(e)` | `Sentry.capture_exception(e)` |
 | `Honeybadger.notify("message")` | `Sentry.capture_message("message")` |
 | `Honeybadger.notify(e, context: hash)` | `Sentry.with_scope { \|s\| s.set_context("ctx", hash); Sentry.capture_exception(e) }` |
@@ -122,7 +123,7 @@ grep -rn "Honeybadger\.\(notify\|context\|add_breadcrumb\|exception_filter\)" \
   app/ lib/ --include="*.rb"
 ```
 
----
+* * *
 
 ## Bugsnag → Sentry
 
@@ -142,7 +143,7 @@ gem "sentry-sidekiq"   # if Sidekiq
 ### API mapping
 
 | Bugsnag | Sentry |
-|---------|--------|
+| --- | --- |
 | `Bugsnag.notify(e)` | `Sentry.capture_exception(e)` |
 | `Bugsnag.notify(e) { \|event\| event.severity = "warning" }` | `Sentry.capture_exception(e, level: :warning)` |
 | `Bugsnag.notify(e) { \|event\| event.add_metadata(:ctx, hash) }` | `Sentry.with_scope { \|s\| s.set_context("ctx", hash); Sentry.capture_exception(e) }` |
@@ -159,7 +160,7 @@ grep -rn "Bugsnag\.\(notify\|leave_breadcrumb\|add_metadata\|clear_metadata\|sta
   app/ lib/ --include="*.rb"
 ```
 
----
+* * *
 
 ## Rollbar → Sentry
 
@@ -179,7 +180,7 @@ gem "sentry-sidekiq"   # if Sidekiq
 ### API mapping
 
 | Rollbar | Sentry |
-|---------|--------|
+| --- | --- |
 | `Rollbar.error(e)` | `Sentry.capture_exception(e)` |
 | `Rollbar.warning(msg)` | `Sentry.capture_message(msg, level: :warning)` |
 | `Rollbar.info(msg, extra)` | `Sentry.with_scope { \|s\| s.set_context("extra", extra); Sentry.capture_message(msg, level: :info) }` |
@@ -190,7 +191,8 @@ gem "sentry-sidekiq"   # if Sidekiq
 | `Rollbar.scope!(person: p)` | `Sentry.set_user(p)` |
 | `Rollbar.silenced { }` | `# remove — no Sentry equivalent needed` |
 
-Rollbar uses `'warning'` level; Sentry uses `:warning`. Rollbar uses `'critical'`; map to Sentry's `:fatal`.
+Rollbar uses `'warning'` level; Sentry uses `:warning`. Rollbar uses `'critical'`; map
+to Sentry’s `:fatal`.
 
 ### Find call sites
 
@@ -199,7 +201,7 @@ grep -rn "Rollbar\.\(error\|warning\|warn\|info\|debug\|critical\|log\|scoped\|s
   app/ lib/ --include="*.rb"
 ```
 
----
+* * *
 
 ## Airbrake → Sentry
 
@@ -217,12 +219,14 @@ gem "sentry-sidekiq"   # if Sidekiq
 
 **Delete:** `config/initializers/airbrake.rb`
 
-Also check for and remove: `require 'airbrake/capistrano'` in `Capfile`, `require 'airbrake/rake'` in `Rakefile`, and any Sidekiq/DelayedJob/Resque middleware references.
+Also check for and remove: `require 'airbrake/capistrano'` in `Capfile`,
+`require 'airbrake/rake'` in `Rakefile`, and any Sidekiq/DelayedJob/Resque middleware
+references.
 
 ### API mapping
 
 | Airbrake | Sentry |
-|----------|--------|
+| --- | --- |
 | `Airbrake.notify(e)` | `Sentry.capture_exception(e)` |
 | `Airbrake.notify(e, params)` | `Sentry.with_scope { \|s\| s.set_context("params", params); Sentry.capture_exception(e) }` |
 | `Airbrake.notify_sync(e)` | `Sentry.capture_exception(e)` (Sentry handles delivery asynchronously) |
@@ -242,7 +246,7 @@ grep -rn "Airbrake\.\(notify\|notify_sync\|merge_context\|add_filter\|notify_req
   app/ lib/ --include="*.rb"
 ```
 
----
+* * *
 
 ## Universal Migration Checklist
 
@@ -273,7 +277,7 @@ grep -rn "APPSIGNAL\|HONEYBADGER\|BUGSNAG\|ROLLBAR\|AIRBRAKE" \
 ### Environment variable mapping
 
 | Tool | Old env var | Sentry |
-|------|-------------|--------|
+| --- | --- | --- |
 | AppSignal | `APPSIGNAL_PUSH_API_KEY` | `SENTRY_DSN` |
 | Honeybadger | `HONEYBADGER_API_KEY` | `SENTRY_DSN` |
 | Bugsnag | `BUGSNAG_API_KEY` | `SENTRY_DSN` |
@@ -282,7 +286,8 @@ grep -rn "APPSIGNAL\|HONEYBADGER\|BUGSNAG\|ROLLBAR\|AIRBRAKE" \
 
 ### Rollout strategy
 
-Run both tools in parallel for one release cycle, then remove the old gem once Sentry is receiving events in production.
+Run both tools in parallel for one release cycle, then remove the old gem once Sentry is
+receiving events in production.
 
 ```ruby
 # Temporary dual-capture shim — remove after rollout validation:
@@ -304,8 +309,8 @@ end
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
-| Missing errors after migration | Ensure `sentry-rails` is present — `sentry-ruby` alone doesn't hook Rails error handlers |
+| --- | --- |
+| Missing errors after migration | Ensure `sentry-rails` is present — `sentry-ruby` alone doesn’t hook Rails error handlers |
 | Context missing from events | Old tools often set context via middleware; replicate with a `before_action` calling `Sentry.set_user` / `Sentry.set_tags` |
 | Old gem still loading | Check `Gemfile.lock` — it may be a transitive dependency |
 | Distributed traces broken | Ensure all services have migrated and propagate `sentry-trace` + `baggage` headers |

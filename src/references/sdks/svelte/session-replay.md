@@ -1,15 +1,17 @@
 # Session Replay — Sentry Svelte/SvelteKit SDK
 
-> Minimum SDK: `@sentry/sveltekit` ≥7.27.0+ / `@sentry/svelte` ≥7.27.0+  
+> Minimum SDK: `@sentry/sveltekit` ≥7.27.0+ / `@sentry/svelte` ≥7.27.0+\
 > `replayCanvasIntegration()`: requires `@sentry/sveltekit` ≥7.48.0+
 
-> ⚠️ **Client-only feature.** Never add `replayIntegration()` to `hooks.server.ts` or `instrumentation.server.ts`.
+> ⚠️ **Client-only feature.** Never add `replayIntegration()` to `hooks.server.ts` or
+> `instrumentation.server.ts`.
 
----
+* * *
 
 ## Setup
 
-Session Replay is bundled in `@sentry/sveltekit` and `@sentry/svelte` — no separate package needed.
+Session Replay is bundled in `@sentry/sveltekit` and `@sentry/svelte` — no separate
+package needed.
 
 ### SvelteKit — hooks.client.ts
 
@@ -59,34 +61,35 @@ const app = new App({ target: document.getElementById("app")! });
 export default app;
 ```
 
----
+* * *
 
 ## Sample Rates
 
 | Option | Location | Behavior |
-|--------|----------|----------|
+| --- | --- | --- |
 | `replaysSessionSampleRate` | `Sentry.init({})` | Fraction of all sessions recorded from start |
 | `replaysOnErrorSampleRate` | `Sentry.init({})` | Fraction of error sessions — includes ~60s of replay before the error |
 
 Recommended values by traffic volume:
 
 | Volume | `replaysSessionSampleRate` | `replaysOnErrorSampleRate` |
-|--------|---------------------------|---------------------------|
+| --- | --- | --- |
 | High (100k+ sessions/day) | `0.01` | `1.0` |
 | Medium (10k–100k/day) | `0.1` | `1.0` |
 | Low (<10k/day) | `0.25` | `1.0` |
 | Errors-only strategy | `0` | `1.0` |
 
-"Errors-only" (`replaysSessionSampleRate: 0`, `replaysOnErrorSampleRate: 1.0`) minimizes overhead by not recording sessions unless an error occurs.
+“Errors-only” (`replaysSessionSampleRate: 0`, `replaysOnErrorSampleRate: 1.0`) minimizes
+overhead by not recording sessions unless an error occurs.
 
----
+* * *
 
 ## Core `replayIntegration()` Options
 
 ### Recording Control
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `stickySession` | `boolean` | `true` | Persist session across page refreshes |
 | `minReplayDuration` | `number` | `5000` | Min ms before a session-based replay is sent |
 | `maxReplayDuration` | `number` | `3600000` | Max replay length (1 hour hard cap) |
@@ -95,7 +98,7 @@ Recommended values by traffic volume:
 ### Mutation Limits (DOM thrash protection)
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `mutationLimit` | `number` | `10000` | Stop recording after N DOM mutations |
 | `mutationBreadcrumbLimit` | `number` | `750` | Emit a warning breadcrumb after N mutations |
 
@@ -106,16 +109,17 @@ Sentry.replayIntegration({
 });
 ```
 
----
+* * *
 
 ## Privacy and Masking
 
-Replay defaults to **privacy-first**: all text is masked and all media is blocked before a single line of config is written.
+Replay defaults to **privacy-first**: all text is masked and all media is blocked before
+a single line of config is written.
 
 ### Default behavior
 
 | Element type | Default action |
-|-------------|----------------|
+| --- | --- |
 | All text content | Replaced with `*` (length-preserving) |
 | All inputs | Values replaced with `*` |
 | `img`, `svg`, `video`, `audio`, `picture`, `embed`, `map`, `object` | Replaced with same-size placeholder box |
@@ -168,7 +172,8 @@ Apply directly in Svelte markup — no JS config change needed:
 <input class="sentry-ignore" />
 ```
 
-Attribute selectors (`data-sentry-*`) are automatically recognized by the SDK. CSS classes require these to be listed in the integration options for SDK v8+:
+Attribute selectors (`data-sentry-*`) are automatically recognized by the SDK. CSS
+classes require these to be listed in the integration options for SDK v8+:
 
 ```typescript
 Sentry.replayIntegration({
@@ -177,11 +182,12 @@ Sentry.replayIntegration({
 });
 ```
 
----
+* * *
 
 ## Network Capture
 
-By default, only URL, method, status code, and response size are recorded for network requests. To capture headers and bodies, opt in per URL:
+By default, only URL, method, status code, and response size are recorded for network
+requests. To capture headers and bodies, opt in per URL:
 
 ```typescript
 Sentry.replayIntegration({
@@ -205,7 +211,7 @@ Constraints:
 - Default captured headers: `Content-Type`, `Content-Length`, `Accept`
 - No bodies/extra headers captured unless URLs are in `networkDetailAllowUrls`
 
----
+* * *
 
 ## Canvas Recording
 
@@ -237,7 +243,7 @@ const canvasIntegration = Sentry.getClient()?.getIntegrationByName("ReplayCanvas
 canvasIntegration?.snapshot(canvasElement);
 ```
 
----
+* * *
 
 ## Lazy Loading Replay
 
@@ -262,7 +268,7 @@ async function enableReplay() {
 }
 ```
 
----
+* * *
 
 ## Event Filtering
 
@@ -286,19 +292,19 @@ Sentry.replayIntegration({
 });
 ```
 
----
+* * *
 
 ## SvelteKit-Specific Considerations
 
 | Topic | Note |
-|-------|-------|
+| --- | --- |
 | Server-side rendering | Replay records the **browser DOM** after hydration, not the raw SSR HTML |
 | Navigation tracking | SvelteKit client-side navigations are recorded as replay navigation breadcrumbs |
 | `+error.svelte` pages | Errors triggering error pages are captured; replay buffers the preceding session |
 | Ad-blocker bypass | Set `tunnel: "/sentry-tunnel"` to prevent replay data from being blocked |
 | Cloudflare adapter | Replay is client-only; no adapter-specific concerns |
 
----
+* * *
 
 ## CSP Requirements
 
@@ -319,34 +325,41 @@ Sentry.replayIntegration({
 });
 ```
 
-Download the worker from the `@sentry/replay` package `worker/` directory and serve it from your own origin.
+Download the worker from the `@sentry/replay` package `worker/` directory and serve it
+from your own origin.
 
----
+* * *
 
 ## Performance Considerations
 
 - Compression runs in a **Web Worker** — minimal main-thread impact
-- `mutationLimit` protects against DOM-heavy frameworks that trigger thousands of mutations
-- Network body capture is opt-in per URL — no performance cost without `networkDetailAllowUrls`
+- `mutationLimit` protects against DOM-heavy frameworks that trigger thousands of
+  mutations
+- Network body capture is opt-in per URL — no performance cost without
+  `networkDetailAllowUrls`
 - Lazy loading (`Sentry.addIntegration()`) reduces initial bundle size by ~50KB gzipped
-- "Errors-only" strategy (`replaysSessionSampleRate: 0`) has near-zero overhead when no error occurs
+- “Errors-only” strategy (`replaysSessionSampleRate: 0`) has near-zero overhead when no
+  error occurs
 
----
+* * *
 
 ## Best Practices
 
-- Keep `maskAllText: true` and `blockAllMedia: true` as defaults — opt individual elements out via `unmask`/`unblock` or `data-sentry-unmask`/`data-sentry-unblock`
-- Use `networkDetailAllowUrls` with your own API domains only — never include third-party analytics or payment processors
+- Keep `maskAllText: true` and `blockAllMedia: true` as defaults — opt individual
+  elements out via `unmask`/`unblock` or `data-sentry-unmask`/`data-sentry-unblock`
+- Use `networkDetailAllowUrls` with your own API domains only — never include
+  third-party analytics or payment processors
 - Set `replaysOnErrorSampleRate: 1.0` so you never miss replay for an error session
-- Lazy-load replay for unauthenticated pages where user consent or performance is critical
+- Lazy-load replay for unauthenticated pages where user consent or performance is
+  critical
 - Add `slowClickIgnoreSelectors` for loading states to avoid false rage-click detection
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Replay not recording | Confirm `replayIntegration()` is in `hooks.client.ts` — never in `hooks.server.ts` |
 | All text shown as `*` | Expected with `maskAllText: true`; add `data-sentry-unmask` to elements that are safe to show |
 | Replay missing after error | Check `replaysOnErrorSampleRate` is > 0; verify `replaysSessionSampleRate` is not overriding |

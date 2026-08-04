@@ -1,15 +1,20 @@
 # Sentry Browser SDK
 
-Opinionated wizard that scans your project and guides you through complete Sentry setup for browser JavaScript — vanilla JS, jQuery, static sites, WordPress, and any JS project without a framework-specific SDK.
+Opinionated wizard that scans your project and guides you through complete Sentry setup
+for browser JavaScript — vanilla JS, jQuery, static sites, WordPress, and any JS project
+without a framework-specific SDK.
 
-> **Note:** SDK versions and APIs below reflect `@sentry/browser` ≥10.0.0.
-> Always verify against [docs.sentry.io/platforms/javascript/](https://docs.sentry.io/platforms/javascript/) before implementing.
+> **Note:** SDK versions and APIs below reflect `@sentry/browser` ≥10.0.0. Always verify
+> against
+> [docs.sentry.io/platforms/javascript/](https://docs.sentry.io/platforms/javascript/)
+> before implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
-**CRITICAL — Check for frameworks first.** Framework-specific SDKs provide significantly better coverage and must be recommended before proceeding with `@sentry/browser`.
+**CRITICAL — Check for frameworks first.** Framework-specific SDKs provide significantly
+better coverage and must be recommended before proceeding with `@sentry/browser`.
 
 ### Step 1A: Framework Detection (Redirect If Found)
 
@@ -48,7 +53,7 @@ cat package.json 2>/dev/null | grep -E '"express"|"fastify"|"@nestjs/core"|"koa"
 **If a framework is detected, stop and redirect:**
 
 | Framework detected | Redirect to |
-|-------------------|-------------|
+| --- | --- |
 | `next` | Load [`nextjs`](../nextjs/index.md) skill — **do not proceed here** |
 | `react` (without Next.js) | Load [`react`](../react/index.md) skill — **do not proceed here** |
 | `vue` | Suggest `@sentry/vue` — see [docs.sentry.io/platforms/javascript/guides/vue/](https://docs.sentry.io/platforms/javascript/guides/vue/) |
@@ -61,7 +66,9 @@ cat package.json 2>/dev/null | grep -E '"express"|"fastify"|"@nestjs/core"|"koa"
 | `ember-source` | Suggest `@sentry/ember` — see [docs.sentry.io/platforms/javascript/guides/ember/](https://docs.sentry.io/platforms/javascript/guides/ember/) |
 | `express` / `fastify` / `@nestjs/core` | This is a Node.js server — load [`node`](../node/index.md) or [`nestjs`](../nestjs/index.md) skill |
 
-> **Why redirect matters:** Framework SDKs add router-aware transactions, error boundaries, component tracking, and often SSR coverage. Using `@sentry/browser` directly in a React or Next.js app loses all of that.
+> **Why redirect matters:** Framework SDKs add router-aware transactions, error
+> boundaries, component tracking, and often SSR coverage.
+> Using `@sentry/browser` directly in a React or Next.js app loses all of that.
 
 Only continue with `@sentry/browser` if **no framework is detected**.
 
@@ -92,33 +99,38 @@ grep -r "sentry-cdn.com\|js.sentry-cdn.com" . --include="*.html" -l 2>/dev/null 
 **What to determine:**
 
 | Question | Impact |
-|----------|--------|
+| --- | --- |
 | `package.json` exists + bundler? | → **Path A: npm install** |
 | WordPress, Shopify, static HTML, no npm? | → **Path B: Loader Script** |
 | Script tags only, no Loader Script access? | → **Path C: CDN bundle** |
 | Already has `@sentry/browser`? | Skip install, go straight to feature config |
 | Build tool is Vite / webpack / Rollup / esbuild? | Source maps plugin to configure |
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Present a recommendation based on what you found. Lead with a concrete proposal, don't ask open-ended questions.
+Present a recommendation based on what you found.
+Lead with a concrete proposal, don’t ask open-ended questions.
 
 **Recommended (core coverage):**
 - ✅ **Error Monitoring** — always; captures unhandled errors and promise rejections
-- ✅ **Tracing** — recommended for any interactive site; tracks page load and user interactions
-- ✅ **Session Replay** — recommended for user-facing apps; records sessions around errors
+- ✅ **Tracing** — recommended for any interactive site; tracks page load and user
+  interactions
+- ✅ **Session Replay** — recommended for user-facing apps; records sessions around
+  errors
 
 **Optional (enhanced observability):**
 - ⚡ **User Feedback** — capture reports directly from users after errors
-- ⚡ **Logging** — structured logs via `Sentry.logger.*`; requires npm or CDN logs bundle (not available via Loader Script)
-- ⚡ **Profiling** — JS Self-Profiling API; beta, Chromium-only, requires `Document-Policy: js-profiling` response header
+- ⚡ **Logging** — structured logs via `Sentry.logger.*`; requires npm or CDN logs bundle
+  (not available via Loader Script)
+- ⚡ **Profiling** — JS Self-Profiling API; beta, Chromium-only, requires
+  `Document-Policy: js-profiling` response header
 
 **Feature recommendation logic:**
 
-| Feature | Recommend when... |
-|---------|------------------|
+| Feature | Recommend when … |
+| --- | --- |
 | Error Monitoring | **Always** — non-negotiable baseline |
 | Tracing | **Always** for interactive pages — page load + navigation spans are high-value |
 | Session Replay | User-facing app, support flows, or checkout pages |
@@ -129,14 +141,15 @@ Present a recommendation based on what you found. Lead with a concrete proposal,
 **Installation path recommendation:**
 
 | Scenario | Recommended path |
-|----------|-----------------|
+| --- | --- |
 | Project has `package.json` + bundler | **Path A (npm)** — full features, source maps, tree-shaking |
 | WordPress, Shopify, Squarespace, static HTML | **Path B (Loader Script)** — zero build tooling, always up to date |
 | Static HTML without Loader Script access | **Path C (CDN bundle)** — manual `<script>` tag |
 
-Propose: *"I recommend setting up Error Monitoring + Tracing + Session Replay using Path A (npm). Want me to also add Logging or User Feedback?"*
+Propose: *“I recommend setting up Error Monitoring + Tracing + Session Replay using Path
+A (npm). Want me to also add Logging or User Feedback?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
@@ -154,7 +167,8 @@ pnpm add @sentry/browser
 
 #### Create `src/instrument.ts`
 
-Sentry must initialize **before any other code runs**. Put `Sentry.init()` in a dedicated sidecar file:
+Sentry must initialize **before any other code runs**. Put `Sentry.init()` in a
+dedicated sidecar file:
 
 ```typescript
 import * as Sentry from "@sentry/browser";
@@ -194,7 +208,7 @@ Sentry.init({
 **DSN environment variable by build tool:**
 
 | Build Tool | Variable Name | Access in code |
-|------------|--------------|----------------|
+| --- | --- | --- |
 | Vite | `VITE_SENTRY_DSN` | `import.meta.env.VITE_SENTRY_DSN` |
 | Custom webpack | `SENTRY_DSN` | `process.env.SENTRY_DSN` |
 | esbuild | `SENTRY_DSN` | `process.env.SENTRY_DSN` |
@@ -213,9 +227,12 @@ import "./instrument";  // ← MUST be first
 
 #### Source Maps Setup (Strongly Recommended)
 
-Without source maps, stack traces show minified code. Set up the build plugin to upload source maps automatically:
+Without source maps, stack traces show minified code.
+Set up the build plugin to upload source maps automatically:
 
-> **No dedicated browser wizard:** There is no `npx @sentry/wizard -i browser` flag. The closest is `npx @sentry/wizard@latest -i sourcemaps` which configures source map upload only for an already-initialized SDK.
+> **No dedicated browser wizard:** There is no `npx @sentry/wizard -i browser` flag.
+> The closest is `npx @sentry/wizard@latest -i sourcemaps` which configures source map
+> upload only for an already-initialized SDK.
 
 **Vite (`vite.config.ts`):**
 
@@ -289,7 +306,8 @@ require("esbuild").build({
 });
 ```
 
-> ⚠️ esbuild plugin does **not** fully support `splitting: true`. Use `sentry-cli` instead if code splitting is enabled.
+> ⚠️ esbuild plugin does **not** fully support `splitting: true`. Use `sentry-cli`
+> instead if code splitting is enabled.
 
 **Using `sentry-cli` (any toolchain / CI):**
 
@@ -306,14 +324,16 @@ SENTRY_ORG=my-org-slug
 SENTRY_PROJECT=my-project-slug
 ```
 
----
+* * *
 
 ### Path B: Loader Script (WordPress, Static Sites, Shopify, Squarespace)
 
-**Best for:** Sites without a build system. The Loader Script is a single `<script>` tag that lazily loads the full SDK, always stays up to date via Sentry's CDN, and buffers errors before the SDK loads.
+**Best for:** Sites without a build system.
+The Loader Script is a single `<script>` tag that lazily loads the full SDK, always
+stays up to date via Sentry’s CDN, and buffers errors before the SDK loads.
 
-**Get the Loader Script:**
-Sentry UI → **Settings → Projects → (your project) → SDK Setup → Loader Script**
+**Get the Loader Script:** Sentry UI → **Settings → Projects → (your project) → SDK
+Setup → Loader Script**
 
 Copy the generated tag and place it as the **first script on every page**:
 
@@ -346,7 +366,7 @@ Copy the generated tag and place it as the **first script on every page**:
 **Loader loading modes:**
 
 | Mode | How | When SDK loads |
-|------|-----|---------------|
+| --- | --- | --- |
 | **Lazy (default)** | Nothing extra | On first error or manual Sentry call |
 | **Eager** | Add `data-lazy="no"` to `<script>` | After all page scripts finish |
 | **Manual** | Call `Sentry.forceLoad()` | Whenever you call it |
@@ -387,13 +407,14 @@ script-src: https://browser.sentry-cdn.com https://js.sentry-cdn.com
 connect-src: *.sentry.io
 ```
 
----
+* * *
 
 ### Path C: CDN Bundles (Manual Script Tags)
 
-**Best for:** Pages that can't use the Loader Script but need synchronous loading.
+**Best for:** Pages that can’t use the Loader Script but need synchronous loading.
 
-Pick the bundle that matches your feature needs and place it **before all other scripts**:
+Pick the bundle that matches your feature needs and place it **before all other
+scripts**:
 
 **Errors only (minimal footprint):**
 ```html
@@ -452,7 +473,7 @@ Pick the bundle that matches your feature needs and place it **before all other 
 **CDN bundle variants summary:**
 
 | Bundle | Features | When to use |
-|--------|----------|-------------|
+| --- | --- | --- |
 | `bundle.min.js` | Errors only | Absolute minimum footprint |
 | `bundle.tracing.min.js` | + Tracing | Performance monitoring |
 | `bundle.replay.min.js` | + Replay | Session recording |
@@ -489,14 +510,15 @@ script-src: https://browser.sentry-cdn.com https://js.sentry-cdn.com
 connect-src: *.sentry.io
 ```
 
----
+* * *
 
 ### For Each Agreed Feature
 
-Walk through features one at a time. Load the reference file, follow its steps, verify before moving on:
+Walk through features one at a time.
+Load the reference file, follow its steps, verify before moving on:
 
-| Feature | Reference | Load when... |
-|---------|-----------|-------------|
+| Feature | Reference | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always (baseline) |
 | Tracing | `./tracing.md` | Page load / API call tracing |
 | Session Replay | `./session-replay.md` | User-facing app |
@@ -506,14 +528,14 @@ Walk through features one at a time. Load the reference file, follow its steps, 
 
 For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Key `Sentry.init()` Options
 
 | Option | Type | Default | Notes |
-|--------|------|---------|-------|
+| --- | --- | --- | --- |
 | `dsn` | `string` | — | **Required.** SDK disabled when empty |
 | `environment` | `string` | `"production"` | e.g., `"staging"`, `"development"` |
 | `release` | `string` | — | e.g., `"my-app@1.0.0"` or git SHA — links errors to releases |
@@ -537,16 +559,18 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Browser-Specific Options
 
 | Option | Type | Default | Notes |
-|--------|------|---------|-------|
+| --- | --- | --- | --- |
 | `cdnBaseUrl` | `string` | — | Base URL for lazy-loading integrations |
 | `skipBrowserExtensionCheck` | `boolean` | `false` | Skip check for browser extension context |
 
 ### `dataCollection` Option (v10.54+)
 
-Fine-grained control over what data the SDK collects. Replaces the simple `sendDefaultPii` boolean with granular settings. When omitted, falls back to `sendDefaultPii` for backwards compatibility.
+Fine-grained control over what data the SDK collects.
+Replaces the simple `sendDefaultPii` boolean with granular settings.
+When omitted, falls back to `sendDefaultPii` for backwards compatibility.
 
 | Field | Type | Default | Notes |
-|-------|------|---------|-------|
+| --- | --- | --- | --- |
 | `userInfo` | `boolean` | `true` | Auto-populate `user.*` fields from instrumentation |
 | `cookies` | `boolean \| { allow: string[] } \| { deny: string[] }` | `true` | Cookie collection; `true` = all (filtered), `false` = none, `allow`/`deny` = specific keys |
 | `httpHeaders` | `{ request?, response? }` | `{ request: true, response: true }` | HTTP header collection; each can be `boolean` or `allow`/`deny` object |
@@ -581,7 +605,7 @@ Set the release version before the SDK loads:
 </script>
 ```
 
----
+* * *
 
 ## Verification
 
@@ -618,7 +642,7 @@ Check the Sentry dashboard:
 
 Set `debug: true` in `Sentry.init()` and check the browser console if nothing appears.
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
@@ -636,7 +660,7 @@ cat ../composer.json 2>/dev/null | head -3
 If a backend exists without Sentry configured, suggest the matching skill:
 
 | Backend detected | Suggest skill |
-|-----------------|--------------|
+| --- | --- |
 | Go (`go.mod`) | [`go`](../go/index.md) |
 | Python (`requirements.txt`, `pyproject.toml`) | [`python`](../python/index.md) |
 | Ruby (`Gemfile`) | [`ruby`](../ruby/index.md) |
@@ -646,19 +670,19 @@ If a backend exists without Sentry configured, suggest the matching skill:
 | Node.js (Express, Fastify) | [`node`](../node/index.md) |
 | NestJS (`@nestjs/core`) | [`nestjs`](../nestjs/index.md) |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing | Set `debug: true`, check DSN, open browser console for SDK errors |
 | Source maps not working | Build in production mode (`npm run build`); verify `SENTRY_AUTH_TOKEN` is set |
 | Minified stack traces | Source maps not uploading — check build plugin config; run `npx @sentry/wizard@latest -i sourcemaps` |
 | CDN bundle not found | Check version number in URL; see [browser.sentry-cdn.com](https://browser.sentry-cdn.com/) for latest |
 | SRI integrity error | Hash mismatch — re-copy the full `<script>` tag including `integrity` attribute from this skill |
-| Loader Script not firing | Verify it's the **first** `<script>` on the page; check for CSP errors in console |
-| Tracing not working with Loader | Fetch calls before SDK loads won't be traced — wrap early calls in `Sentry.onLoad()` |
+| Loader Script not firing | Verify it’s the **first** `<script>` on the page; check for CSP errors in console |
+| Tracing not working with Loader | Fetch calls before SDK loads won’t be traced — wrap early calls in `Sentry.onLoad()` |
 | `sentryOnLoad` not called | Must define `window.sentryOnLoad` **before** the loader `<script>` tag |
 | Logging not available | `Sentry.logger.*` requires npm or a CDN bundle with `.logs.` in its name — not supported via Loader Script |
 | Profiling not working | Verify `Document-Policy: js-profiling` header on document responses; Chromium-only |
@@ -669,4 +693,4 @@ If a backend exists without Sentry configured, suggest the matching skill:
 | Events blocked by browser extension | Add `denyUrls: [/chrome-extension:\/\//]` to filter extension errors |
 | High event volume | Lower `sampleRate` (errors) and `tracesSampleRate` from `1.0` in production |
 | Source maps uploaded after deploy | Source maps must be uploaded **before** errors occur — integrate into CI/CD |
-| esbuild splitting conflict | `sentryEsbuildPlugin` doesn't support `splitting: true` — use `sentry-cli` instead |
+| esbuild splitting conflict | `sentryEsbuildPlugin` doesn’t support `splitting: true` — use `sentry-cli` instead |

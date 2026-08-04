@@ -1,14 +1,17 @@
 # Logging — Sentry Flutter SDK
 
-> **Minimum SDK:** `sentry_flutter` ≥ **9.5.0** for structured logs (`enableLogs`)  
-> **`sentry_logging` integration:** `sentry_logging` ≥ **9.5.0** + Dart `logging` package ≥ **1.0.0**  
+> **Minimum SDK:** `sentry_flutter` ≥ **9.5.0** for structured logs (`enableLogs`)\
+> **`sentry_logging` integration:** `sentry_logging` ≥ **9.5.0** + Dart `logging`
+> package ≥ **1.0.0**\
 > **`enableLogs` flag:** off by default — must be explicitly enabled
 
 Flutter/Dart has two complementary logging paths:
-1. **Sentry structured logs** — `Sentry.logger.*` API (direct) or via `sentry_logging` integration (bridges the Dart `logging` package)
-2. **Breadcrumbs** — Automatic breadcrumbs from `sentry_logging` for navigation and debug events
+1. **Sentry structured logs** — `Sentry.logger.*` API (direct) or via `sentry_logging`
+   integration (bridges the Dart `logging` package)
+2. **Breadcrumbs** — Automatic breadcrumbs from `sentry_logging` for navigation and
+   debug events
 
----
+* * *
 
 ## Table of Contents
 
@@ -22,7 +25,7 @@ Flutter/Dart has two complementary logging paths:
 8. [Known Limitations](#8-known-limitations)
 9. [Troubleshooting](#9-troubleshooting)
 
----
+* * *
 
 ## 1. Enabling Logs
 
@@ -42,7 +45,7 @@ Future<void> main() async {
 }
 ```
 
----
+* * *
 
 ## 2. Direct Logger API
 
@@ -86,21 +89,23 @@ Sentry.logger.fatal('Database unavailable', attributes: {'host': SentryAttribute
 ### Level selection guide
 
 | Level | When to use |
-|-------|-------------|
+| --- | --- |
 | `trace` | Step-by-step internals, loop iterations, low-level flow tracking |
 | `debug` | Diagnostic info useful during development |
 | `info` | Business events, user actions, meaningful state transitions |
 | `warn` | Recoverable errors, degraded performance, approaching limits |
-| `error` | Failures that need investigation but don't crash the app |
+| `error` | Failures that need investigation but don’t crash the app |
 | `fatal` | Unrecoverable failures — app or critical subsystem is down |
 
-**Attribute value types:** `String`, `int`, `double`, and `bool` only. Other types will be dropped or coerced.
+**Attribute value types:** `String`, `int`, `double`, and `bool` only.
+Other types will be dropped or coerced.
 
----
+* * *
 
 ## 3. sentry_logging Integration (Dart logging package)
 
-The `sentry_logging` package bridges the standard Dart `logging` package to Sentry. This is ideal for projects already using `logging` for structured output.
+The `sentry_logging` package bridges the standard Dart `logging` package to Sentry.
+This is ideal for projects already using `logging` for structured output.
 
 ### Installation
 
@@ -166,7 +171,8 @@ class PaymentService {
 
 ### Stack trace handling
 
-The Dart `logging` package does **not** automatically capture stack traces. Configure it explicitly:
+The Dart `logging` package does **not** automatically capture stack traces.
+Configure it explicitly:
 
 ```dart
 // Option 1 — automatic stack trace capture at SEVERE and above
@@ -179,18 +185,19 @@ Logger('MyService').severe('Error occurred', error, stackTrace);
 ### What each log level produces
 
 | Dart Level | ≥ `minBreadcrumbLevel` | ≥ `minSentryLogLevel` | ≥ `minEventLevel` |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `Level.FINEST`/`FINER`/`FINE` | Breadcrumb (if configured) | Structured log | — |
 | `Level.INFO`/`CONFIG` | ✅ Breadcrumb | ✅ Structured log | — |
 | `Level.WARNING` | ✅ Breadcrumb | ✅ Structured log | — |
 | `Level.SEVERE` | ✅ Breadcrumb | ✅ Structured log | ✅ Error event |
 | `Level.SHOUT` | ✅ Breadcrumb | ✅ Structured log | ✅ Error event |
 
----
+* * *
 
 ## 4. Structured Attributes
 
-Attributes passed to `Sentry.logger.*` become **queryable columns** in the Sentry Logs UI:
+Attributes passed to `Sentry.logger.*` become **queryable columns** in the Sentry Logs
+UI:
 
 ```dart
 Sentry.logger.info('Checkout completed', attributes: {
@@ -213,7 +220,8 @@ Sentry.logger.error('Navigation failed', attributes: {
 
 ### Scope-level attributes
 
-Set attributes on the scope and they are automatically attached to all logs emitted while the scope is active:
+Set attributes on the scope and they are automatically attached to all logs emitted
+while the scope is active:
 
 ```dart
 // Global scope — set once at app startup
@@ -242,18 +250,19 @@ Sentry.logger.info('Payment complete');
 The SDK automatically attaches these to every log:
 
 | Attribute | Source |
-|-----------|--------|
+| --- | --- |
 | `sentry.environment` | `options.environment` |
 | `sentry.release` | `options.release` |
 | `sentry.sdk.name` / `sentry.sdk.version` | SDK internals |
 | `user.id`, `user.email` | `Sentry.setUser()` when set |
 | `origin` | Identifies which integration emitted the log |
 
----
+* * *
 
 ## 5. Filtering with beforeSendLog
 
-Filter or mutate every log before it is transmitted. Return `null` to drop the log entirely:
+Filter or mutate every log before it is transmitted.
+Return `null` to drop the log entirely:
 
 ```dart
 await SentryFlutter.init(
@@ -283,11 +292,12 @@ await SentryFlutter.init(
 );
 ```
 
----
+* * *
 
 ## 6. Log Correlation with Traces
 
-When tracing is enabled, logs emitted inside an active span are **automatically correlated** in the Sentry UI. You can navigate from a log to its parent transaction.
+When tracing is enabled, logs emitted inside an active span are **automatically
+correlated** in the Sentry UI. You can navigate from a log to its parent transaction.
 
 ```dart
 import 'package:sentry/sentry.dart';
@@ -320,21 +330,21 @@ options.tracesSampleRate = 1.0; // required for log-to-trace correlation
 options.enableLogs = true;
 ```
 
----
+* * *
 
 ## 7. Configuration Reference
 
 ### `SentryFlutter.init` options
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `enableLogs` | `bool` | `false` | Master switch — must be `true` for all structured logging |
 | `beforeSendLog` | `SentryLog? Function(SentryLog)` | `null` | Filter/mutate logs before transmission. Return `null` to drop. |
 
 ### `LoggingIntegration` options
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `minBreadcrumbLevel` | `Level` | `Level.INFO` | Minimum Dart log level to create Sentry breadcrumbs |
 | `minEventLevel` | `Level` | `Level.SEVERE` | Minimum Dart log level to create Sentry error events |
 | `minSentryLogLevel` | `Level` | `Level.INFO` | Minimum Dart log level to create Sentry structured logs |
@@ -342,29 +352,29 @@ options.enableLogs = true;
 ### Version requirements
 
 | Feature | Min Package | Min SDK Version |
-|---------|-------------|-----------------|
+| --- | --- | --- |
 | `enableLogs` / structured logs | `sentry_flutter` | `9.5.0` |
 | `sentry_logging` integration | `sentry_logging` | `9.5.0` |
 | `beforeSendLog` hook | `sentry_flutter` | `9.5.0` |
 
----
+* * *
 
 ## 8. Known Limitations
 
 | Limitation | Details |
-|------------|---------|
+| --- | --- |
 | Crash buffer loss | Logs buffered since last flush are lost on unexpected termination before the buffer is sent |
 | No per-log sampling | Use `beforeSendLog` to reduce volume — sampling is all-or-nothing |
 | Dart logging package stack traces | Must be enabled manually via `Logger.root.recordStackTraceAtLevel` or passed explicitly |
 | `sentry_logging` is separate package | Must be added to `pubspec.yaml` separately — not bundled with `sentry_flutter` |
 | `enableLogs` is off by default | Logs are silently discarded if `enableLogs` is not `true` |
 
----
+* * *
 
 ## 9. Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not appearing in Sentry | Verify `enableLogs: true` is set in `SentryFlutter.init()` |
 | `Sentry.logger` not available | Import `package:sentry/sentry.dart`; check `sentry_flutter` ≥ 9.5.0 |
 | `LoggingIntegration` type not found | Add `sentry_logging` to `pubspec.yaml` and import `package:sentry_logging/sentry_logging.dart` |

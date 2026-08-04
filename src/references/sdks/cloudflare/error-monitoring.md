@@ -1,11 +1,9 @@
 # Error Monitoring — Sentry Cloudflare SDK
 
-> Minimum SDK: `@sentry/cloudflare` v8.0.0+
-> Hono integration: v10.0.0+
-> Durable Object instrumentation: v8.x+
-> Queue/Email/Tail handler instrumentation: v10.x+
+> Minimum SDK: `@sentry/cloudflare` v8.0.0+ Hono integration: v10.0.0+ Durable Object
+> instrumentation: v8.x+ Queue/Email/Tail handler instrumentation: v10.x+
 
----
+* * *
 
 ## Overview
 
@@ -19,9 +17,10 @@ The `@sentry/cloudflare` SDK captures errors across all Cloudflare runtime conte
 - **Workflow steps**
 - **Hono `onError` handler**
 
-When you wrap your handler with `withSentry` or `sentryPagesPlugin`, unhandled exceptions are automatically captured with proper mechanism metadata.
+When you wrap your handler with `withSentry` or `sentryPagesPlugin`, unhandled
+exceptions are automatically captured with proper mechanism metadata.
 
----
+* * *
 
 ## Automatic Error Capture
 
@@ -85,9 +84,10 @@ export const onRequest = Sentry.sentryPagesPlugin((context) => ({
 }));
 ```
 
-Errors in any Pages function are captured, re-thrown (so your error responses still work), and flushed via `ctx.waitUntil()`.
+Errors in any Pages function are captured, re-thrown (so your error responses still
+work), and flushed via `ctx.waitUntil()`.
 
----
+* * *
 
 ## Manual Error Capture
 
@@ -124,7 +124,7 @@ Sentry.captureEvent({
 });
 ```
 
----
+* * *
 
 ## Enriching Events
 
@@ -155,7 +155,11 @@ Sentry.setUser({
 Sentry.setUser(null);
 ```
 
-> **PII note:** Use `dataCollection.cookies: true` in init options to include cookies (off by default for Cloudflare). Headers are captured by default with sensitive values redacted. For more control, configure `dataCollection.httpHeaders` and `dataCollection.httpBodies`.
+> **PII note:** Use `dataCollection.cookies: true` in init options to include cookies
+> (off by default for Cloudflare).
+> Headers are captured by default with sensitive values redacted.
+> For more control, configure `dataCollection.httpHeaders` and
+> `dataCollection.httpBodies`.
 
 ### Extra Data
 
@@ -182,7 +186,8 @@ Sentry.setContext("cloudflare", {
 });
 ```
 
-The SDK automatically sets `cloud_resource` context with `cloud.provider: "cloudflare"` and `culture` context with timezone from `request.cf`.
+The SDK automatically sets `cloud_resource` context with `cloud.provider: "cloudflare"`
+and `culture` context with timezone from `request.cf`.
 
 ### Breadcrumbs
 
@@ -197,9 +202,11 @@ Sentry.addBreadcrumb({
 });
 ```
 
-The `fetchIntegration` (default) automatically creates breadcrumbs for outbound `fetch()` calls. The `consoleIntegration` (default) captures `console.*` calls as breadcrumbs.
+The `fetchIntegration` (default) automatically creates breadcrumbs for outbound
+`fetch()` calls. The `consoleIntegration` (default) captures `console.*` calls as
+breadcrumbs.
 
----
+* * *
 
 ## Scopes
 
@@ -216,7 +223,9 @@ Sentry.withScope((scope) => {
 
 ### `withIsolationScope` — Request-Level Isolation
 
-Each request processed by `withSentry` or `sentryPagesPlugin` automatically runs in its own isolation scope. You typically don't need to call this manually.
+Each request processed by `withSentry` or `sentryPagesPlugin` automatically runs in its
+own isolation scope.
+You typically don’t need to call this manually.
 
 ### `getCurrentScope` / `getIsolationScope` / `getGlobalScope`
 
@@ -226,7 +235,7 @@ const isolationScope = Sentry.getIsolationScope();
 const globalScope = Sentry.getGlobalScope();
 ```
 
----
+* * *
 
 ## Event Filtering
 
@@ -272,41 +281,53 @@ Sentry.withSentry(
 );
 ```
 
----
+* * *
 
 ## Cloudflare-Specific Request Data
 
-The SDK automatically captures Cloudflare-specific request data when `request.cf` is available:
+The SDK automatically captures Cloudflare-specific request data when `request.cf` is
+available:
 
 - **Timezone** — set as `culture` context from `request.cf.timezone`
-- **HTTP protocol** — set as `network.protocol.name` span attribute from `request.cf.httpProtocol`
-- **Cloud provider** — always set as `cloud.provider: "cloudflare"` in `cloud_resource` context
-- **Request data** — URL, method, headers (respects `dataCollection.httpHeaders` and `dataCollection.cookies`)
+- **HTTP protocol** — set as `network.protocol.name` span attribute from
+  `request.cf.httpProtocol`
+- **Cloud provider** — always set as `cloud.provider: "cloudflare"` in `cloud_resource`
+  context
+- **Request data** — URL, method, headers (respects `dataCollection.httpHeaders` and
+  `dataCollection.cookies`)
 - **Content-Length** — captured as `http.request.body.size` span attribute
 - **User-Agent** — captured as `user_agent.original` span attribute
 
----
+* * *
 
 ## Best Practices
 
-1. **Always use `withSentry` or `sentryPagesPlugin`** — don't call `Sentry.init()` directly. The wrappers handle per-request isolation, flushing via `ctx.waitUntil()`, and client disposal.
+1. **Always use `withSentry` or `sentryPagesPlugin`** — don’t call `Sentry.init()`
+   directly. The wrappers handle per-request isolation, flushing via `ctx.waitUntil()`,
+   and client disposal.
 
-2. **Store DSN as a secret** — use `wrangler secret put SENTRY_DSN`, not environment variables in `wrangler.toml` (which are visible in source control).
+2. **Store DSN as a secret** — use `wrangler secret put SENTRY_DSN`, not environment
+   variables in `wrangler.toml` (which are visible in source control).
 
-3. **Configure `dataCollection` thoughtfully** — use `dataCollection.cookies: true` to include cookies for user context. Headers are captured with sensitive values redacted by default. Consider privacy implications when enabling additional data collection.
+3. **Configure `dataCollection` thoughtfully** — use `dataCollection.cookies: true` to
+   include cookies for user context.
+   Headers are captured with sensitive values redacted by default.
+   Consider privacy implications when enabling additional data collection.
 
-4. **Set `tracesSampleRate` lower in production** — `1.0` is fine for development; use `0.1`–`0.5` for production to manage costs.
+4. **Set `tracesSampleRate` lower in production** — `1.0` is fine for development; use
+   `0.1`–`0.5` for production to manage costs.
 
-5. **Don't catch and swallow errors silently** — if you catch an error for graceful handling, still call `Sentry.captureException(error)` to report it.
+5. **Don’t catch and swallow errors silently** — if you catch an error for graceful
+   handling, still call `Sentry.captureException(error)` to report it.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing | Verify `SENTRY_DSN` is set; add `debug: true` to init options; check worker logs for SDK output |
-| Duplicate events | Ensure handler is wrapped only once; don't nest `withSentry` calls |
+| Duplicate events | Ensure handler is wrapped only once; don’t nest `withSentry` calls |
 | Missing request data | Set `dataCollection.cookies: true` to include cookies. Headers are captured by default with sensitive values redacted |
 | Events cut off mid-request | Ensure `withSentry`/`sentryPagesPlugin` is used — they handle `ctx.waitUntil()` for flushing |
 | `captureException` returns undefined | Verify SDK is initialized — `Sentry.isInitialized()` should return `true` inside a handler |

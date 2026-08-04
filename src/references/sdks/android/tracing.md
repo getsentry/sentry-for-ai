@@ -1,11 +1,14 @@
 # Tracing & Performance Monitoring — Sentry Android SDK
 
-> **Minimum SDK:** `io.sentry:sentry-android` ≥ 7.0.0 (≥ 8.0.0 recommended)
-> **Gradle Plugin:** `io.sentry:sentry-android-gradle-plugin` ≥ 6.1.0 for zero-source-change instrumentation
-> **Languages:** Kotlin and Java — all examples in Kotlin with Java equivalents where they differ
-> **Mobile-first note:** Android has unique capabilities web SDKs lack — Activity TTID/TTFD, slow/frozen frame counts, app start tracking (cold/warm), and user interaction tracing. These are first-class citizens in `sentry-android`.
+> **Minimum SDK:** `io.sentry:sentry-android` ≥ 7.0.0 (≥ 8.0.0 recommended) **Gradle
+> Plugin:** `io.sentry:sentry-android-gradle-plugin` ≥ 6.1.0 for zero-source-change
+> instrumentation **Languages:** Kotlin and Java — all examples in Kotlin with Java
+> equivalents where they differ **Mobile-first note:** Android has unique capabilities
+> web SDKs lack — Activity TTID/TTFD, slow/frozen frame counts, app start tracking
+> (cold/warm), and user interaction tracing.
+> These are first-class citizens in `sentry-android`.
 
----
+* * *
 
 ## Table of Contents
 
@@ -27,7 +30,7 @@
 16. [Configuration Reference](#16-configuration-reference)
 17. [Troubleshooting](#17-troubleshooting)
 
----
+* * *
 
 ## 1. Basic Tracing Setup
 
@@ -49,13 +52,16 @@ SentryAndroid.init(this) { options ->
 }
 ```
 
-> **Production recommendation:** Use `tracesSampleRate = 0.2` or lower, or use `tracesSampler` for context-aware control. 100% sampling causes high volume at scale.
+> **Production recommendation:** Use `tracesSampleRate = 0.2` or lower, or use
+> `tracesSampler` for context-aware control.
+> 100% sampling causes high volume at scale.
 
----
+* * *
 
 ## 2. Auto-Instrumentation Overview
 
-The SDK instruments three layers automatically. Each layer builds on the previous:
+The SDK instruments three layers automatically.
+Each layer builds on the previous:
 
 ```
 TIER 1 — Build-time bytecode (Gradle Plugin)
@@ -77,33 +83,40 @@ TIER 3 — Manual (your code)
   Sentry.startTransaction() / ISpan.startChild() public API
 ```
 
-**Binding matters:** For auto-instrumented child spans (OkHttp, SQLite, Fragment) to attach to your transaction, the transaction must be bound to scope: `opts.isBindToScope = true`.
+**Binding matters:** For auto-instrumented child spans (OkHttp, SQLite, Fragment) to
+attach to your transaction, the transaction must be bound to scope:
+`opts.isBindToScope = true`.
 
----
+* * *
 
 ## 3. App Start Tracing — Cold & Warm
 
-**Unique to mobile.** Tracks from the earliest process initialization to first Activity render.
+**Unique to mobile.** Tracks from the earliest process initialization to first Activity
+render.
 
 | Metric | Span operation | When |
-|--------|---------------|------|
+| --- | --- | --- |
 | **Cold start** | `app.start.cold` | Process launched from scratch |
 | **Warm start** | `app.start.warm` | Process in memory, Activity recreated |
 
-App start data appears as the **first child span** inside the first Activity's `ui.load` transaction. It is not a standalone transaction.
+App start data appears as the **first child span** inside the first Activity’s `ui.load`
+transaction. It is not a standalone transaction.
 
-`SentryPerformanceProvider` — a `ContentProvider` in the SDK's manifest — captures the earliest possible timestamp before `Application.onCreate()`.
+`SentryPerformanceProvider` — a `ContentProvider` in the SDK’s manifest — captures the
+earliest possible timestamp before `Application.onCreate()`.
 
-No configuration needed — app start tracking is automatic when Activity tracing is enabled.
+No configuration needed — app start tracking is automatic when Activity tracing is
+enabled.
 
----
+* * *
 
 ## 4. Activity Lifecycle — TTID & TTFD
 
-Activity tracing is **enabled by default**. Each Activity launch generates a `ui.load` transaction with TTID and optionally TTFD spans.
+Activity tracing is **enabled by default**. Each Activity launch generates a `ui.load`
+transaction with TTID and optionally TTFD spans.
 
 | Lifecycle event | SDK action |
-|----------------|-----------|
+| --- | --- |
 | `onActivityPreCreated()` | Start `ui.load` transaction + `ui.load.initial_display` span |
 | First frame rendered | Finish `ui.load.initial_display` (TTID complete) |
 | `Sentry.reportFullyDisplayed()` | Finish `ui.load.full_display` (TTFD complete) |
@@ -111,7 +124,8 @@ Activity tracing is **enabled by default**. Each Activity launch generates a `ui
 
 ### TTID (Time to Initial Display)
 
-Automatic — enabled with Activity tracing. Appears as `ui.load.initial_display` span.
+Automatic — enabled with Activity tracing.
+Appears as `ui.load.initial_display` span.
 
 ### TTFD (Time to Full Display)
 
@@ -148,7 +162,7 @@ options.isEnableTimeToFullDisplayTracing = true
 **Frame measurements** are automatically attached to every Activity transaction:
 
 | Measurement key | Threshold |
-|----------------|-----------|
+| --- | --- |
 | `frames_total` | All rendered frames |
 | `frames_slow` | 16 ms – 700 ms per frame |
 | `frames_frozen` | > 700 ms per frame |
@@ -161,11 +175,12 @@ Requires Android API 24+.
 options.isEnableAutoActivityLifecycleTracing = false
 ```
 
----
+* * *
 
 ## 5. Fragment Lifecycle Tracing
 
-Not enabled by default. Adds `FragmentLifecycleIntegration` to instrument Fragment screen loads.
+Not enabled by default.
+Adds `FragmentLifecycleIntegration` to instrument Fragment screen loads.
 
 ```kotlin
 import io.sentry.android.fragment.FragmentLifecycleIntegration
@@ -190,13 +205,15 @@ Dependency:
 implementation("io.sentry:sentry-android-fragment:8.33.0")
 ```
 
-> **Important:** Fragment spans attach to `scopes.getTransaction()`. If no scope-bound transaction is active, fragment spans are silently dropped.
+> **Important:** Fragment spans attach to `scopes.getTransaction()`. If no scope-bound
+> transaction is active, fragment spans are silently dropped.
 
----
+* * *
 
 ## 6. OkHttp Network Tracing
 
-`SentryOkHttpInterceptor` creates a `http.client` span for every OkHttp request made while a transaction is active.
+`SentryOkHttpInterceptor` creates a `http.client` span for every OkHttp request made
+while a transaction is active.
 
 ### Manual setup
 
@@ -226,7 +243,7 @@ implementation("io.sentry:sentry-okhttp:8.33.0")
 ### Sub-spans from `SentryOkHttpEventListener`
 
 | Span | Phase |
-|------|-------|
+| --- | --- |
 | `http.client.proxy_select_ms` | Proxy selection |
 | `http.client.resolve_dns_ms` | DNS resolution |
 | `http.connect_ms` | TCP connect |
@@ -239,11 +256,13 @@ implementation("io.sentry:sentry-okhttp:8.33.0")
 
 ### Distributed tracing with OkHttp
 
-OkHttp automatically attaches `sentry-trace` and `baggage` headers to requests targeting `tracePropagationTargets`. See [Distributed Tracing](#14-distributed-tracing).
+OkHttp automatically attaches `sentry-trace` and `baggage` headers to requests targeting
+`tracePropagationTargets`. See [Distributed Tracing](#14-distributed-tracing).
 
-> **Note:** On Android, OkHttp spans attach to the root transaction (not the innermost active span). HTTP spans always appear at transaction level.
+> **Note:** On Android, OkHttp spans attach to the root transaction (not the innermost
+> active span). HTTP spans always appear at transaction level.
 
----
+* * *
 
 ## 7. SQLite / Room Database Tracing
 
@@ -273,9 +292,11 @@ Each `db.sql.query` span includes:
 - `blocked_main_thread`: `true` if query ran on the main thread
 - `call_stack`: in-app stack frames (when main thread is blocked)
 
-> **Performance warning:** The `blocked_main_thread` field flags queries running on the main thread — a common source of UI jank. Move database queries to a background dispatcher.
+> **Performance warning:** The `blocked_main_thread` field flags queries running on the
+> main thread — a common source of UI jank.
+> Move database queries to a background dispatcher.
 
----
+* * *
 
 ## 8. Jetpack Compose Navigation
 
@@ -319,11 +340,12 @@ Dependency:
 implementation("io.sentry:sentry-compose-android:8.33.0")
 ```
 
----
+* * *
 
 ## 9. File I/O Tracing
 
-Creates `file.read` and `file.write` spans for file operations. Manual setup wraps the standard Java I/O classes:
+Creates `file.read` and `file.write` spans for file operations.
+Manual setup wraps the standard Java I/O classes:
 
 ```kotlin
 import io.sentry.instrumentation.file.SentryFileInputStream
@@ -343,18 +365,20 @@ SentryFileOutputStream(File(path)).use { output ->
 }
 ```
 
-Span description: `"report.pdf (512.0 kB)"` (with PII enabled) or `"***.pdf (512.0 kB)"` (default).
+Span description: `"report.pdf (512.0 kB)"` (with PII enabled) or `"***.pdf (512.0 kB)"`
+(default).
 
 Enable full paths via:
 ```kotlin
 options.isSendDefaultPii = true
 ```
 
----
+* * *
 
 ## 10. User Interaction Tracing
 
-Captures touch events (clicks, scrolls, swipes) as `ui.action.click` transactions. Disabled by default.
+Captures touch events (clicks, scrolls, swipes) as `ui.action.click` transactions.
+Disabled by default.
 
 ```kotlin
 options.isEnableUserInteractionTracing = true
@@ -365,7 +389,8 @@ Via manifest:
 <meta-data android:name="io.sentry.traces.user-interaction.enable" android:value="true" />
 ```
 
-**Views require a resource ID** for meaningful transaction names. Views without IDs produce `"ActivityName.unknown_id"`.
+**Views require a resource ID** for meaningful transaction names.
+Views without IDs produce `"ActivityName.unknown_id"`.
 
 ```xml
 <!-- Good — produces "HomeActivity.add_to_cart_button" -->
@@ -375,29 +400,32 @@ Via manifest:
 <Button ... />
 ```
 
-Transactions auto-finish after 3 s of inactivity (configurable via `options.idleTimeout`). Transactions with zero child spans are automatically discarded.
+Transactions auto-finish after 3 s of inactivity (configurable via
+`options.idleTimeout`). Transactions with zero child spans are automatically discarded.
 
----
+* * *
 
 ## 11. Slow & Frozen Frames
 
-Automatically attached as **measurements** (not spans) to every Activity transaction. No configuration needed.
+Automatically attached as **measurements** (not spans) to every Activity transaction.
+No configuration needed.
 
 | Measurement | Threshold | Meaning |
-|-------------|-----------|---------|
+| --- | --- | --- |
 | `frames_total` | N/A | Total frames rendered during transaction |
 | `frames_slow` | 16–700 ms | Frames that missed the vsync budget |
 | `frames_frozen` | > 700 ms | Frames that caused visible freezes |
 
 Requires Android API 24 (`FrameMetricsAggregator`). Silently disabled on older devices.
 
-These appear in Sentry's **Mobile Vitals** section on transaction detail pages.
+These appear in Sentry’s **Mobile Vitals** section on transaction detail pages.
 
----
+* * *
 
 ## 12. Sentry Gradle Plugin — Zero-Source-Change Instrumentation
 
-The Gradle plugin instruments bytecode at build time, enabling all tracing features with **no source code changes**. Covers DATABASE, FILE_IO, OKHTTP, and COMPOSE.
+The Gradle plugin instruments bytecode at build time, enabling all tracing features with
+**no source code changes**. Covers DATABASE, FILE_IO, OKHTTP, and COMPOSE.
 
 ```kotlin
 // build.gradle.kts (app module)
@@ -431,12 +459,15 @@ sentry {
 ```
 
 > **What the plugin transforms:**
-> - `DATABASE`: Wraps `SupportSQLiteOpenHelper.Factory` with `SentrySupportSQLiteOpenHelper`
-> - `FILE_IO`: Rewrites `new FileInputStream(f)` → `new SentryFileInputStream(f)` at all call sites
-> - `OKHTTP`: Injects `.addInterceptor(new SentryOkHttpInterceptor())` before every `.build()` call
+> - `DATABASE`: Wraps `SupportSQLiteOpenHelper.Factory` with
+>   `SentrySupportSQLiteOpenHelper`
+> - `FILE_IO`: Rewrites `new FileInputStream(f)` → `new SentryFileInputStream(f)` at all
+>   call sites
+> - `OKHTTP`: Injects `.addInterceptor(new SentryOkHttpInterceptor())` before every
+>   `.build()` call
 > - `COMPOSE`: Wraps `rememberNavController()` with `.withSentryObservableEffect()`
 
----
+* * *
 
 ## 13. Custom Spans
 
@@ -528,7 +559,8 @@ fun processItem(item: Item) {
 
 ### Kotlin coroutines — propagate across dispatchers
 
-Without `SentryContext`, spans started in one dispatcher won't see the parent from another.
+Without `SentryContext`, spans started in one dispatcher won’t see the parent from
+another.
 
 ```kotlin
 import io.sentry.kotlin.SentryContext
@@ -579,7 +611,7 @@ span?.finish()
 ### `SpanStatus` reference
 
 | Status | HTTP equivalent | When to use |
-|--------|----------------|-------------|
+| --- | --- | --- |
 | `OK` | 2xx/3xx | Success |
 | `CANCELLED` | 499 | Client cancelled |
 | `INTERNAL_ERROR` | 500 | Exception / internal failure |
@@ -608,13 +640,15 @@ val opts = TransactionOptions().apply {
 
 ### Hard span limit
 
-Each transaction is capped at **1,000 child spans** (`options.maxSpans`, default `1000`). Spans beyond this are silently dropped. Increase if needed:
+Each transaction is capped at **1,000 child spans** (`options.maxSpans`, default
+`1000`). Spans beyond this are silently dropped.
+Increase if needed:
 
 ```kotlin
 options.maxSpans = 2_000
 ```
 
----
+* * *
 
 ## 14. Distributed Tracing
 
@@ -625,7 +659,7 @@ Connects Android traces to backend traces for end-to-end visibility.
 When a network request fires inside a transaction, the SDK attaches two headers:
 
 | Header | Purpose |
-|--------|---------|
+| --- | --- |
 | `sentry-trace` | Trace ID, span ID, sampling decision |
 | `baggage` | Sampling metadata (release, environment, public key) |
 
@@ -633,7 +667,8 @@ The backend Sentry SDK reads these headers and links its spans to the same trace
 
 ### `tracePropagationTargets`
 
-Controls which URLs receive the headers. Default on Android: `".*"` (all URLs).
+Controls which URLs receive the headers.
+Default on Android: `".*"` (all URLs).
 
 ```kotlin
 options.setTracePropagationTargets(listOf(
@@ -650,7 +685,8 @@ Via manifest:
     android:value="api.myapp.com,localhost" />
 ```
 
-> **Security:** Remove `".*"` (the default) before going to production to avoid sending Sentry headers to third-party APIs.
+> **Security:** Remove `".*"` (the default) before going to production to avoid sending
+> Sentry headers to third-party APIs.
 
 ### W3C `traceparent` header (SDK ≥ 8.22.0)
 
@@ -686,7 +722,7 @@ TransactionContext ctx = TransactionContext.fromSentryTrace(
 ITransaction tx = Sentry.startTransaction(ctx);
 ```
 
----
+* * *
 
 ## 15. Dynamic Sampling
 
@@ -725,7 +761,7 @@ options.tracesSampler = TracesSamplerCallback { ctx ->
 }
 ```
 
----
+* * *
 
 ## 16. Configuration Reference
 
@@ -762,7 +798,7 @@ SentryAndroid.init(this) { options ->
 ### `AndroidManifest.xml` — tracing keys
 
 | Key | Type | Default | Description |
-|-----|------|---------|-------------|
+| --- | --- | --- | --- |
 | `io.sentry.traces.sample-rate` | Float | `null` | Traces sample rate 0.0–1.0 |
 | `io.sentry.traces.activity.enable` | Boolean | `true` | Activity lifecycle tracing |
 | `io.sentry.traces.activity.auto-finish.enable` | Boolean | `true` | Auto-finish Activity transactions |
@@ -776,7 +812,7 @@ SentryAndroid.init(this) { options ->
 ### Instrumentation approach comparison
 
 | Feature | Enabled by default | Required setup | Source changes? | Gradle Plugin? |
-|---------|-------------------|----------------|-----------------|---------------|
+| --- | --- | --- | --- | --- |
 | Activity `ui.load` + TTID | ✅ | None | No | No |
 | TTFD | ❌ | Manifest + `reportFullyDisplayed()` | 1 call | No |
 | Fragment spans | ❌ | `addIntegration()` | No | No |
@@ -789,12 +825,12 @@ SentryAndroid.init(this) { options ->
 | Slow/frozen frames | ✅ | None (API 24+) | No | No |
 | **All above (plugin)** | N/A | Apply Gradle plugin | **No** | **Yes** |
 
----
+* * *
 
 ## 17. Troubleshooting
 
 | Issue | Cause | Solution |
-|-------|-------|----------|
+| --- | --- | --- |
 | No transactions in Sentry | `tracesSampleRate` not set or `0` | Set `tracesSampleRate > 0` |
 | OkHttp spans missing | Interceptor not added | Add `SentryOkHttpInterceptor()` to `OkHttpClient.Builder` or apply Gradle plugin with `OKHTTP` feature |
 | SQLite spans missing | Factory not wrapped | Use `SentrySupportSQLiteOpenHelper.Factory` or apply Gradle plugin with `DATABASE` feature |
@@ -805,7 +841,7 @@ SentryAndroid.init(this) { options ->
 | App Start span missing | Not appearing correctly | App start appears as first child of first Activity `ui.load` transaction; verify Activity tracing is enabled |
 | Slow/frozen frames not appearing | API < 24 or disabled | Requires Android 7.0+ (`FrameMetricsAggregator`); check `isEnableFramesTracking = true` |
 | User interaction transactions missing | Views have no `android:id` | Add resource IDs to interactive views |
-| `sentry-trace` header missing from OkHttp | `tracePropagationTargets` doesn't match URL | Check full URL against your patterns — matched against the entire URL string |
+| `sentry-trace` header missing from OkHttp | `tracePropagationTargets` doesn’t match URL | Check full URL against your patterns — matched against the entire URL string |
 | Coroutine spans not linked | Missing `SentryContext` | Add `+ SentryContext()` to `withContext(Dispatchers.IO + SentryContext())` |
 | Transaction never finishes | Idle timeout not reached | Verify `isWaitForChildren = true` and adjust `idleTimeout`; always call `tx.finish()` in `finally` |
 | Spans silently dropped | Hit 1,000-span limit | Increase `options.maxSpans` or reduce instrumentation scope |

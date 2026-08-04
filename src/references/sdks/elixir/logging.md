@@ -1,20 +1,25 @@
 # Logging — Sentry Elixir SDK
 
-> Minimum SDK: `sentry` v9.0.0+ for `Sentry.LoggerHandler`; v12.0.0+ for Sentry Logs Protocol
+> Minimum SDK: `sentry` v9.0.0+ for `Sentry.LoggerHandler`; v12.0.0+ for Sentry Logs
+> Protocol
 
 The Elixir SDK provides two independent logging mechanisms:
 
-1. **`Sentry.LoggerHandler`** — Erlang `:logger` handler that forwards crash reports and error log messages from your app to Sentry as *error events*. This is the primary way to catch errors that weren't explicitly passed to `capture_exception/2`.
+1. **`Sentry.LoggerHandler`** — Erlang `:logger` handler that forwards crash reports and
+   error log messages from your app to Sentry as *error events*. This is the primary way
+   to catch errors that weren’t explicitly passed to `capture_exception/2`.
 
-2. **Sentry Logs Protocol** (v12.0.0+) — Forwards structured log entries to Sentry's Logs product, where they appear alongside errors and traces.
+2. **Sentry Logs Protocol** (v12.0.0+) — Forwards structured log entries to Sentry’s
+   Logs product, where they appear alongside errors and traces.
 
----
+* * *
 
 ## Sentry.LoggerHandler
 
 ### Configuration
 
-The recommended setup uses the `:logger` key in your app's config and activates handlers in `Application.start/2`.
+The recommended setup uses the `:logger` key in your app’s config and activates handlers
+in `Application.start/2`.
 
 **Step 1: Define the handler in config**
 
@@ -66,7 +71,7 @@ end
 ### LoggerHandler Configuration Options
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `:level` | `Logger.level \| nil` | `:error` | Minimum log level to forward to Sentry |
 | `:excluded_domains` | `[atom]` | `[:cowboy]` | Domains to skip (cowboy excluded by default to avoid double-reporting with `PlugCapture`) |
 | `:metadata` | `[atom] \| :all` | `[]` | Logger metadata keys to include as extra context on the Sentry event |
@@ -108,7 +113,8 @@ config :my_app, :logger, [
 
 ### Promoting metadata to Sentry tags
 
-Tags are indexed and searchable in Sentry. Promote high-value metadata keys:
+Tags are indexed and searchable in Sentry.
+Promote high-value metadata keys:
 
 ```elixir
 config :my_app, :logger, [
@@ -125,7 +131,9 @@ config :my_app, :logger, [
 
 ### LoggerBackend (legacy)
 
-`Sentry.LoggerBackend` is the older Elixir `Logger` backend. Prefer `LoggerHandler` for new projects. `LoggerBackend` will eventually be deprecated.
+`Sentry.LoggerBackend` is the older Elixir `Logger` backend.
+Prefer `LoggerHandler` for new projects.
+`LoggerBackend` will eventually be deprecated.
 
 ```elixir
 # lib/my_app/application.ex
@@ -142,11 +150,13 @@ config :logger, Sentry.LoggerBackend,
   capture_log_messages: true
 ```
 
----
+* * *
 
 ## Sentry Logs Protocol (since v12.0.0)
 
-The Sentry Logs feature sends structured log entries to Sentry's Logs product — separate from error events. This enables log search, log-to-trace correlation, and dashboards alongside your error data.
+The Sentry Logs feature sends structured log entries to Sentry’s Logs product — separate
+from error events. This enables log search, log-to-trace correlation, and dashboards
+alongside your error data.
 
 ### Enable
 
@@ -161,7 +171,8 @@ config :sentry,
   ]
 ```
 
-`enable_logs: true` automatically wires up a Logger handler that captures log entries and forwards them to the Sentry Logs Protocol endpoint via the `TelemetryProcessor`.
+`enable_logs: true` automatically wires up a Logger handler that captures log entries
+and forwards them to the Sentry Logs Protocol endpoint via the `TelemetryProcessor`.
 
 ### Filter logs before sending
 
@@ -176,7 +187,8 @@ config :sentry,
 
 ### Route all categories through TelemetryProcessor
 
-By default only logs use the `TelemetryProcessor` ring buffer. You can route errors, check-ins, and transactions through it too:
+By default only logs use the `TelemetryProcessor` ring buffer.
+You can route errors, check-ins, and transactions through it too:
 
 ```elixir
 config :sentry,
@@ -184,33 +196,41 @@ config :sentry,
   telemetry_processor_categories: [:log, :error, :check_in, :transaction]
 ```
 
----
+* * *
 
 ## How the Two Systems Interact
 
 | What | LoggerHandler | Sentry Logs Protocol |
-|------|---------------|---------------------|
+| --- | --- | --- |
 | Appears in Sentry | Issues (errors) | Logs product |
 | Use for | Crash reports, unhandled errors | Structured log search, log-to-trace correlation |
 | Min SDK version | v9.0.0 | v12.0.0 |
 | Config key | `:logger` in app config | `:enable_logs` in sentry config |
 
-You can run both simultaneously. A common setup: `LoggerHandler` at `:error` level for issues, and Sentry Logs at `:info` for structured log search.
+You can run both simultaneously.
+A common setup: `LoggerHandler` at `:error` level for issues, and Sentry Logs at `:info`
+for structured log search.
 
----
+* * *
 
 ## Best Practices
 
-- Prefer `Sentry.LoggerHandler` over `Sentry.LoggerBackend` for new projects — `LoggerHandler` is the Erlang `:logger` handler and runs in the calling process, which is more efficient
-- Set `excluded_domains: [:cowboy]` (the default) to avoid duplicate events when using `Sentry.PlugCapture` with Cowboy
-- Enable `capture_log_messages: true` to catch error-level log messages that are not explicit `capture_exception` calls
-- Use `tags_from_metadata` to promote high-cardinality identifiers (user ID, region, request ID) to searchable Sentry tags
-- Apply `rate_limiting` in high-throughput services to prevent log storms from overwhelming your Sentry quota
+- Prefer `Sentry.LoggerHandler` over `Sentry.LoggerBackend` for new projects —
+  `LoggerHandler` is the Erlang `:logger` handler and runs in the calling process, which
+  is more efficient
+- Set `excluded_domains: [:cowboy]` (the default) to avoid duplicate events when using
+  `Sentry.PlugCapture` with Cowboy
+- Enable `capture_log_messages: true` to catch error-level log messages that are not
+  explicit `capture_exception` calls
+- Use `tags_from_metadata` to promote high-cardinality identifiers (user ID, region,
+  request ID) to searchable Sentry tags
+- Apply `rate_limiting` in high-throughput services to prevent log storms from
+  overwhelming your Sentry quota
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | LoggerHandler not capturing anything | Verify `Logger.add_handlers(:my_app)` is called in `Application.start/2` |
 | Duplicate events from Cowboy crashes | `excluded_domains: [:cowboy]` is the default; check if it was removed from config |
 | No Sentry Logs entries appearing | Ensure `enable_logs: true` is set and sentry v12.0.0+ is in use |

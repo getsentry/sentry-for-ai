@@ -1,29 +1,31 @@
 # Tracing — Sentry Cloudflare SDK
 
-> Minimum SDK: `@sentry/cloudflare` v8.0.0+
-> Streaming response span tracking: v10.x+
-> `propagateTraceparent`: v10.x+
-> OpenTelemetry compatibility tracer: v10.x+
-> RPC trace propagation (`enableRpcTracePropagation`): v10.52.0+
-> Workers AI (`env.AI`) `gen_ai` spans: v10.67.0+
-> Agents SDK auto conversation IDs (`instrumentAgentWithSentry`): v10.69.0+
+> Minimum SDK: `@sentry/cloudflare` v8.0.0+ Streaming response span tracking: v10.x+
+> `propagateTraceparent`: v10.x+ OpenTelemetry compatibility tracer: v10.x+ RPC trace
+> propagation (`enableRpcTracePropagation`): v10.52.0+ Workers AI (`env.AI`) `gen_ai`
+> spans: v10.67.0+ Agents SDK auto conversation IDs (`instrumentAgentWithSentry`):
+> v10.69.0+
 
----
+* * *
 
 ## How Tracing Works
 
-The Cloudflare SDK is **not natively OpenTelemetry-based** (unlike `@sentry/node`), but it sets up an OpenTelemetry compatibility tracer. This means:
+The Cloudflare SDK is **not natively OpenTelemetry-based** (unlike `@sentry/node`), but
+it sets up an OpenTelemetry compatibility tracer.
+This means:
 
 - Spans emitted via `@opentelemetry/api` are captured by Sentry
 - The SDK creates its own HTTP server spans for incoming requests
 - Outbound `fetch()` calls are automatically traced via `fetchIntegration`
-- D1 queries and Workers AI (`env.AI`) calls are traced automatically when accessed via `env`
+- D1 queries and Workers AI (`env.AI`) calls are traced automatically when accessed via
+  `env`
 
----
+* * *
 
 ## Activating Tracing
 
-Set `tracesSampleRate` or `tracesSampler` in your init options. Without one of these, no spans are created.
+Set `tracesSampleRate` or `tracesSampler` in your init options.
+Without one of these, no spans are created.
 
 ```typescript
 export default Sentry.withSentry(
@@ -43,7 +45,7 @@ The SDK also reads `SENTRY_TRACES_SAMPLE_RATE` from `env` automatically:
 SENTRY_TRACES_SAMPLE_RATE = "0.1"
 ```
 
----
+* * *
 
 ## `tracesSampleRate` — Uniform Sampling
 
@@ -59,7 +61,7 @@ Sentry.withSentry(
 );
 ```
 
----
+* * *
 
 ## `tracesSampler` — Dynamic Sampling
 
@@ -86,16 +88,17 @@ Sentry.withSentry(
 );
 ```
 
----
+* * *
 
 ## Automatic Spans
 
 ### HTTP Server Spans
 
-Every incoming request wrapped by `withSentry` or `sentryPagesPlugin` creates an `http.server` span with:
+Every incoming request wrapped by `withSentry` or `sentryPagesPlugin` creates an
+`http.server` span with:
 
 | Attribute | Source |
-|-----------|--------|
+| --- | --- |
 | `http.request.method` | `request.method` |
 | `url.full` | `request.url` |
 | `http.response.status_code` | Response status |
@@ -103,15 +106,19 @@ Every incoming request wrapped by `withSentry` or `sentryPagesPlugin` creates an
 | `user_agent.original` | `User-Agent` header |
 | `network.protocol.name` | `request.cf.httpProtocol` |
 
-> **Note:** `OPTIONS` and `HEAD` requests do not create spans (to reduce noise) but errors are still captured.
+> **Note:** `OPTIONS` and `HEAD` requests do not create spans (to reduce noise) but
+> errors are still captured.
 
 ### Streaming Response Tracking
 
-The SDK detects streaming responses and keeps the root span alive until the stream is fully consumed. This ensures accurate duration measurement for SSE, streaming AI responses, etc.
+The SDK detects streaming responses and keeps the root span alive until the stream is
+fully consumed. This ensures accurate duration measurement for SSE, streaming AI
+responses, etc.
 
 ### Outbound Fetch Spans
 
-The `fetchIntegration` (enabled by default) automatically traces all outbound `fetch()` calls:
+The `fetchIntegration` (enabled by default) automatically traces all outbound `fetch()`
+calls:
 
 ```typescript
 // This fetch call is automatically traced
@@ -122,7 +129,9 @@ Each outbound fetch creates a child span with method, URL, and response status.
 
 ### D1 Query Spans
 
-D1 bindings are **auto-instrumented** by `withSentry` — access `env.DB` from the handler's `env` and queries create `db.query` spans automatically (no manual wrapping needed):
+D1 bindings are **auto-instrumented** by `withSentry` — access `env.DB` from the
+handler’s `env` and queries create `db.query` spans automatically (no manual wrapping
+needed):
 
 ```typescript
 // env.DB is auto-instrumented — no wrapper required
@@ -139,7 +148,12 @@ See `./durable-objects.md` for full D1 coverage (prepared statements, `batch`, `
 
 ### Workers AI Spans
 
-The Cloudflare Workers AI binding (`env.AI`) is auto-instrumented by `withSentry` (v10.67.0+). Calls to `env.AI.run(...)` create `gen_ai` spans following Sentry's Agent Tracing conventions — capturing model, request parameters, and token usage. For the full agent tracing setup — OpenAI/Anthropic/Google Gen AI/Vercel AI/LangChain instrumentation, the build-time Vite plugin, and manual `gen_ai.*` spans — see `./ai-monitoring.md`.
+The Cloudflare Workers AI binding (`env.AI`) is auto-instrumented by `withSentry`
+(v10.67.0+). Calls to `env.AI.run(...)` create `gen_ai` spans following Sentry’s Agent
+Tracing conventions — capturing model, request parameters, and token usage.
+For the full agent tracing setup — OpenAI/Anthropic/Google Gen AI/Vercel AI/LangChain
+instrumentation, the build-time Vite plugin, and manual `gen_ai.*` spans — see
+`./ai-monitoring.md`.
 
 ```typescript
 // env.AI is auto-instrumented — creates a gen_ai span
@@ -152,9 +166,24 @@ const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
 
 > **Beta:** configuration options and behavior may change.
 
-The Workers AI instrumentation does **not** infer the conversation ID automatically. To group multi-turn AI calls into a single [Conversation](https://docs.sentry.io/product/ai/monitoring/conversations/), set the ID manually with `Sentry.setConversationId(id)`. It's applied as the `gen_ai.conversation.id` attribute to **all AI spans within the current scope**, so call it once at the start of a request handler — before any `env.AI.run(...)` calls — and every AI span for that request is grouped. Pass `null` to unset it.
+The Workers AI instrumentation does **not** infer the conversation ID automatically.
+To group multi-turn AI calls into a single
+[Conversation](https://docs.sentry.io/product/ai/monitoring/conversations/), set the ID
+manually with `Sentry.setConversationId(id)`. It’s applied as the
+`gen_ai.conversation.id` attribute to **all AI spans within the current scope**, so call
+it once at the start of a request handler — before any `env.AI.run(...)` calls — and
+every AI span for that request is grouped.
+Pass `null` to unset it.
 
-When you use the [Cloudflare Agents SDK](https://developers.cloudflare.com/agents/), prefer `instrumentAgentWithSentry` (v10.69.0+) — it sets the conversation ID automatically for every chat turn and `@callable()` RPC call, and rotates it when the chat is cleared. See `./durable-objects.md`. On older SDK versions, or when you need to control the ID yourself, set it manually at the top of the handler (`onRequest` for `Agent`, `onChatMessage` for `AIChatAgent`) so every AI call triggered while handling that message shares the ID. Use your chat session ID — `this.name` works when one agent instance is one chat session, but not when instances are per-user or a shared singleton like `"default"`:
+When you use the [Cloudflare Agents SDK](https://developers.cloudflare.com/agents/),
+prefer `instrumentAgentWithSentry` (v10.69.0+) — it sets the conversation ID
+automatically for every chat turn and `@callable()` RPC call, and rotates it when the
+chat is cleared. See `./durable-objects.md`. On older SDK versions, or when you need to
+control the ID yourself, set it manually at the top of the handler (`onRequest` for
+`Agent`, `onChatMessage` for `AIChatAgent`) so every AI call triggered while handling
+that message shares the ID. Use your chat session ID — `this.name` works when one agent
+instance is one chat session, but not when instances are per-user or a shared singleton
+like `"default"`:
 
 ```typescript
 import * as Sentry from "@sentry/cloudflare";
@@ -188,9 +217,15 @@ export const MyChatAgent = Sentry.instrumentAgentWithSentry(
 );
 ```
 
-(With `instrumentAgentWithSentry` the explicit `setConversationId(this.name)` call above is redundant — shown for the manual/override case.) For a plain `Agent`, the pattern is the same — call `Sentry.setConversationId(id)` at the top of `onRequest` before your `this.env.AI.run(...)` calls. Grouped calls appear in the [Conversations](https://docs.sentry.io/product/ai/monitoring/conversations/) view, where you can inspect token usage, latency, and errors across the whole conversation.
+(With `instrumentAgentWithSentry` the explicit `setConversationId(this.name)` call above
+is redundant — shown for the manual/override case.)
+For a plain `Agent`, the pattern is the same — call `Sentry.setConversationId(id)` at
+the top of `onRequest` before your `this.env.AI.run(...)` calls.
+Grouped calls appear in the
+[Conversations](https://docs.sentry.io/product/ai/monitoring/conversations/) view, where
+you can inspect token usage, latency, and errors across the whole conversation.
 
----
+* * *
 
 ## Custom Spans
 
@@ -248,17 +283,21 @@ await Sentry.startSpanManual(
 );
 ```
 
----
+* * *
 
 ## Distributed Tracing
 
 ### Incoming Trace Propagation
 
-The SDK automatically reads `sentry-trace` and `baggage` headers from incoming requests and continues the trace. This works out of the box with `withSentry` and `sentryPagesPlugin`.
+The SDK automatically reads `sentry-trace` and `baggage` headers from incoming requests
+and continues the trace.
+This works out of the box with `withSentry` and `sentryPagesPlugin`.
 
 ### Outbound Trace Propagation
 
-The `fetchIntegration` automatically injects `sentry-trace` and `baggage` headers into outbound `fetch()` calls. Control which URLs get trace headers with `tracePropagationTargets`:
+The `fetchIntegration` automatically injects `sentry-trace` and `baggage` headers into
+outbound `fetch()` calls.
+Control which URLs get trace headers with `tracePropagationTargets`:
 
 ```typescript
 Sentry.withSentry(
@@ -274,11 +313,13 @@ Sentry.withSentry(
 );
 ```
 
-By default (when `tracePropagationTargets` is not set), trace headers are attached to **all** outbound requests.
+By default (when `tracePropagationTargets` is not set), trace headers are attached to
+**all** outbound requests.
 
 ### `propagateTraceparent`
 
-Controls whether the `sentry-trace` header is attached to outgoing requests (default: SDK behavior). Set explicitly to control:
+Controls whether the `sentry-trace` header is attached to outgoing requests (default:
+SDK behavior). Set explicitly to control:
 
 ```typescript
 Sentry.withSentry(
@@ -320,9 +361,15 @@ return new Response(`<html><head>${metaTags}</head>...`, {
 
 > `enableRpcTracePropagation`: v10.52.0+
 
-Trace context isn't propagated across [Service Binding](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/) / [RPC](https://developers.cloudflare.com/workers/runtime-apis/rpc/) calls (including Durable Object RPC and Workflows) by default. Set `enableRpcTracePropagation: true` on **both** the caller and the receiver to link these calls into a single distributed trace.
+Trace context isn’t propagated across
+[Service Binding](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/)
+/ [RPC](https://developers.cloudflare.com/workers/runtime-apis/rpc/) calls (including
+Durable Object RPC and Workflows) by default.
+Set `enableRpcTracePropagation: true` on **both** the caller and the receiver to link
+these calls into a single distributed trace.
 
-**Recommended:** enable it whenever your Workers communicate over RPC / service bindings or you use Durable Objects or Workflows.
+**Recommended:** enable it whenever your Workers communicate over RPC / service bindings
+or you use Durable Objects or Workflows.
 
 **Caller (Worker calling into a service binding / DO):**
 
@@ -350,11 +397,12 @@ export const MyDurableObject = Sentry.instrumentDurableObjectWithSentry(
 );
 ```
 
----
+* * *
 
 ## Durable Object Tracing
 
-Durable Objects instrumented with `instrumentDurableObjectWithSentry` automatically create spans for:
+Durable Objects instrumented with `instrumentDurableObjectWithSentry` automatically
+create spans for:
 
 - `fetch` — creates `http.server` spans (same as regular fetch handlers)
 - `alarm` — creates spans named `alarm`
@@ -365,11 +413,12 @@ Durable Objects instrumented with `instrumentDurableObjectWithSentry` automatica
 
 See `./durable-objects.md` for full setup.
 
----
+* * *
 
 ## Workflow Step Tracing
 
-Workflows instrumented with `instrumentWorkflowWithSentry` create spans for each `step.do()` call:
+Workflows instrumented with `instrumentWorkflowWithSentry` create spans for each
+`step.do()` call:
 
 ```typescript
 // Each step.do() creates a span with op "function.step.do"
@@ -380,23 +429,32 @@ await step.do("process-payment", async () => {
 
 See the Workflows section in `./durable-objects.md` for full setup.
 
----
+* * *
 
 ## Best Practices
 
-1. **Set `tracesSampleRate` low in production** — Cloudflare Workers handle high request volumes. Start with `0.05`–`0.1` and adjust based on volume and cost.
+1. **Set `tracesSampleRate` low in production** — Cloudflare Workers handle high request
+   volumes. Start with `0.05`–`0.1` and adjust based on volume and cost.
 
-2. **Use `tracePropagationTargets`** — avoid leaking trace headers to third-party APIs. Only propagate to your own services.
+2. **Use `tracePropagationTargets`** — avoid leaking trace headers to third-party APIs.
+   Only propagate to your own services.
 
-3. **Access bindings via `env`** — D1 and Workers AI are auto-instrumented when you use `env.DB` / `env.AI` directly, giving query- and model-level visibility with no manual wrapping.
+3. **Access bindings via `env`** — D1 and Workers AI are auto-instrumented when you use
+   `env.DB` / `env.AI` directly, giving query- and model-level visibility with no manual
+   wrapping.
 
-4. **Use `startSpan` for custom operations** — wrap business logic in spans for detailed visibility beyond HTTP/DB.
+4. **Use `startSpan` for custom operations** — wrap business logic in spans for detailed
+   visibility beyond HTTP/DB.
 
-5. **Don't forget `span.end()`** — when using `startInactiveSpan` or `startSpanManual`, always end the span.
+5. **Don’t forget `span.end()`** — when using `startInactiveSpan` or `startSpanManual`,
+   always end the span.
 
 ### `waitUntil()` Background Work
 
-Spans started inside `ctx.waitUntil()` run **after** the response is returned, so the request's root span has usually already ended. To make sure background spans are recorded as their own transaction, start them with `forceTransaction: true`:
+Spans started inside `ctx.waitUntil()` run **after** the response is returned, so the
+request’s root span has usually already ended.
+To make sure background spans are recorded as their own transaction, start them with
+`forceTransaction: true`:
 
 ```typescript
 ctx.waitUntil(
@@ -409,12 +467,12 @@ ctx.waitUntil(
 );
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No traces appearing | Verify `tracesSampleRate` or `tracesSampler` is set in init options |
 | Missing outbound fetch spans | Ensure `fetchIntegration` is not removed from `defaultIntegrations` |
 | Trace headers not propagated | Check `tracePropagationTargets` includes the target URL |

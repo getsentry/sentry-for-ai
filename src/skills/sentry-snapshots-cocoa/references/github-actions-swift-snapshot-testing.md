@@ -1,15 +1,23 @@
 # GitHub Actions Workflow for Point-Free swift-snapshot-testing
 
-Use this when a project already uses Point-Free `swift-snapshot-testing` and the user wants GitHub Actions/CI upload to Sentry Snapshots. Do not run the `appleSnapshots` wizard or use the SnapshotPreviews workflow templates for this path.
+Use this when a project already uses Point-Free `swift-snapshot-testing` and the user
+wants GitHub Actions/CI upload to Sentry Snapshots.
+Do not run the `appleSnapshots` wizard or use the SnapshotPreviews workflow templates
+for this path.
 
-This pattern follows the public [EmergeTools HackerNews workflow](https://github.com/EmergeTools/hackernews/blob/main/.github/workflows/ios_sentry_upload_swift_snapshots.yml). Run the existing XCTest suite in record mode, allow the recording step to fail because `swift-snapshot-testing` treats recording as test failures, then upload the generated `__Snapshots__` directory to Sentry.
+This pattern follows the public
+[EmergeTools HackerNews workflow](https://github.com/EmergeTools/hackernews/blob/main/.github/workflows/ios_sentry_upload_swift_snapshots.yml).
+Run the existing XCTest suite in record mode, allow the recording step to fail because
+`swift-snapshot-testing` treats recording as test failures, then upload the generated
+`__Snapshots__` directory to Sentry.
 
 Before adapting this template:
 
 1. Locate the test target/class that owns the `assertSnapshot` calls.
 2. Confirm the generated `__Snapshots__/<TestClass>/` path.
-3. Prefer the project's existing Ruby/Fastlane setup if it already uploads snapshots.
-4. Keep local test behavior unchanged; set record mode only in CI through the environment.
+3. Prefer the project’s existing Ruby/Fastlane setup if it already uploads snapshots.
+4. Keep local test behavior unchanged; set record mode only in CI through the
+   environment.
 
 ```yaml
 name: Upload iOS swift-snapshot-testing snapshots to Sentry
@@ -91,7 +99,8 @@ jobs:
             --app-id "${SENTRY_APP_ID}"
 ```
 
-If using Fastlane, replace the install/upload steps with the project's existing lane, for example:
+If using Fastlane, replace the install/upload steps with the project’s existing lane,
+for example:
 
 ```yaml
       - name: Upload snapshots to Sentry
@@ -100,7 +109,10 @@ If using Fastlane, replace the install/upload steps with the project's existing 
 
 Rules:
 
-- Use `TEST_RUNNER_SNAPSHOT_TESTING_RECORD=all`, not `SNAPSHOT_TESTING_RECORD=all`, so the value reaches the iOS test runner.
-- Keep `continue-on-error: true` on the recording test step; otherwise recording failures prevent upload.
+- Use `TEST_RUNNER_SNAPSHOT_TESTING_RECORD=all`, not `SNAPSHOT_TESTING_RECORD=all`, so
+  the value reaches the iOS test runner.
+- Keep `continue-on-error: true` on the recording test step; otherwise recording
+  failures prevent upload.
 - Upload the generated `__Snapshots__` directory that contains PNG images.
-- Use a stable `--app-id`. If the same app also uploads SnapshotPreviews images, give this generator a distinct app id to avoid mixing baselines.
+- Use a stable `--app-id`. If the same app also uploads SnapshotPreviews images, give
+  this generator a distinct app id to avoid mixing baselines.

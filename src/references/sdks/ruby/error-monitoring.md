@@ -15,7 +15,7 @@
 Key `Sentry.init` options for error monitoring:
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `send_default_pii` | `Boolean` | `false` | Include request headers, IP addresses |
 | `sample_rate` | `Float` | `1.0` | Error event sample rate (0.0–1.0) |
 | `excluded_exceptions` | `Array` | common 4xx | Exception classes to ignore |
@@ -28,9 +28,11 @@ Key `Sentry.init` options for error monitoring:
 
 ### Automatic capture
 
-**Rails** (`sentry-rails`): exceptions in controllers, background jobs, and mailers are captured automatically — no extra code needed.
+**Rails** (`sentry-rails`): exceptions in controllers, background jobs, and mailers are
+captured automatically — no extra code needed.
 
-**Rack / Sinatra**: register the middleware once and all unhandled exceptions are captured:
+**Rack / Sinatra**: register the middleware once and all unhandled exceptions are
+captured:
 
 ```ruby
 use Sentry::Rack::CaptureExceptions
@@ -80,7 +82,8 @@ Sentry.set_extras(raw_payload: payload.inspect)
 
 ### Isolated scope with `with_scope`
 
-Changes inside `with_scope` are discarded after the block — ideal for one-off enrichment without polluting subsequent events:
+Changes inside `with_scope` are discarded after the block — ideal for one-off enrichment
+without polluting subsequent events:
 
 ```ruby
 Sentry.with_scope do |scope|
@@ -135,7 +138,7 @@ config.breadcrumbs_logger = [:active_support_logger, :http_logger, :redis_logger
 ```
 
 | Logger | Captures |
-|--------|----------|
+| --- | --- |
 | `:active_support_logger` | Rails controller actions, SQL queries, mailer events |
 | `:http_logger` | Outbound Net::HTTP requests |
 | `:redis_logger` | Redis commands |
@@ -180,7 +183,9 @@ config.excluded_exceptions += [
 config.include_local_variables = true
 ```
 
-Captures local variables from the frames in the exception backtrace. Useful for debugging hard-to-reproduce errors. Evaluate privacy implications before enabling in production.
+Captures local variables from the frames in the exception backtrace.
+Useful for debugging hard-to-reproduce errors.
+Evaluate privacy implications before enabling in production.
 
 ### Custom fingerprinting
 
@@ -220,16 +225,21 @@ scope.clear
 
 ## Best Practices
 
-- Call `Sentry.init` in `config/initializers/sentry.rb` (Rails) or at the top of `config.ru` before any middleware
-- Use `Sentry.with_scope` for one-off context; use `configure_scope` for persistent request context
-- Set user in a Rails `before_action` so every exception in that request includes user info
-- Use `excluded_exceptions` to filter out expected 4xx errors and keep signal-to-noise high
-- Enable `include_local_variables` in development/staging; evaluate privacy implications for production
+- Call `Sentry.init` in `config/initializers/sentry.rb` (Rails) or at the top of
+  `config.ru` before any middleware
+- Use `Sentry.with_scope` for one-off context; use `configure_scope` for persistent
+  request context
+- Set user in a Rails `before_action` so every exception in that request includes user
+  info
+- Use `excluded_exceptions` to filter out expected 4xx errors and keep signal-to-noise
+  high
+- Enable `include_local_variables` in development/staging; evaluate privacy implications
+  for production
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing | Set `config.debug = true`; check DSN; ensure `Sentry.init` is called before exceptions occur |
 | Rails exceptions missing | Use `sentry-rails` gem — `sentry-ruby` alone does not hook Rails error handlers |
 | Missing request context | Set `config.send_default_pii = true` |

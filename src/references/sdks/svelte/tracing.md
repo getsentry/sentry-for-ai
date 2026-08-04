@@ -1,16 +1,16 @@
 # Tracing — Sentry Svelte/SvelteKit SDK
 
-> Minimum SDK: `@sentry/sveltekit` ≥7.0.0+ / `@sentry/svelte` ≥7.0.0+  
+> Minimum SDK: `@sentry/sveltekit` ≥7.0.0+ / `@sentry/svelte` ≥7.0.0+\
 > `Sentry.updateSpanName()`: requires `@sentry/sveltekit` ≥8.47.0+
 
----
+* * *
 
 ## How Automatic Tracing Works
 
 ### SvelteKit
 
-| What's traced | Where | How |
-|---------------|-------|-----|
+| What’s traced | Where | How |
+| --- | --- | --- |
 | Client-side page loads | Browser | `browserTracingIntegration()` in `hooks.client.ts` |
 | Client-side navigations | Browser | `browserTracingIntegration()` — SvelteKit router changes |
 | Outbound fetch/XHR requests | Browser | `browserTracingIntegration()` with `tracePropagationTargets` |
@@ -20,9 +20,10 @@
 
 ### Standalone Svelte
 
-Only client-side tracing is available. All instrumentation happens in a single init call.
+Only client-side tracing is available.
+All instrumentation happens in a single init call.
 
----
+* * *
 
 ## Configuration
 
@@ -93,12 +94,12 @@ const app = new App({ target: document.getElementById("app")! });
 export default app;
 ```
 
----
+* * *
 
 ## Sampling
 
 | Option | Behavior |
-|--------|----------|
+| --- | --- |
 | `tracesSampleRate: 1.0` | Capture 100% of traces (dev / low-traffic) |
 | `tracesSampleRate: 0.2` | Capture 20% uniformly |
 | `tracesSampler: (ctx) => number` | Per-transaction logic; **overrides** `tracesSampleRate` when both set |
@@ -120,7 +121,8 @@ Sentry.init({
 
 ### Disable tracing for production builds (tree-shaking)
 
-Set the build flag `__SENTRY_TRACING__ = false` to strip all tracing code at bundle time:
+Set the build flag `__SENTRY_TRACING__ = false` to strip all tracing code at bundle
+time:
 
 ```typescript
 // vite.config.ts
@@ -131,11 +133,12 @@ export default defineConfig({
 });
 ```
 
----
+* * *
 
 ## `tracePropagationTargets`
 
-Controls which outbound requests receive `sentry-trace` and `baggage` headers. Essential for distributed tracing between the SvelteKit frontend and your APIs.
+Controls which outbound requests receive `sentry-trace` and `baggage` headers.
+Essential for distributed tracing between the SvelteKit frontend and your APIs.
 
 ```typescript
 tracePropagationTargets: [
@@ -149,7 +152,7 @@ tracePropagationTargets: [
 - Prevents leaking trace IDs to third-party services
 - Omit to disable propagation entirely; set to `[""]` to propagate to all URLs
 
----
+* * *
 
 ## Custom Spans
 
@@ -182,7 +185,7 @@ const parsed = Sentry.startSpan(
 
 ### `Sentry.startSpanManual()` — manual `span.end()`
 
-Use when the span lifetime doesn't match a callback (event-driven flows, middleware):
+Use when the span lifetime doesn’t match a callback (event-driven flows, middleware):
 
 ```typescript
 function middleware(_req: Request, res: Response, next: NextFunction) {
@@ -212,12 +215,12 @@ child.end();
 parent.end();
 ```
 
----
+* * *
 
 ## Span Parameters
 
 | Parameter | Type | Description |
-|-----------|------|-------------|
+| --- | --- | --- |
 | `name` | `string` | **Required.** Span label in the UI |
 | `op` | `string` | Operation category (e.g., `http.client`, `db.query`, `ui.render`, `task`) |
 | `startTime` | `number` | Unix timestamp override |
@@ -226,7 +229,7 @@ parent.end();
 | `onlyIfParent` | `boolean` | Drop span if no active parent exists |
 | `forceTransaction` | `boolean` | Show as top-level transaction in Sentry UI |
 
----
+* * *
 
 ## Enriching Active Spans
 
@@ -250,11 +253,12 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Distributed Tracing: SvelteKit SSR ↔ Client ↔ APIs
 
-SvelteKit's SDK automatically propagates trace context across the full request lifecycle:
+SvelteKit’s SDK automatically propagates trace context across the full request
+lifecycle:
 
 ```
 Browser request
@@ -274,11 +278,12 @@ All of this is automatic when:
 2. `browserTracingIntegration()` is in client init
 3. API URLs are listed in `tracePropagationTargets`
 
----
+* * *
 
 ## Load Function Tracing (SvelteKit)
 
-With `sentryHandle()` (≥10.8.0), all load functions are automatically instrumented. No wrapper needed.
+With `sentryHandle()` (≥10.8.0), all load functions are automatically instrumented.
+No wrapper needed.
 
 **Legacy setup only** (if using `@sentry/sveltekit` <10.8.0):
 
@@ -300,25 +305,25 @@ export const load = wrapServerLoadWithSentry(async ({ params }) => {
 
 Remove these wrappers when upgrading to `@sentry/sveltekit` ≥10.8.0.
 
----
+* * *
 
 ## Route-Based Transaction Names
 
-SvelteKit automatically names transactions from SvelteKit's routing system:
+SvelteKit automatically names transactions from SvelteKit’s routing system:
 - `GET /` → `pageload /`
 - `GET /users/[id]` → `pageload /users/[id]`
 - `GET /api/users` → server request span name
 
 No manual transaction naming is needed for standard SvelteKit routes.
 
----
+* * *
 
 ## Performance Data: Web Vitals
 
 `browserTracingIntegration()` captures Core Web Vitals automatically:
 
 | Metric | What it measures |
-|--------|-----------------|
+| --- | --- |
 | LCP | Largest Contentful Paint |
 | FID | First Input Delay |
 | CLS | Cumulative Layout Shift |
@@ -327,11 +332,13 @@ No manual transaction naming is needed for standard SvelteKit routes.
 
 Visible in the Sentry Performance dashboard under each page transaction.
 
----
+* * *
 
 ## Flat Span Hierarchy (Browser)
 
-By default, browser spans are **flat** — all spans become direct children of the root span rather than nesting. This avoids incorrect async parent-child associations.
+By default, browser spans are **flat** — all spans become direct children of the root
+span rather than nesting.
+This avoids incorrect async parent-child associations.
 
 To opt into full nesting (for structured waterfall views, at your own risk):
 
@@ -341,7 +348,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Filtering Transactions and Spans
 
@@ -365,12 +372,12 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Svelte vs SvelteKit: Key Differences
 
 | Concern | Standalone Svelte | SvelteKit |
-|---------|-------------------|-----------|
+| --- | --- | --- |
 | Server-side tracing | ❌ N/A | ✅ Auto via `sentryHandle()` |
 | `browserTracingIntegration()` | In single init call | In `hooks.client.ts` only |
 | Distributed tracing | Client-only | Full SSR → client → backend |
@@ -378,22 +385,23 @@ Sentry.init({
 | Transaction names | URL-based | SvelteKit route patterns |
 | Web Vitals | ✅ Both | ✅ Both |
 
----
+* * *
 
 ## Best Practices
 
 - Use `tracesSampleRate: 1.0` in development; drop to `0.1`–`0.2` in production
 - Never add `browserTracingIntegration()` to server-side init
 - Use `tracePropagationTargets` to restrict trace header injection to your own backends
-- Add `sentryHandle()` before other handles in `sequence()` so it wraps the full request lifecycle
+- Add `sentryHandle()` before other handles in `sequence()` so it wraps the full request
+  lifecycle
 - Use `onlyIfParent: true` on optional spans to avoid orphaned root transactions
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No transactions in Performance dashboard | Ensure `tracesSampleRate` > 0; check `browserTracingIntegration()` is in client init |
 | Distributed trace not connected (server ↔ client) | Verify `sentryHandle()` is exported from `hooks.server.ts` |
 | API calls not connected to frontend trace | Add API URL to `tracePropagationTargets` |

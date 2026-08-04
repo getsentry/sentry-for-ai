@@ -1,9 +1,12 @@
 # Tracing & Performance Monitoring — Sentry React Native SDK
 
-> **Minimum SDK:** `@sentry/react-native` ≥ 5.20.0 for TTID/TTFD · ≥ 5.32.0 for profiling · ≥ 8.0.0 recommended
-> **Mobile-first note:** React Native has unique performance capabilities web SDKs don't provide — cold/warm app start tracking, JS event loop stall detection, slow/frozen frame counting, and navigation-based transactions. All are first-class citizens in the Sentry RN SDK.
+> **Minimum SDK:** `@sentry/react-native` ≥ 5.20.0 for TTID/TTFD · ≥ 5.32.0 for
+> profiling · ≥ 8.0.0 recommended **Mobile-first note:** React Native has unique
+> performance capabilities web SDKs don’t provide — cold/warm app start tracking, JS
+> event loop stall detection, slow/frozen frame counting, and navigation-based
+> transactions. All are first-class citizens in the Sentry RN SDK.
 
----
+* * *
 
 ## Table of Contents
 
@@ -25,11 +28,12 @@
 16. [Mobile vs Web: Feature Matrix](#16-mobile-vs-web-feature-matrix)
 17. [Troubleshooting](#17-troubleshooting)
 
----
+* * *
 
 ## 1. Basic Tracing Setup
 
-Tracing requires **no additional imports** beyond the standard Sentry import — a key difference from the web SDK.
+Tracing requires **no additional imports** beyond the standard Sentry import — a key
+difference from the web SDK.
 
 ```typescript
 import * as Sentry from "@sentry/react-native";
@@ -49,13 +53,16 @@ Sentry.init({
 });
 ```
 
-> **Production recommendation:** Use `tracesSampleRate: 0.2` or lower, or switch to `tracesSampler` for context-aware sampling. 100% sampling causes high volume at scale.
+> **Production recommendation:** Use `tracesSampleRate: 0.2` or lower, or switch to
+> `tracesSampler` for context-aware sampling.
+> 100% sampling causes high volume at scale.
 
----
+* * *
 
 ## 2. Automatic Instrumentation Setup
 
-`reactNativeTracingIntegration` must be explicitly added to enable automatic tracing features. Two required setup steps:
+`reactNativeTracingIntegration` must be explicitly added to enable automatic tracing
+features. Two required setup steps:
 
 ### Step 1 — Add the integration
 
@@ -73,7 +80,8 @@ Sentry.init({
 
 ### Step 2 — Wrap your root component
 
-Required for accurate App Start measurement (records to first component mount instead of JS initialization) and to enable User Interaction tracing:
+Required for accurate App Start measurement (records to first component mount instead of
+JS initialization) and to enable User Interaction tracing:
 
 ```typescript
 // App.tsx
@@ -89,30 +97,39 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## 3. App Start Tracing
 
-**Unique to mobile.** Tracks the duration from the earliest native process initialization to React Native root component mount.
+**Unique to mobile.** Tracks the duration from the earliest native process
+initialization to React Native root component mount.
 
 | Metric | Measurement Key | When it fires |
-|---|---|---|
+| --- | --- | --- |
 | **Cold start** | `measurements.app_start_cold` | Process launched from scratch (not in memory) |
 | **Warm start** | `measurements.app_start_warm` | Process was already in memory, activity recreated |
 
-> **Hot starts and resumes are not tracked.** They're considered too fast to be meaningful for monitoring.
+> **Hot starts and resumes are not tracked.** They’re considered too fast to be
+> meaningful for monitoring.
 
 ### Why `Sentry.wrap(App)` matters for App Start
 
-Without `Sentry.wrap(App)`, the App Start measurement ends at JS initialization rather than at first component mount. Wrapping is essential for accurate data that represents the real user experience.
+Without `Sentry.wrap(App)`, the App Start measurement ends at JS initialization rather
+than at first component mount.
+Wrapping is essential for accurate data that represents the real user experience.
 
 ### How App Start appears in traces
 
-When a routing integration (React Navigation, Expo Router, RNN) is present, App Start data appears as **spans inside the first navigation transaction** — not as a standalone transaction. You'll see it in the trace waterfall as a child span at the root of the first screen.
+When a routing integration (React Navigation, Expo Router, RNN) is present, App Start
+data appears as **spans inside the first navigation transaction** — not as a standalone
+transaction. You’ll see it in the trace waterfall as a child span at the root of the
+first screen.
 
 ### Platform accuracy notes
 
-Sentry follows Apple and Google's official App Start guidelines. Reported values may be slightly longer than other tools, as they're designed to most accurately represent real user experience rather than minimize measured time.
+Sentry follows Apple and Google’s official App Start guidelines.
+Reported values may be slightly longer than other tools, as they’re designed to most
+accurately represent real user experience rather than minimize measured time.
 
 ### Optimizing App Start time
 
@@ -135,15 +152,18 @@ useEffect(() => {
 }, []);
 ```
 
----
+* * *
 
 ## 4. Navigation Instrumentation
 
-The routing integration determines how navigation events create transactions. Each screen transition becomes a transaction, with the screen name as the transaction name.
+The routing integration determines how navigation events create transactions.
+Each screen transition becomes a transaction, with the screen name as the transaction
+name.
 
 ### 4a. React Navigation (v5+)
 
-The most common setup. Creates a transaction for every route change automatically.
+The most common setup.
+Creates a transaction for every route change automatically.
 
 ```typescript
 import * as Sentry from "@sentry/react-native";
@@ -211,7 +231,8 @@ Sentry.init({
 
 ### Customizing transaction names
 
-Transaction names default to the route/screen name (e.g., `LoginScreen`, `HomeTab`). Modify via `beforeStartSpan`:
+Transaction names default to the route/screen name (e.g., `LoginScreen`, `HomeTab`).
+Modify via `beforeStartSpan`:
 
 ```typescript
 Sentry.reactNativeTracingIntegration({
@@ -228,14 +249,20 @@ Sentry.reactNativeTracingIntegration({
 
 ### Tab navigation
 
-Tab navigators preload screens, so auto-instrumentation only creates a transaction for the **initial** tab visit. For subsequent tab switches, use the `TimeToInitialDisplay` and `TimeToFullDisplay` components explicitly (see §5).
+Tab navigators preload screens, so auto-instrumentation only creates a transaction for
+the **initial** tab visit.
+For subsequent tab switches, use the `TimeToInitialDisplay` and `TimeToFullDisplay`
+components explicitly (see §5).
 
 ### 4c. Expo Router Dynamic Route Params as Span Attributes
 
-When using Expo Router with dynamic route segments (e.g., `profile/[id]`, `posts/[...slug]`), the SDK automatically captures the dynamic parameter values as span attributes on navigation transactions.
+When using Expo Router with dynamic route segments (e.g., `profile/[id]`,
+`posts/[...slug]`), the SDK automatically captures the dynamic parameter values as span
+attributes on navigation transactions.
 
 **Requirements:**
-- `sendDefaultPii: true` must be set in `Sentry.init` — these values are user-identifiable
+- `sendDefaultPii: true` must be set in `Sentry.init` — these values are
+  user-identifiable
 - Route names must use Expo Router bracket notation: `[param]` or `[...param]`
 
 ```typescript
@@ -248,7 +275,8 @@ Sentry.init({
 });
 ```
 
-When navigating to a route like `profile/[id]` with params `{ id: '123' }`, the navigation span receives:
+When navigating to a route like `profile/[id]` with params `{ id: '123' }`, the
+navigation span receives:
 
 ```
 route.name         → "profile/[id]"
@@ -262,25 +290,31 @@ route.name           → "posts/[...slug]"
 route.params.slug    → "tech/react-native"
 ```
 
-**Only structural params are captured** — query params and extra props that don't match a dynamic segment in the route name are intentionally excluded. This prevents non-structural data (referrers, UTM parameters, etc.) from being captured as trace attributes.
+**Only structural params are captured** — query params and extra props that don’t match
+a dynamic segment in the route name are intentionally excluded.
+This prevents non-structural data (referrers, UTM parameters, etc.)
+from being captured as trace attributes.
 
 | Scenario | Captured? |
-|----------|-----------|
+| --- | --- |
 | `profile/[id]` with `{ id: '123' }` | ✅ `route.params.id = "123"` |
 | `posts/[...slug]` with `{ slug: ['tech', 'rn'] }` | ✅ `route.params.slug = "tech/rn"` |
 | `StaticScreen` with `{ utm_source: 'email' }` | ❌ No dynamic segment — nothing captured |
 | Any route with `sendDefaultPii: false` | ❌ Opted out — nothing captured |
 
-> **Privacy note:** Dynamic route param values (e.g., the `123` in `profile/[id]`) are user-identifiable. They are only captured when `sendDefaultPii: true` is explicitly set. Review your routes to ensure no sensitive values (tokens, PII) appear in path segments before enabling this option.
+> **Privacy note:** Dynamic route param values (e.g., the `123` in `profile/[id]`) are
+> user-identifiable. They are only captured when `sendDefaultPii: true` is explicitly
+> set. Review your routes to ensure no sensitive values (tokens, PII) appear in path
+> segments before enabling this option.
 
----
+* * *
 
 ## 5. Screen Rendering: Time to Display
 
 Two **Mobile Vitals** that have no web equivalent:
 
 | Metric | Abbreviation | What it measures |
-|---|---|---|
+| --- | --- | --- |
 | **Time to Initial Display** | TTID | From navigation event → first rendered frame visible after Screen mounts |
 | **Time to Full Display** | TTFD | From navigation event → all async content loaded and ready for user interaction |
 
@@ -288,7 +322,9 @@ Two **Mobile Vitals** that have no web equivalent:
 
 ### Automatic TTID (React Navigation only)
 
-Enable in the integration config. TTID spans automatically include animation completion time (except JS-driven animations on iOS, which are excluded).
+Enable in the integration config.
+TTID spans automatically include animation completion time (except JS-driven animations
+on iOS, which are excluded).
 
 ```typescript
 const navigationIntegration = Sentry.reactNavigationIntegration({
@@ -298,7 +334,7 @@ const navigationIntegration = Sentry.reactNavigationIntegration({
 
 ### Manual TTID override
 
-Use when you need to control exactly when "initial display" is considered complete:
+Use when you need to control exactly when “initial display” is considered complete:
 
 ```tsx
 import * as Sentry from "@sentry/react-native";
@@ -316,7 +352,8 @@ function ProductListScreen() {
 
 ### Time to Full Display (TTFD)
 
-Mark full display when all async content is loaded. The `record` prop fires once when it transitions from `false` to `true`:
+Mark full display when all async content is loaded.
+The `record` prop fires once when it transitions from `false` to `true`:
 
 ```tsx
 import * as Sentry from "@sentry/react-native";
@@ -349,7 +386,8 @@ function ProductDetailScreen({ productId }: { productId: string }) {
 
 ### Tab screens — explicit TTID + TTFD
 
-Because tab screens are preloaded, auto-detection only fires on the first visit. Add both components explicitly for every tab screen:
+Because tab screens are preloaded, auto-detection only fires on the first visit.
+Add both components explicitly for every tab screen:
 
 ```tsx
 function HomeTabScreen({ isLoading }: { isLoading: boolean }) {
@@ -363,26 +401,32 @@ function HomeTabScreen({ isLoading }: { isLoading: boolean }) {
 }
 ```
 
-> Both `<TimeToInitialDisplay />` and `<TimeToFullDisplay />` render as `<></>` — **zero visual impact.**
+> Both `<TimeToInitialDisplay />` and `<TimeToFullDisplay />` render as `<></>` — **zero
+> visual impact.**
 
----
+* * *
 
 ## 6. Slow & Frozen Frames
 
-**Mobile Vitals** — automatically captured per transaction when tracing is enabled. No configuration required.
+**Mobile Vitals** — automatically captured per transaction when tracing is enabled.
+No configuration required.
 
 | Frame type | Threshold | User experience |
-|---|---|---|
+| --- | --- | --- |
 | **Slow frame** | Takes longer than expected for the refresh rate | UI hitches, animation jank |
 | **Frozen frame** | Completely unresponsive | App appears hung |
 
-> Web Vitals (LCP, FID, CLS) are **not** reported for React Native — slow/frozen frames are the mobile equivalent.
+> Web Vitals (LCP, FID, CLS) are **not** reported for React Native — slow/frozen frames
+> are the mobile equivalent.
 
-These appear in the **Mobile Vitals** section of every transaction in Sentry's performance UI, alongside App Start time.
+These appear in the **Mobile Vitals** section of every transaction in Sentry’s
+performance UI, alongside App Start time.
 
 ### Android: AndroidX dependency
 
-Sentry uses `androidx.core` for accurate slow/frozen frame detection across all Android versions. It's included automatically. If you explicitly remove it:
+Sentry uses `androidx.core` for accurate slow/frozen frame detection across all Android
+versions. It’s included automatically.
+If you explicitly remove it:
 
 ```groovy
 // android/app/build.gradle — removes androidx.core AND disables frame reporting
@@ -393,21 +437,23 @@ api('io.sentry:sentry-android:8.33.0') {
 
 > **Warning:** Removing `androidx.core` disables slow/frozen frame detection entirely.
 
----
+* * *
 
 ## 7. Stall Tracking
 
-**Unique to React Native.** A "stall" is when the JavaScript event loop takes longer than expected to process a tick — it directly blocks UI rendering and all JS logic.
+**Unique to React Native.** A “stall” is when the JavaScript event loop takes longer
+than expected to process a tick — it directly blocks UI rendering and all JS logic.
 
 Three metrics automatically attached to every transaction:
 
 | Metric | Description |
-|---|---|
+| --- | --- |
 | **Longest Stall Time** | Duration (ms) of the single longest event loop stall |
 | **Total Stall Time** | Combined ms of all stalls during the transaction |
 | **Stall Count** | Number of individual stalls |
 
-No configuration needed — stall tracking is enabled automatically by `reactNativeTracingIntegration`.
+No configuration needed — stall tracking is enabled automatically by
+`reactNativeTracingIntegration`.
 
 ### What causes stalls
 
@@ -428,11 +474,12 @@ InteractionManager.runAfterInteractions(() => {
 // ✅ Or better — move to a native module / worklet (Reanimated)
 ```
 
----
+* * *
 
 ## 8. Network Request Tracing
 
-Every `fetch` and `XMLHttpRequest` call made while a transaction is active automatically gets a child span. No code changes needed.
+Every `fetch` and `XMLHttpRequest` call made while a transaction is active automatically
+gets a child span. No code changes needed.
 
 Span data includes:
 - HTTP method and URL
@@ -460,22 +507,24 @@ Sentry.reactNativeTracingIntegration({
 }),
 ```
 
----
+* * *
 
 ## 9. Distributed Tracing
 
-Connects mobile traces to backend traces so you can see the full request lifecycle — from the user's tap to database query and back.
+Connects mobile traces to backend traces so you can see the full request lifecycle —
+from the user’s tap to database query and back.
 
 ### How it works
 
 When a `fetch` request fires inside a transaction, the SDK attaches two headers:
 
 | Header | Purpose |
-|---|---|
+| --- | --- |
 | `sentry-trace` | Carries the trace ID and span ID |
 | `baggage` | Carries sampling decision and trace metadata |
 
-Your backend Sentry SDK reads these headers and links its spans to the same trace, so you see one unified waterfall in Sentry.
+Your backend Sentry SDK reads these headers and links its spans to the same trace, so
+you see one unified waterfall in Sentry.
 
 ### `tracePropagationTargets` — control where headers attach
 
@@ -494,17 +543,20 @@ Sentry.init({
 });
 ```
 
-> **Important:** `tracePropagationTargets` matches against the **entire URL string**, not just the domain.
+> **Important:** `tracePropagationTargets` matches against the **entire URL string**,
+> not just the domain.
 
 ### CORS requirements for web APIs
 
-If your React Native app calls web APIs that run CORS preflight checks, the backend must allow the Sentry headers:
+If your React Native app calls web APIs that run CORS preflight checks, the backend must
+allow the Sentry headers:
 
 ```
 Access-Control-Allow-Headers: sentry-trace, baggage
 ```
 
-Without this, browsers (and React Native on web) will reject the preflight and the request will fail.
+Without this, browsers (and React Native on web) will reject the preflight and the
+request will fail.
 
 ### End-to-end example: RN → Node.js API
 
@@ -528,11 +580,12 @@ await Sentry.startSpan({ name: "addToCart", op: "ui.action" }, async () => {
 # No extra code needed beyond standard Sentry initialization
 ```
 
----
+* * *
 
 ## 10. User Interaction Tracing
 
-Captures transactions and breadcrumbs for touch events. Transaction names are automatically composed as `ScreenName > element_label`.
+Captures transactions and breadcrumbs for touch events.
+Transaction names are automatically composed as `ScreenName > element_label`.
 
 ### Enable
 
@@ -570,7 +623,8 @@ export default Sentry.wrap(App, {
 </TouchableOpacity>
 ```
 
-> Transactions with no child spans are automatically dropped — only meaningful interactions are recorded.
+> Transactions with no child spans are automatically dropped — only meaningful
+> interactions are recorded.
 
 ### Custom span attributes on interactions (experimental)
 
@@ -588,7 +642,9 @@ export default Sentry.wrap(App, {
 </Pressable>
 ```
 
-> `sentry-span-attributes` is **experimental** — API may change. The SDK traverses the component tree to find it, so it can be placed on a parent element.
+> `sentry-span-attributes` is **experimental** — API may change.
+> The SDK traverses the component tree to find it, so it can be placed on a parent
+> element.
 
 ### Gesture Handler (RNGH v2)
 
@@ -613,9 +669,10 @@ function ZoomableImage() {
 }
 ```
 
-> Only RNGH **API v2** is supported. Both transactions and breadcrumbs are created automatically.
+> Only RNGH **API v2** is supported.
+> Both transactions and breadcrumbs are created automatically.
 
----
+* * *
 
 ## 11. Custom Spans
 
@@ -625,7 +682,8 @@ import * as Sentry from "@sentry/react-native";
 
 ### `startSpan` — Active, auto-ending (recommended)
 
-The span becomes the active parent for any child spans created inside the callback. Ends automatically when the callback resolves (sync or async).
+The span becomes the active parent for any child spans created inside the callback.
+Ends automatically when the callback resolves (sync or async).
 
 ```typescript
 // Synchronous
@@ -652,7 +710,8 @@ await Sentry.startSpan({ name: "checkout", op: "function" }, async () => {
 
 ### `startSpanManual` — Active, manually ended
 
-Use when the span lifetime doesn't map cleanly to a function scope (e.g., spans across event callbacks):
+Use when the span lifetime doesn’t map cleanly to a function scope (e.g., spans across
+event callbacks):
 
 ```typescript
 function trackAnimationPerformance() {
@@ -668,7 +727,8 @@ function trackAnimationPerformance() {
 
 ### `startInactiveSpan` — Inactive, manually ended
 
-Inactive spans never become automatic parents for child spans. Use for fire-and-forget measurements:
+Inactive spans never become automatic parents for child spans.
+Use for fire-and-forget measurements:
 
 ```typescript
 // Start a background sync span without it affecting the current active span
@@ -682,18 +742,19 @@ syncSpan.end();
 ### Span options
 
 | Option | Type | Description |
-|---|---|---|
+| --- | --- | --- |
 | `name` | `string` | **Required.** Display name in Sentry UI |
 | `op` | `string` | Operation type — use standard values for enhanced UI (see below) |
 | `attributes` | `Record<string, string \| number \| boolean \| array>` | Key/value metadata attached to the span |
 | `startTime` | `number` | Custom start timestamp (Unix epoch, seconds) |
 | `parentSpan` | `Span` | Explicit parent — overrides the active span |
-| `onlyIfParent` | `boolean` | Skip this span if there's no active parent |
+| `onlyIfParent` | `boolean` | Skip this span if there’s no active parent |
 | `forceTransaction` | `boolean` | Force the span to appear as a top-level transaction in the UI |
 
 ### Standard operation types for mobile
 
-Using well-known `op` values unlocks enhanced Sentry UI features (grouping, filtering, icons):
+Using well-known `op` values unlocks enhanced Sentry UI features (grouping, filtering,
+icons):
 
 ```typescript
 Sentry.startSpan({ name: "GET /api/products",     op: "http.client"  }, fetchProducts);
@@ -704,7 +765,8 @@ Sentry.startSpan({ name: "readProductsCache",     op: "file.read"    }, readCach
 Sentry.startSpan({ name: "writeOrdersCache",      op: "file.write"   }, writeCache);
 ```
 
-Full operation list: [develop.sentry.dev/sdk/performance/span-operations](https://develop.sentry.dev/sdk/performance/span-operations/#list-of-operations)
+Full operation list:
+[develop.sentry.dev/sdk/performance/span-operations](https://develop.sentry.dev/sdk/performance/span-operations/#list-of-operations)
 
 ### Adding attributes
 
@@ -760,7 +822,8 @@ Sentry.suppressTracing(() => {
 
 ### Span hierarchy: flat vs. nested
 
-By default (mobile and browser environments), all spans are flat children of the root transaction to avoid async parent misattribution:
+By default (mobile and browser environments), all spans are flat children of the root
+transaction to avoid async parent misattribution:
 
 ```typescript
 // Default behavior — both fetches become siblings under the root, not children of their span
@@ -775,11 +838,13 @@ await Sentry.startSpan({ name: "span2" }, async () => {
 Sentry.init({ parentSpanIsAlwaysRootSpan: false });
 ```
 
----
+* * *
 
 ## 12. React Component Profiler
 
-Track individual React component lifecycle (mount, update, unmount) as child spans within the current route transaction. Useful for identifying slow renders and unnecessary re-renders.
+Track individual React component lifecycle (mount, update, unmount) as child spans
+within the current route transaction.
+Useful for identifying slow renders and unnecessary re-renders.
 
 ```typescript
 import * as Sentry from "@sentry/react-native";
@@ -793,21 +858,28 @@ const ProductCard = Sentry.withProfiler(({ product }) => {
 export default Sentry.withProfiler(HeavyListScreen);
 ```
 
-Profiler spans show up in the transaction waterfall under `ui.react.render` and `ui.react.update` operations.
+Profiler spans show up in the transaction waterfall under `ui.react.render` and
+`ui.react.update` operations.
 
-> **Production builds warning:** React Native minifies class/function names in production. Configure the Sentry Gradle/Xcode plugin + source maps to preserve component names in production profiler data. See the SDK [source maps guide](https://docs.sentry.io/platforms/react-native/sourcemaps/).
+> **Production builds warning:** React Native minifies class/function names in
+> production. Configure the Sentry Gradle/Xcode plugin + source maps to preserve
+> component names in production profiler data.
+> See the SDK
+> [source maps guide](https://docs.sentry.io/platforms/react-native/sourcemaps/).
 
----
+* * *
 
 ## 13. Profiling (Native + Hermes)
 
-Profiling samples the call stack at regular intervals to surface hot code paths. Requires tracing to be enabled first — only traced transactions are profiled.
+Profiling samples the call stack at regular intervals to surface hot code paths.
+Requires tracing to be enabled first — only traced transactions are profiled.
 
 **Minimum SDK version:** `5.32.0`
 
 ### Basic setup
 
-`profilesSampleRate` is **relative to `tracesSampleRate`** — a transaction must first be sampled for tracing before profiling applies:
+`profilesSampleRate` is **relative to `tracesSampleRate`** — a transaction must first be
+sampled for tracing before profiling applies:
 
 ```typescript
 Sentry.init({
@@ -847,7 +919,8 @@ Sentry.init({
 
 ### UI Profiling (experimental)
 
-Continuous profiling tied to the app lifecycle rather than individual transactions. Useful for catching performance issues that span multiple transactions.
+Continuous profiling tied to the app lifecycle rather than individual transactions.
+Useful for catching performance issues that span multiple transactions.
 
 ```typescript
 Sentry.init({
@@ -864,21 +937,23 @@ Sentry.init({
 });
 ```
 
-> `androidProfilingOptions` is **deprecated** — use `profilingOptions` inside `_experiments` instead.
+> `androidProfilingOptions` is **deprecated** — use `profilingOptions` inside
+> `_experiments` instead.
 
 ### Profiling version requirements
 
 | Feature | Min SDK | Platforms |
-|---|---|---|
+| --- | --- | --- |
 | `profilesSampleRate` (basic) | `5.32.0` | iOS, Android |
 | `platformProfilers: false` | `5.33.0` | iOS, Android |
 | UI Profiling (experimental) | `7.9.0` (Android) · `7.12.0` (iOS) | iOS, Android |
 
----
+* * *
 
 ## 14. Dynamic Sampling
 
-`tracesSampler` gives you full control over sampling based on transaction properties at the time the trace starts.
+`tracesSampler` gives you full control over sampling based on transaction properties at
+the time the trace starts.
 
 ```typescript
 Sentry.init({
@@ -910,20 +985,20 @@ Sentry.init({
 ### Head-based vs. tail-based sampling
 
 | Approach | How | Tradeoff |
-|---|---|---|
-| **Head-based** (`tracesSampleRate` / `tracesSampler`) | Decision made at trace start | Low overhead, but can't sample based on outcome |
+| --- | --- | --- |
+| **Head-based** (`tracesSampleRate` / `tracesSampler`) | Decision made at trace start | Low overhead, but can’t sample based on outcome |
 | **Tail-based** (Sentry Dynamic Sampling rules) | Decision made server-side after trace completes | Can prioritize errors/slow traces, requires Sentry Business plan |
 
 For most React Native apps, head-based sampling with a `tracesSampler` is sufficient.
 
----
+* * *
 
 ## 15. Configuration Reference
 
 ### `Sentry.init` options
 
 | Option | Type | Default | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `tracesSampleRate` | `number` (0–1) | `undefined` | Uniform transaction sample rate |
 | `tracesSampler` | `function` | `undefined` | Dynamic sampler — overrides `tracesSampleRate` when set |
 | `profilesSampleRate` | `number` (0–1) | `undefined` | Profile sample rate, relative to traced transactions |
@@ -935,7 +1010,7 @@ For most React Native apps, head-based sampling with a `tracesSampler` is suffic
 ### `reactNativeTracingIntegration` options
 
 | Option | Type | Default | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `beforeStartSpan` | `(context) => context` | — | Mutate span context before each navigation/pageload span |
 | `shouldCreateSpanForRequest` | `(url) => boolean` | — | Filter which outgoing requests get a span |
 | `idleTimeoutMs` | `number` | `1_000` | Ms of inactivity before ending the current transaction |
@@ -944,16 +1019,16 @@ For most React Native apps, head-based sampling with a `tracesSampler` is suffic
 ### `reactNavigationIntegration` options
 
 | Option | Type | Default | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `enableTimeToInitialDisplay` | `boolean` | `false` | Auto-measure TTID per screen |
-| `routeChangeTimeoutMs` | `number` | `1_000` | Discard transaction if screen doesn't mount within this time |
+| `routeChangeTimeoutMs` | `number` | `1_000` | Discard transaction if screen doesn’t mount within this time |
 | `ignoreEmptyBackNavigationTransactions` | `boolean` | `true` | Drop back-nav transactions with no child spans |
 | `useDispatchedActionData` | `boolean` | `false` | Include navigation action data in transaction metadata |
 
 ### `reactNativeNavigationIntegration` options (Wix RNN)
 
 | Option | Type | Default | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `navigation` | `Navigation` | **required** | The RNN Navigation object |
 | `routeChangeTimeoutMs` | `number` | `1_000` | Discard stale transactions |
 | `enableTabsInstrumentation` | `boolean` | `false` | Create transactions on tab switches |
@@ -962,15 +1037,15 @@ For most React Native apps, head-based sampling with a `tracesSampler` is suffic
 ### `hermesProfilingIntegration` options
 
 | Option | Type | Default | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `platformProfilers` | `boolean` | `true` | Profile native (Swift/ObjC/Kotlin/Java) alongside Hermes JS |
 
----
+* * *
 
 ## 16. Mobile vs Web: Feature Matrix
 
 | Capability | Web SDK | React Native SDK |
-|---|---|---|
+| --- | --- | --- |
 | App cold start tracking | ❌ | ✅ `measurements.app_start_cold` |
 | App warm start tracking | ❌ | ✅ `measurements.app_start_warm` |
 | Slow frames (Mobile Vital) | ❌ | ✅ Auto (requires `reactNativeTracingIntegration`) |
@@ -987,12 +1062,12 @@ For most React Native apps, head-based sampling with a `tracesSampler` is suffic
 | Distributed tracing | ✅ | ✅ `tracePropagationTargets` |
 | Web Vitals (LCP, FID, CLS) | ✅ | ❌ (replaced by Mobile Vitals) |
 
----
+* * *
 
 ## 17. Troubleshooting
 
 | Issue | Cause | Solution |
-|---|---|---|
+| --- | --- | --- |
 | No transactions in Sentry | Tracing not enabled | Add `tracesSampleRate` > 0 and `reactNativeTracingIntegration()` to `integrations` |
 | App Start span missing | `Sentry.wrap(App)` not used | Wrap root component: `export default Sentry.wrap(App)` |
 | App Start time seems too long | Sentry follows platform vendor guidelines | Expected — Sentry measures the full user-perceptible start time, not internal JS init |
@@ -1000,9 +1075,9 @@ For most React Native apps, head-based sampling with a `tracesSampler` is suffic
 | TTID/TTFD not appearing | Feature not enabled or wrong SDK version | Requires `enableTimeToInitialDisplay: true` and SDK ≥ 5.20.0, native build required |
 | TTID not firing on tab screens | Tab screens are preloaded | Add `<Sentry.TimeToInitialDisplay record={true} />` explicitly to each tab screen |
 | No interaction transactions | Missing `sentry-label` prop | Add `sentry-label="my_button"` to every interactive element you want to track |
-| `sentry-trace` header missing from requests | `tracePropagationTargets` doesn't match URL | Check the full URL against your patterns — it matches against the entire URL string |
+| `sentry-trace` header missing from requests | `tracePropagationTargets` doesn’t match URL | Check the full URL against your patterns — it matches against the entire URL string |
 | Backend receives header but trace not linked | Backend SDK not initialized | Ensure your backend uses a Sentry SDK with distributed tracing support |
-| Slow/frozen frames missing on Android | Missing `androidx.core` | Don't exclude `androidx.core` from the Sentry Android dependency |
+| Slow/frozen frames missing on Android | Missing `androidx.core` | Don’t exclude `androidx.core` from the Sentry Android dependency |
 | Profiling data not appearing | Profiling sample rate is 0 or traces not sampled | `profilesSampleRate` is relative to `tracesSampleRate` — both must be > 0 |
 | Component names minified in profiler | Production bundle minification | Configure Sentry Gradle/Xcode plugins and upload source maps |
 | Gesture spans not appearing | Wrong RNGH version | Only RNGH API v2 is supported — upgrade `react-native-gesture-handler` |

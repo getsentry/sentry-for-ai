@@ -1,11 +1,14 @@
 # Sentry React SDK
 
-Opinionated wizard that scans your React project and guides you through complete Sentry setup.
+Opinionated wizard that scans your React project and guides you through complete Sentry
+setup.
 
-> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/react` ≥8.0.0).
-> Always verify against [docs.sentry.io/platforms/javascript/guides/react/](https://docs.sentry.io/platforms/javascript/guides/react/) before implementing.
+> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing
+> (`@sentry/react` ≥8.0.0). Always verify against
+> [docs.sentry.io/platforms/javascript/guides/react/](https://docs.sentry.io/platforms/javascript/guides/react/)
+> before implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -39,7 +42,7 @@ cat ../go.mod ../requirements.txt ../Gemfile ../pom.xml 2>/dev/null | head -3
 **What to determine:**
 
 | Question | Impact |
-|----------|--------|
+| --- | --- |
 | React 19+? | Use `reactErrorHandler()` hook pattern |
 | React <19? | Use `Sentry.ErrorBoundary` |
 | `@sentry/react` already present? | Skip install, go straight to feature config |
@@ -51,25 +54,30 @@ cat ../go.mod ../requirements.txt ../Gemfile ../pom.xml 2>/dev/null | head -3
 | CRA (`react-scripts`)? | Source maps via `@sentry/webpack-plugin` in CRACO |
 | Backend directory found? | Trigger Phase 4 cross-link suggestion |
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Present a concrete recommendation based on what you found. Don't ask open-ended questions — lead with a proposal:
+Present a concrete recommendation based on what you found.
+Don’t ask open-ended questions — lead with a proposal:
 
 **Recommended (core coverage):**
-- ✅ **Error Monitoring** — always; captures unhandled errors, React error boundaries, React 19 hooks
+- ✅ **Error Monitoring** — always; captures unhandled errors, React error boundaries,
+  React 19 hooks
 - ✅ **Tracing** — React SPAs benefit from page load, navigation, and API call tracing
-- ✅ **Session Replay** — recommended for user-facing apps; records sessions around errors
+- ✅ **Session Replay** — recommended for user-facing apps; records sessions around
+  errors
 
 **Optional (enhanced observability):**
-- ⚡ **Logging** — structured logs via `Sentry.logger.*`; recommend when structured log search is needed
-- ⚡ **Profiling** — JS Self-Profiling API (⚠️ experimental; requires cross-origin isolation headers)
+- ⚡ **Logging** — structured logs via `Sentry.logger.*`; recommend when structured log
+  search is needed
+- ⚡ **Profiling** — JS Self-Profiling API (⚠️ experimental; requires cross-origin
+  isolation headers)
 
 **Recommendation logic:**
 
-| Feature | Recommend when... |
-|---------|------------------|
+| Feature | Recommend when … |
+| --- | --- |
 | Error Monitoring | **Always** — non-negotiable baseline |
 | Tracing | **Always for React SPAs** — page load + navigation spans are high-value |
 | Session Replay | User-facing app, login flows, or checkout pages |
@@ -78,14 +86,18 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 
 **React-specific extras:**
 - React 19 detected → set up `reactErrorHandler()` on `createRoot`
-- React Router v5/v6/v7 non-framework detected → configure matching router integration (see Phase 3)
-- React Router Framework mode detected → switch to [`react-router-framework`](../react-router-framework/index.md)
+- React Router v5/v6/v7 non-framework detected → configure matching router integration
+  (see Phase 3)
+- React Router Framework mode detected → switch to
+  [`react-router-framework`](../react-router-framework/index.md)
 - Redux detected → add `createReduxEnhancer()` to Redux store
-- Vite detected → configure `sentryVitePlugin` for source maps (essential for readable stack traces)
+- Vite detected → configure `sentryVitePlugin` for source maps (essential for readable
+  stack traces)
 
-Propose: *"I recommend setting up Error Monitoring + Tracing + Session Replay. Want me to also add Logging or Profiling?"*
+Propose: *“I recommend setting up Error Monitoring + Tracing + Session Replay.
+Want me to also add Logging or Profiling?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
@@ -97,7 +109,8 @@ npm install @sentry/react --save
 
 ### Create `src/instrument.ts`
 
-Sentry must initialize **before any other code runs**. Put `Sentry.init()` in a dedicated sidecar file:
+Sentry must initialize **before any other code runs**. Put `Sentry.init()` in a
+dedicated sidecar file:
 
 ```typescript
 import * as Sentry from "@sentry/react";
@@ -137,7 +150,7 @@ Sentry.init({
 **DSN environment variable by build tool:**
 
 | Build Tool | Variable Name | Access in code |
-|------------|--------------|----------------|
+| --- | --- | --- |
 | Vite | `VITE_SENTRY_DSN` | `import.meta.env.VITE_SENTRY_DSN` |
 | Create React App | `REACT_APP_SENTRY_DSN` | `process.env.REACT_APP_SENTRY_DSN` |
 | Custom webpack | `SENTRY_DSN` | `process.env.SENTRY_DSN` |
@@ -187,14 +200,15 @@ createRoot(document.getElementById("root")!).render(
 );
 ```
 
-Use `<Sentry.ErrorBoundary>` for any sub-tree that should catch errors independently (route sections, widgets, etc.).
+Use `<Sentry.ErrorBoundary>` for any sub-tree that should catch errors independently
+(route sections, widgets, etc.).
 
 ### Router Integration
 
 Configure the matching integration for your router (non-framework mode):
 
 | Router | Integration | Notes |
-|--------|------------|-------|
+| --- | --- | --- |
 | React Router v7 | `reactRouterV7BrowserTracingIntegration` | `useEffect`, `useLocation`, `useNavigationType`, `createRoutesFromChildren`, `matchRoutes` from `react-router` |
 | React Router v6 | `reactRouterV6BrowserTracingIntegration` | `useEffect`, `useLocation`, `useNavigationType`, `createRoutesFromChildren`, `matchRoutes` from `react-router-dom` |
 | React Router v5 | `reactRouterV5BrowserTracingIntegration` | Wrap routes in `withSentryRouting(Route)` |
@@ -261,7 +275,8 @@ const store = configureStore({
 
 ### Source Maps Setup (strongly recommended)
 
-Without source maps, stack traces show minified code. Set up the build plugin to upload source maps automatically:
+Without source maps, stack traces show minified code.
+Set up the build plugin to upload source maps automatically:
 
 **Vite (`vite.config.ts`):**
 
@@ -308,14 +323,16 @@ module.exports = {
 };
 ```
 
-`SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` are build-time values; the auth token is a secret (never commit it).
+`SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` are build-time values; the auth
+token is a secret (never commit it).
 
 ### For Each Agreed Feature
 
-Walk through features one at a time. Load the reference file, follow its steps, verify before moving on:
+Walk through features one at a time.
+Load the reference file, follow its steps, verify before moving on:
 
-| Feature | Reference | Load when... |
-|---------|-----------|-------------|
+| Feature | Reference | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always (baseline) |
 | Tracing | `./tracing.md` | SPA navigation / API call tracing |
 | Session Replay | `./session-replay.md` | User-facing app |
@@ -325,14 +342,14 @@ Walk through features one at a time. Load the reference file, follow its steps, 
 
 For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Key `Sentry.init()` Options
 
 | Option | Type | Default | Notes |
-|--------|------|---------|-------|
+| --- | --- | --- | --- |
 | `dsn` | `string` | — | **Required.** SDK disabled when empty |
 | `environment` | `string` | `"production"` | e.g., `"staging"`, `"development"` |
 | `release` | `string` | — | e.g., `"my-app@1.0.0"` or git SHA — links errors to releases |
@@ -351,10 +368,11 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
 ### `dataCollection` Options (SDK ≥10.57.0)
 
-Fine-grained control over what data the SDK collects. Replaces the simple `sendDefaultPii` boolean with per-feature toggles:
+Fine-grained control over what data the SDK collects.
+Replaces the simple `sendDefaultPii` boolean with per-feature toggles:
 
 | Field | Type | Default | Notes |
-|-------|------|---------|-------|
+| --- | --- | --- | --- |
 | `userInfo` | `boolean` | `true` | Collect user IP and headers (equivalent to `sendDefaultPii: true`) |
 | `cookies` | `boolean \| { allow: string[] } \| { deny: string[] }` | `true` | Cookie collection and filtering; `true` = all cookies (sensitive keys filtered) |
 | `httpHeaders.request` | `boolean \| { allow: string[] } \| { deny: string[] }` | `true` | HTTP request header collection |
@@ -383,12 +401,12 @@ Sentry.init({
 ### React Compatibility Matrix
 
 | React Version | Error handling approach | SDK minimum |
-|---------------|------------------------|-------------|
+| --- | --- | --- |
 | React 19+ | `reactErrorHandler()` on `createRoot` | `@sentry/react` ≥8.0.0 |
 | React 16–18 | `Sentry.ErrorBoundary` component | `@sentry/react` ≥7.0.0 |
 | React 16 | `componentDidCatch` class boundaries | `@sentry/react` ≥6.0.0 |
 
----
+* * *
 
 ## Verification
 
@@ -420,7 +438,7 @@ Check the Sentry dashboard:
 
 Set `debug: true` in `Sentry.init()` and check the browser console if nothing appears.
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
@@ -437,23 +455,23 @@ cat ../pom.xml 2>/dev/null | grep '<artifactId>' | head -3
 If a backend exists without Sentry configured, suggest the matching skill:
 
 | Backend detected | Suggest skill |
-|-----------------|--------------|
+| --- | --- |
 | Go (`go.mod`) | [`go`](../go/index.md) |
 | Python (`requirements.txt`, `pyproject.toml`) | [`python`](../python/index.md) |
 | Ruby (`Gemfile`) | [`ruby`](../ruby/index.md) |
 | Java (`pom.xml`, `build.gradle`) | Use `@sentry/java` — see [docs.sentry.io/platforms/java/](https://docs.sentry.io/platforms/java/) |
 | Node.js (Express, Fastify) | Use `@sentry/node` — see [docs.sentry.io/platforms/javascript/guides/express/](https://docs.sentry.io/platforms/javascript/guides/express/) |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing | Set `debug: true`, check DSN, open browser console for SDK errors |
 | Source maps not working | Build in production mode (`npm run build`); verify `SENTRY_AUTH_TOKEN` is set |
 | Minified stack traces | Source maps not uploading — check plugin config and auth token |
-| `instrument.ts` not running first | Verify it's the first import in entry file before React/app imports |
+| `instrument.ts` not running first | Verify it’s the first import in entry file before React/app imports |
 | React 19 errors not captured | Confirm `reactErrorHandler()` is passed to all three `createRoot` options |
 | React <19 errors not captured | Ensure `<Sentry.ErrorBoundary>` wraps the component tree |
 | Router transactions named `<unknown>` | Add router integration matching your router version |

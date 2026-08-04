@@ -1,11 +1,13 @@
 # Session Replay — Sentry Next.js SDK
 
-> Minimum SDK: `@sentry/nextjs` ≥7.27.0+  
+> Minimum SDK: `@sentry/nextjs` ≥7.27.0+\
 > `replayCanvasIntegration()`: requires ≥7.98.0+
 
-> ⚠️ **Browser-only feature.** Add `replayIntegration()` **only** in `instrumentation-client.ts`. Never in `sentry.server.config.ts` or `sentry.edge.config.ts`.
+> ⚠️ **Browser-only feature.** Add `replayIntegration()` **only** in
+> `instrumentation-client.ts`. Never in `sentry.server.config.ts` or
+> `sentry.edge.config.ts`.
 
----
+* * *
 
 ## Setup
 
@@ -31,55 +33,60 @@ Sentry.init({
 });
 ```
 
-> **Dev tip:** Set `replaysSessionSampleRate: 1.0` during development to capture every session.
+> **Dev tip:** Set `replaysSessionSampleRate: 1.0` during development to capture every
+> session.
 
 ### Where NOT to Add Replay
 
 | Config file | Why |
-|-------------|-----|
+| --- | --- |
 | `sentry.server.config.ts` | Server runtime — no DOM |
 | `sentry.edge.config.ts` | Edge runtime — no DOM |
 | `instrumentation.ts` (server section) | Server-side code |
 | Any Route Handler or Server Action | Server-side code |
 
----
+* * *
 
 ## Sample Rates
 
 | Option | Type | Default | Behavior |
-|--------|------|---------|----------|
+| --- | --- | --- | --- |
 | `replaysSessionSampleRate` | `number` (0–1) | `0` | Fraction of all sessions recorded continuously from start |
 | `replaysOnErrorSampleRate` | `number` (0–1) | `0` | Fraction of sessions captured when an error occurs — flushes ~60s of buffer, then continues recording |
 
 **Recommended production sample rates by traffic:**
 
 | Daily Sessions | `replaysSessionSampleRate` | `replaysOnErrorSampleRate` |
-|----------------|---------------------------|---------------------------|
+| --- | --- | --- |
 | 100,000+ | `0.01` (1%) | `1.0` |
 | 10,000–100,000 | `0.10` (10%) | `1.0` |
 | Under 10,000 | `0.25` (25%) | `1.0` |
 
-Always keep `replaysOnErrorSampleRate: 1.0` — error replays provide the most debugging value.
+Always keep `replaysOnErrorSampleRate: 1.0` — error replays provide the most debugging
+value.
 
 ### How Sampling Works
 
 1. When a session starts, `replaysSessionSampleRate` is checked.
    - **Sampled → Session Mode:** Recording is sent to Sentry in real-time chunks.
-   - **Not sampled → Buffer Mode:** Last ~60 seconds are kept in memory only. Nothing is sent unless an error occurs.
+   - **Not sampled → Buffer Mode:** Last ~60 seconds are kept in memory only.
+     Nothing is sent unless an error occurs.
 2. If an error occurs in a buffered session, `replaysOnErrorSampleRate` is checked.
    - **Sampled:** The 60-second buffer plus all subsequent data is sent to Sentry.
    - **Not sampled:** Buffer is discarded; nothing is sent.
 
----
+* * *
 
 ## Session Lifecycle
 
 - **Starts:** When the SDK first loads/initializes.
-- **Ends:** After **15 minutes of inactivity** OR after a **maximum of 60 minutes** total.
+- **Ends:** After **15 minutes of inactivity** OR after a **maximum of 60 minutes**
+  total.
 - **Tab close:** Ends the session immediately.
-- **Page refreshes/navigations** within the same domain and tab are captured within the same session.
+- **Page refreshes/navigations** within the same domain and tab are captured within the
+  same session.
 
----
+* * *
 
 ## `replayIntegration()` Options Reference
 
@@ -88,7 +95,7 @@ All options go inside `Sentry.replayIntegration({})`:
 ### General Options
 
 | Key | Type | Default | Description |
-|-----|------|---------|-------------|
+| --- | --- | --- | --- |
 | `stickySession` | `boolean` | `true` | Tracks a user across page refreshes. One tab = one session. |
 | `mutationLimit` | `number` | `10000` | Max DOM mutations before recording stops (performance protection). |
 | `mutationBreadcrumbLimit` | `number` | `750` | Threshold for sending a warning breadcrumb about large mutations. |
@@ -102,23 +109,24 @@ All options go inside `Sentry.replayIntegration({})`:
 ### Network Capture Options
 
 | Key | Type | Default | Description |
-|-----|------|---------|-------------|
+| --- | --- | --- | --- |
 | `networkDetailAllowUrls` | `(string \| RegExp)[]` | `[]` | URLs for which to capture request/response headers and bodies. |
 | `networkDetailDenyUrls` | `(string \| RegExp)[]` | `[]` | URLs to never capture details for. Takes precedence over allow list. |
 | `networkCaptureBodies` | `boolean` | `true` | Whether to capture request/response bodies for allowed URLs. |
 | `networkRequestHeaders` | `string[]` | `[]` | Additional request headers to capture (beyond Content-Type, Content-Length, Accept). |
 | `networkResponseHeaders` | `string[]` | `[]` | Additional response headers to capture. |
 
----
+* * *
 
 ## Privacy Masking
 
-**All masking/blocking happens on the client before any data is sent to Sentry's servers.**
+**All masking/blocking happens on the client before any data is sent to Sentry’s
+servers.**
 
 ### Default Privacy Behavior
 
 | Setting | Default | Effect |
-|---------|---------|--------|
+| --- | --- | --- |
 | `maskAllText` | `true` | Every text character replaced with `*` |
 | `maskAllInputs` | `true` | All `<input>` values masked |
 | `blockAllMedia` | `true` | `img`, `svg`, `video`, `object`, `picture`, `embed`, `map`, `audio` replaced with same-size placeholder |
@@ -126,7 +134,7 @@ All options go inside `Sentry.replayIntegration({})`:
 ### Privacy Options in `replayIntegration({})`
 
 | Key | Type | Default | Description |
-|-----|------|---------|-------------|
+| --- | --- | --- | --- |
 | `mask` | `string[]` | `['.sentry-mask', '[data-sentry-mask]']` | Additional selectors to mask. |
 | `maskAllText` | `boolean` | `true` | Mask all text via `maskFn`. |
 | `maskAllInputs` | `boolean` | `true` | Mask all input values. |
@@ -140,7 +148,7 @@ All options go inside `Sentry.replayIntegration({})`:
 ### Three Privacy Mechanisms Compared
 
 | Mechanism | What It Does | HTML Attribute | CSS Class |
-|-----------|--------------|----------------|-----------|
+| --- | --- | --- | --- |
 | **Mask** | Replaces text chars with `*` | `data-sentry-mask` | `sentry-mask` |
 | **Block** | Replaces entire element with blank box | `data-sentry-block` | `sentry-block` |
 | **Ignore** | Suppresses input events on the element | `data-sentry-ignore` | `sentry-ignore` |
@@ -179,7 +187,9 @@ Sentry.replayIntegration({
 <input class="sentry-ignore" type="text" />
 ```
 
-> ⚠️ **v8 Breaking Change:** In SDK v8+, `unblock` and `unmask` no longer automatically add `sentry-unblock`/`sentry-unmask` class selectors. To restore v7 behavior:
+> ⚠️ **v8 Breaking Change:** In SDK v8+, `unblock` and `unmask` no longer automatically
+> add `sentry-unblock`/`sentry-unmask` class selectors.
+> To restore v7 behavior:
 > ```typescript
 > Sentry.replayIntegration({
 >   unblock: [".sentry-unblock, [data-sentry-unblock]"],
@@ -187,11 +197,12 @@ Sentry.replayIntegration({
 > });
 > ```
 
----
+* * *
 
 ## Network Request/Response Capture
 
-By default, Replay captures only: URL, body size, method, status code. SDK ≥7.50.0 required for headers/bodies.
+By default, Replay captures only: URL, body size, method, status code.
+SDK ≥7.50.0 required for headers/bodies.
 
 ```typescript
 Sentry.replayIntegration({
@@ -213,14 +224,17 @@ Sentry.replayIntegration({
 
 **Limits:**
 - Bodies truncated to **150k characters** max.
-- Only text-based bodies captured: JSON, XML, FormData. Binary/media excluded.
-- Sentry applies server-side PII scrubbing (credit cards, SSNs, private keys) on ingested data.
+- Only text-based bodies captured: JSON, XML, FormData.
+  Binary/media excluded.
+- Sentry applies server-side PII scrubbing (credit cards, SSNs, private keys) on
+  ingested data.
 
----
+* * *
 
 ## Tree-Shaking Replay out of Server Bundles
 
-**Critical for Next.js:** Session Replay is browser-only. Prevent it from being bundled into server-side or edge bundles:
+**Critical for Next.js:** Session Replay is browser-only.
+Prevent it from being bundled into server-side or edge bundles:
 
 ```javascript
 // next.config.js
@@ -239,16 +253,17 @@ module.exports = withSentryConfig(nextConfig, {
 ```
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `removeDebugLogging` | `boolean` | `false` | Strips SDK internal `console.log` calls. Safe to enable in production. |
 | `removeTracing` | `boolean` | `false` | Removes ALL tracing code. Never call `Sentry.startSpan()` etc. if enabled. |
 | `excludeReplayIframe` | `boolean` | `false` | Removes iframe content capture from Replay bundle. |
 | `excludeReplayShadowDOM` | `boolean` | `false` | Removes shadow DOM capture from Replay bundle. |
 | `excludeReplayCompressionWorker` | `boolean` | `false` | Removes built-in compression worker. Requires providing `workerUrl`. |
 
-> ⚠️ Tree-shaking only works with **webpack** builds. **Turbopack is not supported.**
+> ⚠️ Tree-shaking only works with **webpack** builds.
+> **Turbopack is not supported.**
 
----
+* * *
 
 ## Canvas Recording
 
@@ -286,11 +301,12 @@ function paint() {
 }
 ```
 
----
+* * *
 
 ## Lazy Loading Replay
 
-To reduce initial bundle size, add `replayIntegration()` dynamically after the page loads:
+To reduce initial bundle size, add `replayIntegration()` dynamically after the page
+loads:
 
 ```typescript
 // instrumentation-client.ts
@@ -308,7 +324,7 @@ import("@sentry/nextjs").then((lazySentry) => {
 });
 ```
 
----
+* * *
 
 ## Programmatic Replay Control
 
@@ -324,7 +340,8 @@ await replay.flush();     // Force upload any pending buffered data
 Use cases:
 - **User-based sampling:** Check authentication, then call `flush()` for premium users.
 - **Route-based sampling:** Call `start()` only on high-value pages.
-- **Error filtering:** Use `beforeErrorSampling` to prevent certain error types from triggering upload:
+- **Error filtering:** Use `beforeErrorSampling` to prevent certain error types from
+  triggering upload:
 
 ```typescript
 Sentry.replayIntegration({
@@ -336,11 +353,12 @@ Sentry.replayIntegration({
 });
 ```
 
----
+* * *
 
 ## Custom Compression Worker
 
-Host the compression worker yourself to reduce bundle size and comply with strict CSP policies:
+Host the compression worker yourself to reduce bundle size and comply with strict CSP
+policies:
 
 ```typescript
 // Step 1: Download worker.min.js from:
@@ -364,18 +382,20 @@ module.exports = withSentryConfig(nextConfig, {
 });
 ```
 
----
+* * *
 
 ## Content Security Policy (CSP)
 
-Session Replay uses a Web Worker for off-thread compression. Required CSP directives:
+Session Replay uses a Web Worker for off-thread compression.
+Required CSP directives:
 
 ```
 worker-src 'self' blob:
 child-src 'self' blob:   ← Required for Safari ≤ 15.4
 ```
 
-Also add `sentry.io` to your CORS policy so the Sentry replay iframe can fetch CSS, fonts, and images.
+Also add `sentry.io` to your CORS policy so the Sentry replay iframe can fetch CSS,
+fonts, and images.
 
 **For Next.js, set headers in `next.config.js`:**
 ```javascript
@@ -397,16 +417,17 @@ module.exports = {
 };
 ```
 
----
+* * *
 
 ## Performance Impact
 
 - **Bundle size:** ~**50KB gzipped** added to browser bundle.
 - **Compression:** Off-thread in a Web Worker — does not block the main thread.
-- **Mutation protection:** Recording auto-stops if DOM mutations exceed `mutationLimit` (default 10,000).
+- **Mutation protection:** Recording auto-stops if DOM mutations exceed `mutationLimit`
+  (default 10,000).
 - **Large lists:** Virtualize or paginate long lists to avoid mutation limit triggers.
 
-**Rage/slow click false positives** (Download/Print buttons that don't mutate DOM):
+**Rage/slow click false positives** (Download/Print buttons that don’t mutate DOM):
 ```typescript
 Sentry.replayIntegration({
   slowClickIgnoreSelectors: [
@@ -417,12 +438,12 @@ Sentry.replayIntegration({
 });
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Problem | Cause | Solution |
-|---------|-------|----------|
+| --- | --- | --- |
 | Replay data missing | CSP blocking blob: workers | Add `worker-src 'self' blob:` |
 | CSS/fonts missing in replay | CORS blocking Sentry iframe | Add `sentry.io` to CORS policy |
 | Replay not recording | Added to wrong config file | Move to `instrumentation-client.ts` only |

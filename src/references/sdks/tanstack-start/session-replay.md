@@ -1,9 +1,9 @@
 # Session Replay — Sentry TanStack Start React SDK
 
-> Minimum SDK: `@sentry/tanstackstart-react` with Replay support  
+> Minimum SDK: `@sentry/tanstackstart-react` with Replay support\
 > Framework target: TanStack Start React `1.0 RC`
 
----
+* * *
 
 ## Replay Setup (`src/router.tsx`)
 
@@ -23,17 +23,17 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Sampling Strategy
 
 | Goal | Suggested config |
-|------|------------------|
+| --- | --- |
 | Fast rollout / validation | `replaysSessionSampleRate: 0.1`, `replaysOnErrorSampleRate: 1.0` |
 | Cost-sensitive production | Lower session sample rate (`0.02` to `0.05`), keep error sample high |
 | Incident investigation mode | Temporarily increase session sample rate |
 
----
+* * *
 
 ## Privacy and Data Controls
 
@@ -55,7 +55,7 @@ Sentry.init({
 
 Use stricter masking for apps handling sensitive user or payment data.
 
----
+* * *
 
 ## Verification
 
@@ -64,12 +64,12 @@ Use stricter masking for apps handling sensitive user or payment data.
 3. Open **Replays** in Sentry and confirm a replay appears.
 4. Open the linked issue and verify replay context is attached.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Replay not appearing | Ensure `replayIntegration()` is included and sample rates are non-zero |
 | Replays only on error | Increase `replaysSessionSampleRate` |
 | Sensitive content visible | Enable masking/blocking options and audit replay config |

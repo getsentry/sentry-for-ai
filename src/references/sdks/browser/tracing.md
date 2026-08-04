@@ -1,12 +1,12 @@
 # Tracing — Sentry Browser SDK
 
-> Minimum SDK: `@sentry/browser` ≥7.0.0  
-> `enableInp` defaults to `true` as of SDK ≥8.0.0 (was `false` in 7.x)  
-> `enableLongAnimationFrame` available since SDK ≥8.18.0  
-> `inheritOrSampleWith` in `tracesSampler` available since SDK ≥9.0.0  
+> Minimum SDK: `@sentry/browser` ≥7.0.0\
+> `enableInp` defaults to `true` as of SDK ≥8.0.0 (was `false` in 7.x)\
+> `enableLongAnimationFrame` available since SDK ≥8.18.0\
+> `inheritOrSampleWith` in `tracesSampler` available since SDK ≥9.0.0\
 > `profileSessionSampleRate` replaces `profilesSampleRate` as of SDK ≥10.27.0
 
----
+* * *
 
 ## Minimal Setup
 
@@ -20,9 +20,10 @@ Sentry.init({
 });
 ```
 
-> **Disabling tracing:** Omit **both** `tracesSampleRate` and `tracesSampler`. Setting `tracesSampleRate: 0` does not disable tracing — it simply never sends any traces.
+> **Disabling tracing:** Omit **both** `tracesSampleRate` and `tracesSampler`. Setting
+> `tracesSampleRate: 0` does not disable tracing — it simply never sends any traces.
 
----
+* * *
 
 ## `browserTracingIntegration()` — Configuration Reference
 
@@ -31,7 +32,7 @@ All options are passed as a single object to `browserTracingIntegration()`.
 ### Page Load & Navigation
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `instrumentPageLoad` | `boolean` | `true` | Create a `pageload` root span on initial page load |
 | `instrumentNavigation` | `boolean` | `true` | Create a `navigation` root span on client-side history changes |
 | `markBackgroundSpan` | `boolean` | `true` | Mark `pageload`/`navigation` spans as cancelled when the tab goes to the background |
@@ -41,7 +42,7 @@ All options are passed as a single object to `browserTracingIntegration()`.
 ### HTTP Request Instrumentation
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `traceFetch` | `boolean` | `true` | Automatically create spans for outgoing `fetch` requests |
 | `traceXHR` | `boolean` | `true` | Automatically create spans for outgoing `XMLHttpRequest` calls |
 | `enableHTTPTimings` | `boolean` | `true` | Attach detailed HTTP timing data via the Performance Resource Timing API |
@@ -51,7 +52,7 @@ All options are passed as a single object to `browserTracingIntegration()`.
 ### Interaction & Long Task Instrumentation
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `enableInp` | `boolean` | `true` (8.x+), `false` (7.x) | Capture Interaction to Next Paint (INP) events |
 | `interactionsSampleRate` | `number` | `1.0` | Additional sampling rate for INP spans (applied on top of `tracesSampleRate`) |
 | `enableLongTask` | `boolean` | `true` | Create spans for main-thread blocking tasks exceeding 50 ms |
@@ -60,7 +61,7 @@ All options are passed as a single object to `browserTracingIntegration()`.
 ### Timing & Timeouts
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `idleTimeout` | `number` | `1000` | Milliseconds of inactivity before `pageload`/`navigation` span auto-finishes |
 | `finalTimeout` | `number` | `30000` | Maximum lifespan (ms) for any root span regardless of activity |
 | `childSpanTimeout` | `number` | `15000` | Maximum time (ms) a child span may remain open before the parent can finish |
@@ -68,9 +69,9 @@ All options are passed as a single object to `browserTracingIntegration()`.
 ### Propagation & Filtering
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `tracePropagationTargets` | `Array<string \| RegExp>` | `["localhost", /^\//]` | Outgoing requests whose URL matches an entry receive `sentry-trace` and `baggage` headers |
-| `beforeStartSpan` | `(context: SpanContext) => SpanContext` | — | Modify or enrich a span's context before it is created |
+| `beforeStartSpan` | `(context: SpanContext) => SpanContext` | — | Modify or enrich a span’s context before it is created |
 | `ignoreResourceSpans` | `Array<string>` | `[]` | Suppress automatic spans by operation category (e.g., `"resource.css"`) |
 | `ignorePerformanceApiSpans` | `Array<string \| RegExp>` | `[]` | Suppress spans from `performance.mark()` / `performance.measure()` calls |
 
@@ -122,7 +123,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Automatic Instrumentation
 
@@ -130,20 +131,23 @@ When `browserTracingIntegration()` is active, the following are captured automat
 
 ### Page Loads
 
-A root `pageload` span covers the full page-load lifecycle. Child spans are attached for:
+A root `pageload` span covers the full page-load lifecycle.
+Child spans are attached for:
 - **Web Vitals**: LCP, CLS, TTFB
 - **Resource loads**: CSS, JS, images, fonts (each as a `resource.*` child span)
 - **HTTP requests** made during load
 
 ### Navigations (SPA Route Changes)
 
-Each client-side route change (via the History API) produces a new `navigation` root span, along with any HTTP requests and web vitals captured during that navigation.
+Each client-side route change (via the History API) produces a new `navigation` root
+span, along with any HTTP requests and web vitals captured during that navigation.
 
 ### Fetch / XHR Requests
 
-Every outgoing `fetch` or `XMLHttpRequest` produces an `http.client` child span containing: request duration, HTTP status code, and URL.
+Every outgoing `fetch` or `XMLHttpRequest` produces an `http.client` child span
+containing: request duration, HTTP status code, and URL.
 
-Use `shouldCreateSpanForRequest` to exclude URLs you don't want traced:
+Use `shouldCreateSpanForRequest` to exclude URLs you don’t want traced:
 
 ```javascript
 Sentry.browserTracingIntegration({
@@ -156,7 +160,7 @@ Sentry.browserTracingIntegration({
 ### Web Vitals
 
 | Metric | Description | Auto-captured |
-|--------|-------------|---------------|
+| --- | --- | --- |
 | **LCP** — Largest Contentful Paint | Perceived load speed | ✅ Always |
 | **CLS** — Cumulative Layout Shift | Visual stability | ✅ Always |
 | **TTFB** — Time to First Byte | Server responsiveness | ✅ Always |
@@ -164,11 +168,13 @@ Sentry.browserTracingIntegration({
 
 ### Long Tasks
 
-Main-thread tasks blocking the browser for more than **50 ms** are recorded as `ui.long-task` child spans.
+Main-thread tasks blocking the browser for more than **50 ms** are recorded as
+`ui.long-task` child spans.
 
 ### Custom Router Integration
 
-To integrate with a router that manages its own history, disable automatic span creation and call the low-level helpers directly:
+To integrate with a router that manages its own history, disable automatic span creation
+and call the low-level helpers directly:
 
 ```javascript
 const client = Sentry.init({
@@ -207,15 +213,17 @@ myRouter.on("routeChange", (route) => {
 });
 ```
 
----
+* * *
 
 ## Custom Spans
 
-Three functions are available for manual instrumentation. All accept the same options object.
+Three functions are available for manual instrumentation.
+All accept the same options object.
 
 ### `startSpan(options, callback)` — Auto-ending Span (Recommended)
 
-Creates an active span that ends automatically when the callback returns (sync or async).
+Creates an active span that ends automatically when the callback returns (sync or
+async).
 
 ```javascript
 // Synchronous
@@ -247,11 +255,12 @@ const result = await Sentry.startSpan(
 );
 ```
 
----
+* * *
 
 ### `startSpanManual(options, callback)` — Manually-ended Active Span
 
-Creates an active span that must be ended explicitly by calling `span.end()`. Use when the span's end is decoupled from the callback's return (e.g., event-driven code).
+Creates an active span that must be ended explicitly by calling `span.end()`. Use when
+the span’s end is decoupled from the callback’s return (e.g., event-driven code).
 
 ```javascript
 function attachUploadTracing(input) {
@@ -275,11 +284,12 @@ function attachUploadTracing(input) {
 }
 ```
 
----
+* * *
 
 ### `startInactiveSpan(options)` — Manually-ended Inactive Span
 
-Creates a span that is **not** set as the active span. Useful for parallel work sharing a common parent.
+Creates a span that is **not** set as the active span.
+Useful for parallel work sharing a common parent.
 
 ```javascript
 const span1 = Sentry.startInactiveSpan({ name: "task-a", op: "function" });
@@ -291,12 +301,12 @@ span1.end();
 span2.end();
 ```
 
----
+* * *
 
 ### Span Options
 
 | Option | Type | Required | Description |
-|--------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `name` | `string` | ✅ | Human-readable identifier shown in the Sentry UI |
 | `op` | `string` | — | Operation type for categorization (see Operation Types below) |
 | `startTime` | `number` | — | Custom Unix timestamp (seconds, sub-second precision) for span start |
@@ -305,14 +315,14 @@ span2.end();
 | `onlyIfParent` | `boolean` | — | If `true`, the span is a no-op when there is no active parent span |
 | `forceTransaction` | `boolean` | — | Force this span to appear as a root transaction in the Sentry UI |
 
----
+* * *
 
 ### Operation Types
 
 Use well-known `op` values so the Sentry UI presents appropriate icons and filtering:
 
 | `op` Value | Use Case |
-|------------|----------|
+| --- | --- |
 | `http.client` | Outgoing HTTP requests |
 | `db` | Database queries |
 | `db.system` | Database system operations |
@@ -326,7 +336,7 @@ Use well-known `op` values so the Sentry UI presents appropriate icons and filte
 | `function` | Generic function calls |
 | `file.upload` | File upload operations |
 
----
+* * *
 
 ### Working with Span Attributes and Status
 
@@ -355,22 +365,25 @@ span.setStatus({ code: 1 }); // 0 = unknown, 1 = ok, 2 = error
 span.setHttpStatus(404);
 ```
 
----
+* * *
 
 ## Distributed Tracing
 
-Distributed tracing connects browser activity to backend requests, enabling a single timeline across services.
+Distributed tracing connects browser activity to backend requests, enabling a single
+timeline across services.
 
 ### How It Works
 
-Sentry propagates two HTTP headers on every outgoing request matching `tracePropagationTargets`:
+Sentry propagates two HTTP headers on every outgoing request matching
+`tracePropagationTargets`:
 
 | Header | Contents |
-|--------|----------|
+| --- | --- |
 | `sentry-trace` | Trace ID, parent span ID, and sampling decision flag |
 | `baggage` | Dynamic sampling context: trace ID, public key, sample rate, environment |
 
-> **CORS:** Both headers must be added to your server's `Access-Control-Allow-Headers` — otherwise browsers or gateways will strip them.
+> **CORS:** Both headers must be added to your server’s `Access-Control-Allow-Headers` —
+> otherwise browsers or gateways will strip them.
 
 ### `tracePropagationTargets` Configuration
 
@@ -411,11 +424,13 @@ tracePropagationTargets: [
 tracePropagationTargets: [];
 ```
 
----
+* * *
 
 ### Continuing a Server-Initiated Trace
 
-When your server renders the HTML, emit the current trace context as `<meta>` tags. The `browserTracingIntegration` reads them automatically on page load and continues the same trace:
+When your server renders the HTML, emit the current trace context as `<meta>` tags.
+The `browserTracingIntegration` reads them automatically on page load and continues the
+same trace:
 
 ```html
 <meta name="sentry-trace"
@@ -424,7 +439,7 @@ When your server renders the HTML, emit the current trace context as `<meta>` ta
   content="sentry-trace_id=12345678901234567890123456789012,sentry-environment=production,sentry-sample_rate=1" />
 ```
 
----
+* * *
 
 ### Manual Trace Propagation (Non-HTTP Channels)
 
@@ -444,7 +459,7 @@ webSocket.send(
 );
 ```
 
----
+* * *
 
 ## Sampling
 
@@ -457,12 +472,13 @@ Sentry.init({
 ```
 
 - Range: `0` – `1` (random, uniform percentage)
-- `0` = send no traces (tracing is still "active"; omit both options to fully disable)
+- `0` = send no traces (tracing is still “active”; omit both options to fully disable)
 - `1` = send 100% of traces
 
 ### `tracesSampler` — Dynamic / Context-Aware Sampling
 
-A function that receives a `SamplingContext` and returns a sample rate (`0`–`1`) or a `boolean`.
+A function that receives a `SamplingContext` and returns a sample rate (`0`–`1`) or a
+`boolean`.
 
 ```javascript
 Sentry.init({
@@ -485,8 +501,8 @@ Sentry.init({
 ### `SamplingContext` Properties
 
 | Property | Type | Description |
-|----------|------|-------------|
-| `name` | `string` | The span's initial name |
+| --- | --- | --- |
+| `name` | `string` | The span’s initial name |
 | `attributes` | `Record<string, unknown>` | Initial span attributes |
 | `parentSampled` | `boolean \| undefined` | Whether the parent span was sampled (`undefined` if no parent) |
 | `parentSampleRate` | `number \| undefined` | The sample rate used by the incoming trace |
@@ -495,12 +511,14 @@ Sentry.init({
 ### Sampling Precedence
 
 1. **`tracesSampler`** — highest priority (if defined)
-2. **Parent sampling decision** — used when no sampler is defined but a parent trace exists
+2. **Parent sampling decision** — used when no sampler is defined but a parent trace
+   exists
 3. **`tracesSampleRate`** — fallback uniform rate
 
 ### INP-Specific Sampling
 
-`interactionsSampleRate` applies an **additional** multiplier on top of `tracesSampleRate` for INP interaction spans:
+`interactionsSampleRate` applies an **additional** multiplier on top of
+`tracesSampleRate` for INP interaction spans:
 
 ```javascript
 Sentry.init({
@@ -514,25 +532,34 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Best Practices
 
-- **Set `tracePropagationTargets` explicitly** — the default (`localhost` + `/`) is rarely correct for production. Define your API origins precisely.
-- **Use `beforeStartSpan` to normalize transaction names** — avoid high cardinality from dynamic URLs (`/users/123` → `/users/<id>`).
-- **Use `shouldCreateSpanForRequest` to exclude noise** — skip health checks, analytics pixels, and third-party beacons.
-- **Prefer `startSpan` over `startInactiveSpan`** — the auto-ending behavior prevents runaway spans.
-- **Set `op` on custom spans** — the Sentry UI uses `op` for icons, grouping, and performance charts.
-- **Use `inheritOrSampleWith` in `tracesSampler`** — ensures sampling decisions are deterministically propagated from parent to child traces.
-- **Add CORS headers on your servers** — `sentry-trace` and `baggage` must be in `Access-Control-Allow-Headers` and `Access-Control-Expose-Headers`.
-- **Tune `idleTimeout` for your SPA** — if your navigation transitions are slow (>1s), increase `idleTimeout` to avoid premature span termination.
+- **Set `tracePropagationTargets` explicitly** — the default (`localhost` + `/`) is
+  rarely correct for production.
+  Define your API origins precisely.
+- **Use `beforeStartSpan` to normalize transaction names** — avoid high cardinality from
+  dynamic URLs (`/users/123` → `/users/<id>`).
+- **Use `shouldCreateSpanForRequest` to exclude noise** — skip health checks, analytics
+  pixels, and third-party beacons.
+- **Prefer `startSpan` over `startInactiveSpan`** — the auto-ending behavior prevents
+  runaway spans.
+- **Set `op` on custom spans** — the Sentry UI uses `op` for icons, grouping, and
+  performance charts.
+- **Use `inheritOrSampleWith` in `tracesSampler`** — ensures sampling decisions are
+  deterministically propagated from parent to child traces.
+- **Add CORS headers on your servers** — `sentry-trace` and `baggage` must be in
+  `Access-Control-Allow-Headers` and `Access-Control-Expose-Headers`.
+- **Tune `idleTimeout` for your SPA** — if your navigation transitions are slow (>1s),
+  increase `idleTimeout` to avoid premature span termination.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Transactions not appearing in Sentry | Ensure `tracesSampleRate > 0` (or `tracesSampler` returns a value > 0). Check that `browserTracingIntegration()` is in the `integrations` array. |
 | Missing `sentry-trace` / `baggage` headers on requests | Check `tracePropagationTargets` — the request URL must match an entry. Also verify CORS headers allow these. |
 | Transaction names showing raw URLs with IDs | Use `beforeStartSpan` to normalize dynamic URL segments. |
@@ -541,5 +568,5 @@ Sentry.init({
 | INP spans not appearing | Requires SDK ≥8.0.0 (enabled by default). In SDK 7.x set `enableInp: true` explicitly. |
 | Too many transactions overwhelming quota | Use `tracesSampler` to sample high-volume routes at a lower rate. Drop health checks entirely (return `0`). |
 | Parallel spans showing wrong parent | Use `startInactiveSpan` with explicit `parentSpan` option to control hierarchy. |
-| `beforeSendTransaction` not called | Ensure you're returning from `beforeSend` correctly — `beforeSendTransaction` is a separate hook for transactions only. |
+| `beforeSendTransaction` not called | Ensure you’re returning from `beforeSend` correctly — `beforeSendTransaction` is a separate hook for transactions only. |
 | Long tasks not captured | Ensure `enableLongTask: true` (default). Long animation frames require SDK ≥8.18.0 and `enableLongAnimationFrame: true`. |

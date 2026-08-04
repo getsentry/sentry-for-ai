@@ -1,11 +1,14 @@
 # Sentry NestJS SDK
 
-Opinionated wizard that scans your NestJS project and guides you through complete Sentry setup.
+Opinionated wizard that scans your NestJS project and guides you through complete Sentry
+setup.
 
-> **Note:** SDK versions and APIs below reflect `@sentry/nestjs` 10.x (NestJS 8–11 supported).
-> Always verify against [docs.sentry.io/platforms/node/guides/nestjs/](https://docs.sentry.io/platforms/node/guides/nestjs/) before implementing.
+> **Note:** SDK versions and APIs below reflect `@sentry/nestjs` 10.x (NestJS 8–11
+> supported). Always verify against
+> [docs.sentry.io/platforms/node/guides/nestjs/](https://docs.sentry.io/platforms/node/guides/nestjs/)
+> before implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -59,52 +62,72 @@ ls -d ../frontend ../web ../client ../ui 2>/dev/null
 
 **What to note:**
 
-- Is `@sentry/nestjs` already installed? If yes, check if `instrument.ts` exists and `Sentry.init()` is called — may just need feature config.
-- **Sentry DI wrapper detected?** → The project wraps Sentry behind a DI token (e.g. `SENTRY_PROXY_TOKEN`) for testability. Use the injected proxy for all runtime Sentry calls (`startSpan`, `captureException`, `withIsolationScope`) instead of importing `@sentry/nestjs` directly in controllers, services, and processors. Only `instrument.ts` should import `@sentry/nestjs` directly.
-- **Config class detected?** → The project uses a typed config class for `Sentry.init()` options (e.g. loaded from YAML or `@nestjs/config`). Any new SDK options must be added to the config type — do not hardcode values that should be configurable per environment.
-- **`SentryModule.forRoot()` already registered?** → If it's in a shared module (e.g. a Sentry proxy module), do not add it again in `AppModule` — this causes duplicate interceptor registration.
-- Express (default) or Fastify adapter? Express is fully supported; Fastify works but has known edge cases.
+- Is `@sentry/nestjs` already installed?
+  If yes, check if `instrument.ts` exists and `Sentry.init()` is called — may just need
+  feature config.
+- **Sentry DI wrapper detected?** → The project wraps Sentry behind a DI token (e.g.
+  `SENTRY_PROXY_TOKEN`) for testability.
+  Use the injected proxy for all runtime Sentry calls (`startSpan`, `captureException`,
+  `withIsolationScope`) instead of importing `@sentry/nestjs` directly in controllers,
+  services, and processors.
+  Only `instrument.ts` should import `@sentry/nestjs` directly.
+- **Config class detected?** → The project uses a typed config class for `Sentry.init()`
+  options (e.g. loaded from YAML or `@nestjs/config`). Any new SDK options must be added
+  to the config type — do not hardcode values that should be configurable per
+  environment.
+- **`SentryModule.forRoot()` already registered?** → If it’s in a shared module (e.g. a
+  Sentry proxy module), do not add it again in `AppModule` — this causes duplicate
+  interceptor registration.
+- Express (default) or Fastify adapter?
+  Express is fully supported; Fastify works but has known edge cases.
 - GraphQL detected? → `SentryGlobalFilter` handles it natively.
-- Microservices detected? → Recommend RPC exception filter.
+- Microservices detected?
+  → Recommend RPC exception filter.
 - Task queues / `@nestjs/schedule`? → Recommend crons.
 - AI libraries? → Auto-instrumented, zero config.
 - Prisma? → Requires manual `prismaIntegration()`.
 - Companion frontend? → Triggers Phase 4 cross-link.
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Based on what you found, present a concrete proposal. Don't ask open-ended questions — lead with a recommendation:
+Based on what you found, present a concrete proposal.
+Don’t ask open-ended questions — lead with a recommendation:
 
 **Always recommended (core coverage):**
 
-- ✅ **Error Monitoring** — captures unhandled exceptions across HTTP, GraphQL, RPC, and WebSocket contexts
-- ✅ **Tracing** — auto-instruments middleware, guards, pipes, interceptors, filters, and route handlers
+- ✅ **Error Monitoring** — captures unhandled exceptions across HTTP, GraphQL, RPC, and
+  WebSocket contexts
+- ✅ **Tracing** — auto-instruments middleware, guards, pipes, interceptors, filters, and
+  route handlers
 
 **Recommend when detected:**
 
-- ✅ **Profiling** — production apps where CPU performance matters (`@sentry/profiling-node`)
+- ✅ **Profiling** — production apps where CPU performance matters
+  (`@sentry/profiling-node`)
 - ✅ **Logging** — structured Sentry Logs + optional console capture
 - ✅ **Crons** — `@nestjs/schedule`, Bull, or BullMQ detected
 - ✅ **Metrics** — business KPIs or SLO tracking
-- ✅ **AI Monitoring** — OpenAI/Anthropic/LangChain/etc. detected (auto-instrumented, zero config)
+- ✅ **AI Monitoring** — OpenAI/Anthropic/LangChain/etc.
+  detected (auto-instrumented, zero config)
 
 **Recommendation matrix:**
 
-| Feature          | Recommend when...                                  | Reference                                      |
-| ---------------- | -------------------------------------------------- | ---------------------------------------------- |
-| Error Monitoring | **Always** — non-negotiable baseline               | `./error-monitoring.md` |
-| Tracing          | **Always** — NestJS lifecycle is auto-instrumented | `./tracing.md`          |
-| Profiling        | Production + CPU-sensitive workloads               | `./profiling.md`        |
-| Logging          | Always; enhanced for structured log aggregation    | `./logging.md`          |
-| Metrics          | Custom business KPIs or SLO tracking               | `./metrics.md`          |
-| Crons            | `@nestjs/schedule`, Bull, or BullMQ detected       | `./crons.md`            |
-| AI Monitoring    | OpenAI/Anthropic/LangChain/etc. detected           | `./ai-monitoring.md`    |
+| Feature | Recommend when … | Reference |
+| --- | --- | --- |
+| Error Monitoring | **Always** — non-negotiable baseline | `./error-monitoring.md` |
+| Tracing | **Always** — NestJS lifecycle is auto-instrumented | `./tracing.md` |
+| Profiling | Production + CPU-sensitive workloads | `./profiling.md` |
+| Logging | Always; enhanced for structured log aggregation | `./logging.md` |
+| Metrics | Custom business KPIs or SLO tracking | `./metrics.md` |
+| Crons | `@nestjs/schedule`, Bull, or BullMQ detected | `./crons.md` |
+| AI Monitoring | OpenAI/Anthropic/LangChain/etc. detected | `./ai-monitoring.md` |
 
-Propose: _"I recommend Error Monitoring + Tracing + Logging. Want Profiling, Crons, or AI Monitoring too?"_
+Propose: *“I recommend Error Monitoring + Tracing + Logging.
+Want Profiling, Crons, or AI Monitoring too?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
@@ -118,17 +141,22 @@ npm install @sentry/nestjs
 npm install @sentry/nestjs @sentry/profiling-node
 ```
 
-> ⚠️ **Do NOT install `@sentry/node` alongside `@sentry/nestjs`** — `@sentry/nestjs` re-exports everything from `@sentry/node`. Installing both causes duplicate registration.
+> ⚠️ **Do NOT install `@sentry/node` alongside `@sentry/nestjs`** — `@sentry/nestjs`
+> re-exports everything from `@sentry/node`. Installing both causes duplicate
+> registration.
 
 ### Three-File Setup (Required)
 
-NestJS requires a specific three-file initialization pattern because the Sentry SDK must patch Node.js modules (via OpenTelemetry) **before** NestJS loads them.
+NestJS requires a specific three-file initialization pattern because the Sentry SDK must
+patch Node.js modules (via OpenTelemetry) **before** NestJS loads them.
 
 > **Before creating new files**, check Phase 1 results:
->
-> - If `instrument.ts` already exists → modify it, don't create a new one.
-> - If a config class drives `Sentry.init()` → read options from the config instead of hardcoding env vars.
-> - If a Sentry DI wrapper exists → use it for runtime calls instead of importing `@sentry/nestjs` directly in services/controllers.
+> 
+> - If `instrument.ts` already exists → modify it, don’t create a new one.
+> - If a config class drives `Sentry.init()` → read options from the config instead of
+>   hardcoding env vars.
+> - If a Sentry DI wrapper exists → use it for runtime calls instead of importing
+>   `@sentry/nestjs` directly in services/controllers.
 
 #### Step 1: Create `src/instrument.ts`
 
@@ -163,7 +191,9 @@ Sentry.init({
 });
 ```
 
-**Config-driven `Sentry.init()`:** If Phase 1 found a typed config class (e.g. `SentryConfig`), read options from it instead of using raw `process.env`. This is common in NestJS apps that use `@nestjs/config` or custom config loaders:
+**Config-driven `Sentry.init()`:** If Phase 1 found a typed config class (e.g.
+`SentryConfig`), read options from it instead of using raw `process.env`. This is common
+in NestJS apps that use `@nestjs/config` or custom config loaders:
 
 ```typescript
 import * as Sentry from "@sentry/nestjs";
@@ -188,7 +218,8 @@ Sentry.init({
 });
 ```
 
-When adding new SDK options (e.g. `dataCollection`, `profileSessionSampleRate`), add them to the config type so they can be configured per environment.
+When adding new SDK options (e.g. `dataCollection`, `profileSessionSampleRate`), add
+them to the config type so they can be configured per environment.
 
 #### Step 2: Import `instrument.ts` FIRST in `src/main.ts`
 
@@ -210,7 +241,9 @@ async function bootstrap() {
 bootstrap();
 ```
 
-> **Why first?** OpenTelemetry must monkey-patch `http`, `express`, database drivers, and other modules before they load. Any module that loads before `instrument.ts` will not be auto-instrumented.
+> **Why first?** OpenTelemetry must monkey-patch `http`, `express`, database drivers,
+> and other modules before they load.
+> Any module that loads before `instrument.ts` will not be auto-instrumented.
 
 #### Step 3: Register `SentryModule` and `SentryGlobalFilter` in `src/app.module.ts`
 
@@ -239,17 +272,24 @@ export class AppModule {}
 
 **What each piece does:**
 
-- `SentryModule.forRoot()` — registers `SentryTracingInterceptor` as a global `APP_INTERCEPTOR`, enabling HTTP transaction naming
-- `SentryGlobalFilter` — extends `BaseExceptionFilter`; captures exceptions across HTTP, GraphQL (rethrows `HttpException` without reporting), and RPC contexts
+- `SentryModule.forRoot()` — registers `SentryTracingInterceptor` as a global
+  `APP_INTERCEPTOR`, enabling HTTP transaction naming
+- `SentryGlobalFilter` — extends `BaseExceptionFilter`; captures exceptions across HTTP,
+  GraphQL (rethrows `HttpException` without reporting), and RPC contexts
 
-> ⚠️ **Do NOT register `SentryModule.forRoot()` twice.** If Phase 1 found it already imported in a shared library module (e.g. a `SentryProxyModule` or `AnalyticsModule`), do not add it again in `AppModule`. Duplicate registration causes every span to be intercepted twice, bloating trace data.
+> ⚠️ **Do NOT register `SentryModule.forRoot()` twice.** If Phase 1 found it already
+> imported in a shared library module (e.g. a `SentryProxyModule` or `AnalyticsModule`),
+> do not add it again in `AppModule`. Duplicate registration causes every span to be
+> intercepted twice, bloating trace data.
 
 > ⚠️ **Two entrypoints, different imports:**
->
-> - `@sentry/nestjs` → SDK init, capture APIs, decorators (`SentryTraced`, `SentryCron`, `SentryExceptionCaptured`)
+> 
+> - `@sentry/nestjs` → SDK init, capture APIs, decorators (`SentryTraced`, `SentryCron`,
+>   `SentryExceptionCaptured`)
 > - `@sentry/nestjs/setup` → NestJS DI constructs (`SentryModule`, `SentryGlobalFilter`)
->
-> Never import `SentryModule` from `@sentry/nestjs` (main entrypoint) — it loads `@nestjs/common` before OpenTelemetry patches it, breaking auto-instrumentation.
+> 
+> Never import `SentryModule` from `@sentry/nestjs` (main entrypoint) — it loads
+> `@nestjs/common` before OpenTelemetry patches it, breaking auto-instrumentation.
 
 ### ESM Setup (Node ≥ 18.19.0)
 
@@ -286,7 +326,8 @@ Choose the approach that fits your existing architecture:
 
 #### Option A: No existing global filter — use `SentryGlobalFilter` (recommended)
 
-Already covered in Step 3 above. This is the simplest option.
+Already covered in Step 3 above.
+This is the simplest option.
 
 #### Option B: Existing custom global filter — add `@SentryExceptionCaptured()` decorator
 
@@ -381,7 +422,8 @@ export class ReportService {
 
 #### Background Job Scope Isolation
 
-Background jobs share the default isolation scope — wrap with `Sentry.withIsolationScope()` to prevent cross-contamination:
+Background jobs share the default isolation scope — wrap with
+`Sentry.withIsolationScope()` to prevent cross-contamination:
 
 ```typescript
 import * as Sentry from "@sentry/nestjs";
@@ -400,11 +442,16 @@ export class JobService {
 }
 ```
 
-Apply `withIsolationScope` to: `@Cron()`, `@Interval()`, `@OnEvent()`, `@Processor()`, and any code outside the request lifecycle.
+Apply `withIsolationScope` to: `@Cron()`, `@Interval()`, `@OnEvent()`, `@Processor()`,
+and any code outside the request lifecycle.
 
 ### Working with Sentry DI Wrappers
 
-Some NestJS projects wrap Sentry behind a dependency injection token (e.g. `SENTRY_PROXY_TOKEN`) for testability and decoupling. If Phase 1 detected this pattern, **use the injected service for all runtime Sentry calls** — do not import `@sentry/nestjs` directly in controllers, services, or processors.
+Some NestJS projects wrap Sentry behind a dependency injection token (e.g.
+`SENTRY_PROXY_TOKEN`) for testability and decoupling.
+If Phase 1 detected this pattern, **use the injected service for all runtime Sentry
+calls** — do not import `@sentry/nestjs` directly in controllers, services, or
+processors.
 
 ```typescript
 import { Controller, Inject } from "@nestjs/common";
@@ -429,7 +476,8 @@ export class OrderController {
 
 **Where direct `@sentry/nestjs` import is still correct:**
 
-- `instrument.ts` — always uses `import * as Sentry from "@sentry/nestjs"` for `Sentry.init()`
+- `instrument.ts` — always uses `import * as Sentry from "@sentry/nestjs"` for
+  `Sentry.init()`
 - Standalone scripts and exception filters that run outside the DI container
 
 ### Verification
@@ -460,51 +508,52 @@ Hit `GET /debug-sentry` and check the Sentry Issues dashboard within seconds.
 
 ### For Each Agreed Feature
 
-Walk through features one at a time. Load the reference, follow its steps, verify before moving on:
+Walk through features one at a time.
+Load the reference, follow its steps, verify before moving on:
 
-| Feature          | Reference file                                 | Load when...                           |
-| ---------------- | ---------------------------------------------- | -------------------------------------- |
-| Error Monitoring | `./error-monitoring.md` | Always (baseline)                      |
-| Tracing          | `./tracing.md`          | Always (NestJS routes are auto-traced) |
-| Profiling        | `./profiling.md`        | CPU-intensive production apps          |
-| Logging          | `./logging.md`          | Structured log aggregation needed      |
-| Metrics          | `./metrics.md`          | Custom KPIs / SLO tracking             |
-| Crons            | `./crons.md`            | Scheduled jobs or task queues          |
-| AI Monitoring    | `./ai-monitoring.md`    | OpenAI/Anthropic/LangChain detected    |
+| Feature | Reference file | Load when … |
+| --- | --- | --- |
+| Error Monitoring | `./error-monitoring.md` | Always (baseline) |
+| Tracing | `./tracing.md` | Always (NestJS routes are auto-traced) |
+| Profiling | `./profiling.md` | CPU-intensive production apps |
+| Logging | `./logging.md` | Structured log aggregation needed |
+| Metrics | `./metrics.md` | Custom KPIs / SLO tracking |
+| Crons | `./crons.md` | Scheduled jobs or task queues |
+| AI Monitoring | `./ai-monitoring.md` | OpenAI/Anthropic/LangChain detected |
 
 For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Key `Sentry.init()` Options
 
-| Option                       | Type                    | Default        | Purpose                                                                                          |
-| ---------------------------- | ----------------------- | -------------- | ------------------------------------------------------------------------------------------------ |
-| `dsn`                        | `string`                | —              | SDK disabled if empty; env: `SENTRY_DSN`                                                         |
-| `environment`                | `string`                | `"production"` | e.g., `"staging"`; env: `SENTRY_ENVIRONMENT`                                                     |
-| `release`                    | `string`                | —              | e.g., `"myapp@1.0.0"`; env: `SENTRY_RELEASE`                                                     |
-| `dataCollection`             | `object`                | See below      | Controls what data the SDK collects (SDK ≥ 10.57.0)                                              |
-| `dataCollection.userInfo`    | `boolean`               | `true`        | Include IP addresses and user context                                                            |
-| `dataCollection.httpHeaders` | `object`                | See below      | Capture HTTP headers for requests/responses                                                      |
-| `dataCollection.cookies`     | `boolean\|object`       | `true`         | Capture cookies; use `{allow: [...]}` or `{deny: [...]}` for filtering                           |
-| `dataCollection.queryParams` | `boolean\|object`       | `true`         | Capture URL query parameters; use `{allow: [...]}` or `{deny: [...]}` for filtering              |
-| `dataCollection.genAI`       | `object`                | See below      | Control AI input/output recording                                                                |
-| `sendDefaultPii`             | `boolean`               | `false`        | **Deprecated** — use `dataCollection.userInfo` instead                                           |
-| `tracesSampleRate`           | `number`                | —              | Transaction sample rate; `undefined` disables tracing                                            |
-| `tracesSampler`              | `function`              | —              | Custom per-transaction sampling (overrides rate)                                                 |
-| `tracePropagationTargets`    | `Array<string\|RegExp>` | —              | URLs to propagate `sentry-trace`/`baggage` headers to                                            |
-| `profileSessionSampleRate`   | `number`                | —              | Continuous profiling session rate (SDK ≥ 10.27.0)                                                |
-| `profileLifecycle`           | `"trace"\|"manual"`     | `"trace"`      | `"trace"` = auto-start profiler with spans; `"manual"` = call `startProfiler()`/`stopProfiler()` |
-| `enableLogs`                 | `boolean`               | `false`        | Send structured logs to Sentry (SDK ≥ 9.41.0)                                                    |
-| `ignoreErrors`               | `Array<string\|RegExp>` | `[]`           | Error message patterns to suppress                                                               |
-| `ignoreTransactions`         | `Array<string\|RegExp>` | `[]`           | Transaction name patterns to suppress                                                            |
-| `beforeSend`                 | `function`              | —              | Hook to mutate or drop error events                                                              |
-| `beforeSendTransaction`      | `function`              | —              | Hook to mutate or drop transaction events                                                        |
-| `beforeSendLog`              | `function`              | —              | Hook to mutate or drop log events                                                                |
-| `debug`                      | `boolean`               | `false`        | Verbose SDK debug output                                                                         |
-| `maxBreadcrumbs`             | `number`                | `100`          | Max breadcrumbs per event                                                                        |
+| Option | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `dsn` | `string` | — | SDK disabled if empty; env: `SENTRY_DSN` |
+| `environment` | `string` | `"production"` | e.g., `"staging"`; env: `SENTRY_ENVIRONMENT` |
+| `release` | `string` | — | e.g., `"myapp@1.0.0"`; env: `SENTRY_RELEASE` |
+| `dataCollection` | `object` | See below | Controls what data the SDK collects (SDK ≥ 10.57.0) |
+| `dataCollection.userInfo` | `boolean` | `true` | Include IP addresses and user context |
+| `dataCollection.httpHeaders` | `object` | See below | Capture HTTP headers for requests/responses |
+| `dataCollection.cookies` | `boolean\|object` | `true` | Capture cookies; use `{allow: [...]}` or `{deny: [...]}` for filtering |
+| `dataCollection.queryParams` | `boolean\|object` | `true` | Capture URL query parameters; use `{allow: [...]}` or `{deny: [...]}` for filtering |
+| `dataCollection.genAI` | `object` | See below | Control AI input/output recording |
+| `sendDefaultPii` | `boolean` | `false` | **Deprecated** — use `dataCollection.userInfo` instead |
+| `tracesSampleRate` | `number` | — | Transaction sample rate; `undefined` disables tracing |
+| `tracesSampler` | `function` | — | Custom per-transaction sampling (overrides rate) |
+| `tracePropagationTargets` | `Array<string\|RegExp>` | — | URLs to propagate `sentry-trace`/`baggage` headers to |
+| `profileSessionSampleRate` | `number` | — | Continuous profiling session rate (SDK ≥ 10.27.0) |
+| `profileLifecycle` | `"trace"\|"manual"` | `"trace"` | `"trace"` = auto-start profiler with spans; `"manual"` = call `startProfiler()`/`stopProfiler()` |
+| `enableLogs` | `boolean` | `false` | Send structured logs to Sentry (SDK ≥ 9.41.0) |
+| `ignoreErrors` | `Array<string\|RegExp>` | `[]` | Error message patterns to suppress |
+| `ignoreTransactions` | `Array<string\|RegExp>` | `[]` | Transaction name patterns to suppress |
+| `beforeSend` | `function` | — | Hook to mutate or drop error events |
+| `beforeSendTransaction` | `function` | — | Hook to mutate or drop transaction events |
+| `beforeSendLog` | `function` | — | Hook to mutate or drop log events |
+| `debug` | `boolean` | `false` | Verbose SDK debug output |
+| `maxBreadcrumbs` | `number` | `100` | Max breadcrumbs per event |
 
 **`dataCollection` defaults:**
 - `httpHeaders: { request: true, response: true }`
@@ -514,45 +563,46 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
 ### Environment Variables
 
-| Variable             | Maps to         | Notes                                             |
-| -------------------- | --------------- | ------------------------------------------------- |
-| `SENTRY_DSN`         | `dsn`           | Used if `dsn` not passed to `init()`              |
-| `SENTRY_RELEASE`     | `release`       | Also auto-detected from git SHA, Heroku, CircleCI |
-| `SENTRY_ENVIRONMENT` | `environment`   | Falls back to `"production"`                      |
-| `SENTRY_AUTH_TOKEN`  | CLI/source maps | For `npx @sentry/wizard@latest -i sourcemaps`     |
-| `SENTRY_ORG`         | CLI/source maps | Organization slug                                 |
-| `SENTRY_PROJECT`     | CLI/source maps | Project slug                                      |
+| Variable | Maps to | Notes |
+| --- | --- | --- |
+| `SENTRY_DSN` | `dsn` | Used if `dsn` not passed to `init()` |
+| `SENTRY_RELEASE` | `release` | Also auto-detected from git SHA, Heroku, CircleCI |
+| `SENTRY_ENVIRONMENT` | `environment` | Falls back to `"production"` |
+| `SENTRY_AUTH_TOKEN` | CLI/source maps | For `npx @sentry/wizard@latest -i sourcemaps` |
+| `SENTRY_ORG` | CLI/source maps | Organization slug |
+| `SENTRY_PROJECT` | CLI/source maps | Project slug |
 
 ### Auto-Enabled Integrations
 
-These integrations activate automatically when their packages are detected — no `integrations: [...]` needed:
+These integrations activate automatically when their packages are detected — no
+`integrations: [...]` needed:
 
-| Auto-enabled                      | Notes                                                                |
-| --------------------------------- | -------------------------------------------------------------------- |
-| `httpIntegration`                 | Outgoing HTTP calls via `http`/`https`/`fetch`                       |
-| `expressIntegration`              | Express adapter (default NestJS)                                     |
-| `nestIntegration`                 | NestJS lifecycle (middleware, guards, pipes, interceptors, handlers) |
-| `onUncaughtExceptionIntegration`  | Uncaught exceptions                                                  |
-| `onUnhandledRejectionIntegration` | Unhandled promise rejections                                         |
-| `openAIIntegration`               | OpenAI SDK (when installed)                                          |
-| `anthropicAIIntegration`          | Anthropic SDK (when installed)                                       |
-| `langchainIntegration`            | LangChain (when installed)                                           |
-| `graphqlIntegration`              | GraphQL (when `graphql` package present)                             |
-| `postgresIntegration`             | `pg` driver                                                          |
-| `mysqlIntegration`                | `mysql` / `mysql2`                                                   |
-| `mongoIntegration`                | MongoDB / Mongoose                                                   |
-| `redisIntegration`                | `ioredis` / `redis`                                                  |
+| Auto-enabled | Notes |
+| --- | --- |
+| `httpIntegration` | Outgoing HTTP calls via `http`/`https`/`fetch` |
+| `expressIntegration` | Express adapter (default NestJS) |
+| `nestIntegration` | NestJS lifecycle (middleware, guards, pipes, interceptors, handlers) |
+| `onUncaughtExceptionIntegration` | Uncaught exceptions |
+| `onUnhandledRejectionIntegration` | Unhandled promise rejections |
+| `openAIIntegration` | OpenAI SDK (when installed) |
+| `anthropicAIIntegration` | Anthropic SDK (when installed) |
+| `langchainIntegration` | LangChain (when installed) |
+| `graphqlIntegration` | GraphQL (when `graphql` package present) |
+| `postgresIntegration` | `pg` driver |
+| `mysqlIntegration` | `mysql` / `mysql2` |
+| `mongoIntegration` | MongoDB / Mongoose |
+| `redisIntegration` | `ioredis` / `redis` |
 
 ### Integrations Requiring Manual Setup
 
-| Integration                 | When to add                        | Code                                                                |
-| --------------------------- | ---------------------------------- | ------------------------------------------------------------------- |
-| `nodeProfilingIntegration`  | Profiling desired                  | `import { nodeProfilingIntegration } from "@sentry/profiling-node"` |
-| `prismaIntegration`         | Prisma ORM used                    | `integrations: [Sentry.prismaIntegration()]`                        |
-| `consoleLoggingIntegration` | Capture console output             | `integrations: [Sentry.consoleLoggingIntegration()]`                |
-| `localVariablesIntegration` | Capture local var values in errors | `integrations: [Sentry.localVariablesIntegration()]`                |
+| Integration | When to add | Code |
+| --- | --- | --- |
+| `nodeProfilingIntegration` | Profiling desired | `import { nodeProfilingIntegration } from "@sentry/profiling-node"` |
+| `prismaIntegration` | Prisma ORM used | `integrations: [Sentry.prismaIntegration()]` |
+| `consoleLoggingIntegration` | Capture console output | `integrations: [Sentry.consoleLoggingIntegration()]` |
+| `localVariablesIntegration` | Capture local var values in errors | `integrations: [Sentry.localVariablesIntegration()]` |
 
----
+* * *
 
 ## Verification
 
@@ -581,7 +631,7 @@ If nothing appears:
 4. Confirm `SentryModule.forRoot()` is imported in `AppModule`
 5. Check DSN format: `https://<key>@o<org>.ingest.sentry.io/<project>`
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
@@ -595,53 +645,53 @@ cat ../frontend/package.json ../web/package.json 2>/dev/null \
 
 If a frontend exists without Sentry, suggest the matching skill:
 
-| Frontend detected   | Suggest skill                                                                                                                      |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Next.js             | [`nextjs`](../nextjs/index.md)                                                                                                                |
-| React               | [`react`](../react/index.md)                                                                                                                 |
-| Svelte / SvelteKit  | [`svelte`](../svelte/index.md)                                                                                                                |
-| Vue / Nuxt          | Use `@sentry/vue` — see [docs.sentry.io/platforms/javascript/guides/vue/](https://docs.sentry.io/platforms/javascript/guides/vue/) |
-| React Native / Expo | [`react-native`](../react-native/index.md)                                                                                                          |
+| Frontend detected | Suggest skill |
+| --- | --- |
+| Next.js | [`nextjs`](../nextjs/index.md) |
+| React | [`react`](../react/index.md) |
+| Svelte / SvelteKit | [`svelte`](../svelte/index.md) |
+| Vue / Nuxt | Use `@sentry/vue` — see [docs.sentry.io/platforms/javascript/guides/vue/](https://docs.sentry.io/platforms/javascript/guides/vue/) |
+| React Native / Expo | [`react-native`](../react-native/index.md) |
 
----
+* * *
 
 ## Troubleshooting
 
-| Issue                                              | Solution                                                                                                                                                      |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Events not appearing                               | Set `debug: true`, verify `SENTRY_DSN`, check `instrument.ts` is imported first                                                                               |
-| Malformed DSN error                                | Format: `https://<key>@o<org>.ingest.sentry.io/<project>`                                                                                                     |
-| Exceptions not captured                            | Ensure `SentryGlobalFilter` is registered via `APP_FILTER` in `AppModule`                                                                                     |
-| Auto-instrumentation not working                   | `instrument.ts` must be the **first import** in `main.ts` — before all NestJS imports                                                                         |
-| Profiling not starting                             | Requires `tracesSampleRate > 0` + `profileSessionSampleRate > 0` + `@sentry/profiling-node` installed                                                         |
-| `enableLogs` not working                           | Requires SDK ≥ 9.41.0                                                                                                                                         |
-| No traces appearing                                | Verify `tracesSampleRate` is set (not `undefined`)                                                                                                            |
-| Too many transactions                              | Lower `tracesSampleRate` or use `tracesSampler` to drop health checks                                                                                         |
-| Fastify + GraphQL issues                           | Known edge cases — see [GitHub #13388](https://github.com/getsentry/sentry-javascript/issues/13388); prefer Express for GraphQL                               |
-| Background job events mixed                        | Wrap job body in `Sentry.withIsolationScope(() => { ... })`                                                                                                   |
-| Prisma spans missing                               | Add `integrations: [Sentry.prismaIntegration()]` to `Sentry.init()`                                                                                           |
-| ESM syntax errors                                  | Set `registerEsmLoaderHooks: false` (disables ESM hooks; also disables auto-instrumentation for ESM modules)                                                  |
-| `SentryModule` breaks instrumentation              | Must import from `@sentry/nestjs/setup`, never from `@sentry/nestjs`                                                                                          |
-| RPC exceptions not captured                        | Add dedicated `SentryRpcExceptionFilter` (see Option D in exception filter section)                                                                           |
-| WebSocket exceptions not captured                  | Use `@SentryExceptionCaptured()` on gateway `handleConnection`/`handleDisconnect`                                                                             |
-| `@SentryCron` not triggering                       | Decorator order matters — `@SentryCron` MUST come after `@Cron`                                                                                               |
-| TypeScript path alias issues                       | Ensure `tsconfig.json` `paths` are configured so `instrument` resolves from `main.ts` location                                                                |
-| `import * as Sentry` ESLint error                  | Many projects ban namespace imports. Use named imports (`import { startSpan, captureException } from "@sentry/nestjs"`) or use the project's DI proxy instead |
-| `profilesSampleRate` vs `profileSessionSampleRate` | `profilesSampleRate` is deprecated in SDK 10.x. Use `profileSessionSampleRate` + `profileLifecycle: "trace"` instead                                          |
-| Duplicate spans on every request                   | `SentryModule.forRoot()` registered in multiple modules. Ensure it's only called once — check shared/library modules                                          |
-| Config property not recognized in `instrument.ts`  | When using a typed config class, new SDK options must be added to the config type definition and the project rebuilt before TypeScript recognizes them        |
+| Issue | Solution |
+| --- | --- |
+| Events not appearing | Set `debug: true`, verify `SENTRY_DSN`, check `instrument.ts` is imported first |
+| Malformed DSN error | Format: `https://<key>@o<org>.ingest.sentry.io/<project>` |
+| Exceptions not captured | Ensure `SentryGlobalFilter` is registered via `APP_FILTER` in `AppModule` |
+| Auto-instrumentation not working | `instrument.ts` must be the **first import** in `main.ts` — before all NestJS imports |
+| Profiling not starting | Requires `tracesSampleRate > 0` + `profileSessionSampleRate > 0` + `@sentry/profiling-node` installed |
+| `enableLogs` not working | Requires SDK ≥ 9.41.0 |
+| No traces appearing | Verify `tracesSampleRate` is set (not `undefined`) |
+| Too many transactions | Lower `tracesSampleRate` or use `tracesSampler` to drop health checks |
+| Fastify + GraphQL issues | Known edge cases — see [GitHub #13388](https://github.com/getsentry/sentry-javascript/issues/13388); prefer Express for GraphQL |
+| Background job events mixed | Wrap job body in `Sentry.withIsolationScope(() => { ... })` |
+| Prisma spans missing | Add `integrations: [Sentry.prismaIntegration()]` to `Sentry.init()` |
+| ESM syntax errors | Set `registerEsmLoaderHooks: false` (disables ESM hooks; also disables auto-instrumentation for ESM modules) |
+| `SentryModule` breaks instrumentation | Must import from `@sentry/nestjs/setup`, never from `@sentry/nestjs` |
+| RPC exceptions not captured | Add dedicated `SentryRpcExceptionFilter` (see Option D in exception filter section) |
+| WebSocket exceptions not captured | Use `@SentryExceptionCaptured()` on gateway `handleConnection`/`handleDisconnect` |
+| `@SentryCron` not triggering | Decorator order matters — `@SentryCron` MUST come after `@Cron` |
+| TypeScript path alias issues | Ensure `tsconfig.json` `paths` are configured so `instrument` resolves from `main.ts` location |
+| `import * as Sentry` ESLint error | Many projects ban namespace imports. Use named imports (`import { startSpan, captureException } from "@sentry/nestjs"`) or use the project’s DI proxy instead |
+| `profilesSampleRate` vs `profileSessionSampleRate` | `profilesSampleRate` is deprecated in SDK 10.x. Use `profileSessionSampleRate` + `profileLifecycle: "trace"` instead |
+| Duplicate spans on every request | `SentryModule.forRoot()` registered in multiple modules. Ensure it’s only called once — check shared/library modules |
+| Config property not recognized in `instrument.ts` | When using a typed config class, new SDK options must be added to the config type definition and the project rebuilt before TypeScript recognizes them |
 
 ### Version Requirements
 
-| Feature                            | Minimum SDK Version |
-| ---------------------------------- | ------------------- |
-| `@sentry/nestjs` package           | 8.0.0               |
-| `@SentryTraced` decorator          | 8.15.0              |
-| `@SentryCron` decorator            | 8.16.0              |
-| Event Emitter auto-instrumentation | 8.39.0              |
-| `SentryGlobalFilter` (unified)     | 8.40.0              |
-| `Sentry.logger` API (`enableLogs`) | 9.41.0              |
-| `profileSessionSampleRate`         | 10.27.0             |
-| Node.js requirement                | ≥ 18                |
-| Node.js for ESM `--import`         | ≥ 18.19.0           |
-| NestJS compatibility               | 8.x – 11.x          |
+| Feature | Minimum SDK Version |
+| --- | --- |
+| `@sentry/nestjs` package | 8.0.0 |
+| `@SentryTraced` decorator | 8.15.0 |
+| `@SentryCron` decorator | 8.16.0 |
+| Event Emitter auto-instrumentation | 8.39.0 |
+| `SentryGlobalFilter` (unified) | 8.40.0 |
+| `Sentry.logger` API (`enableLogs`) | 9.41.0 |
+| `profileSessionSampleRate` | 10.27.0 |
+| Node.js requirement | ≥ 18 |
+| Node.js for ESM `--import` | ≥ 18.19.0 |
+| NestJS compatibility | 8.x – 11.x |

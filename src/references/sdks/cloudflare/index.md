@@ -1,11 +1,14 @@
 # Sentry Cloudflare SDK
 
-Opinionated wizard that scans your Cloudflare project and guides you through complete Sentry setup for Workers, Pages, Durable Objects, Queues, Workflows, and Hono.
+Opinionated wizard that scans your Cloudflare project and guides you through complete
+Sentry setup for Workers, Pages, Durable Objects, Queues, Workflows, and Hono.
 
-> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/cloudflare` v10.69.0).
-> Always verify against [docs.sentry.io/platforms/javascript/guides/cloudflare/](https://docs.sentry.io/platforms/javascript/guides/cloudflare/) before implementing.
+> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing
+> (`@sentry/cloudflare` v10.69.0). Always verify against
+> [docs.sentry.io/platforms/javascript/guides/cloudflare/](https://docs.sentry.io/platforms/javascript/guides/cloudflare/)
+> before implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -65,7 +68,7 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 **What to determine:**
 
 | Question | Impact |
-|----------|--------|
+| --- | --- |
 | Workers or Pages? | Determines wrapper: `withSentry` vs `sentryPagesPlugin` |
 | Hono framework? | Recommend standalone `@sentry/hono` package (v10.55.0+) for cleaner integration |
 | `@sentry/cloudflare` already installed? | Skip install, go to feature config |
@@ -82,28 +85,38 @@ cat package.json 2>/dev/null | grep -E '"react"|"vue"|"svelte"|"next"'
 | Builds with Vite (or could)? | Recommend `sentryCloudflareVitePlugin` (v10.68.0+, experimental) — build-time instrumentation of bundled AI/DB packages. See `./ai-monitoring.md` |
 | Companion frontend? | Trigger Phase 4 cross-link |
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Present a concrete recommendation based on what you found. Don't ask open-ended questions — lead with a proposal:
+Present a concrete recommendation based on what you found.
+Don’t ask open-ended questions — lead with a proposal:
 
 **Recommended (core coverage):**
-- ✅ **Error Monitoring** — always; captures unhandled exceptions in fetch, scheduled, queue, email, and Durable Object handlers
+- ✅ **Error Monitoring** — always; captures unhandled exceptions in fetch, scheduled,
+  queue, email, and Durable Object handlers
 - ✅ **Tracing** — automatic HTTP request spans, outbound fetch tracing, D1 query spans
 
 **Optional (enhanced observability):**
-- ⚡ **Logging** — structured logs via `Sentry.logger.*`; recommend when log search is needed
-- ⚡ **Crons** — detect missed/failed scheduled jobs; recommend when cron triggers are configured
-- ⚡ **D1 Instrumentation** — automatic query spans and breadcrumbs; recommend when D1 is bound
-- ⚡ **Durable Objects** — automatic error capture and spans for DO methods; recommend when DOs are configured
-- ⚡ **Workflows** — automatic span creation for workflow steps; recommend when Workflows are configured
-- ⚡ **AI / Agent Tracing** — Workers AI, OpenAI, Anthropic, Google Gen AI, Vercel AI SDK, LangChain, LangGraph; recommend when AI libraries or `env.AI` detected. For chat apps, include conversation tracking (`setConversationId`) in the same pass — spans alone leave the Conversations view empty
+- ⚡ **Logging** — structured logs via `Sentry.logger.*`; recommend when log search is
+  needed
+- ⚡ **Crons** — detect missed/failed scheduled jobs; recommend when cron triggers are
+  configured
+- ⚡ **D1 Instrumentation** — automatic query spans and breadcrumbs; recommend when D1 is
+  bound
+- ⚡ **Durable Objects** — automatic error capture and spans for DO methods; recommend
+  when DOs are configured
+- ⚡ **Workflows** — automatic span creation for workflow steps; recommend when Workflows
+  are configured
+- ⚡ **AI / Agent Tracing** — Workers AI, OpenAI, Anthropic, Google Gen AI, Vercel AI
+  SDK, LangChain, LangGraph; recommend when AI libraries or `env.AI` detected.
+  For chat apps, include conversation tracking (`setConversationId`) in the same pass —
+  spans alone leave the Conversations view empty
 
 **Recommendation logic:**
 
-| Feature | Recommend when... |
-|---------|------------------|
+| Feature | Recommend when … |
+| --- | --- |
 | Error Monitoring | **Always** — non-negotiable baseline |
 | Tracing | **Always** — HTTP request tracing and outbound fetch are high-value |
 | Logging | App needs structured log search or log-to-trace correlation |
@@ -114,35 +127,46 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 | AI / Agent Tracing | App uses Workers AI (`env.AI`), OpenAI, Anthropic, Google Gen AI, Vercel AI SDK, LangChain, or LangGraph |
 | Metrics | App needs custom counters, gauges, or distributions |
 
-Propose: *"I recommend setting up Error Monitoring + Tracing. Want me to also add D1 instrumentation and Crons monitoring?"*
+Propose: *“I recommend setting up Error Monitoring + Tracing.
+Want me to also add D1 instrumentation and Crons monitoring?”*
 
-**Exception — AI apps:** when Workers AI or an LLM SDK is detected, conversation tracking is **not optional** — include it in the baseline proposal alongside Error Monitoring + Tracing, and implement it in the same pass (see `./ai-monitoring.md`). An AI setup that produces spans but no Conversations is incomplete.
+**Exception — AI apps:** when Workers AI or an LLM SDK is detected, conversation
+tracking is **not optional** — include it in the baseline proposal alongside Error
+Monitoring + Tracing, and implement it in the same pass (see `./ai-monitoring.md`). An
+AI setup that produces spans but no Conversations is incomplete.
 
----
+* * *
 
 ## Phase 3: Guide
 
 ### Option 1: Source Maps Wizard
 
-> **You need to run this yourself** — the wizard opens a browser for login and requires interactive input that the agent can't handle. Copy-paste into your terminal:
->
+> **You need to run this yourself** — the wizard opens a browser for login and requires
+> interactive input that the agent can’t handle.
+> Copy-paste into your terminal:
+> 
 > ```
 > npx @sentry/wizard@latest -i sourcemaps
 > ```
->
-> This sets up source map uploading so your production stack traces show readable code. It does **not** set up the SDK initialization — you still need to follow Option 2 below for the actual SDK setup.
->
+> 
+> This sets up source map uploading so your production stack traces show readable code.
+> It does **not** set up the SDK initialization — you still need to follow Option 2
+> below for the actual SDK setup.
+> 
 > **Once it finishes, continue with Option 2 for SDK setup.**
 
-> **Note:** Unlike framework SDKs (Next.js, SvelteKit), there is no Cloudflare-specific wizard integration. The `sourcemaps` wizard only handles source map upload configuration.
+> **Note:** Unlike framework SDKs (Next.js, SvelteKit), there is no Cloudflare-specific
+> wizard integration. The `sourcemaps` wizard only handles source map upload
+> configuration.
 
----
+* * *
 
 ### Option 2: Manual Setup
 
 #### Prerequisites: Compatibility Flags
 
-The SDK requires `AsyncLocalStorage`. Add **one** of these flags to your Wrangler config:
+The SDK requires `AsyncLocalStorage`. Add **one** of these flags to your Wrangler
+config:
 
 **wrangler.toml:**
 ```toml
@@ -157,18 +181,30 @@ compatibility_flags = ["nodejs_als"]
 }
 ```
 
-> `nodejs_als` is the minimum — it only enables `AsyncLocalStorage`. **`nodejs_compat` is generally recommended:** it's a superset of `nodejs_als` and unlocks the `/nodejs_compat` entrypoint below (more integrations and features), which becomes the SDK default in v11. Prefer `nodejs_compat` unless you have a specific reason to keep the runtime minimal.
+> `nodejs_als` is the minimum — it only enables `AsyncLocalStorage`. **`nodejs_compat`
+> is generally recommended:** it’s a superset of `nodejs_als` and unlocks the
+> `/nodejs_compat` entrypoint below (more integrations and features), which becomes the
+> SDK default in v11. Prefer `nodejs_compat` unless you have a specific reason to keep
+> the runtime minimal.
 
 #### `/nodejs_compat` Entrypoint (recommended)
 
-When your Worker runs with the `nodejs_compat` flag, use the dedicated `@sentry/cloudflare/nodejs_compat` entrypoint instead of the default one. It's a drop-in import swap — everything (`withSentry`, `sentryPagesPlugin`, etc.) works the same — but it unlocks additional Node.js-only functionality on Cloudflare, such as the `prismaIntegration` and Vercel AI SDK v7 support:
+When your Worker runs with the `nodejs_compat` flag, use the dedicated
+`@sentry/cloudflare/nodejs_compat` entrypoint instead of the default one.
+It’s a drop-in import swap — everything (`withSentry`, `sentryPagesPlugin`, etc.)
+works the same — but it unlocks additional Node.js-only functionality on Cloudflare,
+such as the `prismaIntegration` and Vercel AI SDK v7 support:
 
 ```typescript
 // Drop-in replacement — everything else works the same
 import * as Sentry from "@sentry/cloudflare/nodejs_compat";
 ```
 
-**For new projects, default to this entrypoint** (add the `nodejs_compat` flag and import from `@sentry/cloudflare/nodejs_compat` from the start). Requires SDK v10.64.0+. It becomes the **default entrypoint in v11**, so adopting it now is the recommended path and eases the upgrade. See `./nodejs-compat.md` for full setup (Prisma).
+**For new projects, default to this entrypoint** (add the `nodejs_compat` flag and
+import from `@sentry/cloudflare/nodejs_compat` from the start).
+Requires SDK v10.64.0+. It becomes the **default entrypoint in v11**, so adopting it now
+is the recommended path and eases the upgrade.
+See `./nodejs-compat.md` for full setup (Prisma).
 
 #### Install
 
@@ -178,7 +214,8 @@ npm install @sentry/cloudflare
 
 #### Workers Setup
 
-Wrap your handler with `withSentry`. This automatically instruments `fetch`, `scheduled`, `queue`, `email`, and `tail` handlers:
+Wrap your handler with `withSentry`. This automatically instruments `fetch`,
+`scheduled`, `queue`, `email`, and `tail` handlers:
 
 ```typescript
 import * as Sentry from "@sentry/cloudflare";
@@ -204,15 +241,25 @@ export default Sentry.withSentry(
 ```
 
 **Key points:**
-- The first argument is a callback that receives `env` — use this to read secrets like `SENTRY_DSN`
-- The SDK reads DSN, environment, release, debug, tunnel, and traces sample rate from `env` automatically (see [Environment Variables](#environment-variables))
-- `withSentry` wraps all exported handlers — you do not need separate wrappers for `scheduled`, `queue`, etc.
+- The first argument is a callback that receives `env` — use this to read secrets like
+  `SENTRY_DSN`
+- The SDK reads DSN, environment, release, debug, tunnel, and traces sample rate from
+  `env` automatically (see [Environment Variables](#environment-variables))
+- `withSentry` wraps all exported handlers — you do not need separate wrappers for
+  `scheduled`, `queue`, etc.
 
 #### AI apps: set a conversation ID (required, same edit)
 
-If this Worker makes AI calls (`env.AI.run(...)` or an LLM SDK), `withSentry` gives you `gen_ai` spans automatically — but **never a conversation ID**, so multi-turn chats won't group and Sentry's Conversations view stays empty. This is part of the Workers setup, not a follow-up: add `Sentry.setConversationId()` in the same edit that adds `withSentry`. (Exception: Cloudflare Agents SDK classes wrapped with `instrumentAgentWithSentry` get conversation IDs automatically, v10.69.0+ — see `./durable-objects.md`.)
+If this Worker makes AI calls (`env.AI.run(...)` or an LLM SDK), `withSentry` gives you
+`gen_ai` spans automatically — but **never a conversation ID**, so multi-turn chats
+won’t group and Sentry’s Conversations view stays empty.
+This is part of the Workers setup, not a follow-up: add `Sentry.setConversationId()` in
+the same edit that adds `withSentry`. (Exception: Cloudflare Agents SDK classes wrapped
+with `instrumentAgentWithSentry` get conversation IDs automatically, v10.69.0+ — see
+`./durable-objects.md`.)
 
-1. The client generates a stable session ID once per chat session (e.g. `crypto.randomUUID()`) and sends it with every AI request
+1. The client generates a stable session ID once per chat session (e.g.
+   `crypto.randomUUID()`) and sends it with every AI request
 2. The handler sets it **before** any AI calls:
 
 ```typescript
@@ -225,25 +272,40 @@ async fetch(request, env, ctx) {
 }
 ```
 
-See `./ai-monitoring.md` for user attribution (`setUser`), the Agents SDK pattern, and non-Workers-AI providers.
+See `./ai-monitoring.md` for user attribution (`setUser`), the Agents SDK pattern, and
+non-Workers-AI providers.
 
 #### Automatic Binding Instrumentation
 
-`withSentry` (and `sentryPagesPlugin`) wraps the `env` object so that supported bindings are **automatically instrumented on access** — no manual wrapping needed. As long as your handler uses the `env` passed in by the SDK:
+`withSentry` (and `sentryPagesPlugin`) wraps the `env` object so that supported bindings
+are **automatically instrumented on access** — no manual wrapping needed.
+As long as your handler uses the `env` passed in by the SDK:
 
 | Binding | Auto-instrumented | Docs status |
-|---------|-------------------|-------------|
+| --- | --- | --- |
 | **D1** (`env.DB`) | Query spans + breadcrumbs | Documented |
 | **Workers AI** (`env.AI`) | `gen_ai` spans (v10.67.0+) — spans only; conversation grouping needs the extra step below | Documented |
 | **Queue producers** | Producer send spans | Verified in SDK source; not yet in published docs |
 | **R2 buckets** | Object operation spans | Verified in SDK source; not yet in published docs |
 | **RateLimit** | `limit()` spans | Verified in SDK source; not yet in published docs |
 
-> **Required step for AI apps:** auto-instrumentation produces `gen_ai` spans but never sets a conversation ID, so multi-turn chats don't group and Sentry's Conversations view stays empty. If the app makes AI calls (`env.AI` or an LLM SDK), wiring `Sentry.setConversationId()` is part of *this* setup — do it in the same edit as `withSentry`, don't defer it. Read `./ai-monitoring.md` (Tracking Conversations) for the pattern: client generates a stable session ID, handler calls `Sentry.setConversationId(id)` before any AI calls. Skipping this is the most common gap in Cloudflare AI setups.
->
-> Because D1 is auto-instrumented via `env`, the manual `instrumentD1WithSentry` wrapper is no longer needed (it's deprecated and slated for removal in v11). See `./durable-objects.md`.
->
-> To link Durable Object and service-binding (JSRPC) calls into one trace, set `enableRpcTracePropagation: true` on both caller and receiver — **recommended** whenever you use RPC, Durable Objects, or Workflows. See [RPC Trace Propagation](#configuration-reference) and `./tracing.md`.
+> **Required step for AI apps:** auto-instrumentation produces `gen_ai` spans but never
+> sets a conversation ID, so multi-turn chats don’t group and Sentry’s Conversations
+> view stays empty. If the app makes AI calls (`env.AI` or an LLM SDK), wiring
+> `Sentry.setConversationId()` is part of *this* setup — do it in the same edit as
+> `withSentry`, don’t defer it.
+> Read `./ai-monitoring.md` (Tracking Conversations) for the pattern: client generates a
+> stable session ID, handler calls `Sentry.setConversationId(id)` before any AI calls.
+> Skipping this is the most common gap in Cloudflare AI setups.
+> 
+> Because D1 is auto-instrumented via `env`, the manual `instrumentD1WithSentry` wrapper
+> is no longer needed (it’s deprecated and slated for removal in v11). See
+> `./durable-objects.md`.
+> 
+> To link Durable Object and service-binding (JSRPC) calls into one trace, set
+> `enableRpcTracePropagation: true` on both caller and receiver — **recommended**
+> whenever you use RPC, Durable Objects, or Workflows.
+> See [RPC Trace Propagation](#configuration-reference) and `./tracing.md`.
 
 #### Pages Setup
 
@@ -281,7 +343,8 @@ export const onRequest = [
 ];
 ```
 
-**Using `wrapRequestHandler` directly** (for frameworks like SvelteKit on Cloudflare Pages):
+**Using `wrapRequestHandler` directly** (for frameworks like SvelteKit on Cloudflare
+Pages):
 
 ```typescript
 import * as Sentry from "@sentry/cloudflare";
@@ -309,7 +372,8 @@ export const handle = ({ event, resolve }) => {
 npm install @sentry/hono @sentry/cloudflare
 ```
 
-The `@sentry/cloudflare` package is a peer dependency and must stay in sync with `@sentry/hono`.
+The `@sentry/cloudflare` package is a peer dependency and must stay in sync with
+`@sentry/hono`.
 
 ```typescript
 import { Hono } from "hono";
@@ -336,9 +400,11 @@ app.get("/error", () => {
 export default app;
 ```
 
-The `sentry()` middleware automatically captures errors and creates transaction spans with route patterns.
+The `sentry()` middleware automatically captures errors and creates transaction spans
+with route patterns.
 
-**Legacy approach (deprecated):** Using `@sentry/cloudflare` with `withSentry` still works, but `honoIntegration` is deprecated:
+**Legacy approach (deprecated):** Using `@sentry/cloudflare` with `withSentry` still
+works, but `honoIntegration` is deprecated:
 
 ```typescript
 import { Hono } from "hono";
@@ -380,7 +446,9 @@ interface Env {
 
 #### Source Maps Setup
 
-Source maps make production stack traces readable. Most Cloudflare projects build with Vite via Wrangler — wire the Sentry Vite plugin so maps upload on build:
+Source maps make production stack traces readable.
+Most Cloudflare projects build with Vite via Wrangler — wire the Sentry Vite plugin so
+maps upload on build:
 
 ```bash
 npm install @sentry/vite-plugin --save-dev
@@ -404,15 +472,21 @@ export default defineConfig({
 });
 ```
 
-`SENTRY_AUTH_TOKEN` is a build-time secret. The `npx @sentry/wizard@latest -i sourcemaps` shortcut noted above automates this setup.
+`SENTRY_AUTH_TOKEN` is a build-time secret.
+The `npx @sentry/wizard@latest -i sourcemaps` shortcut noted above automates this setup.
 
-> Don't confuse `@sentry/vite-plugin` (`sentryVitePlugin` — source map upload) with `sentryCloudflareVitePlugin` from `@sentry/cloudflare/vite` (build-time instrumentation of bundled AI/DB dependencies, v10.68.0+ experimental). They are complementary and can run in the same `vite.config.ts`. See `./ai-monitoring.md` for the latter.
+> Don’t confuse `@sentry/vite-plugin` (`sentryVitePlugin` — source map upload) with
+> `sentryCloudflareVitePlugin` from `@sentry/cloudflare/vite` (build-time
+> instrumentation of bundled AI/DB dependencies, v10.68.0+ experimental).
+> They are complementary and can run in the same `vite.config.ts`. See
+> `./ai-monitoring.md` for the latter.
 
----
+* * *
 
 ### Automatic Release Detection
 
-The SDK can automatically detect the release version via Cloudflare's version metadata binding:
+The SDK can automatically detect the release version via Cloudflare’s version metadata
+binding:
 
 **wrangler.toml:**
 ```toml
@@ -425,14 +499,14 @@ Release priority (highest to lowest):
 2. `SENTRY_RELEASE` environment variable
 3. `CF_VERSION_METADATA.id` binding
 
----
+* * *
 
 ### For Each Agreed Feature
 
 Load the corresponding reference file and follow its steps:
 
-| Feature | Reference file | Load when... |
-|---------|---------------|-------------|
+| Feature | Reference file | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always (baseline) — unhandled exceptions, manual capture, scopes, enrichment |
 | Tracing | `./tracing.md` | HTTP request tracing, outbound fetch spans, D1/Workers AI spans, distributed tracing, RPC trace propagation |
 | Logging | `./logging.md` | Structured logs via `Sentry.logger.*`, log-to-trace correlation |
@@ -441,16 +515,17 @@ Load the corresponding reference file and follow its steps:
 | AI / Agent Tracing | `./ai-monitoring.md` | AI/LLM libraries or Workers AI detected — `gen_ai` spans, Vite plugin build-time instrumentation, Conversations, manual agent spans |
 | Node.js Compat | `./nodejs-compat.md` | `nodejs_compat` flag set, or Prisma / Vercel AI SDK v7 detected — `/nodejs_compat` entrypoint, `prismaIntegration` |
 
-For each feature: read the reference file, follow its steps exactly, and verify before moving on.
+For each feature: read the reference file, follow its steps exactly, and verify before
+moving on.
 
----
+* * *
 
 ## Configuration Reference
 
 ### `Sentry.init()` Options
 
 | Option | Type | Default | Notes |
-|--------|------|---------|-------|
+| --- | --- | --- | --- |
 | `dsn` | `string` | — | Required. Read from `env.SENTRY_DSN` automatically if not set |
 | `tracesSampleRate` | `number` | — | 0–1; 1.0 in dev, lower in prod recommended |
 | `tracesSampler` | `function` | — | Dynamic sampling function; mutually exclusive with `tracesSampleRate` |
@@ -485,7 +560,7 @@ dataCollection: {
 The SDK reads these from the Cloudflare `env` object automatically:
 
 | Variable | Purpose |
-|----------|---------|
+| --- | --- |
 | `SENTRY_DSN` | DSN for Sentry init |
 | `SENTRY_RELEASE` | Release version string |
 | `SENTRY_ENVIRONMENT` | Environment name (`production`, `staging`) |
@@ -499,7 +574,7 @@ The SDK reads these from the Cloudflare `env` object automatically:
 These are registered automatically by `getDefaultIntegrations()`:
 
 | Integration | Purpose |
-|-------------|---------|
+| --- | --- |
 | `dedupeIntegration` | Prevent duplicate events (disabled for Workflows) |
 | `inboundFiltersIntegration` | Filter events by type, message, URL |
 | `functionToStringIntegration` | Preserve original function names |
@@ -511,13 +586,17 @@ These are registered automatically by `getDefaultIntegrations()`:
 | `requestDataIntegration` | Attach request data to events |
 | `consoleIntegration` | Capture `console.*` calls as breadcrumbs |
 
-> **Not default:** `prismaIntegration` is available on Cloudflare **only** via the `@sentry/cloudflare/nodejs_compat` entrypoint and must be added manually (see `./nodejs-compat.md`). `spotlightIntegration` (v10.69.0+) forwards events to a local [Spotlight](https://spotlightjs.com/) sidecar for local development — add it manually in dev:
->
+> **Not default:** `prismaIntegration` is available on Cloudflare **only** via the
+> `@sentry/cloudflare/nodejs_compat` entrypoint and must be added manually (see
+> `./nodejs-compat.md`). `spotlightIntegration` (v10.69.0+) forwards events to a local
+> [Spotlight](https://spotlightjs.com/) sidecar for local development — add it manually
+> in dev:
+> 
 > ```typescript
 > integrations: [Sentry.spotlightIntegration()], // default sidecar: http://localhost:8969/stream
 > ```
 
----
+* * *
 
 ## Verification
 
@@ -538,12 +617,14 @@ export default Sentry.withSentry(
 );
 ```
 
-Deploy and trigger the route, then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should appear within ~30 seconds.
+Deploy and trigger the route, then check your
+[Sentry Issues dashboard](https://sentry.io/issues/) — the error should appear within
+~30 seconds.
 
 **Verification checklist:**
 
 | Check | How |
-|-------|-----|
+| --- | --- |
 | Errors captured | Throw in a fetch handler, verify in Sentry |
 | Tracing working | Check Performance tab for HTTP spans |
 | Source maps working | Check stack trace shows readable file/line names |
@@ -552,7 +633,7 @@ Deploy and trigger the route, then check your [Sentry Issues dashboard](https://
 | Conversations (chat apps) | Send two requests with the same `Sentry.setConversationId(...)` value, check they group in Explore > Conversations |
 | Scheduled monitoring (if configured) | Trigger a cron, check Crons dashboard |
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
@@ -571,7 +652,7 @@ cat ../go.mod ../requirements.txt ../Gemfile 2>/dev/null | head -3
 If a frontend is found, suggest the matching SDK skill:
 
 | Frontend detected | Suggest skill |
-|------------------|--------------|
+| --- | --- |
 | React | [`react`](../react/index.md) |
 | Next.js | [`nextjs`](../nextjs/index.md) |
 | Svelte/SvelteKit | [`svelte`](../svelte/index.md) |
@@ -580,20 +661,22 @@ If a frontend is found, suggest the matching SDK skill:
 If a backend is found in a different directory:
 
 | Backend detected | Suggest skill |
-|-----------------|--------------|
+| --- | --- |
 | Go (`go.mod`) | [`go`](../go/index.md) |
 | Python (`requirements.txt`, `pyproject.toml`) | [`python`](../python/index.md) |
 | Ruby (`Gemfile`) | [`ruby`](../ruby/index.md) |
 | Node.js (Express, Fastify) | [`node`](../node/index.md) |
 
-Connecting frontend and backend with linked Sentry projects enables **distributed tracing** — stack traces that span your browser, Cloudflare Worker, and backend API in a single trace view.
+Connecting frontend and backend with linked Sentry projects enables **distributed
+tracing** — stack traces that span your browser, Cloudflare Worker, and backend API in a
+single trace view.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Cause | Solution |
-|-------|-------|----------|
+| --- | --- | --- |
 | Events not appearing | DSN not set or `debug: false` hiding errors | Set `debug: true` temporarily in init options; verify `SENTRY_DSN` secret is set with `wrangler secret list` |
 | `AsyncLocalStorage is not defined` | Missing compatibility flag | Add `nodejs_als` or `nodejs_compat` to `compatibility_flags` in `wrangler.toml` |
 | Stack traces show minified code | Source maps not uploaded | Configure `@sentry/vite-plugin` or run `npx @sentry/wizard -i sourcemaps`; verify `SENTRY_AUTH_TOKEN` in CI |
