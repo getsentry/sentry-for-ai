@@ -1,11 +1,15 @@
 # Sentry .NET SDK
 
-Opinionated wizard that scans your .NET project and guides you through complete Sentry setup: error monitoring, distributed tracing, profiling, structured logging, and cron monitoring across all major .NET frameworks.
+Opinionated wizard that scans your .NET project and guides you through complete Sentry
+setup: error monitoring, distributed tracing, profiling, structured logging, and cron
+monitoring across all major .NET frameworks.
 
-> **Note:** SDK version and APIs below reflect `Sentry` NuGet packages ≥6.1.0 (OTLP export requires ≥6.5.0).
-> Always verify against [docs.sentry.io/platforms/dotnet/](https://docs.sentry.io/platforms/dotnet/) before implementing.
+> **Note:** SDK version and APIs below reflect `Sentry` NuGet packages ≥6.1.0 (OTLP
+> export requires ≥6.5.0). Always verify against
+> [docs.sentry.io/platforms/dotnet/](https://docs.sentry.io/platforms/dotnet/) before
+> implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -38,7 +42,7 @@ cat ../package.json 2>/dev/null | grep -E '"next"|"react"|"vue"' | head -3
 **What to determine:**
 
 | Question | Impact |
-|----------|--------|
+| --- | --- |
 | Framework type? | Determines correct package and init pattern |
 | .NET version? | .NET 8+ recommended; .NET Framework 4.6.2+ supported |
 | Sentry already installed? | Skip install, go to feature config |
@@ -51,7 +55,7 @@ cat ../package.json 2>/dev/null | grep -E '"next"|"react"|"vue"' | head -3
 **Framework → Package mapping:**
 
 | Detected | Package to install |
-|----------|--------------------|
+| --- | --- |
 | `Sdk="Microsoft.NET.Sdk.Web"` (ASP.NET Core) | `Sentry.AspNetCore` |
 | `App.xaml.cs` with `Application` base | `Sentry` (WPF) |
 | `[STAThread]` in `Program.cs` | `Sentry` (WinForms) |
@@ -61,26 +65,33 @@ cat ../package.json 2>/dev/null | grep -E '"next"|"react"|"vue"' | head -3
 | `HttpApplication` / `Global.asax` | `Sentry.AspNet` (+ `Sentry.EntityFramework` if using EF6) |
 | Generic host / Worker Service | `Sentry.Extensions.Logging` |
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Present a concrete recommendation based on what you found. Lead with a proposal — don't ask open-ended questions.
+Present a concrete recommendation based on what you found.
+Lead with a proposal — don’t ask open-ended questions.
 
 **Recommended (core coverage):**
-- ✅ **Error Monitoring** — always; captures unhandled exceptions, structured captures, scope enrichment
-- ✅ **Tracing** — always for ASP.NET Core and hosted apps; auto-instruments HTTP requests and EF Core queries
-- ✅ **Logging** — recommended for all apps; routes ILogger / Serilog / NLog entries to Sentry as breadcrumbs and events
+- ✅ **Error Monitoring** — always; captures unhandled exceptions, structured captures,
+  scope enrichment
+- ✅ **Tracing** — always for ASP.NET Core and hosted apps; auto-instruments HTTP
+  requests and EF Core queries
+- ✅ **Logging** — recommended for all apps; routes ILogger / Serilog / NLog entries to
+  Sentry as breadcrumbs and events
 
 **Optional (enhanced observability):**
-- ⚡ **Profiling** — CPU profiling; recommend for performance-critical services running on .NET 6+
-- ⚡ **Metrics** — counters, gauges, distributions linked to traces; recommend for apps that need custom business metrics
-- ⚡ **Crons** — detect missed/failed scheduled jobs; recommend when Hangfire, Quartz.NET, or scheduled endpoints detected
+- ⚡ **Profiling** — CPU profiling; recommend for performance-critical services running
+  on .NET 6+
+- ⚡ **Metrics** — counters, gauges, distributions linked to traces; recommend for apps
+  that need custom business metrics
+- ⚡ **Crons** — detect missed/failed scheduled jobs; recommend when Hangfire,
+  Quartz.NET, or scheduled endpoints detected
 
 **Recommendation logic:**
 
-| Feature | Recommend when... |
-|---------|------------------|
+| Feature | Recommend when … |
+| --- | --- |
 | Error Monitoring | **Always** — non-negotiable baseline |
 | Tracing | **Always for ASP.NET Core** — request traces, EF Core spans, HttpClient spans are high-value |
 | Logging | App uses `ILogger<T>`, Serilog, NLog, or log4net |
@@ -88,27 +99,31 @@ Present a concrete recommendation based on what you found. Lead with a proposal 
 | Metrics | App needs custom business metrics (request counts, queue depths, response times) |
 | Crons | App uses Hangfire, Quartz.NET, or scheduled Azure Functions |
 
-Propose: *"I recommend setting up Error Monitoring + Tracing + Logging. Want me to also add Profiling or Crons?"*
+Propose: *“I recommend setting up Error Monitoring + Tracing + Logging.
+Want me to also add Profiling or Crons?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
 ### Option 1: Wizard (Recommended)
 
-> **You need to run this yourself** — the wizard opens a browser for login and requires interactive input that the agent can't handle. Copy-paste into your terminal:
->
+> **You need to run this yourself** — the wizard opens a browser for login and requires
+> interactive input that the agent can’t handle.
+> Copy-paste into your terminal:
+> 
 > ```
 > npx @sentry/wizard@latest -i dotnet
 > ```
->
-> It handles login, org/project selection, DSN configuration, and MSBuild symbol upload setup for readable stack traces in production.
->
+> 
+> It handles login, org/project selection, DSN configuration, and MSBuild symbol upload
+> setup for readable stack traces in production.
+> 
 > **Once it finishes, come back and skip to [Verification](#verification).**
 
 If the user skips the wizard, proceed with Option 2 (Manual Setup) below.
 
----
+* * *
 
 ### Option 2: Manual Setup
 
@@ -136,7 +151,7 @@ dotnet add package Sentry.AspNet
 dotnet add package Sentry.EntityFramework   # only if you call options.AddEntityFramework() (EF6)
 ```
 
----
+* * *
 
 #### ASP.NET Core — `Program.cs`
 
@@ -191,11 +206,12 @@ export Sentry__TracesSampleRate="0.1"
 export Sentry__Environment="staging"
 ```
 
----
+* * *
 
 #### WPF — `App.xaml.cs`
 
-> ⚠️ **Critical:** Initialize in the **constructor**, NOT in `OnStartup()`. The constructor fires earlier, catching more failure modes.
+> ⚠️ **Critical:** Initialize in the **constructor**, NOT in `OnStartup()`. The
+> constructor fires earlier, catching more failure modes.
 
 ```csharp
 using System.Windows;
@@ -228,7 +244,7 @@ public partial class App : Application
 }
 ```
 
----
+* * *
 
 #### WinForms — `Program.cs`
 
@@ -262,7 +278,7 @@ static class Program
 }
 ```
 
----
+* * *
 
 #### .NET MAUI — `MauiProgram.cs`
 
@@ -291,7 +307,7 @@ public static class MauiProgram
 }
 ```
 
----
+* * *
 
 #### Blazor WebAssembly — `Program.cs`
 
@@ -312,11 +328,12 @@ builder.Logging.AddSentry(o => o.InitializeSdk = false);
 await builder.Build().RunAsync();
 ```
 
----
+* * *
 
 #### Azure Functions (Isolated Worker) — `Program.cs`
 
-> **Recommended:** Install `Sentry.OpenTelemetry.Exporter` (≥6.5.0) for OTLP export. Alternatively, use `Sentry.OpenTelemetry` for the bridge pattern.
+> **Recommended:** Install `Sentry.OpenTelemetry.Exporter` (≥6.5.0) for OTLP export.
+> Alternatively, use `Sentry.OpenTelemetry` for the bridge pattern.
 
 ```csharp
 using Microsoft.Extensions.Hosting;
@@ -351,7 +368,7 @@ var host = new HostBuilder()
 await host.RunAsync();
 ```
 
----
+* * *
 
 #### AWS Lambda — `LambdaEntryPoint.cs`
 
@@ -372,7 +389,7 @@ public class LambdaEntryPoint : APIGatewayProxyFunction
 }
 ```
 
----
+* * *
 
 #### Classic ASP.NET — `Global.asax.cs`
 
@@ -401,11 +418,13 @@ public class MvcApplication : HttpApplication
 }
 ```
 
----
+* * *
 
 ### Symbol Upload (Readable Stack Traces)
 
-Without debug symbols, stack traces show only method names — no file names or line numbers. The SDK uploads PDB files (and optionally sources) via MSBuild properties on Release builds:
+Without debug symbols, stack traces show only method names — no file names or line
+numbers. The SDK uploads PDB files (and optionally sources) via MSBuild properties on
+Release builds:
 
 ```xml
 <PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -418,16 +437,18 @@ Without debug symbols, stack traces show only method names — no file names or 
 </PropertyGroup>
 ```
 
-Upload needs a `SENTRY_AUTH_TOKEN` set in CI (a secret). The `SentryCreateRelease` / `SentrySetCommits` properties also create a release with suspect commits.
+Upload needs a `SENTRY_AUTH_TOKEN` set in CI (a secret).
+The `SentryCreateRelease` / `SentrySetCommits` properties also create a release with
+suspect commits.
 
----
+* * *
 
 ### For Each Agreed Feature
 
 Load the corresponding reference file and follow its steps:
 
-| Feature | Reference file | Load when... |
-|---------|---------------|-------------|
+| Feature | Reference file | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always — `CaptureException`, scopes, enrichment, filtering |
 | Tracing | `./tracing.md` | Server apps, distributed tracing, EF Core spans, custom instrumentation |
 | Profiling | `./profiling.md` | Performance-critical apps on .NET 6+ |
@@ -435,16 +456,17 @@ Load the corresponding reference file and follow its steps:
 | Metrics | `./metrics.md` | Custom counters, gauges, distributions; `EmitCounter`, `EmitGauge`, `EmitDistribution` |
 | Crons | `./crons.md` | Hangfire, Quartz.NET, or scheduled function monitoring |
 
-For each feature: read the reference file, follow its steps exactly, and verify before moving on.
+For each feature: read the reference file, follow its steps exactly, and verify before
+moving on.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Core `SentryOptions`
 
 | Option | Type | Default | Env Var | Notes |
-|--------|------|---------|---------|-------|
+| --- | --- | --- | --- | --- |
 | `Dsn` | `string` | — | `SENTRY_DSN` | Required. SDK disabled if unset. |
 | `Debug` | `bool` | `false` | — | SDK diagnostic output. Disable in production. |
 | `DiagnosticLevel` | `SentryLevel` | `Debug` | — | `Debug`, `Info`, `Warning`, `Error`, `Fatal` |
@@ -472,7 +494,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 ### ASP.NET Core Extended Options (`SentryAspNetCoreOptions`)
 
 | Option | Type | Default | Notes |
-|--------|------|---------|-------|
+| --- | --- | --- | --- |
 | `MaxRequestBodySize` | `RequestSize` | `None` | `None`, `Small` (~4 KB), `Medium` (~10 KB), `Always` |
 | `MinimumBreadcrumbLevel` | `LogLevel` | `Information` | Min log level for breadcrumbs |
 | `MinimumEventLevel` | `LogLevel` | `Error` | Min log level to send as Sentry event |
@@ -483,7 +505,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 ### MAUI Extended Options (`SentryMauiOptions`)
 
 | Option | Type | Default | Notes |
-|--------|------|---------|-------|
+| --- | --- | --- | --- |
 | `IncludeTextInBreadcrumbs` | `bool` | `false` | Text from `Button`, `Label`, `Entry` elements. ⚠️ PII risk. |
 | `IncludeTitleInBreadcrumbs` | `bool` | `false` | Titles from `Window`, `Page` elements. ⚠️ PII risk. |
 | `IncludeBackgroundingStateInBreadcrumbs` | `bool` | `false` | `Window.Backgrounding` event state. ⚠️ PII risk. |
@@ -491,7 +513,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 ### Environment Variables
 
 | Variable | Purpose |
-|----------|---------|
+| --- | --- |
 | `SENTRY_DSN` | Project DSN |
 | `SENTRY_RELEASE` | App version (e.g. `my-app@1.2.3`) |
 | `SENTRY_ENVIRONMENT` | Deployment environment name |
@@ -507,7 +529,7 @@ export Sentry__TracesSampleRate="0.1"
 ### MSBuild Symbol Upload Properties
 
 | Property | Type | Default | Description |
-|----------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `SentryOrg` | `string` | — | Sentry organization slug |
 | `SentryProject` | `string` | — | Sentry project slug |
 | `SentryUploadSymbols` | `bool` | `false` | Upload PDB files for line numbers in stack traces |
@@ -516,7 +538,7 @@ export Sentry__TracesSampleRate="0.1"
 | `SentrySetCommits` | `bool` | `false` | Associate git commits with the release |
 | `SentryUrl` | `string` | — | Self-hosted Sentry URL |
 
----
+* * *
 
 ## Verification
 
@@ -533,19 +555,20 @@ app.MapGet("/sentry-test", () =>
 SentrySdk.CaptureException(new Exception("Sentry test error — delete me"));
 ```
 
-Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should appear within ~30 seconds.
+Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should
+appear within ~30 seconds.
 
 **Verification checklist:**
 
 | Check | How |
-|-------|-----|
+| --- | --- |
 | Exceptions captured | Throw a test exception, verify in Sentry Issues |
 | Stack traces readable | Check that file names and line numbers appear |
 | Tracing active | Check Performance tab for transactions |
 | Logging wired | Log an error via `ILogger`, check it appears as Sentry breadcrumb |
 | Symbol upload working | Stack trace shows `Controllers/HomeController.cs:42` not `<unknown>` |
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
@@ -562,20 +585,21 @@ cat ../package.json 2>/dev/null | grep -E '"next"|"react"|"vue"|"nuxt"' | head -
 If a frontend is found, suggest the matching SDK skill:
 
 | Frontend detected | Suggest skill |
-|-------------------|--------------|
+| --- | --- |
 | Next.js (`"next"` in `package.json`) | [`nextjs`](../nextjs/index.md) |
 | React SPA (`"react"` without `"next"`) | `@sentry/react` — see [docs.sentry.io/platforms/javascript/guides/react/](https://docs.sentry.io/platforms/javascript/guides/react/) |
 | Vue.js | `@sentry/vue` — see [docs.sentry.io/platforms/javascript/guides/vue/](https://docs.sentry.io/platforms/javascript/guides/vue/) |
 | Nuxt | `@sentry/nuxt` — see [docs.sentry.io/platforms/javascript/guides/nuxt/](https://docs.sentry.io/platforms/javascript/guides/nuxt/) |
 
-Connecting frontend and backend with the same Sentry project enables **distributed tracing** — a single trace view spanning browser, .NET server, and any downstream APIs.
+Connecting frontend and backend with the same Sentry project enables **distributed
+tracing** — a single trace view spanning browser, .NET server, and any downstream APIs.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Cause | Solution |
-|-------|-------|----------|
+| --- | --- | --- |
 | Events not appearing | DSN misconfigured | Set `Debug = true` and check console output for SDK diagnostic messages |
 | Stack traces show no file/line | PDB files not uploaded | Add `SentryUploadSymbols=true` to `.csproj`; set `SENTRY_AUTH_TOKEN` in CI |
 | WPF/WinForms exceptions missing | `IsGlobalModeEnabled` not set | Set `options.IsGlobalModeEnabled = true` in `SentrySdk.Init()` |

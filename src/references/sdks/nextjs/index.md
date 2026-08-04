@@ -1,11 +1,14 @@
 # Sentry Next.js SDK
 
-Opinionated wizard that scans your Next.js project and guides you through complete Sentry setup across all three runtimes: browser, Node.js server, and Edge.
+Opinionated wizard that scans your Next.js project and guides you through complete
+Sentry setup across all three runtimes: browser, Node.js server, and Edge.
 
-> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/nextjs` ≥8.28.0).
-> Always verify against [docs.sentry.io/platforms/javascript/guides/nextjs/](https://docs.sentry.io/platforms/javascript/guides/nextjs/) before implementing.
+> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing
+> (`@sentry/nextjs` ≥8.28.0). Always verify against
+> [docs.sentry.io/platforms/javascript/guides/nextjs/](https://docs.sentry.io/platforms/javascript/guides/nextjs/)
+> before implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -42,7 +45,7 @@ cat ../go.mod ../requirements.txt ../Gemfile 2>/dev/null | head -3
 **What to determine:**
 
 | Question | Impact |
-|----------|--------|
+| --- | --- |
 | Next.js version? | 13+ required; 15+ needed for Turbopack support |
 | App Router or Pages Router? | Determines error boundary files needed (`global-error.tsx` vs `_error.tsx`) |
 | `@sentry/nextjs` already present? | Skip install, go to feature config |
@@ -51,28 +54,37 @@ cat ../go.mod ../requirements.txt ../Gemfile 2>/dev/null | head -3
 | Logging library detected? | Recommend Sentry Logs integration |
 | Backend directory found? | Trigger Phase 4 cross-link suggestion |
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Present a concrete recommendation based on what you found. Don't ask open-ended questions — lead with a proposal:
+Present a concrete recommendation based on what you found.
+Don’t ask open-ended questions — lead with a proposal:
 
 **Recommended (core coverage):**
-- ✅ **Error Monitoring** — always; captures server errors, client errors, server actions, and unhandled promise rejections
-- ✅ **Tracing** — server-side request tracing + client-side navigation spans across all runtimes
-- ✅ **Session Replay** — recommended for user-facing apps; records sessions around errors
+- ✅ **Error Monitoring** — always; captures server errors, client errors, server
+  actions, and unhandled promise rejections
+- ✅ **Tracing** — server-side request tracing + client-side navigation spans across all
+  runtimes
+- ✅ **Session Replay** — recommended for user-facing apps; records sessions around
+  errors
 
 **Optional (enhanced observability):**
-- ⚡ **Logging** — structured logs via `Sentry.logger.*`; recommend when `pino`/`winston` or log search is needed
-- ⚡ **Profiling** — continuous profiling; requires `Document-Policy: js-profiling` header
-- ⚡ **AI Monitoring** — OpenAI, Vercel AI SDK, Anthropic; recommend when AI/LLM calls detected
-- ⚡ **Crons** — detect missed/failed scheduled jobs; recommend when cron patterns detected
-- ⚡ **Metrics** — custom metrics via `Sentry.metrics.*`; recommend when custom KPIs or business metrics needed
+- ⚡ **Logging** — structured logs via `Sentry.logger.*`; recommend when `pino`/`winston`
+  or log search is needed
+- ⚡ **Profiling** — continuous profiling; requires `Document-Policy: js-profiling`
+  header
+- ⚡ **AI Monitoring** — OpenAI, Vercel AI SDK, Anthropic; recommend when AI/LLM calls
+  detected
+- ⚡ **Crons** — detect missed/failed scheduled jobs; recommend when cron patterns
+  detected
+- ⚡ **Metrics** — custom metrics via `Sentry.metrics.*`; recommend when custom KPIs or
+  business metrics needed
 
 **Recommendation logic:**
 
-| Feature | Recommend when... |
-|---------|------------------|
+| Feature | Recommend when … |
+| --- | --- |
 | Error Monitoring | **Always** — non-negotiable baseline |
 | Tracing | **Always for Next.js** — server route tracing + client navigation are high-value |
 | Session Replay | User-facing app, login flows, or checkout pages |
@@ -82,27 +94,33 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 | Crons | App has Vercel Cron jobs, scheduled API routes, or `node-cron` usage |
 | Metrics | App needs custom counters, gauges, or histograms via `Sentry.metrics.*` |
 
-Propose: *"I recommend setting up Error Monitoring + Tracing + Session Replay. Want me to also add Logging or Profiling?"*
+Propose: *“I recommend setting up Error Monitoring + Tracing + Session Replay.
+Want me to also add Logging or Profiling?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
 ### Option 1: Wizard (Recommended)
 
-> **You need to run this yourself** — the wizard opens a browser for login and requires interactive input that the agent can't handle. Copy-paste into your terminal:
->
+> **You need to run this yourself** — the wizard opens a browser for login and requires
+> interactive input that the agent can’t handle.
+> Copy-paste into your terminal:
+> 
 > ```
 > npx @sentry/wizard@latest -i nextjs
 > ```
->
-> It handles login, org/project selection, SDK installation, config files (`instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, `instrumentation.ts`), `next.config.ts` wrapping, source map upload, and adds a `/sentry-example-page`.
->
+> 
+> It handles login, org/project selection, SDK installation, config files
+> (`instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`,
+> `instrumentation.ts`), `next.config.ts` wrapping, source map upload, and adds a
+> `/sentry-example-page`.
+> 
 > **Once it finishes, come back and skip to [Verification](#verification).**
 
 If the user skips the wizard, proceed with Option 2 (Manual Setup) below.
 
----
+* * *
 
 ### Option 2: Manual Setup
 
@@ -114,7 +132,8 @@ npm install @sentry/nextjs --save
 
 #### Create `instrumentation-client.ts` — Browser / Client Runtime
 
-> Older docs used `sentry.client.config.ts` — the current pattern is `instrumentation-client.ts`.
+> Older docs used `sentry.client.config.ts` — the current pattern is
+> `instrumentation-client.ts`.
 
 ```typescript
 import * as Sentry from "@sentry/nextjs";
@@ -194,7 +213,8 @@ Sentry.init({
 
 #### Create `instrumentation.ts` — Server-Side Registration Hook
 
-> Requires `experimental.instrumentationHook: true` in `next.config` for Next.js < 14.0.4. It's stable in 14.0.4+.
+> Requires `experimental.instrumentationHook: true` in `next.config` for Next.js <
+> 14.0.4. It’s stable in 14.0.4+.
 
 ```typescript
 import * as Sentry from "@sentry/nextjs";
@@ -217,7 +237,7 @@ export const onRequestError = Sentry.captureRequestError;
 **Runtime dispatch:**
 
 | `NEXT_RUNTIME` | Config file loaded |
-|---|---|
+| --- | --- |
 | `"nodejs"` | `sentry.server.config.ts` |
 | `"edge"` | `sentry.edge.config.ts` |
 | *(client bundle)* | `instrumentation-client.ts` (Next.js handles this directly) |
@@ -313,11 +333,14 @@ export const config = {
 };
 ```
 
----
+* * *
 
 ### Source Maps Setup
 
-`withSentryConfig` uploads source maps on production builds so stack traces show your original code instead of minified output. The SDK-specific wiring is the `authToken` (plus `widenClientFileUpload`, which improves client stack traces) in `next.config.ts`:
+`withSentryConfig` uploads source maps on production builds so stack traces show your
+original code instead of minified output.
+The SDK-specific wiring is the `authToken` (plus `widenClientFileUpload`, which improves
+client stack traces) in `next.config.ts`:
 
 ```typescript
 withSentryConfig(nextConfig, {
@@ -332,14 +355,14 @@ withSentryConfig(nextConfig, {
 
 Source maps are uploaded automatically on every `next build`.
 
----
+* * *
 
 ### For Each Agreed Feature
 
 Load the corresponding reference file and follow its steps:
 
-| Feature | Reference file | Load when... |
-|---------|---------------|-------------|
+| Feature | Reference file | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always (baseline) — App Router error boundaries, Pages Router `_error.tsx`, server action wrapping |
 | Tracing | `./tracing.md` | Server-side request tracing, client navigation, distributed tracing, `tracePropagationTargets` |
 | Session Replay | `./session-replay.md` | User-facing app; privacy masking, canvas recording, network capture |
@@ -349,16 +372,17 @@ Load the corresponding reference file and follow its steps:
 | Crons | `./crons.md` | Vercel Cron, scheduled API routes, `node-cron` |
 | Metrics | `./metrics.md` | Custom counters, gauges, distributions via `Sentry.metrics.*` |
 
-For each feature: read the reference file, follow its steps exactly, and verify before moving on.
+For each feature: read the reference file, follow its steps exactly, and verify before
+moving on.
 
----
+* * *
 
 ## Configuration Reference
 
 ### `Sentry.init()` Options
 
 | Option | Type | Default | Notes |
-|--------|------|---------|-------|
+| --- | --- | --- | --- |
 | `dsn` | `string` | — | Required. Use `NEXT_PUBLIC_SENTRY_DSN` for client, `SENTRY_DSN` for server |
 | `tracesSampleRate` | `number` | — | 0–1; 1.0 in dev, 0.1 in prod recommended |
 | `replaysSessionSampleRate` | `number` | `0.1` | Fraction of all sessions recorded |
@@ -373,7 +397,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 ### `withSentryConfig()` Options
 
 | Option | Type | Notes |
-|--------|------|-------|
+| --- | --- | --- |
 | `org` | `string` | Sentry organization slug |
 | `project` | `string` | Sentry project slug |
 | `authToken` | `string` | Source map upload token (`SENTRY_AUTH_TOKEN`) |
@@ -385,7 +409,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 ### Environment Variables
 
 | Variable | Runtime | Purpose |
-|----------|---------|---------|
+| --- | --- | --- |
 | `NEXT_PUBLIC_SENTRY_DSN` | Client | DSN for browser Sentry init (public) |
 | `SENTRY_DSN` | Server / Edge | DSN for server/edge Sentry init |
 | `SENTRY_AUTH_TOKEN` | Build | Source map upload auth token (secret) |
@@ -394,7 +418,7 @@ For each feature: read the reference file, follow its steps exactly, and verify 
 | `SENTRY_RELEASE` | Server | Release version string (auto-detected from git) |
 | `NEXT_RUNTIME` | Server / Edge | `"nodejs"` or `"edge"` (set by Next.js internally) |
 
----
+* * *
 
 ## Verification
 
@@ -409,19 +433,20 @@ throw new Error("Sentry test error — delete me");
 Sentry.captureException(new Error("Sentry test error — delete me"));
 ```
 
-Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should appear within ~30 seconds.
+Then check your [Sentry Issues dashboard](https://sentry.io/issues/) — the error should
+appear within ~30 seconds.
 
 **Verification checklist:**
 
 | Check | How |
-|-------|-----|
+| --- | --- |
 | Client errors captured | Throw in a client component, verify in Sentry |
 | Server errors captured | Throw in a server action or API route |
 | Edge errors captured | Throw in middleware or edge route handler |
 | Source maps working | Check stack trace shows readable file names |
 | Session Replay working | Check Replays tab in Sentry dashboard |
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
@@ -441,23 +466,25 @@ cat ../pom.xml ../build.gradle 2>/dev/null | head -3
 If a backend is found, suggest the matching SDK skill:
 
 | Backend detected | Suggest skill |
-|-----------------|--------------|
+| --- | --- |
 | Go (`go.mod`) | [`go`](../go/index.md) |
 | Python (`requirements.txt`, `pyproject.toml`) | [`python`](../python/index.md) |
 | Ruby (`Gemfile`) | [`ruby`](../ruby/index.md) |
 | Java/Kotlin (`pom.xml`, `build.gradle`) | See [docs.sentry.io/platforms/java/](https://docs.sentry.io/platforms/java/) |
 | Node.js (Express, Fastify, Hapi) | `@sentry/node` — see [docs.sentry.io/platforms/javascript/guides/express/](https://docs.sentry.io/platforms/javascript/guides/express/) |
 
-Connecting frontend and backend with the same DSN or linked projects enables **distributed tracing** — stack traces that span your browser, Next.js server, and backend API in a single trace view.
+Connecting frontend and backend with the same DSN or linked projects enables
+**distributed tracing** — stack traces that span your browser, Next.js server, and
+backend API in a single trace view.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Cause | Solution |
-|-------|-------|----------|
+| --- | --- | --- |
 | Events not appearing | DSN misconfigured or `debug: false` hiding errors | Set `debug: true` temporarily; check browser network tab for requests to `sentry.io` |
-| Stack traces show minified code | Source maps not uploading | Check `SENTRY_AUTH_TOKEN` is set; run `next build` and look for "Source Maps" in build output |
+| Stack traces show minified code | Source maps not uploading | Check `SENTRY_AUTH_TOKEN` is set; run `next build` and look for “Source Maps” in build output |
 | `onRequestError` not firing | SDK version < 8.28.0 | Upgrade: `npm install @sentry/nextjs@latest` |
 | Edge runtime errors missing | `sentry.edge.config.ts` not loaded | Verify `instrumentation.ts` imports it when `NEXT_RUNTIME === "edge"` |
 | Tunnel route returns 404 | `tunnelRoute` set but Next.js route missing | The plugin creates it automatically; check you ran `next build` after adding `tunnelRoute` |

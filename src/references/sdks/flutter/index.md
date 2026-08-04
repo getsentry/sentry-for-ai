@@ -1,11 +1,15 @@
 # Sentry Flutter SDK
 
-Opinionated wizard that scans your Flutter or Dart project and guides you through complete Sentry setup — error monitoring, tracing, session replay, logging, profiling, and ecosystem integrations.
+Opinionated wizard that scans your Flutter or Dart project and guides you through
+complete Sentry setup — error monitoring, tracing, session replay, logging, profiling,
+and ecosystem integrations.
 
-> **Note:** SDK versions and APIs below reflect `sentry_flutter` ≥9.14.0 (current stable, February 2026).
-> Always verify against [docs.sentry.io/platforms/flutter/](https://docs.sentry.io/platforms/flutter/) before implementing.
+> **Note:** SDK versions and APIs below reflect `sentry_flutter` ≥9.14.0 (current
+> stable, February 2026). Always verify against
+> [docs.sentry.io/platforms/flutter/](https://docs.sentry.io/platforms/flutter/) before
+> implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -50,7 +54,7 @@ ls android/ ios/ macos/ linux/ windows/ web/ 2>/dev/null
 **What to determine:**
 
 | Question | Impact |
-|----------|--------|
+| --- | --- |
 | `sentry_flutter` already in `pubspec.yaml`? | Skip install, jump to feature config |
 | Dart SDK `>=3.5`? | Required for `sentry_flutter` ≥9.0.0 |
 | `go_router` or `auto_route` present? | Use `SentryNavigatorObserver` — specific patterns apply |
@@ -61,16 +65,20 @@ ls android/ ios/ macos/ linux/ windows/ web/ 2>/dev/null
 | Has `macos/` directory? | Profiling available (alpha) |
 | Backend directory detected? | Trigger Phase 4 cross-link |
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Present a concrete recommendation based on what you found. Don't ask open-ended questions — lead with a proposal:
+Present a concrete recommendation based on what you found.
+Don’t ask open-ended questions — lead with a proposal:
 
 **Recommended (core coverage — always set up these):**
-- ✅ **Error Monitoring** — captures Dart exceptions, Flutter framework errors, and native crashes (iOS + Android)
-- ✅ **Tracing** — auto-instruments navigation, app start, network requests, and UI interactions
-- ✅ **Session Replay** — captures widget tree screenshots for debugging (iOS + Android only)
+- ✅ **Error Monitoring** — captures Dart exceptions, Flutter framework errors, and
+  native crashes (iOS + Android)
+- ✅ **Tracing** — auto-instruments navigation, app start, network requests, and UI
+  interactions
+- ✅ **Session Replay** — captures widget tree screenshots for debugging (iOS + Android
+  only)
 
 **Optional (enhanced observability):**
 - ⚡ **Profiling** — CPU profiling; iOS and macOS only (alpha)
@@ -80,7 +88,7 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 **Platform limitations — be upfront:**
 
 | Feature | Platforms | Notes |
-|---------|-----------|-------|
+| --- | --- | --- |
 | Session Replay | iOS, Android | Not available on macOS, Linux, Windows, Web |
 | Profiling | iOS, macOS | Alpha status; not available on Android, Linux, Windows, Web |
 | Native crashes | iOS, Android, macOS | NDK/signal handling; Linux/Windows/Web: Dart exceptions only |
@@ -88,44 +96,50 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 | Slow/frozen frames | iOS, Android, macOS | Not available on Linux, Windows, Web |
 | Crons | N/A | **Not available** in the Flutter/Dart SDK |
 
-Propose: *"For your Flutter app targeting iOS/Android, I recommend Error Monitoring + Tracing + Session Replay. Want me to also add Logging and Profiling (iOS/macOS alpha)?"*
+Propose: *“For your Flutter app targeting iOS/Android, I recommend Error Monitoring +
+Tracing + Session Replay.
+Want me to also add Logging and Profiling (iOS/macOS alpha)?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
 ### Determine Your Setup Path
 
 | Project type | Recommended setup |
-|-------------|------------------|
+| --- | --- |
 | Any Flutter app | Wizard CLI (handles pubspec, init, symbol upload) |
 | Manual preferred | Path B below — `pubspec.yaml` + `main.dart` |
 | Dart-only (CLI, server) | Path C below — pure `sentry` package |
 
----
+* * *
 
 ### Path A: Wizard CLI (Recommended)
 
-> **You need to run this yourself** — the wizard opens a browser for login and requires interactive input that the agent can't handle. Copy-paste into your terminal:
->
+> **You need to run this yourself** — the wizard opens a browser for login and requires
+> interactive input that the agent can’t handle.
+> Copy-paste into your terminal:
+> 
 > ```bash
 > brew install getsentry/tools/sentry-wizard && sentry-wizard -i flutter
 > ```
->
-> It handles org/project selection, adds `sentry_flutter` to `pubspec.yaml`, updates `main.dart`, configures `sentry_dart_plugin` for debug symbol upload, and adds build scripts. Here's what it creates/modifies:
->
-> | File | Action | Purpose |
-> |------|--------|---------|
-> | `pubspec.yaml` | Adds `sentry_flutter` dependency and `sentry:` config block | SDK + symbol upload config |
-> | `lib/main.dart` | Wraps `main()` with `SentryFlutter.init()` | SDK initialization |
-> | `android/app/build.gradle` | Adds Proguard config reference | Android obfuscation support |
-> | `.sentryclirc` | Auth token and org/project config | Symbol upload credentials |
->
+> 
+> It handles org/project selection, adds `sentry_flutter` to `pubspec.yaml`, updates
+> `main.dart`, configures `sentry_dart_plugin` for debug symbol upload, and adds build
+> scripts. Here’s what it creates/modifies:
+> 
+| File | Action | Purpose |
+| --- | --- | --- |
+| `pubspec.yaml` | Adds `sentry_flutter` dependency and `sentry:` config block | SDK + symbol upload config |
+| `lib/main.dart` | Wraps `main()` with `SentryFlutter.init()` | SDK initialization |
+| `android/app/build.gradle` | Adds Proguard config reference | Android obfuscation support |
+| `.sentryclirc` | Auth token and org/project config | Symbol upload credentials |
+> 
 > **Once it finishes, come back and skip to [Verification](#verification).**
 
 If the user skips the wizard, proceed with Path B (Manual Setup) below.
 
----
+* * *
 
 ### Path B: Manual — Flutter App
 
@@ -239,7 +253,8 @@ final GoRouter router = GoRouter(
 
 **Step 4 — Configure Debug Symbol Upload**
 
-Readable stack traces in Sentry require uploading debug symbols when building with `--obfuscate`.
+Readable stack traces in Sentry require uploading debug symbols when building with
+`--obfuscate`.
 
 Add to `pubspec.yaml`:
 
@@ -280,7 +295,7 @@ flutter build web --release --source-maps
 dart run sentry_dart_plugin
 ```
 
----
+* * *
 
 ### Path C: Manual — Dart-Only (CLI / Server)
 
@@ -305,7 +320,7 @@ Future<void> main() async {
 }
 ```
 
----
+* * *
 
 ### Quick Reference: Full-Featured `SentryFlutter.init()`
 
@@ -368,11 +383,12 @@ Future<void> main() async {
 }
 ```
 
----
+* * *
 
 ### Navigation: Time to Full Display (TTFD)
 
-TTID (Time to Initial Display) is always enabled. TTFD is opt-in:
+TTID (Time to Initial Display) is always enabled.
+TTFD is opt-in:
 
 ```dart
 // Enable in options:
@@ -390,14 +406,15 @@ await _loadData();
 SentryFlutter.currentDisplay()?.reportFullyDisplayed();
 ```
 
----
+* * *
 
 ### For Each Agreed Feature
 
-Walk through features one at a time. Load the reference file for each, follow its steps, then verify before moving on:
+Walk through features one at a time.
+Load the reference file for each, follow its steps, then verify before moving on:
 
-| Feature | Reference | Load when... |
-|---------|-----------|-------------|
+| Feature | Reference | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always (baseline) |
 | Tracing & Performance | `./tracing.md` | Always — navigation, HTTP, DB spans |
 | Session Replay | `./session-replay.md` | iOS/Android user-facing apps |
@@ -408,14 +425,14 @@ Walk through features one at a time. Load the reference file for each, follow it
 
 For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Core `SentryFlutter.init()` Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `dsn` | `string` | — | **Required.** Project DSN. Env: `SENTRY_DSN` via `--dart-define` |
 | `environment` | `string` | — | e.g., `"production"`, `"staging"`. Env: `SENTRY_ENVIRONMENT` |
 | `release` | `string` | Auto on iOS/Android | `"packageName@version+build"`. Env: `SENTRY_RELEASE` |
@@ -439,7 +456,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Tracing Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `tracesSampleRate` | `double` | — | Transaction sample rate (0–1). Enable by setting >0 |
 | `tracesSampler` | `function` | — | Per-transaction sampling; overrides `tracesSampleRate` |
 | `tracePropagationTargets` | `List` | — | URLs to attach `sentry-trace` + `baggage` headers |
@@ -452,13 +469,13 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Profiling Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `profilesSampleRate` | `double` | — | Profiling rate relative to `tracesSampleRate`. **iOS/macOS only** |
 
 ### Native / Mobile Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `autoInitializeNativeSdk` | `bool` | `true` | Auto-initialize native Android/iOS SDK layer |
 | `enableNativeCrashHandling` | `bool` | `true` | Capture native crashes (NDK, signal, Mach exception) |
 | `enableNdkScopeSync` | `bool` | `true` | Sync Dart scope to Android NDK |
@@ -476,21 +493,21 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Session & Release Health Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `enableAutoSessionTracking` | `bool` | `true` | Session tracking for crash-free user/session metrics |
 | `autoSessionTrackingInterval` | `Duration` | `30s` | Background inactivity before session ends |
 
 ### Replay Options (`options.replay`)
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `replay.sessionSampleRate` | `double` | `0.0` | Fraction of all sessions recorded |
 | `replay.onErrorSampleRate` | `double` | `0.0` | Fraction of error sessions recorded |
 
 ### Replay Privacy Options (`options.privacy`)
 
 | Option / Method | Default | Purpose |
-|-----------------|---------|---------|
+| --- | --- | --- |
 | `privacy.maskAllText` | `true` | Mask all text widget content |
 | `privacy.maskAllImages` | `true` | Mask all image widgets |
 | `privacy.maskAssetImages` | `true` | Mask images from root asset bundle |
@@ -501,7 +518,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### HTTP Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `captureFailedRequests` | `bool` | `true` (Flutter) | Auto-capture HTTP errors |
 | `maxRequestBodySize` | enum | `never` | Body capture: `never`, `small`, `medium`, `always` |
 | `failedRequestStatusCodes` | `List` | `[500–599]` | Status codes treated as failures |
@@ -510,7 +527,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Hook Options
 
 | Option | Type | Purpose |
-|--------|------|---------|
+| --- | --- | --- |
 | `beforeSend` | `(SentryEvent, Hint) → SentryEvent?` | Modify or drop error events. Return `null` to drop |
 | `beforeSendTransaction` | `(SentryEvent) → SentryEvent?` | Modify or drop transaction events |
 | `beforeBreadcrumb` | `(Breadcrumb, Hint) → Breadcrumb?` | Process breadcrumbs before storage |
@@ -521,7 +538,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 Pass via `--dart-define` at build time:
 
 | Variable | Purpose | Notes |
-|----------|---------|-------|
+| --- | --- | --- |
 | `SENTRY_DSN` | Data Source Name | Falls back from `options.dsn` |
 | `SENTRY_ENVIRONMENT` | Deployment environment | Falls back from `options.environment` |
 | `SENTRY_RELEASE` | Release identifier | Falls back from `options.release` |
@@ -581,7 +598,7 @@ Future<void> main() async {
 These are active with no extra config when you call `SentryFlutter.init()`:
 
 | Integration | What it does |
-|-------------|-------------|
+| --- | --- |
 | `FlutterErrorIntegration` | Captures `FlutterError.onError` framework errors |
 | `RunZonedGuardedIntegration` | Catches unhandled Dart exceptions in runZonedGuarded |
 | `NativeAppStartIntegration` | App start timing (iOS/Android) |
@@ -595,7 +612,7 @@ These are active with no extra config when you call `SentryFlutter.init()`:
 | `SdkIntegration` | SDK metadata tagging |
 | `ReleaseIntegration` | Auto-set release on iOS/Android from package info |
 
----
+* * *
 
 ## Verification
 
@@ -634,11 +651,13 @@ ElevatedButton(
 - **Logs** → structured log entries if `enableLogs: true`
 
 > ⚠️ **Platform limitations in debug mode:**
-> - Native crashes, session replay, slow/frozen frames, and app start metrics only fully work in release builds on iOS/Android
+> - Native crashes, session replay, slow/frozen frames, and app start metrics only fully
+>   work in release builds on iOS/Android
 > - Run `flutter run --release` or use a real device/emulator to test native features
-> - Debug mode uses the Dart VM with JIT compilation — some native integrations behave differently
+> - Debug mode uses the Dart VM with JIT compilation — some native integrations behave
+>   differently
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
@@ -656,7 +675,7 @@ ls ../backend/package.json ../server/package.json 2>/dev/null
 If a backend exists without Sentry, suggest the matching skill:
 
 | Detected | Suggest skill |
-|----------|--------------|
+| --- | --- |
 | Go backend (`go.mod`) | [`go`](../go/index.md) |
 | Python backend (`requirements.txt`, `pyproject.toml`) | [`python`](../python/index.md) |
 | Ruby backend (`Gemfile`) | [`ruby`](../ruby/index.md) |
@@ -664,7 +683,8 @@ If a backend exists without Sentry, suggest the matching skill:
 | .NET backend (`*.csproj`) | [`dotnet`](../dotnet/index.md) |
 | React / Next.js web | [`react`](../react/index.md) / [`nextjs`](../nextjs/index.md) |
 
-**Distributed tracing** — if a backend skill is added, configure `tracePropagationTargets` in Flutter to propagate trace context to your API:
+**Distributed tracing** — if a backend skill is added, configure
+`tracePropagationTargets` in Flutter to propagate trace context to your API:
 
 ```dart
 options.tracePropagationTargets = ['api.myapp.com', 'localhost'];
@@ -673,12 +693,12 @@ options.propagateTraceparent = true; // also send W3C traceparent header
 
 This links mobile transactions to backend traces in the Sentry waterfall view.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing in Sentry | Set `options.debug = true` — SDK logs to Flutter console; verify DSN is correct |
 | `SentryFlutter.init` throws | Ensure `main()` is `async` and you `await SentryFlutter.init(...)` |
 | Stack traces unreadable in Sentry | Upload debug symbols with `sentry_dart_plugin`; build with `--obfuscate --split-debug-info` |

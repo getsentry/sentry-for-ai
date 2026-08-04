@@ -1,22 +1,24 @@
 # Profiling — Sentry Next.js SDK
 
-> Browser profiling: `@sentry/nextjs` ≥10.27.0 (Beta)  
-> Node.js profiling: `@sentry/profiling-node` — must match `@sentry/nextjs` version exactly
+> Browser profiling: `@sentry/nextjs` ≥10.27.0 (Beta)\
+> Node.js profiling: `@sentry/profiling-node` — must match `@sentry/nextjs` version
+> exactly
 
----
+* * *
 
 ## Overview
 
 The Sentry Next.js SDK supports profiling in **two independent runtimes**:
 
 | Runtime | Integration | What it captures |
-|---|---|---|
+| --- | --- | --- |
 | **Browser** | `browserProfilingIntegration()` | JS call stacks in Chrome/Edge (Chromium only) at 100Hz |
 | **Node.js server** | `nodeProfilingIntegration()` | V8 CPU call stacks for API routes, RSC, server actions |
 
-Both are **opt-in** and **independent from each other**. Each attaches to spans and requires tracing to be enabled.
+Both are **opt-in** and **independent from each other**. Each attaches to spans and
+requires tracing to be enabled.
 
----
+* * *
 
 ## How Profiling Relates to Tracing
 
@@ -24,14 +26,15 @@ Profiles attach to **spans** — they are not independent events:
 
 1. `tracesSampleRate` / `tracesSampler` decides whether a request is traced at all
 2. `profileSessionSampleRate` decides whether the **session** opts into profiling
-3. A profile is only collected when **both** sampling decisions are "yes"
+3. A profile is only collected when **both** sampling decisions are “yes”
 
 ```
 tracesSampleRate: 0.1   + profileSessionSampleRate: 0.5
 → ~5% of requests will have both a trace AND a profile attached
 ```
 
-In `trace` lifecycle mode, you can drill from a slow span in the Performance UI directly into a flame graph:
+In `trace` lifecycle mode, you can drill from a slow span in the Performance UI directly
+into a flame graph:
 
 ```
 Trace: "POST /api/checkout" (850ms)
@@ -40,24 +43,27 @@ Trace: "POST /api/checkout" (850ms)
   └── "updateInventory" (185ms) → [Profile attached] → shows ORM overhead
 ```
 
----
+* * *
 
 ## Browser Profiling
 
 ### Browser Compatibility
 
 | Browser | Supported | Notes |
-|---------|-----------|-------|
+| --- | --- | --- |
 | Chrome / Chromium | ✅ | Primary support |
 | Edge (Chromium) | ✅ | Same engine as Chrome |
 | Firefox | ❌ | Does not implement JS Self-Profiling API |
 | Safari / iOS Safari | ❌ | Does not implement JS Self-Profiling API |
 
-> ⚠️ **Sampling bias:** Profile data comes **only** from Chromium users. In unsupported browsers, `browserProfilingIntegration()` silently no-ops with no errors and no overhead.
+> ⚠️ **Sampling bias:** Profile data comes **only** from Chromium users.
+> In unsupported browsers, `browserProfilingIntegration()` silently no-ops with no
+> errors and no overhead.
 
 ### Required: `Document-Policy` Header
 
-The JS Self-Profiling API is gated behind a required response header. Without it, profiling silently fails even in Chromium:
+The JS Self-Profiling API is gated behind a required response header.
+Without it, profiling silently fails even in Chromium:
 
 ```
 Document-Policy: js-profiling
@@ -102,7 +108,8 @@ const nextConfig = {
 add_header Document-Policy "js-profiling";
 ```
 
-> ⚠️ Static hosting that doesn't support custom headers (some CDNs, GitHub Pages) will prevent browser profiling entirely.
+> ⚠️ Static hosting that doesn’t support custom headers (some CDNs, GitHub Pages) will
+> prevent browser profiling entirely.
 
 ### SDK Configuration — Trace Mode (Recommended)
 
@@ -155,7 +162,7 @@ await heavyComputation();
 Sentry.uiProfiler.stopProfiler();
 ```
 
----
+* * *
 
 ## Node.js Profiling
 
@@ -165,7 +172,9 @@ Sentry.uiProfiler.stopProfiler();
 npm install @sentry/profiling-node --save
 ```
 
-> ⚠️ **Version pinning is required.** `@sentry/profiling-node` must exactly match your `@sentry/nextjs` version. Mismatched versions cause silent failures.
+> ⚠️ **Version pinning is required.** `@sentry/profiling-node` must exactly match your
+> `@sentry/nextjs` version.
+> Mismatched versions cause silent failures.
 
 ```bash
 # Both should be the same version
@@ -195,7 +204,8 @@ Sentry.init({
 });
 ```
 
-> ⚠️ **Do NOT add `nodeProfilingIntegration` to `sentry.edge.config.ts`.** The Edge runtime does not support native add-ons.
+> ⚠️ **Do NOT add `nodeProfilingIntegration` to `sentry.edge.config.ts`.** The Edge
+> runtime does not support native add-ons.
 
 ### Manual Mode (Node.js)
 
@@ -218,7 +228,7 @@ Sentry.profiler.stopProfiler();
 Precompiled native binaries are available for:
 
 | OS | Architecture | Node.js |
-|---|---|---|
+| --- | --- | --- |
 | macOS | x64 | 18–24 |
 | Linux (glibc) | x64 | 18–24 |
 | Linux (musl/Alpine) | x64, ARM64 | 18–24 |
@@ -242,12 +252,12 @@ SENTRY_PROFILER_BINARY_DIR=/path/to/dir
 SENTRY_PROFILER_LOGGING_MODE=lazy node server.js
 ```
 
----
+* * *
 
 ## Configuration Parameters Reference
 
 | Parameter | Applies to | Description |
-|-----------|-----------|-------------|
+| --- | --- | --- |
 | `profileSessionSampleRate` | Browser + Node.js | 0.0–1.0; session-level sampling decision made once (at page load for browser, process start for server) |
 | `profileLifecycle` | Browser + Node.js | `"trace"` = auto-attach to spans; omit for manual mode |
 | `browserProfilingIntegration()` | Browser only | Enables JS Self-Profiling API (Chromium only); must come after `browserTracingIntegration()` |
@@ -259,16 +269,17 @@ The profiling sampling decision is made **once per session**:
 - **Browser:** at page load (`instrumentation-client.ts` init)
 - **Server:** at process startup (`sentry.server.config.ts` init)
 
-A "profiling session" either opts in or opts out for its entire lifetime. Within a profiling session, every traced span gets a profile attached (in `trace` mode).
+A “profiling session” either opts in or opts out for its entire lifetime.
+Within a profiling session, every traced span gets a profile attached (in `trace` mode).
 
 ### `profileLifecycle` Modes Comparison
 
 | Mode | Trigger | Best for |
-|------|---------|----------|
+| --- | --- | --- |
 | `"trace"` | Auto-attached to every sampled span | Broad production coverage; no code changes |
 | `"manual"` (default) | `startProfiler()` / `stopProfiler()` | Specific high-value flows (checkout, heavy renders) |
 
----
+* * *
 
 ## Production vs Development Recommendations
 
@@ -289,16 +300,24 @@ Sentry.init({
 
 **Performance impact notes:**
 
-- **Browser (100Hz sampling):** Low overhead; runs unobtrusively in production. Chrome DevTools profiles at 1000Hz — use Sentry profiling for production coverage, DevTools for local deep-dives.
-- **Node.js (V8 CpuProfiler):** The native profiler adds CPU overhead. Test with realistic load before deploying `profileSessionSampleRate: 1.0` to high-traffic production.
+- **Browser (100Hz sampling):** Low overhead; runs unobtrusively in production.
+  Chrome DevTools profiles at 1000Hz — use Sentry profiling for production coverage,
+  DevTools for local deep-dives.
+- **Node.js (V8 CpuProfiler):** The native profiler adds CPU overhead.
+  Test with realistic load before deploying `profileSessionSampleRate: 1.0` to
+  high-traffic production.
 
-> "For high-throughput environments, we recommend testing prior to deployment to ensure that your service's performance characteristics maintain expectations." — Sentry docs
+> “For high-throughput environments, we recommend testing prior to deployment to ensure
+> that your service’s performance characteristics maintain expectations.”
+> — Sentry docs
 
 ### Chrome DevTools Conflict
 
-When `browserProfilingIntegration` is active, Chrome DevTools profiler shows Sentry's overhead mixed into rendering work. Disable the integration when doing local DevTools profiling sessions.
+When `browserProfilingIntegration` is active, Chrome DevTools profiler shows Sentry’s
+overhead mixed into rendering work.
+Disable the integration when doing local DevTools profiling sessions.
 
----
+* * *
 
 ## Complete Setup Example
 
@@ -366,18 +385,18 @@ export default withSentryConfig(nextConfig, {
 });
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No browser profiles appearing in Sentry | Verify `Document-Policy: js-profiling` is present on document responses (check Network tab in DevTools) |
 | Browser profiles only from some users | Expected — only Chromium users are profiled; Firefox/Safari silently no-op |
 | Chrome DevTools shows inflated rendering times | Disable `browserProfilingIntegration()` during local DevTools profiling sessions |
 | `profileSessionSampleRate` has no effect (browser) | Ensure `browserProfilingIntegration()` is listed **after** `browserTracingIntegration()` in `integrations` |
 | No server profiles appearing | Verify `@sentry/profiling-node` version exactly matches `@sentry/nextjs` version |
-| `nodeProfilingIntegration` import error | Check `@sentry/profiling-node` is installed and versions match; don't import it in `sentry.edge.config.ts` |
+| `nodeProfilingIntegration` import error | Check `@sentry/profiling-node` is installed and versions match; don’t import it in `sentry.edge.config.ts` |
 | Profiles not linked to spans | Confirm `profileLifecycle: "trace"` is set and `tracesSampleRate` > 0; both must be set |
 | High CPU usage on server | Lower `profileSessionSampleRate` to 0.1 or 0.05; use `SENTRY_PROFILER_LOGGING_MODE=lazy` |
 | Native add-on fails to load (Alpine/musl Linux) | Ensure the `@sentry/profiling-node` version supports your OS/arch — check the supported platforms table |

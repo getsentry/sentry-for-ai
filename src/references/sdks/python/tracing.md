@@ -1,11 +1,12 @@
 # Tracing — Sentry Python SDK
 
-> Minimum SDK: `sentry-sdk` 0.11.2+ for basic tracing; 2.x for `update_current_span()` and enhanced `@trace`
+> Minimum SDK: `sentry-sdk` 0.11.2+ for basic tracing; 2.x for `update_current_span()`
+> and enhanced `@trace`
 
 ## Configuration
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `traces_sample_rate` | `float` | `None` | Fraction of transactions to trace (0.0–1.0); `None` disables tracing |
 | `traces_sampler` | `callable` | `None` | Per-transaction sampling function; overrides `traces_sample_rate` |
 | `trace_propagation_targets` | `list` | all origins | URLs to inject `sentry-trace` / `baggage` headers into |
@@ -149,7 +150,7 @@ sentry_sdk.init(dsn="...", traces_sampler=traces_sampler)
 ### Auto-instrumented frameworks
 
 | Framework | Auto-enabled | What is traced |
-|-----------|-------------|----------------|
+| --- | --- | --- |
 | Django | ✅ | Requests, DB queries (ORM), cache, signals |
 | Flask | ✅ | Requests, Jinja2 rendering |
 | FastAPI / Starlette | ✅ | Requests, background tasks |
@@ -186,7 +187,8 @@ sentry_sdk.init(
 
 ### Distributed tracing
 
-Frameworks propagate `sentry-trace` and `baggage` headers automatically. For manual HTTP calls:
+Frameworks propagate `sentry-trace` and `baggage` headers automatically.
+For manual HTTP calls:
 
 ```python
 import sentry_sdk
@@ -229,11 +231,16 @@ sentry_sdk.init(
 
 > Minimum SDK: `sentry-sdk` 2.x with `sentry-sdk[opentelemetry-otlp]`
 
-If the project already uses OpenTelemetry for tracing, **use the OTLP integration instead of Sentry's native tracing**. Sentry ingests OTel spans directly via its OTLP endpoint — no span conversion, no dual instrumentation.
+If the project already uses OpenTelemetry for tracing, **use the OTLP integration
+instead of Sentry’s native tracing**. Sentry ingests OTel spans directly via its OTLP
+endpoint — no span conversion, no dual instrumentation.
 
-**When to use this path:** OTel packages (`opentelemetry-sdk`, `opentelemetry-distro`, `opentelemetry-instrumentation-*`) detected in requirements, or `TracerProvider` / `start_as_current_span` found in source.
+**When to use this path:** OTel packages (`opentelemetry-sdk`, `opentelemetry-distro`,
+`opentelemetry-instrumentation-*`) detected in requirements, or `TracerProvider` /
+`start_as_current_span` found in source.
 
-**When NOT to use this path:** No OpenTelemetry in the project — use Sentry's native `traces_sample_rate` instead.
+**When NOT to use this path:** No OpenTelemetry in the project — use Sentry’s native
+`traces_sample_rate` instead.
 
 #### Setup
 
@@ -276,14 +283,18 @@ trace.set_tracer_provider(provider)
 
 #### How it works
 
-- Sentry derives an OTLP endpoint from your DSN and registers a `SpanExporter` with the existing `TracerProvider` — your other exporters (Jaeger, Zipkin, Collector) continue working
-- A propagator injects `sentry-trace` + `baggage` headers for distributed tracing with other Sentry-instrumented services
-- Errors captured via `sentry_sdk.capture_exception()` are automatically linked to the active OTel trace/span via shared `trace_id`
+- Sentry derives an OTLP endpoint from your DSN and registers a `SpanExporter` with the
+  existing `TracerProvider` — your other exporters (Jaeger, Zipkin, Collector) continue
+  working
+- A propagator injects `sentry-trace` + `baggage` headers for distributed tracing with
+  other Sentry-instrumented services
+- Errors captured via `sentry_sdk.capture_exception()` are automatically linked to the
+  active OTel trace/span via shared `trace_id`
 
 #### OTLP configuration options
 
 | Option | Default | Purpose |
-|--------|---------|---------|
+| --- | --- | --- |
 | `setup_otlp_traces_exporter` | `True` | Auto-configure exporter; set `False` if you send to your own Collector |
 | `collector_url` | `None` | OTLP HTTP endpoint of an OTel Collector (e.g., `http://localhost:4318/v1/traces`); when set, spans are sent to the collector instead of directly to Sentry |
 | `setup_propagator` | `True` | Auto-configure propagator; set `False` if you manage propagation yourself |
@@ -294,11 +305,13 @@ trace.set_tracer_provider(provider)
 **Do not combine OTLP with native Sentry tracing.** When using `OTLPIntegration`:
 - Do **not** set `traces_sample_rate` or `traces_sampler`
 - Do **not** set `instrumenter="otel"` (that is the legacy SpanProcessor approach)
-- Do **not** use `sentry_sdk.start_transaction()` or `sentry_sdk.start_span()` — use OTel's `tracer.start_as_current_span()` instead
+- Do **not** use `sentry_sdk.start_transaction()` or `sentry_sdk.start_span()` — use
+  OTel’s `tracer.start_as_current_span()` instead
 
 ### OpenTelemetry bridge (legacy)
 
-> **Deprecated:** Prefer the OTLP integration above. The SpanProcessor bridge below is the older approach.
+> **Deprecated:** Prefer the OTLP integration above.
+> The SpanProcessor bridge below is the older approach.
 
 ```python
 # pip install "sentry-sdk[opentelemetry]"
@@ -327,16 +340,20 @@ with tracer.start_as_current_span("my-operation"):
 
 ## Best Practices
 
-- Use `traces_sampler` instead of `traces_sample_rate` for production — it lets you drop health checks, adjust by route, and honour distributed trace decisions
+- Use `traces_sampler` instead of `traces_sample_rate` for production — it lets you drop
+  health checks, adjust by route, and honour distributed trace decisions
 - Always finish spans — unfinished spans are silently dropped
-- Use `span.set_data()` not `span.set_tag()` for span-level data (tags are for scope-level filtering)
-- Set `trace_propagation_targets` to avoid leaking `sentry-trace` headers to third-party services
-- Add `sentry-trace` and `baggage` to your CORS allowlist when tracing browser-to-backend flows
+- Use `span.set_data()` not `span.set_tag()` for span-level data (tags are for
+  scope-level filtering)
+- Set `trace_propagation_targets` to avoid leaking `sentry-trace` headers to third-party
+  services
+- Add `sentry-trace` and `baggage` to your CORS allowlist when tracing
+  browser-to-backend flows
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No transactions appearing | Verify `traces_sample_rate > 0` or `traces_sampler` returns non-zero |
 | Spans not linked to transaction | Ensure spans are created inside an active `start_transaction()` context |
 | Distributed traces broken | Check that `sentry-trace` and `baggage` headers pass through proxies/gateways |

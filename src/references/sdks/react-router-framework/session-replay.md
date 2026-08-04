@@ -2,7 +2,7 @@
 
 > Minimum SDK: `@sentry/react-router` with Replay support
 
----
+* * *
 
 ## Replay setup (client)
 
@@ -19,17 +19,17 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Sampling guidance
 
 | Goal | Suggested setup |
-|------|-----------------|
+| --- | --- |
 | Validate integration | `replaysSessionSampleRate: 0.1`, `replaysOnErrorSampleRate: 1.0` |
 | Control storage costs | Lower session sample rate; keep error replay rate high |
 | Incident debugging | Temporarily increase session sample rate |
 
----
+* * *
 
 ## Privacy controls
 
@@ -47,7 +47,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Verification
 
@@ -55,12 +55,12 @@ Sentry.init({
 2. Open **Replays** in Sentry.
 3. Confirm replay exists and is linked to errors/traces.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Replay missing | Ensure `replayIntegration()` is configured in client init |
 | Only error replays show | Increase `replaysSessionSampleRate` |
 | Sensitive data visible | Enable masking/blocking and verify element privacy settings |

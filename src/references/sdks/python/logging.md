@@ -5,11 +5,12 @@
 ## Two Logging Systems
 
 | System | Produces | Requires |
-|--------|----------|---------|
+| --- | --- | --- |
 | **Sentry Structured Logs** | Searchable log records in Sentry Logs UI | `enable_logs=True` + `sentry_sdk.logger.*` |
 | **LoggingIntegration (classic)** | Breadcrumbs and/or error events from stdlib `logging` | Auto-enabled by default |
 
-These run simultaneously. They are **not** mutually exclusive.
+These run simultaneously.
+They are **not** mutually exclusive.
 
 ## Configuration
 
@@ -34,7 +35,7 @@ sentry_sdk.init(
 ### `LoggingIntegration` parameters
 
 | Parameter | Default | Effect |
-|-----------|---------|--------|
+| --- | --- | --- |
 | `sentry_logs_level` | `INFO` | Records ≥ level → **structured Sentry Logs** (needs `enable_logs=True`) |
 | `level` | `INFO` | Records ≥ level → **breadcrumbs** (attached to next error event) |
 | `event_level` | `ERROR` | Records ≥ level → standalone **Sentry error events** |
@@ -61,7 +62,8 @@ sentry_logger.error(
 sentry_logger.fatal("Database {database} connection pool exhausted", database="users")
 ```
 
-Template `{attribute_name}` placeholders become **individually searchable attributes** in the Sentry Logs UI.
+Template `{attribute_name}` placeholders become **individually searchable attributes**
+in the Sentry Logs UI.
 
 ### Extra structured attributes
 
@@ -149,7 +151,7 @@ sentry_sdk.init(dsn="...", enable_logs=True, before_send_log=before_log)
 ### `Log` object schema
 
 | Key | Type | Description |
-|-----|------|-------------|
+| --- | --- | --- |
 | `severity_text` | `str` | `"trace"` / `"debug"` / `"info"` / `"warning"` / `"error"` / `"fatal"` |
 | `severity_number` | `int` | 1–24 (OpenTelemetry spec) |
 | `body` | `str` | Rendered message string |
@@ -159,7 +161,10 @@ sentry_sdk.init(dsn="...", enable_logs=True, before_send_log=before_log)
 
 ### Suppress noisy loggers
 
-Events/breadcrumbs and Sentry Logs have **separate** ignore lists. `ignore_logger()` only suppresses breadcrumbs and error events — it does **not** affect Sentry Logs. This means framework loggers silenced for events (e.g. `django.server`) can still be captured as Sentry Logs.
+Events/breadcrumbs and Sentry Logs have **separate** ignore lists.
+`ignore_logger()` only suppresses breadcrumbs and error events — it does **not** affect
+Sentry Logs. This means framework loggers silenced for events (e.g. `django.server`) can
+still be captured as Sentry Logs.
 
 ```python
 from sentry_sdk.integrations.logging import (
@@ -182,7 +187,7 @@ unignore_logger_for_sentry_logs("a.noisy.logger")
 ```
 
 | Helper | Affects |
-|--------|---------|
+| --- | --- |
 | `ignore_logger(name)` | Breadcrumbs + error events only |
 | `ignore_logger_for_sentry_logs(name)` | Sentry Logs only |
 | `unignore_logger(name)` | Reverses `ignore_logger()` |
@@ -191,7 +196,7 @@ unignore_logger_for_sentry_logs("a.noisy.logger")
 ## Decision Table
 
 | Goal | Tool |
-|------|------|
+| --- | --- |
 | Searchable structured records in Sentry Logs UI | `sentry_sdk.logger.*` + `enable_logs=True` |
 | Bridge existing stdlib `logging` to Sentry Logs | `LoggingIntegration(sentry_logs_level=...)` + `enable_logs=True` |
 | Bridge loguru to Sentry Logs | `LoguruIntegration(sentry_logs_level=...)` + `enable_logs=True` |
@@ -207,7 +212,7 @@ unignore_logger_for_sentry_logs("a.noisy.logger")
 Every log record receives these automatically:
 
 | Attribute | Source |
-|-----------|--------|
+| --- | --- |
 | `sentry.environment` | `init(environment=...)` |
 | `sentry.release` | `init(release=...)` |
 | `sentry.sdk.name` / `sentry.sdk.version` | SDK metadata |
@@ -219,10 +224,10 @@ Every log record receives these automatically:
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | `sentry_sdk.logger.*` calls have no effect | Ensure `enable_logs=True` is set in `sentry_sdk.init()` |
 | stdlib logs not appearing as Sentry Logs | Set `sentry_logs_level` in `LoggingIntegration` and `enable_logs=True` |
-| Logger's own level filters out records | SDK respects the logger's configured level — set it to `logging.INFO` or lower |
+| Logger’s own level filters out records | SDK respects the logger’s configured level — set it to `logging.INFO` or lower |
 | Too many log records hitting quota | Use `before_send_log` to filter by severity or attribute |
 | Loguru not auto-activating | Verify `loguru` is installed; or add `LoguruIntegration()` explicitly |
 | `ignore_logger()` still sending Sentry Logs | Expected — `ignore_logger()` only suppresses breadcrumbs/events; use `ignore_logger_for_sentry_logs()` to suppress Sentry Logs |

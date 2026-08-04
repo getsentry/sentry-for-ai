@@ -1,10 +1,15 @@
 # Logging — Sentry .NET SDK
 
-> **Minimum SDK: `Sentry` ≥ 6.0.0** for the stable native `SentrySdk.Logger` + `EnableLogs` (shipped experimental behind `options.Experimental` in 5.14.0–5.x)  
-> Integration packages (`Sentry.Extensions.Logging`, `Sentry.Serilog`, `Sentry.NLog`, `Sentry.Log4Net`) are long-established  
-> Native structured logs forwarded through integrations: requires SDK ≥ 6.0.0, and only for `Sentry.Extensions.Logging`, `Sentry.AspNetCore`, `Sentry.Maui`, `Sentry.Google.Cloud.Functions`, and `Sentry.Serilog` (NLog and log4net do **not** forward structured logs)
+> **Minimum SDK: `Sentry` ≥ 6.0.0** for the stable native `SentrySdk.Logger` +
+> `EnableLogs` (shipped experimental behind `options.Experimental` in 5.14.0–5.x)\
+> Integration packages (`Sentry.Extensions.Logging`, `Sentry.Serilog`, `Sentry.NLog`,
+> `Sentry.Log4Net`) are long-established\
+> Native structured logs forwarded through integrations: requires SDK ≥ 6.0.0, and only
+> for `Sentry.Extensions.Logging`, `Sentry.AspNetCore`, `Sentry.Maui`,
+> `Sentry.Google.Cloud.Functions`, and `Sentry.Serilog` (NLog and log4net do **not**
+> forward structured logs)
 
----
+* * *
 
 ## Enabling Native Structured Logs
 
@@ -20,7 +25,7 @@ SentrySdk.Init(options =>
 
 Without `EnableLogs = true`, all `SentrySdk.Logger.*` calls are silently discarded.
 
----
+* * *
 
 ## Native Logger API — Six Levels
 
@@ -36,7 +41,7 @@ SentrySdk.Logger.LogFatal("Unrecoverable error — shutting down");
 ```
 
 | Level | Method | Typical Use |
-|-------|--------|-------------|
+| --- | --- | --- |
 | `Trace` | `LogTrace()` | Ultra-granular method entry/exit; high-volume — filter in production |
 | `Debug` | `LogDebug()` | Development diagnostics, cache hits/misses |
 | `Info` | `LogInfo()` | Normal business milestones, confirmations |
@@ -60,18 +65,19 @@ SentrySdk.Logger.LogWarning(static log =>
 ### Supported Attribute Value Types
 
 | Category | Types |
-|----------|-------|
+| --- | --- |
 | Textual | `string`, `char` |
 | Logical | `bool` |
 | Integral | `sbyte`, `byte`, `short`, `ushort`, `int`, `uint`, `long`, `nint` |
 | Floating-point | `float`, `double` |
 | Other | Any type via `ToString()` fallback |
 
----
+* * *
 
 ## Log Filtering — `SetBeforeSendLog`
 
-Use `SetBeforeSendLog` to modify or drop logs before transmission. Return `null` to discard:
+Use `SetBeforeSendLog` to modify or drop logs before transmission.
+Return `null` to discard:
 
 ```csharp
 SentrySdk.Init(options =>
@@ -100,7 +106,7 @@ SentrySdk.Init(options =>
 ### The `SentryLog` Object
 
 | Member | Type | Description |
-|--------|------|-------------|
+| --- | --- | --- |
 | `Timestamp` | `DateTimeOffset` | When the log was created |
 | `TraceId` | `SentryId` | Active trace ID — links log to a trace |
 | `SpanId` | `SpanId?` | Active span ID — links log to a span |
@@ -111,24 +117,24 @@ SentrySdk.Init(options =>
 | `TryGetAttribute()` | method | Read an attribute |
 | `SetAttribute()` | method | Write/modify an attribute |
 
----
+* * *
 
 ## Automatically Attached Attributes
 
 These are added by the SDK to every log without any configuration:
 
 | Attribute Key | Source |
-|---------------|--------|
+| --- | --- |
 | `environment` | SDK config |
 | `release` | SDK config |
 | `sdk.name`, `sdk.version` | SDK internals |
 | `message.template` | Message template |
 | `message.parameter.0`, `.1`, … | Template parameters |
 | `server.address` | Host info (requires `SendDefaultPii = true` or an explicit `ServerName`) |
-| `user.id`, `user.name`, `user.email` | Active scope user (attached whenever the scope's `User` has values) |
+| `user.id`, `user.name`, `user.email` | Active scope user (attached whenever the scope’s `User` has values) |
 | `origin` | Integration that created the log |
 
----
+* * *
 
 ## Integration: Microsoft.Extensions.Logging (ILogger)
 
@@ -220,7 +226,7 @@ public class OrderService
 ### Configuration Options
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `MinimumBreadcrumbLevel` | `LogLevel` | `Information` | Threshold for breadcrumb storage |
 | `MinimumEventLevel` | `LogLevel` | `Error` | Threshold for sending Sentry error events |
 | `InitializeSdk` | `bool` | `true` | Auto-init SDK. Set `false` when using `SentrySdk.Init` |
@@ -229,12 +235,15 @@ public class OrderService
 
 ### Important Behavior Notes
 
-- **Breadcrumb cascade**: A `LogError` event includes ALL breadcrumbs accumulated since the last event — so the full Info/Warning/Error history is attached.
-- **Self-filtering**: Log entries whose category name is `"Sentry"` or starts with `"Sentry."` are excluded to prevent infinite loops.
-- **Single init**: Set `InitializeSdk = false` if calling `SentrySdk.Init()` elsewhere in your startup.
+- **Breadcrumb cascade**: A `LogError` event includes ALL breadcrumbs accumulated since
+  the last event — so the full Info/Warning/Error history is attached.
+- **Self-filtering**: Log entries whose category name is `"Sentry"` or starts with
+  `"Sentry."` are excluded to prevent infinite loops.
+- **Single init**: Set `InitializeSdk = false` if calling `SentrySdk.Init()` elsewhere
+  in your startup.
 - **Empty DSN** disables the SDK entirely.
 
----
+* * *
 
 ## Integration: Serilog
 
@@ -246,7 +255,8 @@ dotnet add package Sentry.Serilog
 
 ### What it does
 
-Same three capabilities as MEL: breadcrumbs, Sentry error events, and native structured logs.
+Same three capabilities as MEL: breadcrumbs, Sentry error events, and native structured
+logs.
 
 ### Basic Setup (Serilog initializes Sentry)
 
@@ -305,12 +315,12 @@ log.Error(ex, "Payment failed for order {OrderId}", orderId); // → Sentry even
 ### Configuration Options
 
 | Option | Default | Description |
-|--------|---------|-------------|
+| --- | --- | --- |
 | `MinimumBreadcrumbLevel` | `Information` | Minimum `LogEventLevel` for breadcrumbs |
 | `MinimumEventLevel` | `Error` | Minimum level for Sentry error events |
 | `InitializeSdk` | `true` | Whether this sink initializes the SDK |
 
----
+* * *
 
 ## Integration: NLog
 
@@ -391,7 +401,7 @@ public void ProcessOrder(int orderId)
 ### Configuration Options
 
 | Option | Default | Description |
-|--------|---------|-------------|
+| --- | --- | --- |
 | `MinimumBreadcrumbLevel` | `Info` | Threshold for breadcrumb storage |
 | `MinimumEventLevel` | `Error` | Threshold for Sentry error events |
 | `InitializeSdk` | `true` | Auto-init SDK when DSN provided |
@@ -404,14 +414,16 @@ public void ProcessOrder(int orderId)
 
 ### ⚠️ Critical NLog Detail
 
-The `SentryTarget` must receive **all** log entries to correctly classify them as breadcrumbs vs events. Configure NLog's `minlevel` **lower** than `MinimumBreadcrumbLevel`:
+The `SentryTarget` must receive **all** log entries to correctly classify them as
+breadcrumbs vs events.
+Configure NLog’s `minlevel` **lower** than `MinimumBreadcrumbLevel`:
 
 ```xml
 <!-- If MinimumBreadcrumbLevel = Info, set minlevel = Debug or Trace -->
 <logger name="*" minlevel="Debug" writeTo="sentry"/>
 ```
 
----
+* * *
 
 ## Integration: log4net
 
@@ -447,7 +459,8 @@ dotnet add package Sentry.Log4Net
 
 ### Programmatic Setup (for full SDK control)
 
-The XML appender supports only a subset of Sentry options. For full control, init the SDK separately and omit the `Dsn` element to skip auto-init:
+The XML appender supports only a subset of Sentry options.
+For full control, init the SDK separately and omit the `Dsn` element to skip auto-init:
 
 ```csharp
 // Startup code
@@ -481,30 +494,33 @@ Logger.Fatal("Application crash", ex);  // → Sentry event
 ### Key Appender Options
 
 | Option | Description |
-|--------|-------------|
+| --- | --- |
 | `Dsn` | Auto-initializes SDK when provided |
 | `SendIdentity` | Reports log4net `Identity` as `user.id` |
 | `threshold` | Minimum log4net level for this appender |
 
----
+* * *
 
 ## Log-to-Trace Correlation
 
-Every log entry from any integration automatically carries the active trace and span IDs:
+Every log entry from any integration automatically carries the active trace and span
+IDs:
 
 | Field | Description |
-|-------|-------------|
+| --- | --- |
 | `TraceId` | Links the log to an active distributed trace |
 | `SpanId` | Links the log to the currently active span |
 
-In the Sentry UI you can navigate from an error or trace directly to the logs that occurred during that trace, and vice versa. No extra configuration required — correlation is automatic when `TracesSampleRate > 0`.
+In the Sentry UI you can navigate from an error or trace directly to the logs that
+occurred during that trace, and vice versa.
+No extra configuration required — correlation is automatic when `TracesSampleRate > 0`.
 
----
+* * *
 
 ## Log Level Mapping
 
 | Sentry Level | MEL (`ILogger`) | Serilog | NLog | log4net |
-|--------------|-----------------|---------|------|---------|
+| --- | --- | --- | --- | --- |
 | `Trace` | `Trace` | `Verbose` | `Trace` | `Trace` |
 | `Debug` | `Debug` | `Debug` | `Debug` | `Debug` |
 | `Info` | `Information` | `Information` | `Info` | `Info` |
@@ -512,22 +528,22 @@ In the Sentry UI you can navigate from an error or trace directly to the logs th
 | `Error` | `Error` | `Error` | `Error` | `Error` |
 | `Fatal` | `Critical` | `Fatal` | `Fatal` | `Fatal` |
 
----
+* * *
 
 ## SDK Version Matrix
 
 | Feature | Min SDK Version |
-|---------|----------------|
+| --- | --- |
 | Native `SentrySdk.Logger` + `EnableLogs` (stable) | **6.0.0** |
 | Native structured logging (experimental, via `options.Experimental`) | **5.14.0** |
 | Native logs forwarded via supported integrations (MEL, AspNetCore, Maui, GoogleCloud, Serilog) | **6.0.0** |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Native logs not appearing in Sentry | Verify `EnableLogs = true` in `SentrySdk.Init()` — without it, all `SentrySdk.Logger.*` calls are silently discarded |
 | MEL/Serilog/NLog logs not triggering Sentry events | Check `MinimumEventLevel` — only logs at or above this threshold are sent as events; lower it if needed |
 | NLog: only Error/Fatal seen, no breadcrumbs | NLog `<logger minlevel>` must be set **lower** than `MinimumBreadcrumbLevel` so the SentryTarget receives all entries |

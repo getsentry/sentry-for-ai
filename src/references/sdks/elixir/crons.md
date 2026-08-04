@@ -2,11 +2,15 @@
 
 > Minimum SDK: `sentry` v10.2.0+
 
-Sentry Cron Monitoring detects when scheduled jobs fail silently — they don't error, but they stop running or take too long. The SDK provides three integration paths: manual check-ins (any scheduler), Oban (job queue), and Quantum (cron scheduler).
+Sentry Cron Monitoring detects when scheduled jobs fail silently — they don’t error, but
+they stop running or take too long.
+The SDK provides three integration paths: manual check-ins (any scheduler), Oban (job
+queue), and Quantum (cron scheduler).
 
 ## Manual Check-Ins
 
-Use `Sentry.capture_check_in/1` with any periodic task — `GenServer`, `Task`, or custom scheduler.
+Use `Sentry.capture_check_in/1` with any periodic task — `GenServer`, `Task`, or custom
+scheduler.
 
 ### Basic pattern: start → work → complete/error
 
@@ -49,7 +53,8 @@ end
 
 ### With monitor configuration (upsert)
 
-Providing `monitor_config` creates or updates the monitor definition in Sentry on first check-in. This eliminates the need to create monitors in the Sentry UI manually:
+Providing `monitor_config` creates or updates the monitor definition in Sentry on first
+check-in. This eliminates the need to create monitors in the Sentry UI manually:
 
 ```elixir
 Sentry.capture_check_in(
@@ -87,7 +92,7 @@ Sentry.capture_check_in(
 ### `capture_check_in/1` options
 
 | Option | Type | Required | Description |
-|--------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `:status` | `:in_progress \| :ok \| :error` | Yes | Current job status |
 | `:monitor_slug` | `string` | Yes | Unique identifier for the monitor (slug format) |
 | `:check_in_id` | `string` | On completion | ID from the initial `:in_progress` call |
@@ -159,7 +164,7 @@ MyApp.Crons.monitor("nightly-cleanup", fn ->
 end, schedule: [type: :crontab, value: "0 3 * * *"])
 ```
 
----
+* * *
 
 ## Oban Integration
 
@@ -183,7 +188,8 @@ Errors from all Oban workers are captured with job context included.
 
 ### Cron monitoring (since v10.2.0)
 
-Monitor scheduled Oban jobs automatically. The integration reads cron metadata set by Oban Pro (or manually via job meta):
+Monitor scheduled Oban jobs automatically.
+The integration reads cron metadata set by Oban Pro (or manually via job meta):
 
 ```elixir
 # config/config.exs
@@ -198,7 +204,8 @@ config :sentry,
   ]
 ```
 
-Jobs are only monitored if their meta contains `"cron" => true`. Oban Pro sets this automatically. For standard Oban, add it manually:
+Jobs are only monitored if their meta contains `"cron" => true`. Oban Pro sets this
+automatically. For standard Oban, add it manually:
 
 ```elixir
 # Scheduling a cron job with Oban (standard, not Pro)
@@ -276,7 +283,7 @@ config :sentry,
   ]
 ```
 
----
+* * *
 
 ## Quantum Integration
 
@@ -301,7 +308,9 @@ config :sentry,
   ]
 ```
 
-The Quantum integration automatically reads cron expressions from your Quantum scheduler configuration and creates monitors for each job. The monitor slug is derived from the job name.
+The Quantum integration automatically reads cron expressions from your Quantum scheduler
+configuration and creates monitors for each job.
+The monitor slug is derived from the job name.
 
 ```elixir
 # lib/my_app/scheduler.ex
@@ -317,14 +326,15 @@ config :my_app, MyApp.Scheduler,
   ]
 ```
 
-> **Note:** Quantum jobs using `@reboot` are not monitored (no equivalent schedule type in Sentry Crons).
+> **Note:** Quantum jobs using `@reboot` are not monitored (no equivalent schedule type
+> in Sentry Crons).
 
----
+* * *
 
 ## Monitor Configuration Reference
 
 | Option | Type | Description |
-|--------|------|-------------|
+| --- | --- | --- |
 | `schedule.type` | `:crontab \| :interval` | Schedule type |
 | `schedule.value` | `string` (crontab) or `integer` (interval) | Crontab expression or interval count |
 | `schedule.unit` | `:minute \| :hour \| :day \| :week \| :month \| :year` | Interval unit (`:interval` type only) |
@@ -337,16 +347,22 @@ config :my_app, MyApp.Scheduler,
 
 ## Best Practices
 
-- Always call `Sentry.capture_check_in/1` with `:in_progress` before starting work and `:ok` or `:error` on completion — sending only `:ok` at the end still works but loses duration tracking
-- Wrap job logic in a try/rescue so failures also send the `:error` status (see helper wrapper pattern above)
-- Use `monitor_config` on the first check-in of a new job to create the monitor automatically — no need to set it on every subsequent check-in
-- Set `checkin_margin` to a reasonable buffer (e.g., 5 minutes for hourly jobs) to avoid false alarms from minor scheduling jitter
-- For Oban, prefer the built-in integration over manual check-ins — it handles the check-in lifecycle and job context enrichment automatically
+- Always call `Sentry.capture_check_in/1` with `:in_progress` before starting work and
+  `:ok` or `:error` on completion — sending only `:ok` at the end still works but loses
+  duration tracking
+- Wrap job logic in a try/rescue so failures also send the `:error` status (see helper
+  wrapper pattern above)
+- Use `monitor_config` on the first check-in of a new job to create the monitor
+  automatically — no need to set it on every subsequent check-in
+- Set `checkin_margin` to a reasonable buffer (e.g., 5 minutes for hourly jobs) to avoid
+  false alarms from minor scheduling jitter
+- For Oban, prefer the built-in integration over manual check-ins — it handles the
+  check-in lifecycle and job context enrichment automatically
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Monitor not appearing in Sentry | Send at least one `:in_progress` check-in with `monitor_config` to create the monitor |
 | Oban integration not monitoring crons | Requires Oban v2.17.6+ or Oban Pro; job meta must contain `"cron" => true` |
 | `capture_check_in/1` returns `:ignored` | DSN is not set or `:environment_name` is excluded in your Sentry alert filters |

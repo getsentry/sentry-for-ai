@@ -2,7 +2,7 @@
 
 > Minimum SDK: `@sentry/react-router` (beta)
 
----
+* * *
 
 ## Enable tracing
 
@@ -19,19 +19,20 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Sampling guidance
 
 | Environment | Suggested value |
-|-------------|-----------------|
+| --- | --- |
 | Development/testing | `tracesSampleRate: 1.0` |
 | Initial production rollout | `0.1` to `0.3` |
 | High throughput | Use lower fixed rate or `tracesSampler` |
 
-If both `tracesSampleRate` and `tracesSampler` are provided, `tracesSampler` takes precedence.
+If both `tracesSampleRate` and `tracesSampler` are provided, `tracesSampler` takes
+precedence.
 
----
+* * *
 
 ## Distributed tracing
 
@@ -46,7 +47,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Custom spans
 
@@ -66,13 +67,16 @@ export async function loader() {
 }
 ```
 
----
+* * *
 
 ## Node runtime note
 
-Automatic server-side instrumentation compatibility has version limits for some Node versions in current docs. If your runtime is outside supported auto-instrumentation ranges, use framework instrumentation APIs or manual wrappers to keep tracing coverage.
+Automatic server-side instrumentation compatibility has version limits for some Node
+versions in current docs.
+If your runtime is outside supported auto-instrumentation ranges, use framework
+instrumentation APIs or manual wrappers to keep tracing coverage.
 
----
+* * *
 
 ## Verification
 
@@ -80,12 +84,12 @@ Automatic server-side instrumentation compatibility has version limits for some 
 2. Open **Traces** in Sentry.
 3. Confirm transaction names, spans, and linked errors appear.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No trace data | Confirm `reactRouterTracingIntegration()` and `tracesSampleRate` are configured |
 | Client and server traces not connected | Adjust `tracePropagationTargets` to include backend URLs |
 | Too many traces | Lower sample rate or use `tracesSampler` |

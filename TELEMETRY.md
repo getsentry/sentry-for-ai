@@ -5,18 +5,19 @@
 Use this when investigating Sentry for AI plugin usage or installer failures.
 
 The primary usage signal is MCP server traffic attributed with `app.utm_source:plugin`.
-When plugin-distributed MCP configs connect to `https://mcp.sentry.dev/mcp?utm_source=plugin`,
-the MCP server records this on spans as `app.utm_source:plugin`. Query the `sentry/mcp-server`
-project to measure plugin-driven adoption, tool usage, and error rates.
+When plugin-distributed MCP configs connect to
+`https://mcp.sentry.dev/mcp?utm_source=plugin`, the MCP server records this on spans as
+`app.utm_source:plugin`. Query the `sentry/mcp-server` project to measure plugin-driven
+adoption, tool usage, and error rates.
 
 The installer package (`npx @sentry/ai`) reports to a separate Sentry project
-(`sentry/sentry-for-ai-installer`). That surface is diagnostic only — it captures crashes
-and uncaught errors, not install counts or per-agent outcomes.
+(`sentry/sentry-for-ai-installer`). That surface is diagnostic only — it captures
+crashes and uncaught errors, not install counts or per-agent outcomes.
 
-**Attribution gap:** Claude's plugin (`plugin-claude`) declares the MCP server inline in its
-`plugin.json` without the `utm_source` query parameter, so Claude-originated MCP traffic does
-not appear under `app.utm_source:plugin`. Cursor, Codex, and Grok all include
-`?utm_source=plugin` in their distributed MCP configs and are fully attributed.
+**Attribution gap:** Claude’s plugin (`plugin-claude`) declares the MCP server inline in
+its `plugin.json` without the `utm_source` query parameter, so Claude-originated MCP
+traffic does not appear under `app.utm_source:plugin`. Cursor, Codex, and Grok all
+include `?utm_source=plugin` in their distributed MCP configs and are fully attributed.
 
 ## Where To Query
 
@@ -172,27 +173,27 @@ sort=timestamp
 
 ### MCP Plugin Attribution
 
-Plugin users are driving MCP traffic through Cursor, Codex, or Grok's distributed
-MCP config, which sets `utm_source=plugin` on every request. The MCP server captures
-this as `app.utm_source:plugin` on spans.
+Plugin users are driving MCP traffic through Cursor, Codex, or Grok’s distributed MCP
+config, which sets `utm_source=plugin` on every request.
+The MCP server captures this as `app.utm_source:plugin` on spans.
 
-Use for: adoption volume, tool popularity, client family distribution, error rates,
-and latency for plugin-originated traffic vs the broader MCP baseline.
+Use for: adoption volume, tool popularity, client family distribution, error rates, and
+latency for plugin-originated traffic vs the broader MCP baseline.
 
-Attributes: `app.utm_source`, `app.client.family`, `user_agent.original`,
-`http.route`, `http.response.status_code`, `trace_id`, `span_id`
+Attributes: `app.utm_source`, `app.client.family`, `user_agent.original`, `http.route`,
+`http.response.status_code`, `trace_id`, `span_id`
 
 **Attribution note:** Only Cursor, Codex, and Grok plugin installs carry
-`?utm_source=plugin`. Claude plugin installs do not; that traffic is not
-separable from other MCP clients in this pivot.
+`?utm_source=plugin`. Claude plugin installs do not; that traffic is not separable from
+other MCP clients in this pivot.
 
 ### MCP Tool Execution
 
-When a plugin user runs a workflow skill (like `sentry-fix-issues`), the agent
-calls Sentry MCP tools. These appear on the MCP server as tool spans.
+When a plugin user runs a workflow skill (like `sentry-fix-issues`), the agent calls
+Sentry MCP tools. These appear on the MCP server as tool spans.
 
-Use for: which tools plugin users invoke, failed tool calls, slow Sentry API
-operations, tool result counts.
+Use for: which tools plugin users invoke, failed tool calls, slow Sentry API operations,
+tool result counts.
 
 Spans: tool call spans and downstream Sentry API spans
 
@@ -201,24 +202,26 @@ Attributes: `gen_ai.tool.name`, `mcp.tool.name`, `mcp.session.id`, `user.id`,
 
 ### Installer CLI
 
-The `npx @sentry/ai install` CLI reports to `sentry/sentry-for-ai-installer`.
-Currently only default `@sentry/node` auto-instrumentation is active.
+The `npx @sentry/ai install` CLI reports to `sentry/sentry-for-ai-installer`. Currently
+only default `@sentry/node` auto-instrumentation is active.
 
 Use for: diagnosing installer crashes and unhandled errors.
 
-**Not available:** per-harness detection, install results, agent selection,
-install success counts. Add custom spans/events to `packages/installer/src/`
-if those signals are needed.
+**Not available:** per-harness detection, install results, agent selection, install
+success counts.
+Add custom spans/events to `packages/installer/src/` if those signals are
+needed.
 
-Attributes (standard SDK only): `event_id`, `trace_id`, `transaction`,
-`release`, `environment`, `error.type`, `exception.message`
+Attributes (standard SDK only): `event_id`, `trace_id`, `transaction`, `release`,
+`environment`, `error.type`, `exception.message`
 
 ### Static Plugin Content
 
-Skills (`src/skills/`) and plugin manifests are static
-content — they are not directly instrumented. Their usage is only observable
-indirectly when they trigger Sentry MCP tool calls (captured under MCP Tool
-Execution above) or when the installer fails while deploying them.
+Skills (`src/skills/`) and plugin manifests are static content — they are not directly
+instrumented.
+Their usage is only observable indirectly when they trigger Sentry MCP tool
+calls (captured under MCP Tool Execution above) or when the installer fails while
+deploying them.
 
 ## Configuration
 
@@ -251,20 +254,20 @@ Sentry.init({
 
 - `app.utm_source` comes from the MCP server sanitizing the `utm_source` query parameter
   on the MCP endpoint URL. It is not set by sentry-for-ai directly.
-- `app.utm_source:plugin` measures MCP usage from plugin-attributed configs, not
-  install counts. A user who installs the plugin but never runs an MCP tool call will
-  not appear here.
+- `app.utm_source:plugin` measures MCP usage from plugin-attributed configs, not install
+  counts. A user who installs the plugin but never runs an MCP tool call will not appear
+  here.
 - Users can manually copy the plugin MCP URL (including `?utm_source=plugin`) into their
-  config, so attribution means "used plugin-attributed URL," not guaranteed installer
+  config, so attribution means “used plugin-attributed URL,” not guaranteed installer
   provenance.
-- Skill file reads and command invocations are not counted. Only downstream MCP tool
-  calls made by the AI agent are observable.
+- Skill file reads and command invocations are not counted.
+  Only downstream MCP tool calls made by the AI agent are observable.
 - `app.client.family` is inferred by the MCP server from the User-Agent header; it is
   not set by sentry-for-ai.
-- `gen_ai.tool.name` and `mcp.tool.name` both identify the MCP tool. Use `mcp.tool.name`
-  when pivoting on renamed tools.
-- Keep metric attributes low-cardinality. Avoid raw URLs, tokens, prompts, or full
-  request bodies in filters or group-bys.
+- `gen_ai.tool.name` and `mcp.tool.name` both identify the MCP tool.
+  Use `mcp.tool.name` when pivoting on renamed tools.
+- Keep metric attributes low-cardinality.
+  Avoid raw URLs, tokens, prompts, or full request bodies in filters or group-bys.
 
 ## References
 

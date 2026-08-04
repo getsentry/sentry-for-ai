@@ -15,7 +15,7 @@ sentry.Init(sentry.ClientOptions{
 Key tracing fields in `ClientOptions`:
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `EnableTracing` | `bool` | `false` | Must be `true` to enable tracing |
 | `TracesSampleRate` | `float64` | `0.0` | Uniform sample rate [0.0–1.0] |
 | `TracesSampler` | `TracesSampler` | `nil` | Custom per-transaction sampling; overrides `TracesSampleRate` |
@@ -29,7 +29,8 @@ Key tracing fields in `ClientOptions`:
 
 ### Custom sampler
 
-Use `TracesSampler` instead of `TracesSampleRate` for per-transaction control. Setting both — sampler wins.
+Use `TracesSampler` instead of `TracesSampleRate` for per-transaction control.
+Setting both — sampler wins.
 
 ```go
 sentry.Init(sentry.ClientOptions{
@@ -150,10 +151,11 @@ span.SetData("result_count", 47)
 
 ## Framework Middleware
 
-All framework middlewares automatically start a root transaction per request and continue incoming distributed traces.
+All framework middlewares automatically start a root transaction per request and
+continue incoming distributed traces.
 
 | Framework | Import | Middleware call | Transaction source |
-|-----------|--------|----------------|-------------------|
+| --- | --- | --- | --- |
 | `net/http` | `sentry-go/http` | `sentryhttp.New(opts).Handle(mux)` | `SourceURL` |
 | Gin | `sentry-go/gin` | `router.Use(sentrygin.New(opts))` | `SourceRoute` |
 | Echo | `sentry-go/echo` | `e.Use(sentryecho.New(opts))` | `SourceRoute` |
@@ -198,7 +200,7 @@ router.GET("/users/:id", func(c *gin.Context) {
 Sentry propagates two headers:
 
 | Header | Constant | Purpose |
-|--------|----------|---------|
+| --- | --- | --- |
 | `sentry-trace` | `sentry.SentryTraceHeader` | Links spans across services |
 | `baggage` | `sentry.SentryBaggageHeader` | Dynamic Sampling Context |
 
@@ -236,11 +238,13 @@ hub.GetTraceparentW3C() // W3C format: "00-traceID-spanID-01"
 hub.GetBaggage()        // "sentry-trace_id=...,sentry-environment=production,..."
 ```
 
-Both `sentry-trace` AND `baggage` headers must be propagated for correct Dynamic Sampling Context.
+Both `sentry-trace` AND `baggage` headers must be propagated for correct Dynamic
+Sampling Context.
 
 ### OpenTelemetry bridge
 
-For projects already using OpenTelemetry, forward OTel spans to Sentry without changing instrumentation:
+For projects already using OpenTelemetry, forward OTel spans to Sentry without changing
+instrumentation:
 
 ```go
 import (
@@ -267,7 +271,8 @@ otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
 ))
 ```
 
-When using OTel, pass the OTel context explicitly when capturing errors — global `sentry.CaptureException` does not auto-link:
+When using OTel, pass the OTel context explicitly when capturing errors — global
+`sentry.CaptureException` does not auto-link:
 
 ```go
 hub := sentry.CurrentHub()
@@ -293,22 +298,23 @@ sentry.ContinueTrace(hub, traceparent, baggage)  // hub-aware form
 
 ## TransactionSource Constants
 
-| Constant | Value | Use when... |
-|----------|-------|-------------|
+| Constant | Value | Use when … |
+| --- | --- | --- |
 | `SourceURL` | `"url"` | Raw URL path (low-cardinality risk) |
 | `SourceRoute` | `"route"` | Parameterised template, e.g. `/users/:id` — **preferred** |
 | `SourceView` | `"view"` | View/controller name |
 | `SourceCustom` | `"custom"` | Manually set name |
 | `SourceTask` | `"task"` | Background task name |
 
-Use `SourceRoute` with parameterised paths to prevent high-cardinality grouping in Sentry's Performance UI.
+Use `SourceRoute` with parameterised paths to prevent high-cardinality grouping in
+Sentry’s Performance UI.
 
 ## SpanStatus Constants
 
 Set directly: `span.Status = sentry.SpanStatusOK`
 
 | Constant | When to use |
-|----------|-------------|
+| --- | --- |
 | `SpanStatusOK` | Success |
 | `SpanStatusInternalError` | Unhandled server error |
 | `SpanStatusNotFound` | Resource not found |
@@ -322,7 +328,7 @@ Or derive from HTTP response: `span.Status = sentry.HTTPtoSpanStatus(resp.Status
 ## Common Span Op Values
 
 | Op | Usage |
-|----|-------|
+| --- | --- |
 | `http.server` | Incoming HTTP requests |
 | `http.client` | Outgoing HTTP calls |
 | `db.query` | SQL SELECT/INSERT/UPDATE/DELETE |
@@ -336,21 +342,24 @@ Or derive from HTTP response: `span.Status = sentry.HTTPtoSpanStatus(resp.Status
 ## Best Practices
 
 - Set `EnableTracing: true` explicitly — it defaults to `false`
-- Use `TracesSampler` (not `TracesSampleRate`) for any environment-specific or route-specific sampling logic
+- Use `TracesSampler` (not `TracesSampleRate`) for any environment-specific or
+  route-specific sampling logic
 - Always `defer span.Finish()` — unfinished spans are silently dropped
-- Use `SourceRoute` with parameterised route templates to avoid high-cardinality transaction names
+- Use `SourceRoute` with parameterised route templates to avoid high-cardinality
+  transaction names
 - Use `ContinueFromRequest(r)` in every HTTP handler to preserve distributed traces
 - Propagate both `sentry-trace` AND `baggage` headers on outgoing requests
-- Don't set `MaxSpans` below the number of expected child spans in your largest transactions
+- Don’t set `MaxSpans` below the number of expected child spans in your largest
+  transactions
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No transactions appearing | Ensure `EnableTracing: true` and `TracesSampleRate > 0` |
 | Spans missing from transaction | Ensure `defer span.Finish()` is called on every span |
 | High-cardinality transaction names | Use `WithTransactionSource(SourceRoute)` with parameterised route templates |
 | Distributed trace not linked | Propagate both `sentry-trace` and `baggage` headers; use `ContinueFromRequest` |
 | Health checks polluting data | Use `TracesSampler` to return `0.0` for health endpoints |
 | Too many spans | Lower `MaxSpans`; coalesce high-frequency child spans (e.g., N+1 DB calls) |
-| OTel errors not linked to trace | Pass OTel `ctx` via `EventHint.Context`; don't use global `sentry.CaptureException` |
+| OTel errors not linked to trace | Pass OTel `ctx` via `EventHint.Context`; don’t use global `sentry.CaptureException` |

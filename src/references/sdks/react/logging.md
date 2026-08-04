@@ -1,12 +1,12 @@
 # Logging — Sentry React SDK
 
-> Minimum SDK: `@sentry/react` ≥9.41.0+ for `Sentry.logger` API and `enableLogs`  
-> `consoleLoggingIntegration()`: requires ≥10.13.0+  
+> Minimum SDK: `@sentry/react` ≥9.41.0+ for `Sentry.logger` API and `enableLogs`\
+> `consoleLoggingIntegration()`: requires ≥10.13.0+\
 > Scope-based attributes (`getGlobalScope`, `getIsolationScope`): requires ≥10.32.0+
 
 > ⚠️ **Not available via CDN/loader snippet** — NPM install required.
 
----
+* * *
 
 ## Enabling Logs
 
@@ -21,9 +21,10 @@ Sentry.init({
 });
 ```
 
-Without `enableLogs: true`, all `Sentry.logger.*` calls are silently no-ops and nothing is sent to Sentry.
+Without `enableLogs: true`, all `Sentry.logger.*` calls are silently no-ops and nothing
+is sent to Sentry.
 
----
+* * *
 
 ## Logger API — Six Levels
 
@@ -39,7 +40,7 @@ Sentry.logger.fatal("Database unavailable", { host: "db-primary" });
 ```
 
 | Level | Method | Typical Use |
-|-------|--------|-------------|
+| --- | --- | --- |
 | `trace` | `Sentry.logger.trace()` | Ultra-granular function entry/exit; high-volume — filter aggressively in production |
 | `debug` | `Sentry.logger.debug()` | Development diagnostics, cache hits/misses, local state changes |
 | `info` | `Sentry.logger.info()` | Normal business milestones, confirmations |
@@ -47,13 +48,15 @@ Sentry.logger.fatal("Database unavailable", { host: "db-primary" });
 | `error` | `Sentry.logger.error()` | Failures requiring attention |
 | `fatal` | `Sentry.logger.fatal()` | Critical failures, system unavailable |
 
-**Attribute value types:** `string`, `number`, `boolean` only — `undefined`, arrays, and objects are not accepted.
+**Attribute value types:** `string`, `number`, `boolean` only — `undefined`, arrays, and
+objects are not accepted.
 
----
+* * *
 
 ## Parameterized Messages — `Sentry.logger.fmt`
 
-The `fmt` tagged template literal binds each interpolated variable as a **structured, searchable attribute** in Sentry:
+The `fmt` tagged template literal binds each interpolated variable as a **structured,
+searchable attribute** in Sentry:
 
 ```typescript
 const userId = "user_123";
@@ -73,22 +76,26 @@ message.parameter.1:  "Widget Pro"
 message.parameter.2:  49.99
 ```
 
-Each parameter is independently searchable in Sentry's log explorer. You can filter by `message.parameter.0 = "user_123"` without matching the full message string.
+Each parameter is independently searchable in Sentry’s log explorer.
+You can filter by `message.parameter.0 = "user_123"` without matching the full message
+string.
 
-> ⚠️ `logger.fmt` must be used as a **tagged template literal** — not as a function call. `Sentry.logger.fmt("text")` will not produce structured parameters.
+> ⚠️ `logger.fmt` must be used as a **tagged template literal** — not as a function
+> call. `Sentry.logger.fmt("text")` will not produce structured parameters.
 
 ### When to use `fmt` vs plain attributes
 
 | Approach | Use when |
-|----------|----------|
+| --- | --- |
 | `Sentry.logger.info(msg, { key: val })` | Variables are logically distinct attributes with names |
-| `Sentry.logger.info(Sentry.logger.fmt\`...\`)` | Variables are part of a human-readable sentence |
+| `Sentry.logger.info` with a `Sentry.logger.fmt` tagged template | Variables are part of a human-readable sentence |
 
----
+* * *
 
 ## Console Capture — `consoleLoggingIntegration`
 
-Automatically forwards `console.*` calls to Sentry as structured logs. Requires SDK ≥10.13.0.
+Automatically forwards `console.*` calls to Sentry as structured logs.
+Requires SDK ≥10.13.0.
 
 ```typescript
 Sentry.init({
@@ -117,7 +124,7 @@ console.log("Text", 123, true)
 ### Capturable console levels
 
 | Console method | Sentry log level |
-|----------------|-----------------|
+| --- | --- |
 | `console.log` | `info` |
 | `console.info` | `info` |
 | `console.warn` | `warn` |
@@ -127,11 +134,12 @@ console.log("Text", 123, true)
 
 Configure `levels` to include only the methods you want forwarded.
 
----
+* * *
 
 ## Log Filtering — `beforeSendLog`
 
-Use `beforeSendLog` to drop, modify, or scrub logs before they leave the client. Return `null` to discard:
+Use `beforeSendLog` to drop, modify, or scrub logs before they leave the client.
+Return `null` to discard:
 
 ```typescript
 Sentry.init({
@@ -164,13 +172,13 @@ Sentry.init({
 ### The `log` object shape
 
 | Field | Type | Description |
-|-------|------|-------------|
+| --- | --- | --- |
 | `level` | `string` | `"trace"` \| `"debug"` \| `"info"` \| `"warn"` \| `"error"` \| `"fatal"` |
 | `message` | `string` | The log message text |
 | `timestamp` | `number` | Unix timestamp |
 | `attributes` | `object` | Key/value pairs attached to this log |
 
----
+* * *
 
 ## Structured Attributes
 
@@ -188,9 +196,11 @@ Sentry.logger.info("Checkout completed", {
 });
 ```
 
-Attributes become **searchable and filterable** in Sentry's log explorer. Prefer one comprehensive log with all relevant context over many small scattered logs ("wide events").
+Attributes become **searchable and filterable** in Sentry’s log explorer.
+Prefer one comprehensive log with all relevant context over many small scattered logs
+("wide events").
 
----
+* * *
 
 ## Scope-Based Automatic Attributes (SDK ≥10.32.0)
 
@@ -229,16 +239,17 @@ Sentry.withScope((scope) => {
 });
 ```
 
-**Constraint:** Scope attributes accept only `string`, `number`, and `boolean` values — no arrays or objects.
+**Constraint:** Scope attributes accept only `string`, `number`, and `boolean` values —
+no arrays or objects.
 
----
+* * *
 
 ## Auto-Generated Attributes
 
 These are added by the SDK to every log without any developer configuration:
 
 | Attribute | Source | Notes |
-|-----------|--------|-------|
+| --- | --- | --- |
 | `sentry.environment` | `environment` in `Sentry.init()` | — |
 | `sentry.release` | `release` in `Sentry.init()` | — |
 | `sentry.sdk.name` | SDK internals | e.g., `"sentry.javascript.react"` |
@@ -251,11 +262,12 @@ These are added by the SDK to every log without any developer configuration:
 | `message.template` | `logger.fmt` usage | The template string |
 | `message.parameter.N` | `logger.fmt` usage | Each interpolated value |
 
----
+* * *
 
 ## Log-to-Trace Correlation
 
-When tracing is enabled alongside logging, logs are **automatically linked** to the active span:
+When tracing is enabled alongside logging, logs are **automatically linked** to the
+active span:
 
 ```typescript
 Sentry.init({
@@ -277,10 +289,10 @@ await Sentry.startSpan({ name: "checkout-flow", op: "ui.action" }, async () => {
 
 In the Sentry UI:
 - **From a log** → click the trace link to jump to the parent span and full trace
-- **From a trace span** → click "Logs" to see all logs emitted during that span
+- **From a trace span** → click “Logs” to see all logs emitted during that span
 - **From a replay** → logs are shown inline with the user session recording
 
----
+* * *
 
 ## React-Specific Best Practice: Wide Events
 
@@ -305,26 +317,27 @@ Sentry.logger.info("Cart total calculated", { cartValue: cart.total });
 Sentry.logger.info("Checkout done");
 ```
 
----
+* * *
 
 ## When to Use Each API
 
 | Scenario | Recommended API |
-|----------|----------------|
+| --- | --- |
 | Business event with structured data | `Sentry.logger.info(msg, { ...attrs })` |
-| Message with embedded variables | `Sentry.logger.info(Sentry.logger.fmt\`...\`)` |
+| Message with embedded variables | `Sentry.logger.info` with a `Sentry.logger.fmt` tagged template |
 | Capture an unexpected exception | `Sentry.captureException(err)` |
 | Send an informational string event | `Sentry.captureMessage(msg, "info")` |
 | Auto-capture existing `console.*` calls | `consoleLoggingIntegration({ levels: [...] })` |
 
-Use `Sentry.logger.*` for **structured, searchable observability data**. Use `captureException` for actual errors that need issue grouping and stack traces.
+Use `Sentry.logger.*` for **structured, searchable observability data**. Use
+`captureException` for actual errors that need issue grouping and stack traces.
 
----
+* * *
 
 ## Log Level Guide
 
 | Level | When to use | Production volume |
-|-------|-------------|-----------------|
+| --- | --- | --- |
 | `trace` | Function entry/exit, loop iterations | Filter out in production |
 | `debug` | Variable values, code paths taken | Filter out in production |
 | `info` | User actions, business milestones, API calls | Keep — low/medium volume |
@@ -332,14 +345,14 @@ Use `Sentry.logger.*` for **structured, searchable observability data**. Use `ca
 | `error` | Failures that need investigation | Keep — should be rare |
 | `fatal` | System-down, unrecoverable state | Keep — should be very rare |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not appearing in Sentry | Verify `enableLogs: true` is in `Sentry.init()`; requires SDK ≥9.41.0 |
-| `logger.fmt` not creating `message.parameter.*` | Use as tagged template: `Sentry.logger.fmt\`text ${var}\`` — not `Sentry.logger.fmt("text", var)` |
+| `logger.fmt` not creating `message.parameter.*` | Use it as a tagged template literal — not as the function call `Sentry.logger.fmt("text", var)` |
 | Logs not linked to traces | Ensure `browserTracingIntegration()` is added and `tracesSampleRate` > 0; logs must be emitted inside an active span |
 | `consoleLoggingIntegration` not available | Upgrade to `@sentry/react` ≥10.13.0 |
 | Scope attributes not appearing on logs | Upgrade to `@sentry/react` ≥10.32.0 for `getGlobalScope`/`getIsolationScope` APIs |

@@ -1,19 +1,22 @@
 # Logging — Sentry Android SDK
 
-> **Minimum SDK:** `io.sentry:sentry-android:8.12.0`  
-> **Status:** Stable  
-> **Enabled by default:** No — must opt in explicitly  
+> **Minimum SDK:** `io.sentry:sentry-android:8.12.0`\
+> **Status:** Stable\
+> **Enabled by default:** No — must opt in explicitly\
 > **Docs:** https://docs.sentry.io/platforms/android/logs/
 
----
+* * *
 
 ## Overview
 
-Sentry Structured Logs capture application log events as searchable, filterable records in the Sentry Logs UI. Unlike breadcrumbs (which are attached to errors), structured logs are standalone events with typed attributes and are queryable independently.
+Sentry Structured Logs capture application log events as searchable, filterable records
+in the Sentry Logs UI. Unlike breadcrumbs (which are attached to errors), structured
+logs are standalone events with typed attributes and are queryable independently.
 
-Logging is **opt-in** — the feature is entirely inert until `options.logs.isEnabled = true` is set.
+Logging is **opt-in** — the feature is entirely inert until
+`options.logs.isEnabled = true` is set.
 
----
+* * *
 
 ## Enabling Logs
 
@@ -36,7 +39,7 @@ SentryAndroid.init(this) { options ->
 </application>
 ```
 
----
+* * *
 
 ## Configuration
 
@@ -63,11 +66,11 @@ SentryAndroid.init(this) { options ->
 ### Configuration Reference
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `logs.isEnabled` | `Boolean` | `false` | Master switch — must be `true` for all logging features |
 | `logs.setBeforeSend` | `BeforeSendLogCallback?` | `null` | Filter or mutate log events before transmission. Return `null` to drop. |
 
----
+* * *
 
 ## Code Examples
 
@@ -216,11 +219,12 @@ suspend fun fetchUserProfile(userId: String): UserProfile {
 }
 ```
 
----
+* * *
 
 ## Timber Integration
 
-`SentryTimberIntegration` bridges Timber logs into the Sentry Logs pipeline. Requires `sentry-android-timber`.
+`SentryTimberIntegration` bridges Timber logs into the Sentry Logs pipeline.
+Requires `sentry-android-timber`.
 
 **Dependency:**
 
@@ -250,7 +254,7 @@ if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
 **Timber priority → SentryLogLevel mapping:**
 
 | Timber Priority | `SentryLogLevel` |
-|-----------------|-----------------|
+| --- | --- |
 | `Log.VERBOSE` | `TRACE` |
 | `Log.DEBUG` | `DEBUG` |
 | `Log.INFO` | `INFO` |
@@ -258,13 +262,16 @@ if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
 | `Log.ERROR` | `ERROR` |
 | `Log.ASSERT` | `FATAL` |
 
-Each Timber-sourced log carries `sentry.origin = "auto.log.timber"` for filtering in `beforeSend`.
+Each Timber-sourced log carries `sentry.origin = "auto.log.timber"` for filtering in
+`beforeSend`.
 
----
+* * *
 
 ## Logcat Auto-Integration (Gradle Plugin)
 
-With the Sentry Android Gradle plugin, `android.util.Log` calls are bytecode-instrumented at build time and forwarded to Sentry Logs automatically — **no source code changes needed**:
+With the Sentry Android Gradle plugin, `android.util.Log` calls are
+bytecode-instrumented at build time and forwarded to Sentry Logs automatically — **no
+source code changes needed**:
 
 ```groovy
 // android/build.gradle (module)
@@ -276,38 +283,39 @@ sentry {
 }
 ```
 
-Without the plugin, only manual `Sentry.logger()` calls and the Timber integration capture logs.
+Without the plugin, only manual `Sentry.logger()` calls and the Timber integration
+capture logs.
 
----
+* * *
 
 ## Auto-Attached Attributes
 
 The SDK automatically enriches every log event with the following attributes:
 
 | Attribute Key | Value | Notes |
-|---------------|-------|-------|
+| --- | --- | --- |
 | `sentry.origin` | `"manual"` / `"auto.log.timber"` / `"auto.log.logcat"` | Per integration |
 | `sentry.message.template` | Original format string | e.g. `"User %s logged in"` |
-| `sentry.message.parameter.0` … `.N` | Format argument values | |
-| `sentry.sdk.name` | `"sentry.java.android"` | |
-| `sentry.sdk.version` | `"8.33.0"` | |
-| `sentry.environment` | Configured environment | |
-| `sentry.release` | Configured release string | |
+| `sentry.message.parameter.0` … `.N` | Format argument values |  |
+| `sentry.sdk.name` | `"sentry.java.android"` |  |
+| `sentry.sdk.version` | `"8.33.0"` |  |
+| `sentry.environment` | Configured environment |  |
+| `sentry.release` | Configured release string |  |
 | `sentry.replay_id` | Active replay session UUID | Only when Session Replay is recording |
 | `sentry._internal.replay_is_buffering` | `"true"` | Only in `onErrorSampleRate` buffer mode |
 | `user.id` | From `scope.user.id` | Added regardless of `sendDefaultPii` since 8.33.0 |
-| `user.name` | From `scope.user.username` | |
-| `user.email` | From `scope.user.email` | |
+| `user.name` | From `scope.user.username` |  |
+| `user.email` | From `scope.user.email` |  |
 
-> **8.33.0 change:** `user.id`, `user.name`, `user.email` now attach to logs regardless of
-> `sendDefaultPii`. Use `beforeSend` to suppress PII if needed.
+> **8.33.0 change:** `user.id`, `user.name`, `user.email` now attach to logs regardless
+> of `sendDefaultPii`. Use `beforeSend` to suppress PII if needed.
 
----
+* * *
 
 ## Log Levels Reference
 
 | Level | `SentryLogLevel` constant | OTel Severity | When to Use |
-|-------|--------------------------|---------------|-------------|
+| --- | --- | --- | --- |
 | `trace` | `TRACE` (1) | 1 | Step-by-step internals, loop iterations |
 | `debug` | `DEBUG` (5) | 5 | Development diagnostics |
 | `info` | `INFO` (9) | 9 | Business events, user actions, state transitions |
@@ -315,38 +323,46 @@ The SDK automatically enriches every log event with the following attributes:
 | `error` | `ERROR` (17) | 17 | Failures requiring investigation |
 | `fatal` | `FATAL` (21) | 21 | Unrecoverable failures — app or subsystem down |
 
----
+* * *
 
 ## Batch Processing
 
 The SDK batches log events for efficiency:
 
 | Parameter | Value |
-|-----------|-------|
+| --- | --- |
 | Flush delay | 5 seconds after the first queued event |
 | Max batch size | 100 events per HTTP envelope |
 | Max queue size | 1,000 events (events silently dropped above this) |
 | Background flush | Yes — `AndroidLoggerBatchProcessor` flushes when app goes to background |
 
----
+* * *
 
 ## Best Practices
 
-1. **Enable in `Application.onCreate()`** — set `options.logs.isEnabled = true` before any log calls
-2. **Use structured attributes** — pass typed key-value pairs instead of embedding values in message strings; they become queryable columns in the Logs UI
-3. **Use `beforeSend` for level filtering** — drop `TRACE`/`DEBUG` in production to reduce quota usage
-4. **Redact PII in `beforeSend`** — since 8.33.0 user attributes attach regardless of `sendDefaultPii`
-5. **Prefer `Sentry.logger()` over Timber for new code** — direct API provides full type safety for attributes
-6. **Plant Timber separately** — `SentryTimberIntegration` does not call `Timber.plant()`; you must do it yourself
-7. **Don't call `Sentry.logger()` before `SentryAndroid.init()`** — calls before init are silently dropped
-8. **Keep queue headroom** — avoid bursts that exceed 1,000 queued events; excess is silently dropped
+1. **Enable in `Application.onCreate()`** — set `options.logs.isEnabled = true` before
+   any log calls
+2. **Use structured attributes** — pass typed key-value pairs instead of embedding
+   values in message strings; they become queryable columns in the Logs UI
+3. **Use `beforeSend` for level filtering** — drop `TRACE`/`DEBUG` in production to
+   reduce quota usage
+4. **Redact PII in `beforeSend`** — since 8.33.0 user attributes attach regardless of
+   `sendDefaultPii`
+5. **Prefer `Sentry.logger()` over Timber for new code** — direct API provides full type
+   safety for attributes
+6. **Plant Timber separately** — `SentryTimberIntegration` does not call
+   `Timber.plant()`; you must do it yourself
+7. **Don’t call `Sentry.logger()` before `SentryAndroid.init()`** — calls before init
+   are silently dropped
+8. **Keep queue headroom** — avoid bursts that exceed 1,000 queued events; excess is
+   silently dropped
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not appearing in Sentry | Verify `options.logs.isEnabled = true` is set in `SentryAndroid.init()` — the feature is disabled by default |
 | Logs appearing but missing attributes | Ensure you pass a `SentryLogParameters` with `SentryAttributes.of(...)` — plain format args are not queryable as attributes |
 | Timber logs not forwarded | Add `SentryTimberIntegration` to `options.addIntegration()` and plant a `Timber.DebugTree()` separately |

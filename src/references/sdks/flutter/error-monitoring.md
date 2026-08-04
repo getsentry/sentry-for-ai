@@ -1,33 +1,35 @@
 # Error Monitoring — Flutter SDK Reference
 
-> **Minimum SDK version:** `sentry_flutter` ≥ 7.0.0 (all features), ≥ 9.14.0 (tombstone, trace sync)
-> **Platforms:** All (Android, iOS, macOS, Linux, Windows, Web — platform-specific caveats noted)
+> **Minimum SDK version:** `sentry_flutter` ≥ 7.0.0 (all features), ≥ 9.14.0 (tombstone,
+> trace sync) **Platforms:** All (Android, iOS, macOS, Linux, Windows, Web —
+> platform-specific caveats noted)
 
-## What's Auto-Captured
+## What’s Auto-Captured
 
 When `SentryFlutter.init()` runs, the SDK installs these handlers automatically:
 
 | Handler | Captures | Platforms |
-|---------|----------|-----------|
+| --- | --- | --- |
 | `FlutterError.onError` | Widget build errors, rendering errors, gesture errors | All |
 | `PlatformDispatcher.instance.onError` | Uncaught Dart async errors (root zone) | All (Flutter ≥ 3.3) |
 | Android SDK (bundled) | Java/Kotlin JVM exceptions, NDK native crashes | Android |
 | iOS/macOS SDK (bundled) | ObjC `NSException`, Swift errors, POSIX signals, Mach exceptions | iOS, macOS |
 | `WidgetsBindingObserver` | App lifecycle breadcrumbs | Linux, Windows, Web (no native SDK) |
 
-Silent framework errors (`FlutterErrorDetails.silent == true`) are excluded unless you opt in:
+Silent framework errors (`FlutterErrorDetails.silent == true`) are excluded unless you
+opt in:
 
 ```dart
 options.reportSilentFlutterErrors = true;
 ```
 
----
+* * *
 
 ## Manual Capture APIs
 
 ### Capture Exception
 
-Always pass `stackTrace` — without it Sentry can't show the correct call stack:
+Always pass `stackTrace` — without it Sentry can’t show the correct call stack:
 
 ```dart
 import 'package:sentry/sentry.dart';
@@ -39,7 +41,7 @@ try {
 }
 ```
 
-With a one-off local scope (doesn't affect subsequent events):
+With a one-off local scope (doesn’t affect subsequent events):
 
 ```dart
 await Sentry.captureException(
@@ -81,7 +83,7 @@ await Sentry.captureFeedback(
 );
 ```
 
----
+* * *
 
 ## Scope — Enrich All Events
 
@@ -121,12 +123,13 @@ Sentry.removeAttribute('user_tier');
 
 ### Scope Sync to Native (Android/iOS)
 
-When `options.enableScopeSync = true` (default), these methods sync to the native SDK layer so native crash reports include your Dart context:
+When `options.enableScopeSync = true` (default), these methods sync to the native SDK
+layer so native crash reports include your Dart context:
 
 - `scope.setUser()` / `scope.setContexts()` / `scope.setTag()` / `scope.setExtra()`
 - `scope.addBreadcrumb()` / `scope.clearBreadcrumbs()`
 
----
+* * *
 
 ## Breadcrumbs
 
@@ -166,11 +169,11 @@ Increase capacity if needed (default: 100):
 options.maxBreadcrumbs = 150;
 ```
 
----
+* * *
 
 ## Event Filtering
 
-Drop or modify events before they're sent:
+Drop or modify events before they’re sent:
 
 ```dart
 options.beforeSend = (event, hint) async {
@@ -188,7 +191,8 @@ options.beforeSend = (event, hint) async {
 };
 ```
 
-> ⚠️ `beforeSend` intercepts **Dart-layer events only**. Native crashes from Android NDK or iOS bypass it.
+> ⚠️ `beforeSend` intercepts **Dart-layer events only**. Native crashes from Android NDK
+> or iOS bypass it.
 
 Error sampling (drop a fraction of errors — not recommended unless volume is very high):
 
@@ -196,11 +200,12 @@ Error sampling (drop a fraction of errors — not recommended unless volume is v
 options.sampleRate = 0.5; // send only 50% of errors
 ```
 
----
+* * *
 
 ## Isolate Error Capture
 
-Errors in non-root Dart isolates aren't automatically captured. Forward them explicitly:
+Errors in non-root Dart isolates aren’t automatically captured.
+Forward them explicitly:
 
 ```dart
 import 'dart:isolate';
@@ -212,7 +217,7 @@ isolate.addSentryErrorListener(); // forwards uncaught errors to Sentry
 
 > ⚠️ Isolate errors are NOT captured on Web (no Isolate API in browser).
 
----
+* * *
 
 ## Attachments
 
@@ -224,7 +229,8 @@ options.screenshotQuality = ScreenshotQuality.high; // full/high/medium/low
 options.attachViewHierarchy = true;       // JSON widget tree snapshot
 ```
 
-Requires `SentryWidget(child: MyApp())` as the app root. Not available on Web.
+Requires `SentryWidget(child: MyApp())` as the app root.
+Not available on Web.
 
 Attach files manually via scope:
 
@@ -235,7 +241,7 @@ final attachment = IoSentryAttachment.fromPath('/path/to/debug.log');
 Sentry.configureScope((scope) => scope.addAttachment(attachment));
 ```
 
----
+* * *
 
 ## Android Native Crash Options
 
@@ -254,7 +260,7 @@ options.anrEnabled = true;             // default: true
 options.anrTimeoutInterval = 5000;     // ms; increase if too many false positives
 ```
 
----
+* * *
 
 ## iOS/macOS Native Crash Options
 
@@ -266,11 +272,12 @@ options.enableWatchdogTerminationTracking = true; // default: true
 options.captureNativeFailedRequests = true;
 ```
 
----
+* * *
 
 ## Release Health
 
-Session tracking is on by default — gives you crash-free user and session metrics in the Sentry dashboard:
+Session tracking is on by default — gives you crash-free user and session metrics in the
+Sentry dashboard:
 
 ```dart
 // Disable if not needed
@@ -280,18 +287,19 @@ options.enableAutoSessionTracking = false;
 options.autoSessionTrackingInterval = const Duration(seconds: 60); // default: 30s
 ```
 
-Release is auto-set on iOS/Android as `"packageName@versionName+versionCode"`. Override if needed:
+Release is auto-set on iOS/Android as `"packageName@versionName+versionCode"`. Override
+if needed:
 
 ```dart
 options.release = 'my-app@2.1.0+105';
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing in Sentry | Set `options.debug = true`, check Flutter console for SDK errors; verify DSN |
 | Stack traces unreadable | Build with `--obfuscate --split-debug-info` and upload with `sentry_dart_plugin` |
 | Native crashes not captured | Confirm `enableNativeCrashHandling: true`; test in release mode (not debug) |

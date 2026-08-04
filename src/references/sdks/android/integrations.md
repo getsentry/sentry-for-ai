@@ -5,7 +5,7 @@
 These integrations activate automatically when `SentryAndroid.init()` is called:
 
 | Integration | What it does |
-|-------------|-------------|
+| --- | --- |
 | `UncaughtExceptionHandlerIntegration` | Captures all uncaught Java/Kotlin exceptions |
 | `AnrIntegration` | ANR detection via watchdog thread (5s) + ApplicationExitInfo (API 30+) |
 | `NdkIntegration` | Native (C/C++) crash capture via `sentry-native` |
@@ -22,7 +22,7 @@ These integrations activate automatically when `SentryAndroid.init()` is called:
 Add the artifact to your `dependencies {}` block (versions managed by BOM):
 
 | Integration | Artifact | When to add |
-|-------------|---------|-------------|
+| --- | --- | --- |
 | **Timber** | `io.sentry:sentry-android-timber` | App uses Timber for logging |
 | **Fragment** | `io.sentry:sentry-android-fragment` | App uses Jetpack Fragments (lifecycle tracing) |
 | **Compose** | `io.sentry:sentry-compose-android` | App uses Jetpack Compose (navigation + masking) |
@@ -40,7 +40,7 @@ Add the artifact to your `dependencies {}` block (versions managed by BOM):
 The plugin can inject instrumentation automatically (no source changes):
 
 | Feature | Instruments | Enable via |
-|---------|-------------|-----------|
+| --- | --- | --- |
 | `DATABASE` | Room DAO, SupportSQLiteOpenHelper | `tracingInstrumentation.features` |
 | `FILE_IO` | FileInputStream, FileOutputStream | `tracingInstrumentation.features` |
 | `OKHTTP` | OkHttpClient.Builder automatically | `tracingInstrumentation.features` |

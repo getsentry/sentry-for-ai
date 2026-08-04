@@ -1,9 +1,9 @@
 # Symfony — Sentry SDK Deep Dive
 
-> Package: `sentry/sentry-symfony` · Requires `sentry/sentry ^4.20.0`  
+> Package: `sentry/sentry-symfony` · Requires `sentry/sentry ^4.20.0`\
 > Symfony versions: `^4.4.20` through `^8.0`
 
----
+* * *
 
 ## Installation & Setup
 
@@ -47,7 +47,7 @@ SENTRY_DSN="___PUBLIC_DSN___"
 php bin/console sentry:test
 ```
 
----
+* * *
 
 ## `config/packages/sentry.yaml` — Complete Schema
 
@@ -146,34 +146,36 @@ sentry:
                 - "messenger:consume"
 ```
 
----
+* * *
 
 ## Symfony-Specific Defaults
 
 These differ from the plain PHP SDK:
 
 | Option | Plain PHP Default | Symfony Default |
-|--------|------------------|-----------------|
+| --- | --- | --- |
 | `environment` | `SENTRY_ENVIRONMENT` or `"production"` | `%kernel.environment%` (kernel env) |
 | `release` | `SENTRY_RELEASE` env | Auto-detected via `PrettyVersions::getRootPackageVersion()` |
 | `in_app_exclude` | `[]` | Auto-includes `%kernel.cache_dir%`, `%kernel.build_dir%`, `%kernel.project_dir%/vendor` |
 
----
+* * *
 
 ## Bundle-Level Options
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `dsn` | `scalar\|null` | `null` | Sentry DSN |
 | `register_error_listener` | `boolean` | `true` | Register Symfony `ErrorListener` event subscriber on `kernel.exception` |
 | `register_error_handler` | `boolean` | `true` | Register PHP-level error/exception handlers |
 | `logger` | `scalar\|null` | `null` | Service ID of a PSR-3 `LoggerInterface` for SDK debug logging |
 
----
+* * *
 
 ## Callable Options — DIC Service Pattern
 
-Symfony's YAML configuration cannot hold inline PHP closures. All callable options must reference a **DIC service ID** whose factory method returns the callable.
+Symfony’s YAML configuration cannot hold inline PHP closures.
+All callable options must reference a **DIC service ID** whose factory method returns
+the callable.
 
 ```yaml
 # config/packages/sentry.yaml
@@ -233,14 +235,16 @@ class SentryCallbacks
 }
 ```
 
-This pattern applies to: `before_send`, `before_send_transaction`, `before_send_check_in`, `before_send_log`, `before_send_metric`, `before_breadcrumb`, `traces_sampler`, `transport`, `http_client`, `logger`, `class_serializers` values.
+This pattern applies to: `before_send`, `before_send_transaction`,
+`before_send_check_in`, `before_send_log`, `before_send_metric`, `before_breadcrumb`,
+`traces_sampler`, `transport`, `http_client`, `logger`, `class_serializers` values.
 
----
+* * *
 
 ## Auto-Instrumented Operations
 
 | Operation | Span Op | Requires |
-|-----------|---------|---------|
+| --- | --- | --- |
 | HTTP main request | `http.server` | Always |
 | HTTP sub-request | `http.server` (child span) | Always |
 | Console command | `console.command` | Always |
@@ -254,9 +258,12 @@ This pattern applies to: `before_send`, `before_send_transaction`, `before_send_
 | PSR-6 cache get/put/delete/flush | `cache.*` | `symfony/cache` |
 | Twig template render | `view.render` | `symfony/twig-bundle` |
 
-**Doctrine span data fields:** `db.system`, `db.user`, `db.name`, `server.address`, `server.port`
+**Doctrine span data fields:** `db.system`, `db.user`, `db.name`, `server.address`,
+`server.port`
 
-**⚠️ HTTP client tracing warning:** "Using HTTP client tracing will not execute your requests concurrently." — tracing wraps each request synchronously.
+**⚠️ HTTP client tracing warning:** “Using HTTP client tracing will not execute your
+requests concurrently.”
+— tracing wraps each request synchronously.
 
 ### Tracing Sub-Config
 
@@ -279,7 +286,7 @@ sentry:
         - "app:my-command"
 ```
 
----
+* * *
 
 ## Structured Logs (≥ 5.4.0)
 
@@ -356,9 +363,10 @@ monolog:
       buffer_size: 50
 ```
 
-The `BufferFlushPass` compiler pass auto-discovers `BufferHandler` instances and flushes them on `kernel.terminate`, `console.command`, `console.terminate`, and `console.error`.
+The `BufferFlushPass` compiler pass auto-discovers `BufferHandler` instances and flushes
+them on `kernel.terminate`, `console.command`, `console.terminate`, and `console.error`.
 
----
+* * *
 
 ## Messenger Integration
 
@@ -373,24 +381,30 @@ sentry:
 ```
 
 | Option | Default | Description |
-|--------|---------|-------------|
+| --- | --- | --- |
 | `enabled` | `true` | Enable Messenger integration |
 | `capture_soft_fails` | `true` | Capture exceptions even if the message will be retried |
 | `isolate_breadcrumbs_by_message` | `false` | Push/pop scope per message — prevents breadcrumb leakage between messages |
 
 **What it captures:**
-- Tags events with `messenger.receiver_name`, `messenger.message_class`, `messenger.message_bus`
-- Unwraps nested exceptions from `HandlerFailedException`, `DelayedMessageHandlingException`, `WrappedExceptionsInterface`
-- Sets `ExceptionMechanism(isHandled: $willRetry)` — retried failures are marked as handled
+- Tags events with `messenger.receiver_name`, `messenger.message_class`,
+  `messenger.message_bus`
+- Unwraps nested exceptions from `HandlerFailedException`,
+  `DelayedMessageHandlingException`, `WrappedExceptionsInterface`
+- Sets `ExceptionMechanism(isHandled: $willRetry)` — retried failures are marked as
+  handled
 - Flushes the client after each failure (background workers have no shutdown hook)
 
-**⚠️ No tracing spans:** There is no `MessengerTracingMiddleware` in the current SDK — Messenger integration is error-capture only. Use `captureCheckIn()` manually for cron-like queue monitoring.
+**⚠️ No tracing spans:** There is no `MessengerTracingMiddleware` in the current SDK —
+Messenger integration is error-capture only.
+Use `captureCheckIn()` manually for cron-like queue monitoring.
 
----
+* * *
 
 ## Cron Monitoring
 
-The Symfony SDK has no dedicated scheduled-task integration. Use the PHP SDK functions directly:
+The Symfony SDK has no dedicated scheduled-task integration.
+Use the PHP SDK functions directly:
 
 ```php
 use Sentry\CheckInStatus;
@@ -442,7 +456,7 @@ sentry:
     before_send_check_in: "App\\Sentry\\BeforeSendCheckInCallback"
 ```
 
----
+* * *
 
 ## Console Command Tracing & Monitoring
 
@@ -471,12 +485,12 @@ Creates transactions with:
 - `source: TransactionSource::task()`
 - Status: `ok()` if exit code 0, `internalError()` otherwise
 
----
+* * *
 
 ## Event Listeners Auto-Registered
 
 | Listener | Events | Description |
-|----------|--------|-------------|
+| --- | --- | --- |
 | `ErrorListener` | `kernel.exception` | Captures all uncaught exceptions |
 | `RequestListener` | `kernel.request`, `kernel.controller` | Sets IP (PII-gated); tags route name |
 | `ConsoleCommandListener` | `console.command`, `console.terminate` | Tags scope, flushes on terminate |
@@ -497,7 +511,8 @@ $request->headers->get('traceparent')    // W3C format
 $request->headers->get('baggage')
 ```
 
-The `AbstractTraceableHttpClient` decorator automatically injects outbound headers on all Symfony HTTP Client requests:
+The `AbstractTraceableHttpClient` decorator automatically injects outbound headers on
+all Symfony HTTP Client requests:
 
 ```
 sentry-trace: <value>
@@ -507,7 +522,7 @@ traceparent: <value>   # W3C trace context
 
 Respects `trace_propagation_targets` — only injects headers to matching hostnames.
 
----
+* * *
 
 ## Metrics (≥ 5.8.0)
 
@@ -528,4 +543,5 @@ sentry:
     before_send_metric: "App\\Sentry\\BeforeSendMetricCallback"
 ```
 
-**Auto-flush:** Flushed automatically on `kernel.terminate` and `console.terminate` — no manual flush needed in typical web/console contexts.
+**Auto-flush:** Flushed automatically on `kernel.terminate` and `console.terminate` — no
+manual flush needed in typical web/console contexts.

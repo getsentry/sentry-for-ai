@@ -1,18 +1,18 @@
 # Error Monitoring — Sentry .NET SDK
 
-> Minimum SDK: `Sentry` ≥ 4.0.0 (NuGet)  
-> ASP.NET Core integration: `Sentry.AspNetCore` ≥ 4.0.0  
-> MAUI integration: `Sentry.Maui` ≥ 4.0.0  
+> Minimum SDK: `Sentry` ≥ 4.0.0 (NuGet)\
+> ASP.NET Core integration: `Sentry.AspNetCore` ≥ 4.0.0\
+> MAUI integration: `Sentry.Maui` ≥ 4.0.0\
 > User feedback API: `Sentry` ≥ 4.0.0 (`CaptureFeedback`)
 
----
+* * *
 
 ## Automatic vs Manual Error Capture
 
 ### What Is Captured Automatically
 
 | Error Type | Captured? | Mechanism |
-|-----------|-----------|-----------|
+| --- | --- | --- |
 | Unhandled exceptions (all platforms) | ✅ Yes | `AppDomain.CurrentDomain.UnhandledException` |
 | Unobserved Task exceptions | ✅ Yes | `TaskScheduler.UnobservedTaskException` |
 | ASP.NET Core request errors | ✅ Yes | Sentry middleware |
@@ -24,7 +24,7 @@
 
 ### The Core Rule
 
-> **"If you catch an exception and don't re-throw it, Sentry never sees it."**
+> **“If you catch an exception and don’t re-throw it, Sentry never sees it.”**
 
 ```csharp
 // ✅ Automatically captured — unhandled, bubbles up
@@ -62,7 +62,7 @@ catch (Exception ex)
 }
 ```
 
----
+* * *
 
 ## Core Capture API
 
@@ -81,7 +81,9 @@ SentryId id = SentrySdk.CaptureException(exception, scope =>
 });
 ```
 
-> **Key behavior:** The SDK clones the current scope before invoking the callback. Changes inside the callback apply only to that one event and do not affect subsequent events.
+> **Key behavior:** The SDK clones the current scope before invoking the callback.
+> Changes inside the callback apply only to that one event and do not affect subsequent
+> events.
 
 ### `SentrySdk.CaptureMessage`
 
@@ -162,7 +164,7 @@ bool      SentrySdk.IsEnabled
 SentryId  SentrySdk.LastEventId
 ```
 
----
+* * *
 
 ## ASP.NET Core — Automatic & Manual Error Capture
 
@@ -218,7 +220,8 @@ Sentry__SendDefaultPii=true
 
 ### What ASP.NET Core captures automatically
 
-- All unhandled exceptions thrown from controllers and middleware → captured as Sentry events
+- All unhandled exceptions thrown from controllers and middleware → captured as Sentry
+  events
 - HTTP request data (URL, method, headers, body if configured)
 - User info from `IHttpContext` when `SendDefaultPii = true`
 - Breadcrumbs and Events from `Microsoft.Extensions.Logging`
@@ -283,29 +286,32 @@ services.AddSingleton<ISentryUserFactory, MyUserFactory>();
 ### ASP.NET Core-specific options
 
 | Option | Type | Description |
-|--------|------|-------------|
+| --- | --- | --- |
 | `SendDefaultPii` | `bool` | Include request URL, headers, user IP, auth info |
 | `MaxRequestBodySize` | `RequestSize` | `None`, `Small` (<4 KB), `Medium` (<10 KB), `Always` |
 | `MinimumBreadcrumbLevel` | `LogLevel` | Min log level for breadcrumb capture from ILogger |
 | `MinimumEventLevel` | `LogLevel` | Min log level to generate a Sentry error event from ILogger |
 | `CaptureBlockingCalls` | `bool` | Detect `Task.Wait()` / `.Result` threadpool starvation |
 
----
+* * *
 
 ## Scope Management
 
 ### How Scopes Work in .NET
 
-The **Hub** holds a stack of scopes. When an event is captured the hub merges the topmost scope's data into the event. Scope storage mode is controlled by `IsGlobalModeEnabled`:
+The **Hub** holds a stack of scopes.
+When an event is captured the hub merges the topmost scope’s data into the event.
+Scope storage mode is controlled by `IsGlobalModeEnabled`:
 
 | `IsGlobalModeEnabled` | Storage | Use For |
-|---|---|---|
+| --- | --- | --- |
 | `false` (default) | `AsyncLocal<T>` | Server apps — per-request isolation |
 | `true` | Singleton | Desktop apps — shared scope across threads |
 
 ### `ConfigureScope` — Persistent Changes
 
-Modifies the current ambient scope permanently (until changed or scope is popped). Use for session-level data:
+Modifies the current ambient scope permanently (until changed or scope is popped).
+Use for session-level data:
 
 ```csharp
 SentrySdk.ConfigureScope(scope =>
@@ -335,7 +341,8 @@ SentrySdk.ConfigureScope(
 
 ### `PushScope` — Temporary Isolated Scope
 
-Inherits parent scope data. All changes inside the `using` block are discarded when disposed:
+Inherits parent scope data.
+All changes inside the `using` block are discarded when disposed:
 
 ```csharp
 using (SentrySdk.PushScope())
@@ -352,7 +359,8 @@ using (SentrySdk.PushScope())
 
 ### Inline scope callback (preferred for single events)
 
-The `configureScope` callback on capture methods is the preferred pattern for one-off enrichment without needing a `using` block:
+The `configureScope` callback on capture methods is the preferred pattern for one-off
+enrichment without needing a `using` block:
 
 ```csharp
 // Only this event carries the tag
@@ -381,13 +389,13 @@ SentrySdk.ConfigureScope(scope =>
 ### Scope decision guide
 
 | Goal | API |
-|------|-----|
+| --- | --- |
 | Data on ALL events (app version, build ID) | `options.DefaultTags["key"] = "value"` |
 | Session/request-level data | `SentrySdk.ConfigureScope(...)` |
 | One specific event only | Inline `configureScope` callback on capture |
 | Temporary sub-context (batch job, etc.) | `SentrySdk.PushScope()` + `using` |
 
----
+* * *
 
 ## Context Enrichment
 
@@ -420,7 +428,8 @@ SentrySdk.Init(options =>
 });
 ```
 
-**Tag constraints:** Keys ≤ 32 chars (`a-zA-Z`, `0-9`, `_`, `.`, `:`, `-`); values ≤ 200 chars, no newlines.
+**Tag constraints:** Keys ≤ 32 chars (`a-zA-Z`, `0-9`, `_`, `.`, `:`, `-`); values ≤ 200
+chars, no newlines.
 
 ### User
 
@@ -447,7 +456,7 @@ SentrySdk.ConfigureScope(scope => scope.User = new SentryUser());
 **SentryUser properties:**
 
 | Property | Type | Notes |
-|-------|------|-------|
+| --- | --- | --- |
 | `Id` | `string?` | Internal identifier |
 | `Username` | `string?` | Display label |
 | `Email` | `string?` | Enables Gravatars and Sentry messaging |
@@ -491,13 +500,14 @@ SentrySdk.AddBreadcrumb(crumb);
 **Automatically captured breadcrumbs:**
 
 | Source | Requires |
-|--------|----------|
+| --- | --- |
 | HTTP requests | `SentryHttpMessageHandler` with `HttpClient` |
 | Logs (Info+) | `Microsoft.Extensions.Logging`, Serilog, NLog, log4net |
 | Database queries | EF6 or EF Core via DiagnosticSource |
 | MAUI app events | Navigation, lifecycle, user interactions |
 
-Max breadcrumbs: 100 (default). Override with `options.MaxBreadcrumbs = 50`.
+Max breadcrumbs: 100 (default).
+Override with `options.MaxBreadcrumbs = 50`.
 
 ### Custom Contexts (Structured, Non-Searchable)
 
@@ -520,24 +530,26 @@ SentrySdk.ConfigureScope(scope =>
 });
 ```
 
-> The key `"type"` is **reserved** — do not use it. Contexts are not searchable; use Tags for searchable data.
+> The key `"type"` is **reserved** — do not use it.
+> Contexts are not searchable; use Tags for searchable data.
 
 ### Tags vs Contexts vs Extra
 
 | Feature | Searchable? | Indexed? | Best For |
-|---------|------------|---------|---------|
+| --- | --- | --- | --- |
 | **Tags** | ✅ Yes | ✅ Yes | Filtering, grouping, alerting |
 | **Contexts** | ❌ No | ❌ No | Structured debug info (nested objects) |
 | **Extra** (legacy) | ❌ No | ❌ No | Prefer `Contexts` instead |
 | **User** | ✅ Partially | ✅ Yes | User attribution and filtering |
 
----
+* * *
 
 ## `BeforeSend` and Filtering Hooks
 
 ### `BeforeSend` — Modify or Drop Error Events
 
-Called immediately before transmission — last in the processing pipeline. Return `null` to drop the event.
+Called immediately before transmission — last in the processing pipeline.
+Return `null` to drop the event.
 
 ```csharp
 SentrySdk.Init(options =>
@@ -608,11 +620,14 @@ options.SetBeforeSendLog(log =>
 });
 ```
 
----
+* * *
 
 ## Fingerprinting and Custom Grouping
 
-All events have a fingerprint. Events with the same fingerprint group into the same issue. The default fingerprint is computed from the stack trace. Override it in `BeforeSend` or directly on a scope/event.
+All events have a fingerprint.
+Events with the same fingerprint group into the same issue.
+The default fingerprint is computed from the stack trace.
+Override it in `BeforeSend` or directly on a scope/event.
 
 ### Group more aggressively (collapse all matching into one issue)
 
@@ -664,13 +679,13 @@ SentrySdk.CaptureEvent(evt);
 ### Fingerprint template variables
 
 | Variable | Description |
-|----------|-------------|
-| `{{ default }}` | Sentry's normally computed hash (extend rather than replace) |
+| --- | --- |
+| `{{ default }}` | Sentry’s normally computed hash (extend rather than replace) |
 | `{{ transaction }}` | Current transaction name |
 | `{{ function }}` | Top function in stack trace |
 | `{{ type }}` | Exception type name |
 
----
+* * *
 
 ## Exception Filters
 
@@ -718,9 +733,10 @@ SentrySdk.Init(options =>
 });
 ```
 
-**DeduplicateMode flags:** `SameEvent`, `SameExceptionInstance`, `InnerException`, `AggregateException`, `All`
+**DeduplicateMode flags:** `SameEvent`, `SameExceptionInstance`, `InnerException`,
+`AggregateException`, `All`
 
----
+* * *
 
 ## Unhandled Exception Capture
 
@@ -752,9 +768,12 @@ public partial class App : Application
 }
 ```
 
-> **`IsGlobalModeEnabled = true`** is required for WPF — ensures background thread exceptions share the same scope as the UI thread.
+> **`IsGlobalModeEnabled = true`** is required for WPF — ensures background thread
+> exceptions share the same scope as the UI thread.
 
-> **Critical:** Initialize in the `App()` constructor, not `OnStartup()`. The constructor runs before any dispatcher frames, ensuring the unhandled exception hook is registered first.
+> **Critical:** Initialize in the `App()` constructor, not `OnStartup()`. The
+> constructor runs before any dispatcher frames, ensuring the unhandled exception hook
+> is registered first.
 
 ### MAUI
 
@@ -782,7 +801,7 @@ public static MauiApp CreateMauiApp()
 **MAUI platform coverage:**
 
 | Platform | Integration |
-|----------|-------------|
+| --- | --- |
 | Android | `AppDomainUnhandledExceptionIntegration` + native Android SDK |
 | iOS / Mac Catalyst | `RuntimeMarshalManagedExceptionIntegration` + native Cocoa SDK |
 | Windows (WinUI) | `AppDomainUnhandledExceptionIntegration` + `WinUIUnhandledExceptionIntegration` |
@@ -838,11 +857,12 @@ SentrySdk.Init(options =>
 });
 ```
 
----
+* * *
 
 ## Event Processors
 
-Unlike `BeforeSend` (only one allowed), multiple event processors can be registered at different scopes:
+Unlike `BeforeSend` (only one allowed), multiple event processors can be registered at
+different scopes:
 
 ```csharp
 // Global — runs for all events
@@ -904,7 +924,7 @@ SentrySdk.Init(options =>
 2. `ISentryEventProcessor` — general event processors
 3. `SetBeforeSend` / `SetBeforeSendTransaction` — **always last**
 
----
+* * *
 
 ## User Feedback
 
@@ -948,7 +968,8 @@ var feedback = new SentryFeedback(
 SentrySdk.CaptureFeedback(feedback);
 ```
 
-> **Validation:** Sentry rejects feedback with invalid email addresses. Pre-validate email format before calling the API.
+> **Validation:** Sentry rejects feedback with invalid email addresses.
+> Pre-validate email format before calling the API.
 
 ### Crash-Report Modal (JavaScript widget on error pages)
 
@@ -973,14 +994,14 @@ For ASP.NET Core web apps, show the browser-based report dialog on error respons
 ViewBag.SentryEventId = SentrySdk.LastEventId;
 ```
 
----
+* * *
 
 ## Error Capture Quick Reference
 
 ### Scenario Coverage Table
 
 | Scenario | Auto Captured? | Solution |
-|----------|--------------|---------|
+| --- | --- | --- |
 | Unhandled exception (all frameworks) | ✅ Yes | `AppDomain.UnhandledException` integration |
 | Unobserved Task exception | ✅ Yes | `TaskScheduler.UnobservedTaskException` integration |
 | ASP.NET Core request error | ✅ Yes | Sentry middleware |
@@ -1036,12 +1057,12 @@ SentrySdk.Flush(TimeSpan.FromSeconds(5));
 await SentrySdk.FlushAsync(TimeSpan.FromSeconds(5));
 ```
 
----
+* * *
 
 ## Configuration Options Reference
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `Dsn` | `string` | — | DSN from Sentry project settings; also reads `SENTRY_DSN` env var |
 | `Release` | `string?` | — | App release version; also reads `SENTRY_RELEASE` |
 | `Environment` | `string?` | — | Deployment environment; also reads `SENTRY_ENVIRONMENT` |
@@ -1062,13 +1083,13 @@ await SentrySdk.FlushAsync(TimeSpan.FromSeconds(5));
 | `EnableLogs` | `bool` | `false` | Enable Sentry structured logging |
 | `StackTraceMode` | `StackTraceMode` | `Enhanced` | `Enhanced` or `Original` |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
-| Caught exceptions not appearing in Sentry | Any `try/catch` that doesn't re-throw must call `SentrySdk.CaptureException(ex)` before returning |
+| --- | --- |
+| Caught exceptions not appearing in Sentry | Any `try/catch` that doesn’t re-throw must call `SentrySdk.CaptureException(ex)` before returning |
 | WPF exceptions from background threads missing | Set `options.IsGlobalModeEnabled = true`; initialize in `App()` constructor, not `OnStartup()` |
 | WinForms exceptions not captured | Call `Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException)` before `SentrySdk.Init` |
 | Events dropped after process exit (console/CLI) | SDK 3.31.0+ handles this automatically; on older versions wrap `Init` result in `using var _ = SentrySdk.Init(...)` |

@@ -1,8 +1,13 @@
 # Tracing — Sentry Elixir SDK
 
-> Minimum SDK: `sentry` v11.0.0+ (beta); v12.0.0+ for distributed tracing and LiveView spans
+> Minimum SDK: `sentry` v11.0.0+ (beta); v12.0.0+ for distributed tracing and LiveView
+> spans
 
-Tracing in the Elixir SDK is implemented via **OpenTelemetry**. Sentry ships three OTel components: a `SpanProcessor`, a `Sampler`, and a `Propagator`. These integrate with the OpenTelemetry Elixir ecosystem so you can use any OTel-compatible instrumentation library (Phoenix, Ecto, Finch, etc.) and have all spans forwarded to Sentry.
+Tracing in the Elixir SDK is implemented via **OpenTelemetry**. Sentry ships three OTel
+components: a `SpanProcessor`, a `Sampler`, and a `Propagator`. These integrate with the
+OpenTelemetry Elixir ecosystem so you can use any OTel-compatible instrumentation
+library (Phoenix, Ecto, Finch, etc.)
+and have all spans forwarded to Sentry.
 
 ## Configuration
 
@@ -28,7 +33,8 @@ end
 
 ### Sentry config
 
-Any non-nil value for `:traces_sample_rate` enables tracing. Start with `1.0` for development, lower for production:
+Any non-nil value for `:traces_sample_rate` enables tracing.
+Start with `1.0` for development, lower for production:
 
 ```elixir
 # config/config.exs
@@ -39,7 +45,7 @@ config :sentry,
 
 ### OpenTelemetry config
 
-Wire Sentry's SpanProcessor and Sampler into the OTel pipeline:
+Wire Sentry’s SpanProcessor and Sampler into the OTel pipeline:
 
 ```elixir
 # config/config.exs
@@ -50,7 +56,7 @@ config :opentelemetry,
 
 ### Distributed tracing (since v12.0.0)
 
-Enable Sentry's propagator to inject and extract `sentry-trace` and `baggage` headers:
+Enable Sentry’s propagator to inject and extract `sentry-trace` and `baggage` headers:
 
 ```elixir
 # config/config.exs
@@ -64,7 +70,10 @@ config :opentelemetry,
   ]
 ```
 
-> **Note:** Add `Sentry.OpenTelemetry.Propagator` **after** the standard `:trace_context` and `:baggage` propagators. It reads and writes the Sentry-specific `sentry-trace` and `baggage` headers so spans from Elixir connect to browser and backend spans from other Sentry SDKs.
+> **Note:** Add `Sentry.OpenTelemetry.Propagator` **after** the standard
+> `:trace_context` and `:baggage` propagators.
+> It reads and writes the Sentry-specific `sentry-trace` and `baggage` headers so spans
+> from Elixir connect to browser and backend spans from other Sentry SDKs.
 
 ## Sampling
 
@@ -77,7 +86,8 @@ config :sentry,
 
 ### Custom sampler function
 
-Use `:traces_sampler` to apply per-operation logic. Overrides `:traces_sample_rate` when set:
+Use `:traces_sampler` to apply per-operation logic.
+Overrides `:traces_sample_rate` when set:
 
 ```elixir
 config :sentry,
@@ -101,7 +111,8 @@ config :opentelemetry,
 
 ## Phoenix Auto-Instrumentation
 
-`opentelemetry_phoenix` automatically creates spans for each Phoenix request. Setup in `Application.start/2`:
+`opentelemetry_phoenix` automatically creates spans for each Phoenix request.
+Setup in `Application.start/2`:
 
 ```elixir
 # lib/my_app/application.ex
@@ -122,7 +133,7 @@ end
 ## How Spans Map to Sentry
 
 | OTel span type | Sentry object |
-|----------------|---------------|
+| --- | --- |
 | Root span (no local parent) | `Transaction` |
 | Child span (has local parent) | `Span` within that transaction |
 | Distributed span (remote parent, HTTP server or LiveView) | New `Transaction` root (linked via trace ID) |
@@ -190,23 +201,28 @@ end)
 ## OpenTelemetry Components Reference
 
 | Module | OTel behaviour | Purpose |
-|--------|----------------|---------|
+| --- | --- | --- |
 | `Sentry.OpenTelemetry.SpanProcessor` | `:otel_span_processor` | Converts finished OTel spans into Sentry transactions/spans |
 | `Sentry.OpenTelemetry.Sampler` | `:otel_sampler` | Applies `traces_sample_rate` / `traces_sampler` to root spans |
 | `Sentry.OpenTelemetry.Propagator` | `:otel_propagator_text_map` | Injects/extracts `sentry-trace` and `baggage` headers |
 
 ## Best Practices
 
-- Set `traces_sample_rate: 1.0` in development and `0.1–0.2` in production; adjust per route with `traces_sampler`
-- Use the `drop:` option in `Sentry.OpenTelemetry.Sampler` to exclude health check endpoints from tracing
-- Always call `OpentelemetryPhoenix.setup()` and `OpentelemetryEcto.setup/1` in `Application.start/2` before the supervision tree starts
-- Propagate OTel context explicitly when spawning tasks or sending messages to other processes
-- Add `Sentry.OpenTelemetry.Propagator` for distributed tracing across services — without it, backend traces won't link to browser Sentry events
+- Set `traces_sample_rate: 1.0` in development and `0.1–0.2` in production; adjust per
+  route with `traces_sampler`
+- Use the `drop:` option in `Sentry.OpenTelemetry.Sampler` to exclude health check
+  endpoints from tracing
+- Always call `OpentelemetryPhoenix.setup()` and `OpentelemetryEcto.setup/1` in
+  `Application.start/2` before the supervision tree starts
+- Propagate OTel context explicitly when spawning tasks or sending messages to other
+  processes
+- Add `Sentry.OpenTelemetry.Propagator` for distributed tracing across services —
+  without it, backend traces won’t link to browser Sentry events
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No transactions in Sentry | Verify `traces_sample_rate` is set (non-nil); confirm `span_processor` is configured in `:opentelemetry` config |
 | Phoenix spans missing | Call `OpentelemetryPhoenix.setup()` in `Application.start/2` before the supervision tree |
 | Ecto query spans missing | Call `OpentelemetryEcto.setup([:my_app, :repo])` in `Application.start/2` |

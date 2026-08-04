@@ -1,6 +1,6 @@
 # Logging — Sentry Go SDK
 
-> Minimum SDK: `github.com/getsentry/sentry-go` v0.33.0+  
+> Minimum SDK: `github.com/getsentry/sentry-go` v0.33.0+\
 > Minimum SDK for zap integration: v0.43.0+
 
 ## Configuration
@@ -15,11 +15,12 @@ sentry.Init(sentry.ClientOptions{
 ```
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `EnableLogs` | `bool` | `false` | Enable Sentry Logs feature |
 | `BeforeSendLog` | `func(*Log) *Log` | `nil` | Mutate or drop log entries before sending |
 
-> If `EnableLogs` is `false`, `sentry.NewLogger(ctx)` returns a **no-op logger** — all calls are silently discarded.
+> If `EnableLogs` is `false`, `sentry.NewLogger(ctx)` returns a **no-op logger** — all
+> calls are silently discarded.
 
 ## Code Examples
 
@@ -70,7 +71,7 @@ func main() {
 ### Log levels
 
 | Method | OTel Severity | Use for |
-|--------|--------------|---------|
+| --- | --- | --- |
 | `logger.Trace()` | 1 | Very detailed debugging |
 | `logger.Debug()` | 5 | Development debugging |
 | `logger.Info()` | 9 | Informational events |
@@ -100,14 +101,15 @@ sentry.Init(sentry.ClientOptions{
 })
 ```
 
-`sentry.Log` struct fields: `Timestamp`, `TraceID`, `SpanID`, `Level`, `Severity` (int), `Body`, `Attributes`.
+`sentry.Log` struct fields: `Timestamp`, `TraceID`, `SpanID`, `Level`, `Severity` (int),
+`Body`, `Attributes`.
 
 ### Auto-attached attributes
 
 The SDK automatically appends these to every log entry:
 
 | Attribute | Source |
-|-----------|--------|
+| --- | --- |
 | `sentry.release` | `ClientOptions.Release` |
 | `sentry.environment` | `ClientOptions.Environment` |
 | `sentry.server.address` | `ClientOptions.ServerName` or `os.Hostname()` |
@@ -165,7 +167,7 @@ logger.WithField("user", sentry.User{ID: "u1"}).Error("payment failed")
 **Logrus level mapping:**
 
 | Logrus level | Sentry level |
-|-------------|--------------|
+| --- | --- |
 | Trace, Debug | `debug` |
 | Info | `info` |
 | Warn | `warning` |
@@ -175,7 +177,7 @@ logger.WithField("user", sentry.User{ID: "u1"}).Error("payment failed")
 **Special field names** (auto-mapped to Sentry metadata):
 
 | Field | Type | Maps to |
-|-------|------|---------|
+| --- | --- | --- |
 | `"request"` | `*http.Request` | `sentry.Request` |
 | `"user"` | `sentry.User` | scope user |
 | `"transaction"` | `string` | event transaction ID |
@@ -219,7 +221,7 @@ logger.Error("database connection failed", "host", "db.example.com")
 **slog level mapping:**
 
 | slog.Level range | Sentry method |
-|-----------------|---------------|
+| --- | --- |
 | `< -4` | `Trace` |
 | `-4` to `-1` | `Debug` |
 | `0` to `3` | `Info` |
@@ -235,7 +237,8 @@ logger.Error("database connection failed", "host", "db.example.com")
 go get github.com/getsentry/sentry-go/zerolog
 ```
 
-> **Note:** The zerolog integration sends as **Sentry Events** (issues), not Sentry Log entries. It does not support structured logs.
+> **Note:** The zerolog integration sends as **Sentry Events** (issues), not Sentry Log
+> entries. It does not support structured logs.
 
 ```go
 import (
@@ -259,8 +262,8 @@ logger.Info().Msg("breadcrumb only")
 logger.Error().Str("user", "u1").Msg("captured as Sentry event")
 ```
 
-**Special field names** (same as logrus, auto-mapped):
-`"request"` → `*http.Request`, `"user"` → `sentry.User`, `"transaction"` → string, `"fingerprint"` → `[]string`
+**Special field names** (same as logrus, auto-mapped): `"request"` → `*http.Request`,
+`"user"` → `sentry.User`, `"transaction"` → string, `"fingerprint"` → `[]string`
 
 ### zap (v0.43.0+)
 
@@ -310,7 +313,7 @@ logger.With(sentryzap.Context(span.Context())).Info("within span",
 **zap level mapping:**
 
 | zap level | Sentry method |
-|-----------|---------------|
+| --- | --- |
 | Debug | `Debug` |
 | Info | `Info` |
 | Warn | `Warn` |
@@ -320,7 +323,7 @@ logger.With(sentryzap.Context(span.Context())).Info("within span",
 ## Integration Comparison
 
 | Library | Package | Sends as | `EnableLogs` required |
-|---------|---------|----------|----------------------|
+| --- | --- | --- | --- |
 | Native | `sentry-go` | Sentry Logs | ✅ Yes |
 | logrus (log hook) | `sentry-go/logrus` | Sentry Logs | ✅ Yes |
 | logrus (event hook) | `sentry-go/logrus` | Sentry Events | ❌ No |
@@ -330,16 +333,19 @@ logger.With(sentryzap.Context(span.Context())).Info("within span",
 
 ## Best Practices
 
-- Enable both a log hook and an event hook for logrus — logs for visibility, events for alerting
-- For slog, configure `EventLevel` to `[slog.LevelError, LevelFatal]` and `LogLevel` for the rest
+- Enable both a log hook and an event hook for logrus — logs for visibility, events for
+  alerting
+- For slog, configure `EventLevel` to `[slog.LevelError, LevelFatal]` and `LogLevel` for
+  the rest
 - Call `hook.Flush()` (logrus) or `writer.Close()` (zerolog) before program exit
 - Use `WithCtx(requestCtx)` on log entries inside HTTP handlers for trace correlation
-- Set `sentry.LogSeverityInfo` as the minimum in `BeforeSendLog` to avoid sending noisy debug logs
+- Set `sentry.LogSeverityInfo` as the minimum in `BeforeSendLog` to avoid sending noisy
+  debug logs
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not appearing in Sentry | Ensure `EnableLogs: true` in `ClientOptions` |
 | `NewLogger` returns no-op | `EnableLogs` is false or no client is bound to the hub |
 | Logrus `Fatal` not flushing | Register `logrus.RegisterExitHandler` to flush hooks before exit |

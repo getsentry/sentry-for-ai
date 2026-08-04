@@ -1,20 +1,20 @@
 # Tracing — Sentry TanStack Start React SDK
 
-> Minimum SDK: `@sentry/tanstackstart-react` (alpha)  
+> Minimum SDK: `@sentry/tanstackstart-react` (alpha)\
 > Framework target: TanStack Start React `1.0 RC`
 
----
+* * *
 
 ## What Tracing Captures
 
 | Layer | Integration | Result |
-|------|-------------|--------|
+| --- | --- | --- |
 | Browser route transitions | `tanstackRouterBrowserTracingIntegration(router)` | Navigation and route-level transaction timing |
 | Server request handling | `wrapFetchWithSentry(...)` | Server request spans and request-level errors |
 | Server middleware/functions | `sentryGlobalRequestMiddleware` / `sentryGlobalFunctionMiddleware` | Middleware and server function timing context |
 | Custom operations | `Sentry.startSpan` | Business operations and async block timing |
 
----
+* * *
 
 ## Browser Tracing Setup (`src/router.tsx`)
 
@@ -37,7 +37,7 @@ export const getRouter = () => {
 };
 ```
 
----
+* * *
 
 ## Server Tracing Setup
 
@@ -67,7 +67,7 @@ export default createServerEntry(
 );
 ```
 
----
+* * *
 
 ## Custom Span Example
 
@@ -90,17 +90,17 @@ await Sentry.startSpan(
 
 Use `startSpan` for key flows such as checkout, search, and expensive data loads.
 
----
+* * *
 
 ## Sampling Guidance
 
 | Environment | Suggested `tracesSampleRate` |
-|-------------|-------------------------------|
+| --- | --- |
 | Development | `1.0` |
 | Production (starting point) | `0.1` to `0.3` |
 | High-volume traffic | Tune with lower fixed rate or use server-side dynamic sampling |
 
----
+* * *
 
 ## Verifying Traces
 
@@ -111,12 +111,12 @@ Use `startSpan` for key flows such as checkout, search, and expensive data loads
    - server request span
    - linked errors (if thrown)
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No browser transactions | Ensure router integration gets the actual router instance |
 | No server spans | Verify runtime loads `instrument.server.mjs` (`--import` path or direct import path) |
 | Trace disconnected between client and server | Confirm both browser and server init are active in the same environment |

@@ -1,12 +1,17 @@
 # AI Monitoring — Sentry PHP / Laravel SDK
 
-> Laravel AI support requires `sentry/sentry-laravel` >= 4.27.0, Laravel 12.x or later, and `laravel/ai`.
+> Laravel AI support requires `sentry/sentry-laravel` >= 4.27.0, Laravel 12.x or later,
+> and `laravel/ai`.
 
-Sentry's Laravel AI integration automatically instruments Laravel AI agents, model calls, tools, embeddings, token usage, model/provider metadata, and conversation IDs. Use this reference when a Laravel app has `laravel/ai` installed or the user asks to monitor Laravel AI agents.
+Sentry’s Laravel AI integration automatically instruments Laravel AI agents, model
+calls, tools, embeddings, token usage, model/provider metadata, and conversation IDs.
+Use this reference when a Laravel app has `laravel/ai` installed or the user asks to
+monitor Laravel AI agents.
 
-For non-Laravel PHP AI libraries, use manual `gen_ai.*` spans following the standard Sentry AI instrumentation conventions.
+For non-Laravel PHP AI libraries, use manual `gen_ai.*` spans following the standard
+Sentry AI instrumentation conventions.
 
----
+* * *
 
 ## Detect
 
@@ -27,9 +32,10 @@ grep -E 'SENTRY_TRACES_SAMPLE_RATE|SENTRY_SEND_DEFAULT_PII' .env config/sentry.p
 - If `laravel/ai` is present, use automatic Laravel AI instrumentation.
 - If `sentry/sentry-laravel` is below 4.27.0, upgrade before expecting AI spans.
 - If `SENTRY_TRACES_SAMPLE_RATE` is missing or `0`, AI spans will not be sent.
-- If `SENTRY_SEND_DEFAULT_PII` is false or missing, prompts, tool arguments, responses, and embeddings input are redacted.
+- If `SENTRY_SEND_DEFAULT_PII` is false or missing, prompts, tool arguments, responses,
+  and embeddings input are redacted.
 
----
+* * *
 
 ## Install
 
@@ -54,7 +60,8 @@ ANTHROPIC_API_KEY=your-anthropic-key
 OPENAI_API_KEY=your-openai-key
 ```
 
-Make sure Sentry is installed normally for Laravel. For Laravel 11+, `bootstrap/app.php` must register the exception handler:
+Make sure Sentry is installed normally for Laravel.
+For Laravel 11+, `bootstrap/app.php` must register the exception handler:
 
 ```php
 use Sentry\Laravel\Integration;
@@ -71,7 +78,7 @@ Publish Sentry config if it has not been published yet:
 php artisan sentry:publish --dsn=YOUR_DSN
 ```
 
----
+* * *
 
 ## Configure
 
@@ -87,11 +94,15 @@ Enable tracing in `.env`:
 SENTRY_TRACES_SAMPLE_RATE=1.0
 ```
 
-Use `1.0` in development. For production, either use a lower global rate or configure sampling so AI routes, queue jobs, and CLI commands that run agents are sampled at 100%.
+Use `1.0` in development.
+For production, either use a lower global rate or configure sampling so AI routes, queue
+jobs, and CLI commands that run agents are sampled at 100%.
 
 ### Prompt and Response Capture
 
-Sentry considers LLM prompts, tool arguments, tool results, responses, and embeddings input to be PII. Do not enable capture unless the user confirms the application's privacy policy and data retention settings allow it.
+Sentry considers LLM prompts, tool arguments, tool results, responses, and embeddings
+input to be PII. Do not enable capture unless the user confirms the application’s
+privacy policy and data retention settings allow it.
 
 After explicit confirmation, enable PII capture:
 
@@ -99,9 +110,10 @@ After explicit confirmation, enable PII capture:
 SENTRY_SEND_DEFAULT_PII=true
 ```
 
-Without this setting, Laravel AI spans still appear, but input/output attributes are omitted and Conversations may not have message content.
+Without this setting, Laravel AI spans still appear, but input/output attributes are
+omitted and Conversations may not have message content.
 
----
+* * *
 
 ## Verify
 
@@ -179,7 +191,8 @@ class TimeAgent implements Agent, Conversational, HasTools
 }
 ```
 
-Trigger the agent from a route or command. Example route:
+Trigger the agent from a route or command.
+Example route:
 
 ```php
 use App\Ai\Agents\TimeAgent;
@@ -192,18 +205,20 @@ Route::get('/debug-ai', function () {
 });
 ```
 
-Visit `/debug-ai`, then check Sentry Traces and the AI Agents dashboard. It can take a few moments for data to appear.
+Visit `/debug-ai`, then check Sentry Traces and the AI Agents dashboard.
+It can take a few moments for data to appear.
 
-For CLI commands and other non-HTTP entry points, make sure there is a Sentry transaction around the agent call so child AI spans are captured.
+For CLI commands and other non-HTTP entry points, make sure there is a Sentry
+transaction around the agent call so child AI spans are captured.
 
----
+* * *
 
 ## Captured Data
 
 Laravel AI instrumentation captures:
 
 | Span op | Captures |
-|---------|----------|
+| --- | --- |
 | `gen_ai.invoke_agent` | Agent prompt lifecycle, agent name, model, provider, available tools, conversation ID |
 | `gen_ai.chat` | AI provider chat request, model/provider, finish reason, token usage |
 | `gen_ai.execute_tool` | Tool name, description, arguments, result |
@@ -212,7 +227,7 @@ Laravel AI instrumentation captures:
 Common attributes include:
 
 | Attribute | Notes |
-|-----------|-------|
+| --- | --- |
 | `gen_ai.operation.name` | `invoke_agent`, `chat`, `execute_tool`, or `embeddings` |
 | `gen_ai.agent.name` | Agent class/name where available |
 | `gen_ai.request.model` | Requested model |
@@ -229,13 +244,15 @@ Common attributes include:
 
 Streaming agent responses are supported for both `prompt()` and `stream()` calls.
 
----
+* * *
 
 ## Conversations
 
 Sentry Conversations groups related AI spans by `gen_ai.conversation.id`.
 
-In Laravel AI, this is automatic when the agent implements `Conversational` and uses `RemembersConversations`. The integration reads Laravel AI's `conversationId` and attaches it to AI spans.
+In Laravel AI, this is automatic when the agent implements `Conversational` and uses
+`RemembersConversations`. The integration reads Laravel AI’s `conversationId` and
+attaches it to AI spans.
 
 To continue a conversation, pass the previous conversation ID back into Laravel AI:
 
@@ -258,7 +275,7 @@ foreach (['Hello', 'What did I just ask you?'] as $message) {
 
 Both prompts appear under the same conversation in **Explore > Conversations**.
 
----
+* * *
 
 ## Feature Flags
 
@@ -277,14 +294,15 @@ You can disable Laravel AI span types in `config/sentry.php` under `tracing.feat
 ],
 ```
 
-Set `gen_ai` to `false` to disable all Laravel AI tracing. Use the individual switches to disable only one span type.
+Set `gen_ai` to `false` to disable all Laravel AI tracing.
+Use the individual switches to disable only one span type.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No AI spans | Verify `sentry/sentry-laravel >=4.27.0`, `laravel/ai` is installed, and `SENTRY_TRACES_SAMPLE_RATE > 0` |
 | Agent spans appear but prompts are missing | Confirm the user approved prompt/output capture and set `SENTRY_SEND_DEFAULT_PII=true` |
 | Conversations are not grouped | Implement `Conversational`, use `RemembersConversations`, and pass the previous `$response->conversationId` to `continue()` |

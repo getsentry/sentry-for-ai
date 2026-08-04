@@ -2,7 +2,10 @@
 
 > Minimum SDK: `sentry-ruby` v5.14.0+
 
-Cron monitoring detects missed, failed, or slow scheduled jobs by capturing check-in events at job start and completion. Each check-in pair creates a monitor timeline in Sentry — if the `:ok` check-in doesn't arrive on time, Sentry raises an alert.
+Cron monitoring detects missed, failed, or slow scheduled jobs by capturing check-in
+events at job start and completion.
+Each check-in pair creates a monitor timeline in Sentry — if the `:ok` check-in doesn’t
+arrive on time, Sentry raises an alert.
 
 ## Contents
 
@@ -16,7 +19,8 @@ Cron monitoring detects missed, failed, or slow scheduled jobs by capturing chec
 
 ## Manual Check-Ins
 
-Use when the scheduler is Clockwork, Whenever, a plain Ruby loop, or any framework without a built-in integration:
+Use when the scheduler is Clockwork, Whenever, a plain Ruby loop, or any framework
+without a built-in integration:
 
 ```ruby
 # Start check-in — save the returned ID
@@ -32,12 +36,13 @@ rescue => e
 end
 ```
 
-**Monitor slug** must match the slug configured in Sentry. Slugs are unique per project and environment.
+**Monitor slug** must match the slug configured in Sentry.
+Slugs are unique per project and environment.
 
 **Status values:**
 
 | Status | When to use |
-|--------|-------------|
+| --- | --- |
 | `:in_progress` | Job has started |
 | `:ok` | Job completed successfully |
 | `:error` | Job failed |
@@ -89,11 +94,13 @@ Sentry.init do |config|
 end
 ```
 
-Sentry captures check-ins for every job defined in your Sidekiq-Cron schedule automatically — no per-job changes needed.
+Sentry captures check-ins for every job defined in your Sidekiq-Cron schedule
+automatically — no per-job changes needed.
 
 ## Upserting Monitor Configuration
 
-Pass `monitor_config` in the initial check-in to create or update the monitor definition programmatically (no manual setup in Sentry UI required):
+Pass `monitor_config` in the initial check-in to create or update the monitor definition
+programmatically (no manual setup in Sentry UI required):
 
 ```ruby
 monitor_config = Sentry::Cron::MonitorConfig.from_crontab(
@@ -137,7 +144,8 @@ Supported interval units: `:minute`, `:hour`, `:day`, `:week`, `:month`, `:year`
 
 ## Completion-Only Check-In
 
-For jobs where only missed-schedule detection matters (not duration), send a single `:ok` check-in at job completion instead of the two-step `:in_progress` / `:ok` pair:
+For jobs where only missed-schedule detection matters (not duration), send a single
+`:ok` check-in at job completion instead of the two-step `:in_progress` / `:ok` pair:
 
 ```ruby
 def run_health_ping
@@ -146,22 +154,28 @@ def run_health_ping
 end
 ```
 
-This detects when a job doesn't run at all but cannot detect stuck or long-running jobs — there is no `:in_progress` marker, so Sentry has no start time to measure against `max_runtime`. Use the full two-step pattern for jobs where duration matters.
+This detects when a job doesn’t run at all but cannot detect stuck or long-running jobs
+— there is no `:in_progress` marker, so Sentry has no start time to measure against
+`max_runtime`. Use the full two-step pattern for jobs where duration matters.
 
 ## Best Practices
 
-- Use the two-step `:in_progress` / `:ok` pattern for all long-running jobs — it catches both missed runs and jobs that started but never finished
+- Use the two-step `:in_progress` / `:ok` pattern for all long-running jobs — it catches
+  both missed runs and jobs that started but never finished
 - Set `checkin_margin` a few minutes above the expected cron interval jitter
-- Set `max_runtime` conservatively — it's better to alert early on a runaway job than to miss it
-- Use `monitor_config` upsert in the job itself rather than configuring monitors manually in the Sentry UI — this keeps schedule definitions in code
-- Ensure `SENTRY_DSN` is set in the environment where cron jobs run (often different from the web process)
+- Set `max_runtime` conservatively — it’s better to alert early on a runaway job than to
+  miss it
+- Use `monitor_config` upsert in the job itself rather than configuring monitors
+  manually in the Sentry UI — this keeps schedule definitions in code
+- Ensure `SENTRY_DSN` is set in the environment where cron jobs run (often different
+  from the web process)
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
-| Check-ins not appearing | Verify `SENTRY_DSN` is set in the cron job's environment (separate from web server) |
-| Monitor shows "missed" immediately | `checkin_margin` too low; increase it to account for scheduler jitter |
+| --- | --- |
+| Check-ins not appearing | Verify `SENTRY_DSN` is set in the cron job’s environment (separate from web server) |
+| Monitor shows “missed” immediately | `checkin_margin` too low; increase it to account for scheduler jitter |
 | `capture_check_in` returns `nil` | SDK not initialized — ensure `Sentry.init` runs before the job |
 | ActiveJob mixin not capturing | Confirm `include Sentry::Cron::MonitorCheckIns` and `sentry_monitor_check_ins` are both present |
 | Sidekiq-Cron not auto-capturing | Ensure `config.enabled_patches += [:sidekiq_cron]` is in `Sentry.init`; requires `sidekiq-cron` gem |

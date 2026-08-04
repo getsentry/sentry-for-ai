@@ -2,16 +2,16 @@
 
 > Minimum SDK: `Sentry` ≥ 4.2.0
 
----
+* * *
 
 ## Overview
 
 Sentry Cron Monitoring detects:
-- **Missed check-ins** — job didn't run at the expected time
+- **Missed check-ins** — job didn’t run at the expected time
 - **Runtime failures** — job ran but encountered an error
 - **Timeouts** — job exceeded `MaxRuntime` without completing
 
----
+* * *
 
 ## `CaptureCheckIn()` API
 
@@ -30,16 +30,16 @@ SentryId CaptureCheckIn(
 ### Check-In Status Values
 
 | Status | When to use |
-|--------|-------------|
+| --- | --- |
 | `CheckInStatus.InProgress` | Job has started, work is underway |
 | `CheckInStatus.Ok` | Job completed successfully |
 | `CheckInStatus.Error` | Job failed — an error occurred |
 
----
+* * *
 
 ## Pattern A: Two-Signal Check-Ins (Recommended)
 
-Sends two signals: `InProgress` at start and `Ok`/`Error` at end.  
+Sends two signals: `InProgress` at start and `Ok`/`Error` at end.\
 Enables detection of both **missed jobs** and **timeout violations**.
 
 ```csharp
@@ -61,11 +61,12 @@ catch (Exception ex)
 }
 ```
 
----
+* * *
 
 ## Pattern B: Heartbeat Check-In (Simpler)
 
-Sends a single check-in **after** execution. Detects **missed jobs** only — cannot detect timeouts.
+Sends a single check-in **after** execution.
+Detects **missed jobs** only — cannot detect timeouts.
 
 ```csharp
 try
@@ -94,11 +95,12 @@ SentrySdk.CaptureCheckIn(
 );
 ```
 
----
+* * *
 
 ## Programmatic Monitor Configuration (Upsert)
 
-Create or update a monitor directly from code via `configureMonitorOptions`. This is sent with the **first** check-in and is idempotent — safe to call on every run.
+Create or update a monitor directly from code via `configureMonitorOptions`. This is
+sent with the **first** check-in and is idempotent — safe to call on every run.
 
 ### Crontab Schedule
 
@@ -139,7 +141,7 @@ var checkInId = SentrySdk.CaptureCheckIn(
 ### `SentryMonitorInterval` Values
 
 | Value | Description |
-|-------|-------------|
+| --- | --- |
 | `SentryMonitorInterval.Minute` | Per-minute interval |
 | `SentryMonitorInterval.Hour` | Per-hour interval |
 | `SentryMonitorInterval.Day` | Per-day interval |
@@ -147,12 +149,12 @@ var checkInId = SentrySdk.CaptureCheckIn(
 | `SentryMonitorInterval.Month` | Per-month interval |
 | `SentryMonitorInterval.Year` | Per-year interval |
 
----
+* * *
 
 ## Monitor Configuration Reference
 
 | Option | Type | Description |
-|--------|------|-------------|
+| --- | --- | --- |
 | `Interval(crontab)` | method | Standard crontab expression (e.g., `"*/15 * * * *"`) |
 | `Interval(interval, unit)` | method | alternative interval-based schedule |
 | `CheckInMargin` | `TimeSpan` | Grace period before a missing check-in is flagged |
@@ -161,11 +163,12 @@ var checkInId = SentrySdk.CaptureCheckIn(
 | `FailureIssueThreshold` | `int` | Consecutive failures before a Sentry issue is opened |
 | `RecoveryThreshold` | `int` | Consecutive successes before a Sentry issue is closed |
 
----
+* * *
 
 ## ASP.NET Core — BackgroundService / IHostedService
 
-The most common .NET pattern for scheduled jobs is a `BackgroundService`. Pair it with `CaptureCheckIn` for full monitoring:
+The most common .NET pattern for scheduled jobs is a `BackgroundService`. Pair it with
+`CaptureCheckIn` for full monitoring:
 
 ```csharp
 using Microsoft.Extensions.Hosting;
@@ -290,11 +293,12 @@ public class SyncJob : IHostedService, IDisposable
 }
 ```
 
----
+* * *
 
 ## Hangfire Integration
 
-A dedicated `Sentry.Hangfire` package wraps check-ins automatically around Hangfire job execution:
+A dedicated `Sentry.Hangfire` package wraps check-ins automatically around Hangfire job
+execution:
 
 ```shell
 dotnet add package Sentry.Hangfire
@@ -312,7 +316,8 @@ builder.Services.AddHangfire(config =>
 builder.Services.AddHangfireServer();
 ```
 
-With Hangfire, check-ins are sent automatically for jobs annotated with the `[SentryMonitorSlug("...")]` attribute — no manual `CaptureCheckIn` calls needed:
+With Hangfire, check-ins are sent automatically for jobs annotated with the
+`[SentryMonitorSlug("...")]` attribute — no manual `CaptureCheckIn` calls needed:
 
 ```csharp
 public class MyJob
@@ -322,13 +327,16 @@ public class MyJob
 }
 ```
 
-See the [Hangfire integration guide](https://docs.sentry.io/platforms/dotnet/crons/hangfire/) for full details.
+See the
+[Hangfire integration guide](https://docs.sentry.io/platforms/dotnet/crons/hangfire/)
+for full details.
 
----
+* * *
 
 ## Quartz.NET Integration
 
-**No official Quartz.NET package exists.** Use `CaptureCheckIn` manually inside `IJob.Execute()`:
+**No official Quartz.NET package exists.** Use `CaptureCheckIn` manually inside
+`IJob.Execute()`:
 
 ```csharp
 using Quartz;
@@ -365,7 +373,7 @@ public class MyQuartzJob : IJob
 }
 ```
 
----
+* * *
 
 ## Long-Running Job Pattern (Heartbeat Loop)
 
@@ -410,25 +418,28 @@ public class LongRunningProcessor : BackgroundService
 }
 ```
 
----
+* * *
 
 ## Alerting
 
-Create issue alerts in Sentry:  
+Create issue alerts in Sentry:\
 **Alerts → Create Alert → Issues → filter** by tag `monitor.slug equals my-monitor-slug`
 
----
+* * *
 
 ## Rate Limits
 
-Cron check-ins are rate-limited to **6 check-ins per minute per monitor per environment**. Each environment (`production`, `staging`, etc.) tracks independently. Exceeding this limit silently drops events — visible in Usage Stats.
+Cron check-ins are rate-limited to **6 check-ins per minute per monitor per
+environment**. Each environment (`production`, `staging`, etc.)
+tracks independently.
+Exceeding this limit silently drops events — visible in Usage Stats.
 
----
+* * *
 
 ## SDK Version Matrix
 
 | Feature | Min SDK Version |
-|---------|----------------|
+| --- | --- |
 | `SentrySdk.CaptureCheckIn()` | **4.2.0** |
 | Heartbeat pattern | **4.2.0** |
 | Programmatic monitor upsert (`configureMonitorOptions`) | **4.7.0** |
@@ -437,15 +448,15 @@ Cron check-ins are rate-limited to **6 check-ins per minute per monitor per envi
 | `Sentry.Hangfire` auto-integration | **4.x** |
 | Quartz.NET | ❌ Manual API only |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Check-ins not appearing in Sentry | Verify `monitorSlug` matches the slug configured in Sentry; check DSN is correct and SDK is initialized |
-| Monitor shows "missed" despite job running | Increase `CheckInMargin` to allow more grace time; check server clock sync (NTP) |
-| Monitor shows "timeout" | Increase `MaxRuntime`; investigate why the job exceeds the expected duration |
+| Monitor shows “missed” despite job running | Increase `CheckInMargin` to allow more grace time; check server clock sync (NTP) |
+| Monitor shows “timeout” | Increase `MaxRuntime`; investigate why the job exceeds the expected duration |
 | Monitor not auto-created | Pass `configureMonitorOptions` on the **first** `CaptureCheckIn` call — the upsert creates the monitor |
 | `CheckInStatus.Error` but no Sentry issue | Configure `FailureIssueThreshold = 1` on the monitor options to create issues on first failure |
 | Hangfire jobs not sending check-ins | Ensure `config.UseSentry()` is called inside `AddHangfire`; verify Sentry SDK is initialized before Hangfire starts |

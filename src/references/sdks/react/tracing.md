@@ -1,17 +1,17 @@
 # Tracing — Sentry React SDK
 
-> Minimum SDK: `@sentry/react` ≥8.0.0+  
-> `reactRouterV7BrowserTracingIntegration`: requires `@sentry/react` ≥8.0.0  
-> `ignoreSpans`: requires `@sentry/react` ≥10.2.0  
-> `enableAsyncRouteHandlers` + `lazyRouteManifest`: requires `@sentry/react` ≥10.39.0  
+> Minimum SDK: `@sentry/react` ≥8.0.0+\
+> `reactRouterV7BrowserTracingIntegration`: requires `@sentry/react` ≥8.0.0\
+> `ignoreSpans`: requires `@sentry/react` ≥10.2.0\
+> `enableAsyncRouteHandlers` + `lazyRouteManifest`: requires `@sentry/react` ≥10.39.0\
 > `enableLongAnimationFrame`: requires `@sentry/react` ≥8.18.0
 
----
+* * *
 
 ## How Automatic Tracing Works
 
-| What's traced | Op | How |
-|---------------|----|-----|
+| What’s traced | Op | How |
+| --- | --- | --- |
 | Initial page load | `pageload` | `browserTracingIntegration()` reads `window.performance` timing |
 | Client-side navigations | `navigation` | History API (pushState / replaceState) |
 | `fetch()` requests | `http.client` | Patched automatically |
@@ -20,7 +20,7 @@
 | Long Animation Frames (≥8.18.0) | `ui.long-animation-frame` | `PerformanceLongAnimationFrameTiming` observer |
 | INP interactions | `ui.interaction` | `PerformanceEventTiming` observer, emitted on page hide |
 
----
+* * *
 
 ## Core Setup
 
@@ -47,9 +47,11 @@ Sentry.init({
 });
 ```
 
-> **To disable tracing entirely:** omit both `tracesSampleRate` and `tracesSampler`. Setting `tracesSampleRate: 0` is **not** the same — the integration still runs, it just doesn't send data.
+> **To disable tracing entirely:** omit both `tracesSampleRate` and `tracesSampler`.
+> Setting `tracesSampleRate: 0` is **not** the same — the integration still runs, it
+> just doesn’t send data.
 
----
+* * *
 
 ## `browserTracingIntegration` — All Options
 
@@ -62,23 +64,23 @@ Sentry.browserTracingIntegration({
 ### Page Load & Navigation
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `instrumentPageLoad` | `boolean` | `true` | Create a `pageload` span on initial load. Disable when you want to name the span yourself via `startBrowserTracingPageLoadSpan`. |
 | `instrumentNavigation` | `boolean` | `true` | Create `navigation` spans on History API changes. |
 
 ### Span Lifecycle / Timing
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `idleTimeout` | `number` (ms) | `1000` | How long to wait after the last child span finishes before closing the root span. The root takes the last child's end time as its own end time. |
+| --- | --- | --- | --- |
+| `idleTimeout` | `number` (ms) | `1000` | How long to wait after the last child span finishes before closing the root span. The root takes the last child’s end time as its own end time. |
 | `finalTimeout` | `number` (ms) | `30000` | Hard cap on how long a pageload/navigation span can live. Prevents runaway open spans. |
-| `childSpanTimeout` | `number` (ms) | `15000` | If a child span hasn't finished within this time, the root span finishes anyway. |
+| `childSpanTimeout` | `number` (ms) | `15000` | If a child span hasn’t finished within this time, the root span finishes anyway. |
 | `markBackgroundSpan` | `boolean` | `true` | When the tab goes to the background, mark the active span as `cancelled` and close it. |
 
 ### HTTP Request Spans
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `traceFetch` | `boolean` | `true` | Auto-create child spans for `fetch()` calls. |
 | `traceXHR` | `boolean` | `true` | Auto-create child spans for `XMLHttpRequest` calls. |
 | `enableHTTPTimings` | `boolean` | `true` | Enrich HTTP spans with Resource Timing API data: DNS lookup, TLS handshake, connection, TTFB, download time. |
@@ -88,7 +90,7 @@ Sentry.browserTracingIntegration({
 ### Performance Observations
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `enableLongTask` | `boolean` | `true` | Capture spans for Long Tasks — main-thread blocks > 50ms. |
 | `enableLongAnimationFrame` | `boolean` | `true` | Capture Long Animation Frames (LoAF). Supersedes Long Tasks for most use cases. SDK ≥8.18.0. |
 | `enableInp` | `boolean` | `true` (SDK 8.x+) | Auto-capture INP events as standalone spans. In SDK 7.x, defaults to `false` and must be opted in. |
@@ -97,7 +99,7 @@ Sentry.browserTracingIntegration({
 ### Span Naming
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `beforeStartSpan` | `(context: StartSpanOptions) => StartSpanOptions` | — | Called just before every pageload or navigation span is created. Mutate and return `context` to rename the span, change `op`, or add attributes. Primary use: parameterize URLs (`/users/123` → `/users/<id>`). |
 
 ```typescript
@@ -114,14 +116,14 @@ browserTracingIntegration({
 ### Trace Linking
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `linkPreviousTrace` | `'in-memory' \| 'session-storage' \| false` | `'in-memory'` | How a new pageload links back to the previous trace. `'session-storage'` persists across hard reloads. `false` disables linking. |
 | `enableReportPageLoaded` | `boolean` | `false` | Enables `Sentry.reportPageLoaded()` for manually signalling page load completion in complex hydration scenarios. |
 
 ### Span Filtering
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `ignoreResourceSpans` | `string[]` | `[]` | Skip resource spans by `op` prefix. Example: `["resource.css", "resource.script", "resource.img"]`. |
 | `ignorePerformanceApiSpans` | `Array<string \| RegExp>` | `[]` | Skip spans created from `performance.mark()`/`performance.measure()` matching these names. |
 
@@ -178,49 +180,57 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
-## What's Auto-Instrumented
+## What’s Auto-Instrumented
 
 ### Page Load (`op: "pageload"`)
+
 - Created on initial page render using `window.performance` timing API
 - Contains Web Vitals: **LCP**, **CLS**, **FCP**, **TTFB**
 - HTTP requests made during page load appear as child spans
 - Long Tasks and Long Animation Frames appear as child spans
 
 ### Navigation (`op: "navigation"`)
+
 - Created on every client-side navigation via the History API
 - Does **not** include Web Vitals (those are page-load only)
 - HTTP requests during navigation appear as child spans
 
 ### HTTP Spans (`op: "http.client"`)
+
 - Automatic for both `fetch()` and `XMLHttpRequest`
 - Captures: method, URL, HTTP status code, response size
-- With `enableHTTPTimings`: DNS lookup time, TLS handshake, connection time, TTFB, download time
+- With `enableHTTPTimings`: DNS lookup time, TLS handshake, connection time, TTFB,
+  download time
 
 ### Long Task Spans (`op: "ui.long-task"`)
+
 - Created for any main-thread block > 50ms
 - Helps identify JavaScript that blocks interactivity
 
 ### Long Animation Frame Spans (`op: "ui.long-animation-frame"`)
+
 - SDK 8.18.0+; based on the LoAF API
 - Captures render-blocking work including style/layout recalculations
 - More accurate than Long Tasks for measuring rendering bottlenecks
 
 ### INP / Interaction Spans (`op: "ui.interaction"`)
+
 - Standalone spans capturing Interaction to Next Paint
 - Emitted on page hide (tab switch, navigation away)
 - Attributes: `component`, `element`, `interaction_type`
 - On by default in SDK 8.x+; opt-in (`enableInp: true`) in SDK 7.x
 
----
+* * *
 
 ## Web Vitals
 
-`browserTracingIntegration()` captures Core Web Vitals automatically and surfaces them in the **Sentry Web Vitals** product module:
+`browserTracingIntegration()` captures Core Web Vitals automatically and surfaces them
+in the **Sentry Web Vitals** product module:
 
 | Vital | What it measures | Good | Needs Improvement | Poor |
-|-------|-----------------|------|-------------------|------|
+| --- | --- | --- | --- | --- |
 | **LCP** — Largest Contentful Paint | Time for largest viewport element to render | ≤ 2.5s | ≤ 4s | > 4s |
 | **INP** — Interaction to Next Paint | Time from user interaction to next paint (replaced FID March 2024) | ≤ 200ms | ≤ 500ms | > 500ms |
 | **CLS** — Cumulative Layout Shift | Sum of unexpected layout shift scores | ≤ 0.1 | ≤ 0.25 | > 0.25 |
@@ -228,27 +238,32 @@ Sentry.init({
 | **TTFB** — Time to First Byte | Time until browser receives first byte | ≤ 100ms | ≤ 200ms | > 200ms |
 | **FID** — First Input Delay | *(Legacy — collected but replaced by INP)* | ≤ 100ms | ≤ 300ms | > 300ms |
 
-> **LCP and CLS timing note:** These keep changing after the pageload span ends. Sentry captures their final values via `visibilitychange` and page hide events. INP is similarly emitted as a standalone span on page hide.
+> **LCP and CLS timing note:** These keep changing after the pageload span ends.
+> Sentry captures their final values via `visibilitychange` and page hide events.
+> INP is similarly emitted as a standalone span on page hide.
 
 **INP in SDK 7.x** (must opt in):
 ```typescript
 browserTracingIntegration({ enableInp: true })
 ```
 
----
+* * *
 
 ## React Router Integrations
 
-All React Router integrations live in `@sentry/react`. The core mechanism: **replace** `browserTracingIntegration()` with the router-specific variant. Both cannot be used simultaneously.
+All React Router integrations live in `@sentry/react`. The core mechanism: **replace**
+`browserTracingIntegration()` with the router-specific variant.
+Both cannot be used simultaneously.
 
 > This section is for React Router non-framework/data/declarative usage.
-> If the project uses React Router Framework mode with `@sentry/react-router`, use [`react-router-framework`](../react-router-framework/index.md).
+> If the project uses React Router Framework mode with `@sentry/react-router`, use
+> [`react-router-framework`](../react-router-framework/index.md).
 
----
+* * *
 
 ### React Router v7 (Library Mode)
 
-**Package:** `react-router` (v7)  
+**Package:** `react-router` (v7)\
 **Import source for hooks:** `"react-router"`
 
 #### Method 1 — `createBrowserRouter` (Recommended)
@@ -322,7 +337,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 ```
 
-**Lazy routes (SDK ≥10.39.0):** add `enableAsyncRouteHandlers` and declare all route paths:
+**Lazy routes (SDK ≥10.39.0):** add `enableAsyncRouteHandlers` and declare all route
+paths:
 
 ```typescript
 Sentry.reactRouterV7BrowserTracingIntegration({
@@ -346,7 +362,7 @@ Sentry.reactRouterV7BrowserTracingIntegration({
 **Other router factories:**
 
 | Factory | Sentry wrapper |
-|---------|---------------|
+| --- | --- |
 | `createBrowserRouter` | `Sentry.wrapCreateBrowserRouterV7` |
 | `createMemoryRouter` | `Sentry.wrapCreateMemoryRouterV7` |
 | `createHashRouter` | `Sentry.wrapCreateBrowserRouterV7` (works for both) |
@@ -414,7 +430,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 
 #### Error Boundary (Required for Production Error Capture)
 
-React Router v7's default `errorElement` swallows errors silently. You must capture them manually:
+React Router v7’s default `errorElement` swallows errors silently.
+You must capture them manually:
 
 ```typescript
 import { useRouteError } from "react-router";
@@ -452,11 +469,11 @@ const router = sentryCreateBrowserRouter([
 ]);
 ```
 
----
+* * *
 
 ### React Router v6
 
-**Package:** `react-router-dom` (v6)  
+**Package:** `react-router-dom` (v6)\
 **Import source for hooks:** `"react-router-dom"`
 
 #### Method 1 — `createBrowserRouter` (Recommended for v6.4+)
@@ -506,7 +523,7 @@ export const router = sentryCreateBrowserRouter([
 **Other router factories (SDK ≥8.50.0):**
 
 | Factory | Sentry wrapper |
-|---------|---------------|
+| --- | --- |
 | `createBrowserRouter` | `Sentry.wrapCreateBrowserRouterV6` |
 | `createMemoryRouter` | `Sentry.wrapCreateMemoryRouterV6` |
 
@@ -554,7 +571,7 @@ function App() {
 }
 ```
 
----
+* * *
 
 ### React Router v4 / v5
 
@@ -634,9 +651,10 @@ Sentry.init({
 });
 ```
 
-**React Router v4:** use `Sentry.reactRouterV4BrowserTracingIntegration` — the API is identical to v5.
+**React Router v4:** use `Sentry.reactRouterV4BrowserTracingIntegration` — the API is
+identical to v5.
 
----
+* * *
 
 ### TanStack Router
 
@@ -674,23 +692,27 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 ```
 
-**Key difference vs React Router:** `tanstackRouterBrowserTracingIntegration` takes the router instance directly — no hooks (`useLocation`, `useNavigationType`) or helpers (`createRoutesFromChildren`, `matchRoutes`) are needed. TanStack Router exposes its route definitions directly to the SDK.
+**Key difference vs React Router:** `tanstackRouterBrowserTracingIntegration` takes the
+router instance directly — no hooks (`useLocation`, `useNavigationType`) or helpers
+(`createRoutesFromChildren`, `matchRoutes`) are needed.
+TanStack Router exposes its route definitions directly to the SDK.
 
----
+* * *
 
 ### How Route Names Are Parameterized
 
 All router integrations extract parameterized route patterns instead of literal URLs:
 
 | Actual URL | Transaction Name |
-|-----------|-----------------|
+| --- | --- |
 | `/users/42` | `/users/:userId` |
 | `/orders/abc-123/items` | `/orders/:orderId/items` |
 | `/posts/2024/my-first-post` | `/posts/:year/:slug` |
 
-This grouping is essential for meaningful performance data — without it, every user generates a unique transaction name and nothing can be aggregated.
+This grouping is essential for meaningful performance data — without it, every user
+generates a unique transaction name and nothing can be aggregated.
 
----
+* * *
 
 ### Router Integration Quick-Reference
 
@@ -723,7 +745,7 @@ Are you using TanStack Router?
 └─ Any version ≥1.64.0 ─────────────► tanstackRouterBrowserTracingIntegration(router)
 ```
 
----
+* * *
 
 ## Custom Spans
 
@@ -731,7 +753,9 @@ Are you using TanStack Router?
 
 #### `Sentry.startSpan()` — Active, Auto-Ending (Recommended)
 
-Wraps a block of work. The span is active (collects children) and automatically ends when the callback returns or resolves:
+Wraps a block of work.
+The span is active (collects children) and automatically ends when the callback returns
+or resolves:
 
 ```typescript
 // Asynchronous
@@ -761,7 +785,8 @@ const result = Sentry.startSpan(
 
 #### `Sentry.startSpanManual()` — Active, Manual End
 
-Use when the span lifetime cannot be enclosed in a single callback — e.g., middleware that calls `next()`:
+Use when the span lifetime cannot be enclosed in a single callback — e.g., middleware
+that calls `next()`:
 
 ```typescript
 function authMiddleware(req: Request, res: Response, next: NextFunction) {
@@ -781,7 +806,8 @@ function authMiddleware(req: Request, res: Response, next: NextFunction) {
 
 #### `Sentry.startInactiveSpan()` — Not Active, Manual End
 
-For spans that cross event boundaries and should **not** automatically collect children as parent:
+For spans that cross event boundaries and should **not** automatically collect children
+as parent:
 
 ```typescript
 let checkoutSpan: Sentry.Span | undefined;
@@ -826,7 +852,7 @@ childB.end();
 parentSpan.end();
 ```
 
----
+* * *
 
 ### Span Options Reference
 
@@ -845,7 +871,7 @@ interface StartSpanOptions {
 **Common `op` values:**
 
 | `op` | When to use |
-|------|-------------|
+| --- | --- |
 | `http.client` | Outgoing HTTP requests |
 | `db.query` | Database queries |
 | `ui.render` | React component render work |
@@ -857,7 +883,7 @@ interface StartSpanOptions {
 | `cache.get` / `cache.set` | Cache reads/writes |
 | `middleware` | Express/Koa/Fastify middleware |
 
----
+* * *
 
 ### Enriching Spans
 
@@ -892,7 +918,7 @@ if (span) {
 }
 ```
 
----
+* * *
 
 ### Nesting Spans
 
@@ -919,7 +945,8 @@ await Sentry.startSpan({ name: "loadDashboard", op: "ui.load" }, async () => {
 
 ### `forceTransaction` — Standalone Root Span
 
-Forces a span to appear as its own root transaction in the Sentry UI, independent of any active parent. Useful for background workers, Web Workers, or queue processors:
+Forces a span to appear as its own root transaction in the Sentry UI, independent of any
+active parent. Useful for background workers, Web Workers, or queue processors:
 
 ```typescript
 Sentry.startSpan(
@@ -933,7 +960,9 @@ Sentry.startSpan(
 
 ### Browser Flat Span Hierarchy
 
-In browsers, all child spans are attached **flat** to the root span (not nested under intermediate parents). This prevents incorrect parent-child attribution in parallel async flows.
+In browsers, all child spans are attached **flat** to the root span (not nested under
+intermediate parents).
+This prevents incorrect parent-child attribution in parallel async flows.
 
 To opt into true nesting (use with care):
 
@@ -944,20 +973,22 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Distributed Tracing
 
-Distributed tracing connects a browser page load to all backend API calls it triggers, creating a single end-to-end waterfall.
+Distributed tracing connects a browser page load to all backend API calls it triggers,
+creating a single end-to-end waterfall.
 
 ### The Two Headers
 
 | Header | Format | Purpose |
-|--------|--------|---------|
+| --- | --- | --- |
 | `sentry-trace` | `{traceId}-{spanId}-{sampled}` | Carries trace context |
 | `baggage` | W3C Baggage format with `sentry-*` entries | Carries sampling decision + metadata |
 
-Both headers are automatically injected into `fetch()` and `XMLHttpRequest` for URLs matching `tracePropagationTargets`.
+Both headers are automatically injected into `fetch()` and `XMLHttpRequest` for URLs
+matching `tracePropagationTargets`.
 
 ### `tracePropagationTargets`
 
@@ -979,7 +1010,8 @@ Sentry.init({
 });
 ```
 
-**Defaults:** Same-origin requests get headers automatically. Cross-origin requests need explicit entries.
+**Defaults:** Same-origin requests get headers automatically.
+Cross-origin requests need explicit entries.
 
 **Disable completely:**
 ```typescript
@@ -1009,7 +1041,9 @@ Without this, preflight requests fail and browsers suppress the headers.
 
 ### SSR / Meta Tag Approach
 
-When your HTML is server-rendered, emit Sentry trace context into `<meta>` tags. `browserTracingIntegration` reads them on init and attaches the pageload span to the server's trace — the full request becomes one continuous trace.
+When your HTML is server-rendered, emit Sentry trace context into `<meta>` tags.
+`browserTracingIntegration` reads them on init and attaches the pageload span to the
+server’s trace — the full request becomes one continuous trace.
 
 Server (Node.js/Express):
 
@@ -1039,7 +1073,7 @@ The browser SDK reads these tags automatically — no extra client config needed
 
 ### Manual Propagation (WebSockets, Custom Channels)
 
-For protocols that don't support HTTP headers:
+For protocols that don’t support HTTP headers:
 
 ```typescript
 // Browser (sender)
@@ -1074,7 +1108,8 @@ socket.on("message", (raw) => {
 
 ### W3C `traceparent` Compatibility (SDK ≥10.10.0)
 
-Add the W3C `traceparent` header alongside `sentry-trace` for OpenTelemetry-native backends:
+Add the W3C `traceparent` header alongside `sentry-trace` for OpenTelemetry-native
+backends:
 
 ```typescript
 Sentry.init({
@@ -1082,7 +1117,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Sampling
 
@@ -1136,10 +1171,14 @@ interface SamplingContext {
 
 ### `inheritOrSampleWith` — Why It Matters
 
-Use `inheritOrSampleWith(fallback)` instead of checking `parentSampled` directly. It enables:
-- **Deterministic sampling:** the same rate decision is applied throughout the trace chain
-- **Accurate metric extrapolation:** Sentry's performance metrics scale correctly only when consistent sample rates flow through all services
-- **Correct Sampled flag:** ensures the `sentry-sampled` value in downstream `baggage` matches the actual decision
+Use `inheritOrSampleWith(fallback)` instead of checking `parentSampled` directly.
+It enables:
+- **Deterministic sampling:** the same rate decision is applied throughout the trace
+  chain
+- **Accurate metric extrapolation:** Sentry’s performance metrics scale correctly only
+  when consistent sample rates flow through all services
+- **Correct Sampled flag:** ensures the `sentry-sampled` value in downstream `baggage`
+  matches the actual decision
 
 ### Returning Boolean vs Number
 
@@ -1154,13 +1193,13 @@ tracesSampler: ({ name }) => {
 ### Sampling Guidelines by Traffic Level
 
 | Daily transactions | Recommended `tracesSampleRate` |
-|--------------------|-------------------------------|
+| --- | --- |
 | < 10K | `1.0` — capture everything |
 | 10K–100K | `0.2` — 20% |
 | 100K–1M | `0.05` – `0.1` |
 | > 1M | `0.01` – `0.02` with `tracesSampler` for priority routes at higher rates |
 
----
+* * *
 
 ## Span Filtering
 
@@ -1201,7 +1240,8 @@ Sentry.init({
 
 ### `beforeSendSpan` — Modify Individual Spans
 
-> `beforeSendSpan` **cannot drop spans** — it can only modify them. To suppress spans, use `ignoreSpans` (SDK ≥10.2.0).
+> `beforeSendSpan` **cannot drop spans** — it can only modify them.
+> To suppress spans, use `ignoreSpans` (SDK ≥10.2.0).
 
 ```typescript
 Sentry.init({
@@ -1256,9 +1296,10 @@ Sentry.init({
 });
 ```
 
-> **Warning:** If the root span (the transaction itself) matches an `ignoreSpans` rule, the **entire local trace is dropped**.
+> **Warning:** If the root span (the transaction itself) matches an `ignoreSpans` rule,
+> the **entire local trace is dropped**.
 
----
+* * *
 
 ## Custom Routing (Manual Spans)
 
@@ -1309,9 +1350,10 @@ myCustomRouter.on("routeResolved", (route) => {
 });
 ```
 
-Both functions create **idle spans** — they close automatically after `idleTimeout`ms of no new child activity, matching the behavior of automatic pageload/navigation spans.
+Both functions create **idle spans** — they close automatically after `idleTimeout`ms of
+no new child activity, matching the behavior of automatic pageload/navigation spans.
 
----
+* * *
 
 ## Full Import Reference
 
@@ -1360,14 +1402,14 @@ Sentry.SEMANTIC_ATTRIBUTE_SENTRY_SOURCE  // "sentry.source"
 Sentry.SEMANTIC_ATTRIBUTE_SENTRY_OP      // "sentry.op"
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No transactions in Performance dashboard | Verify `tracesSampleRate` > 0; confirm `browserTracingIntegration()` (or router variant) is in `integrations` array |
-| Transaction names show raw URLs (`/users/42`) instead of patterns | Add router integration matching your router version; ensure it's replacing, not supplementing, `browserTracingIntegration()` |
+| Transaction names show raw URLs (`/users/42`) instead of patterns | Add router integration matching your router version; ensure it’s replacing, not supplementing, `browserTracingIntegration()` |
 | Transaction named `<unknown>` | Router integration is missing or misconfigured; check `useEffect`, `useLocation`, `useNavigationType` are all passed correctly |
 | Distributed trace not linking frontend → backend | Add backend URL to `tracePropagationTargets`; verify `Access-Control-Allow-Headers` includes `sentry-trace, baggage` |
 | SSR page load not linked to server trace | Inject `<meta name="sentry-trace">` and `<meta name="baggage">` tags from `Sentry.getTraceData()` in server-rendered HTML |

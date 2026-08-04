@@ -1,7 +1,8 @@
 # Tracing & Performance — Flutter SDK Reference
 
-> **Minimum SDK version:** `sentry_flutter` ≥ 9.1.0 (routing TTID/TTFD), ≥ 6.17.0 (user interaction tracing)
-> **Platforms:** Most features — all platforms. Platform-specific caveats noted per feature.
+> **Minimum SDK version:** `sentry_flutter` ≥ 9.1.0 (routing TTID/TTFD), ≥ 6.17.0 (user
+> interaction tracing) **Platforms:** Most features — all platforms.
+> Platform-specific caveats noted per feature.
 
 ## Setup
 
@@ -33,11 +34,12 @@ await SentryFlutter.init(
 3. Parent transaction sampling decision (distributed tracing)
 4. `tracesSampleRate` static value
 
----
+* * *
 
 ## Navigation Instrumentation
 
-Add `SentryNavigatorObserver` to automatically create a transaction per screen with Time to Initial Display (TTID) spans:
+Add `SentryNavigatorObserver` to automatically create a transaction per screen with Time
+to Initial Display (TTID) spans:
 
 ### Standard MaterialApp / CupertinoApp
 
@@ -75,7 +77,8 @@ Navigator.push(
 );
 ```
 
-> ⚠️ Routes **must have names** for TTID/TTFD spans and navigation breadcrumbs to be created. Unnamed routes show as `null` in Sentry.
+> ⚠️ Routes **must have names** for TTID/TTFD spans and navigation breadcrumbs to be
+> created. Unnamed routes show as `null` in Sentry.
 
 ### GoRouter
 
@@ -104,7 +107,9 @@ final GoRouter router = GoRouter(
 );
 ```
 
-> **Known limitation:** GoRouter does not propagate navigator observers across same-level tab transitions. Bottom-tab navigation events may not be tracked.
+> **Known limitation:** GoRouter does not propagate navigator observers across
+> same-level tab transitions.
+> Bottom-tab navigation events may not be tracked.
 
 ### Auto Route (Community Pattern)
 
@@ -119,13 +124,16 @@ MaterialApp.router(
 )
 ```
 
-> **Known limitation:** Tab-based nested navigation is not captured (tracked issue getsentry/sentry-dart#2123).
+> **Known limitation:** Tab-based nested navigation is not captured (tracked issue
+> getsentry/sentry-dart#2123).
 
----
+* * *
 
 ## Time to Full Display (TTFD)
 
-TTID (Time to Initial Display) is **always enabled** — measures to the first rendered frame. TTFD measures to when your screen is fully ready (data loaded, async work done). TTFD is **opt-in**:
+TTID (Time to Initial Display) is **always enabled** — measures to the first rendered
+frame. TTFD measures to when your screen is fully ready (data loaded, async work done).
+TTFD is **opt-in**:
 
 ```dart
 // Enable in options
@@ -162,13 +170,15 @@ await _loadData();
 SentryFlutter.currentDisplay()?.reportFullyDisplayed();
 ```
 
-TTFD auto-expires at **30 seconds** with `SpanStatus.DEADLINE_EXCEEDED` if `reportFullyDisplayed()` is never called.
+TTFD auto-expires at **30 seconds** with `SpanStatus.DEADLINE_EXCEEDED` if
+`reportFullyDisplayed()` is never called.
 
----
+* * *
 
 ## User Interaction Tracing
 
-Automatically creates transactions for taps, clicks, and long presses. Requires `SentryWidget` at the root:
+Automatically creates transactions for taps, clicks, and long presses.
+Requires `SentryWidget` at the root:
 
 ```dart
 appRunner: () => runApp(SentryWidget(child: MyApp()))
@@ -184,7 +194,9 @@ ElevatedButton(
 )
 ```
 
-Transactions are named `ButtonWidget key[submit_payment_button]` with operation `ui.action.click`. Empty transactions (no child spans within `idleTimeout`) are silently dropped.
+Transactions are named `ButtonWidget key[submit_payment_button]` with operation
+`ui.action.click`. Empty transactions (no child spans within `idleTimeout`) are silently
+dropped.
 
 Configuration:
 
@@ -195,7 +207,7 @@ options.sendDefaultPii = false;                  // set true to include widget t
 options.idleTimeout = const Duration(milliseconds: 3000); // default
 ```
 
----
+* * *
 
 ## HTTP Tracing
 
@@ -243,20 +255,22 @@ await transaction.finish(status: SpanStatus.ok());
 
 ### Distributed Tracing
 
-Propagate trace context to your backend (links mobile spans to server spans in the waterfall view):
+Propagate trace context to your backend (links mobile spans to server spans in the
+waterfall view):
 
 ```dart
 options.tracePropagationTargets = ['api.myapp.com', 'localhost'];
 options.propagateTraceparent = true; // also send W3C traceparent header (SDK ≥9.7.0)
 ```
 
----
+* * *
 
 ## App Start Instrumentation
 
 **Platforms: iOS and Android only.** Automatically enabled — no config needed.
 
-Measures from earliest native process init to first Flutter frame. Creates:
+Measures from earliest native process init to first Flutter frame.
+Creates:
 - `ui.load` transaction
 - `app.start.cold` or `app.start.warm` span
 
@@ -270,17 +284,19 @@ import 'package:sentry_flutter/src/integrations/native_app_start_integration.dar
 options.integrations.removeWhere((i) => i is NativeAppStartIntegration);
 ```
 
----
+* * *
 
 ## Slow and Frozen Frames
 
-**Platforms: iOS, Android, macOS.** Auto-enabled when Sentry initializes before `WidgetsFlutterBinding`.
+**Platforms: iOS, Android, macOS.** Auto-enabled when Sentry initializes before
+`WidgetsFlutterBinding`.
 
 Thresholds:
 - **Slow frame:** > 16ms render time (misses 60 FPS target)
 - **Frozen frame:** > 700ms render time
 
-If you need to call `WidgetsFlutterBinding.ensureInitialized()` before Sentry (e.g., for plugin setup), use:
+If you need to call `WidgetsFlutterBinding.ensureInitialized()` before Sentry (e.g., for
+plugin setup), use:
 
 ```dart
 // Replace WidgetsFlutterBinding.ensureInitialized() with:
@@ -293,7 +309,7 @@ Disable:
 options.enableFramesTracking = false;
 ```
 
----
+* * *
 
 ## Custom Instrumentation
 
@@ -369,7 +385,7 @@ options.tracesSampler = (ctx) {
 };
 ```
 
----
+* * *
 
 ## Database Tracing
 
@@ -417,7 +433,7 @@ import 'package:sentry_isar/sentry_isar.dart';
 final isar = await SentryIsar.open([UserSchema], directory: dir.path);
 ```
 
----
+* * *
 
 ## Asset Bundle Instrumentation
 
@@ -432,7 +448,7 @@ runApp(
 )
 ```
 
----
+* * *
 
 ## Production Configuration
 
@@ -461,18 +477,18 @@ await SentryFlutter.init(
 );
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No transactions in Sentry | Confirm `tracesSampleRate > 0`; set to `1.0` to see all during debugging |
 | Navigation not tracked | Add `SentryNavigatorObserver()` to `navigatorObservers`; name all routes |
 | Traces not being connected across navigations | `enableNewTraceOnNavigation` defaults to `false` since 9.19.0 — set it to `true` to generate a fresh trace on each navigation event |
 | TTID/TTFD spans missing | SDK ≥ 9.1.0 required; routes must have names |
 | TTFD never reports | Call `SentryFlutter.currentDisplay()?.reportFullyDisplayed()` or use `SentryDisplayWidget` |
-| GoRouter tabs not tracked | Known Flutter limitation — tab transitions don't trigger standard navigator callbacks |
+| GoRouter tabs not tracked | Known Flutter limitation — tab transitions don’t trigger standard navigator callbacks |
 | User interaction transactions empty | Widget must have a `Key`; spans need child work before `idleTimeout` |
 | Dio spans not appearing | Confirm `bindToScope: true` on the parent transaction; `dio.addSentry()` must be last |
 | HTTP spans not appearing | Wrap requests with a scope-bound transaction; `SentryHttpClient` only creates spans in a transaction context |

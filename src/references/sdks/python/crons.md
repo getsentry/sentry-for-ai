@@ -1,13 +1,15 @@
 # Crons — Sentry Python SDK
 
-> Minimum SDK: `sentry-sdk` 1.x+ (stable); 1.44.1+ for async `@monitor`; 1.45.0+ for `MonitorConfig` upsert
+> Minimum SDK: `sentry-sdk` 1.x+ (stable); 1.44.1+ for async `@monitor`; 1.45.0+ for
+> `MonitorConfig` upsert
 
 ## Overview
 
-Sentry Crons monitors scheduled jobs by receiving check-ins at job start, success, and failure. Three approaches:
+Sentry Crons monitors scheduled jobs by receiving check-ins at job start, success, and
+failure. Three approaches:
 
 | Approach | Use when |
-|----------|---------|
+| --- | --- |
 | `@monitor` decorator | Simple wrapping of any function |
 | `capture_checkin()` manually | Need control over timing, status, or heartbeats |
 | `CeleryIntegration(monitor_beat_tasks=True)` | Celery Beat tasks — zero boilerplate |
@@ -166,10 +168,10 @@ app.conf.beat_schedule = {
 Celery Beat constraints:
 
 | Rule | Detail |
-|------|--------|
+| --- | --- |
 | Auto-parses | `crontab` schedules only |
 | First-run creation | Monitor created lazily on first task execution |
-| No double-decoration | Don't use `@monitor` on tasks with `monitor_beat_tasks=True` |
+| No double-decoration | Don’t use `@monitor` on tasks with `monitor_beat_tasks=True` |
 | Default | `monitor_beat_tasks=False` — must be explicitly enabled |
 
 ## `MonitorStatus` Reference
@@ -186,7 +188,7 @@ MonitorStatus.ERROR         # job failed
 ## `MonitorConfig` Fields
 
 | Field | Type | Required | Description |
-|-------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `schedule` | `dict` | ✅ | `{"type": "crontab", "value": "* * * * *"}` or `{"type": "interval", "value": N, "unit": "..."}` |
 | `timezone` | `str` | No | IANA timezone name, default `"UTC"` |
 | `checkin_margin` | `int` | No | Minutes late before MISSED alert |
@@ -196,16 +198,19 @@ MonitorStatus.ERROR         # job failed
 
 ## Best Practices
 
-- Use `@monitor` with `monitor_config` so monitors are created automatically on first run — no Sentry UI setup needed
+- Use `@monitor` with `monitor_config` so monitors are created automatically on first
+  run — no Sentry UI setup needed
 - For Celery Beat, prefer `monitor_beat_tasks=True` over decorating individual tasks
 - Send `IN_PROGRESS` before starting work so TIMEOUT detection starts immediately
-- For jobs longer than `max_runtime`, send periodic `IN_PROGRESS` check-ins as heartbeats
-- Sentry enforces a rate limit of **6 check-ins/minute per monitor-environment** — excess are dropped silently
+- For jobs longer than `max_runtime`, send periodic `IN_PROGRESS` check-ins as
+  heartbeats
+- Sentry enforces a rate limit of **6 check-ins/minute per monitor-environment** —
+  excess are dropped silently
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Monitor not created in Sentry | Provide `monitor_config` — monitors are not auto-created without it (unless Celery Beat) |
 | MISSED alerts firing too early | Increase `checkin_margin` to allow for job startup time |
 | TIMEOUT alerts on slow jobs | Increase `max_runtime` or send periodic `IN_PROGRESS` heartbeats |

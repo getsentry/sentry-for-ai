@@ -1,14 +1,15 @@
 # Profiling — Sentry Cocoa SDK
 
-> Minimum SDK for UI Profiling (`configureProfiling`): `sentry-cocoa` v8.49.0+
-> Minimum SDK for stable `configureProfiling` API: v9.0.0+
-> Supported platforms: iOS and macOS. Not supported on tvOS, watchOS, or visionOS.
-> **All legacy profiling APIs (`profilesSampleRate`, `enableAppLaunchProfiling`, continuous beta) were removed in v9.0.0.**
+> Minimum SDK for UI Profiling (`configureProfiling`): `sentry-cocoa` v8.49.0+ Minimum
+> SDK for stable `configureProfiling` API: v9.0.0+ Supported platforms: iOS and macOS.
+> Not supported on tvOS, watchOS, or visionOS. **All legacy profiling APIs
+> (`profilesSampleRate`, `enableAppLaunchProfiling`, continuous beta) were removed in
+> v9.0.0.**
 
 ## Configuration
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `configureProfiling` | `((SentryProfileOptions) -> Void)?` | `nil` | Closure to configure UI Profiling (v8.49.0+) |
 | `sessionSampleRate` | `Float` (0.0–1.0) | `0` | Fraction of user sessions to profile; evaluated once per session |
 | `lifecycle` | `SentryProfileLifecycle` | `.manual` | `.trace` (auto) or `.manual` (explicit start/stop) |
@@ -78,13 +79,15 @@ SentrySDK.start { options in
 }
 ```
 
-Launch profile attaches to a special `app.launch` transaction (shown as **"launch"** in the Sentry UI). The profiler stops automatically when:
+Launch profile attaches to a special `app.launch` transaction (shown as **“launch”** in
+the Sentry UI). The profiler stops automatically when:
 1. `SentrySDK.startWithOptions` is called, OR
 2. TTID/TTFD is reached (if TTID/TTFD tracking is enabled)
 
 ### Manual lifecycle — app launch profiling
 
-With `.manual` lifecycle, a launch profile starts on the **next app launch** and continues until you explicitly call `SentrySDK.stopProfiler()`.
+With `.manual` lifecycle, a launch profile starts on the **next app launch** and
+continues until you explicitly call `SentrySDK.stopProfiler()`.
 
 ### Compound sampling example
 
@@ -100,12 +103,14 @@ SentrySDK.start { options in
 }
 ```
 
-`sessionSampleRate` is evaluated **once per session**, not per span. The same decision applies to all profiler start attempts for the duration of that session.
+`sessionSampleRate` is evaluated **once per session**, not per span.
+The same decision applies to all profiler start attempts for the duration of that
+session.
 
 ## SentryProfileLifecycle Values
 
 | Value | Behaviour |
-|-------|-----------|
+| --- | --- |
 | `.manual` | Profiler runs only between `SentrySDK.startProfiler()` and `SentrySDK.stopProfiler()` |
 | `.trace` | Profiler starts automatically when a new root span is created; stops when no root spans remain |
 
@@ -118,9 +123,11 @@ SentrySDK.stopProfiler()    // end profiling and flush data to Sentry
 
 ## dSYM Upload Requirement
 
-Profiling data in Sentry shows symbolicated stack frames. Without dSYM files, frames appear as memory addresses.
+Profiling data in Sentry shows symbolicated stack frames.
+Without dSYM files, frames appear as memory addresses.
 
-Upload dSYMs via the Sentry Wizard build phase (added automatically during wizard setup):
+Upload dSYMs via the Sentry Wizard build phase (added automatically during wizard
+setup):
 
 ```bash
 # Verify the build phase exists in Xcode:
@@ -137,7 +144,7 @@ For CI/CD, set `SENTRY_AUTH_TOKEN` as an environment variable.
 ## API History / Migration
 
 | API | Introduced | Removed | Notes |
-|-----|-----------|---------|-------|
+| --- | --- | --- | --- |
 | `profilesSampleRate` | 8.12.0 | **9.0.0** | Transaction-based profiling |
 | `profilesSampler` | 8.12.0 | **9.0.0** | Dynamic transaction-based profiling |
 | `enableAppLaunchProfiling` | 8.21.0 | **9.0.0** | Launch profiling (old) |
@@ -165,14 +172,20 @@ SentrySDK.start { options in
 
 ## MetricKit App Hang Reports
 
-MetricKit delivers hang diagnostic payloads on iOS 15+ and macOS 12+. Starting with **sentry-cocoa v9.x** (merged via PR #7185), the SDK captures the **full call-tree flamegraph** from a MetricKit hang report instead of a single stack sample.
+MetricKit delivers hang diagnostic payloads on iOS 15+ and macOS 12+. Starting with
+**sentry-cocoa v9.x** (merged via PR #7185), the SDK captures the **full call-tree
+flamegraph** from a MetricKit hang report instead of a single stack sample.
 
-- **No configuration required** — the improvement is automatic for all apps with MetricKit-compatible OS versions
-- In the Sentry UI, MetricKit hang issues now display a flamegraph showing all samples collected during the hang, improving both diagnosis and issue grouping accuracy
-- MetricKit reports are delivered by the OS after the hang ends (typically on next launch); they complement — but do not replace — real-time app hang detection (automatic in SDK v9+)
+- **No configuration required** — the improvement is automatic for all apps with
+  MetricKit-compatible OS versions
+- In the Sentry UI, MetricKit hang issues now display a flamegraph showing all samples
+  collected during the hang, improving both diagnosis and issue grouping accuracy
+- MetricKit reports are delivered by the OS after the hang ends (typically on next
+  launch); they complement — but do not replace — real-time app hang detection
+  (automatic in SDK v9+)
 
 | Platform | MetricKit Availability |
-|----------|----------------------|
+| --- | --- |
 | iOS | 15+ |
 | macOS | 12+ |
 | tvOS | No |
@@ -181,18 +194,24 @@ MetricKit delivers hang diagnostic payloads on iOS 15+ and macOS 12+. Starting w
 
 ## Best Practices
 
-- Always set `sessionSampleRate > 0` — it defaults to `0`, so no profiling data is collected unless you explicitly set it
-- Use `.trace` lifecycle in production: the profiler only runs during active transactions, minimising overhead
-- Use `.manual` lifecycle to profile targeted operations (e.g., a specific button tap, a batch import)
-- Lower `sessionSampleRate` in production (e.g., `0.1`) — profiling adds CPU overhead on older devices
+- Always set `sessionSampleRate > 0` — it defaults to `0`, so no profiling data is
+  collected unless you explicitly set it
+- Use `.trace` lifecycle in production: the profiler only runs during active
+  transactions, minimising overhead
+- Use `.manual` lifecycle to profile targeted operations (e.g., a specific button tap, a
+  batch import)
+- Lower `sessionSampleRate` in production (e.g., `0.1`) — profiling adds CPU overhead on
+  older devices
 - Upload dSYMs for every build; without them, profile data shows raw addresses
-- `profileAppStarts = true` is most valuable for identifying slow `+[AppDelegate application:didFinishLaunchingWithOptions:]` work
-- Do not combine the old `profilesSampleRate` with `configureProfiling` — the old APIs are removed in v9.0.0
+- `profileAppStarts = true` is most valuable for identifying slow
+  `+[AppDelegate application:didFinishLaunchingWithOptions:]` work
+- Do not combine the old `profilesSampleRate` with `configureProfiling` — the old APIs
+  are removed in v9.0.0
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No profiling data in Sentry | Verify `sessionSampleRate > 0`; it defaults to `0` |
 | Profiles missing for `.trace` lifecycle | Verify `tracesSampleRate > 0`; profiles only appear when transactions are sent |
 | Stack frames show memory addresses | Upload dSYMs; verify build phase runs in both Debug and Release |

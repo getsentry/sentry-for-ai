@@ -1,7 +1,7 @@
 # Logging — Sentry Ruby SDK
 
-> Minimum SDK: `sentry-ruby` v5.27.0+
-> Logs are sent as independent events to Sentry Logs — separate from breadcrumbs and error events.
+> Minimum SDK: `sentry-ruby` v5.27.0+ Logs are sent as independent events to Sentry Logs
+> — separate from breadcrumbs and error events.
 
 ## Contents
 
@@ -17,7 +17,7 @@
 ## Configuration
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `enable_logs` | Boolean | `false` | Enable Sentry structured Logs — must be `true` |
 | `before_send_log` | Lambda | `nil` | Mutate or drop log events before sending |
 | `breadcrumbs_logger` | Array | `[]` | Loggers for automatic breadcrumbs (separate from Sentry Logs) |
@@ -44,7 +44,9 @@ Sentry.logger.fatal("Database unreachable — shutting down")
 
 ### Parameterized messages
 
-Use `%{key}` named parameters. Parameters are sent as structured attributes, enabling filtering and aggregation in Sentry:
+Use `%{key}` named parameters.
+Parameters are sent as structured attributes, enabling filtering and aggregation in
+Sentry:
 
 ```ruby
 # Named parameters (preferred)
@@ -91,7 +93,7 @@ end
 The `log` argument passed to the callback exposes:
 
 | Property | Type | Description |
-|----------|------|-------------|
+| --- | --- | --- |
 | `level` | Symbol | `:trace`, `:debug`, `:info`, `:warn`, `:error`, `:fatal` |
 | `message` | String | The formatted log message |
 | `body` | String | Raw template string (e.g., `"Order %{order_id} placed"`) |
@@ -99,7 +101,9 @@ The `log` argument passed to the callback exposes:
 
 ## Breadcrumb Loggers
 
-Breadcrumbs are different from Sentry Logs — they are attached to the next error event, not sent independently. See `error-monitoring.md` for the full logger table and configuration options.
+Breadcrumbs are different from Sentry Logs — they are attached to the next error event,
+not sent independently.
+See `error-monitoring.md` for the full logger table and configuration options.
 
 ```ruby
 config.breadcrumbs_logger = [:active_support_logger, :http_logger, :redis_logger, :sentry_logger]
@@ -117,7 +121,9 @@ end
 
 ## Ruby stdlib Logger integration
 
-Capture writes from existing Ruby `Logger` instances as Sentry breadcrumbs. This requires enabling the `:logger` patch first — without it `std_lib_logger_filter` is never called:
+Capture writes from existing Ruby `Logger` instances as Sentry breadcrumbs.
+This requires enabling the `:logger` patch first — without it `std_lib_logger_filter` is
+never called:
 
 ```ruby
 config.breadcrumbs_logger = [:sentry_logger]
@@ -131,9 +137,11 @@ end
 
 ## Rails Logger
 
-In Rails, `Rails.logger` writes automatically appear as breadcrumbs when `:active_support_logger` is enabled — no extra configuration needed.
+In Rails, `Rails.logger` writes automatically appear as breadcrumbs when
+`:active_support_logger` is enabled — no extra configuration needed.
 
-To also send key Rails log lines as Sentry Logs (not just breadcrumbs), call `Sentry.logger` explicitly alongside your existing logging:
+To also send key Rails log lines as Sentry Logs (not just breadcrumbs), call
+`Sentry.logger` explicitly alongside your existing logging:
 
 ```ruby
 Rails.logger.error("Payment failed: #{e.message}")
@@ -142,15 +150,18 @@ Sentry.logger.error("Payment failed: %{message}", message: e.message)
 
 ## Best Practices
 
-- Always use parameterized messages (`%{key}` syntax) rather than string interpolation — this enables structured log aggregation and search in Sentry
-- Use `Sentry.logger` for observability-grade messages (errors, key business events); let high-volume debug logging stay local
+- Always use parameterized messages (`%{key}` syntax) rather than string interpolation —
+  this enables structured log aggregation and search in Sentry
+- Use `Sentry.logger` for observability-grade messages (errors, key business events);
+  let high-volume debug logging stay local
 - Set `before_send_log` to drop `:trace` and `:debug` levels in production
-- Combine `Sentry.logger.error(...)` with `Sentry.capture_exception(e)` for errors — the log provides context, the exception provides the stack trace
+- Combine `Sentry.logger.error(...)` with `Sentry.capture_exception(e)` for errors — the
+  log provides context, the exception provides the stack trace
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not appearing in Sentry | Set `config.enable_logs = true`; verify `sentry-ruby` ≥ 5.27.0 |
 | Breadcrumbs not attached to events | Check `breadcrumbs_logger` includes the right symbol for your stack |
 | `Sentry.logger` call crashes | Ensure `Sentry.init` was called before `Sentry.logger` is accessed |
