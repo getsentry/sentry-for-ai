@@ -85,29 +85,16 @@ Sentry MCP server configured at `https://mcp.sentry.dev/mcp`. The source of trut
 ## Skill Tree Navigation
 
 **How it works:**
-- Router skills (always visible in agent metadata) group related skills; `sentry-feature-setup` is the last remaining one as the library migrates to flat standalone skills
-- All other skills are hidden with `disable-model-invocation: true` — loaded on-demand when a router points to them
-- `src/SKILL_TREE.md` is the flat sitemap listing every skill
-- This keeps startup metadata at ~300 tokens instead of ~1,600+ as the library grows
-- Tools that don't support `disable-model-invocation` simply see all skills (same as before)
-
-**Categories:**
-- `feature-setup` — specific feature configuration (router: `sentry-feature-setup`)
-- `internal` — contributor tools, no router
+- Skills are flat, self-contained, and **task-shaped**: one skill = one job a user would name, discoverable directly from its `description`. There are no routers and no `disable-model-invocation` skills — every skill is model-invocable.
+- `src/references/` is the shared library (per-platform SDK code under `sdks/`, per-signal strategy under `concepts/`). A skill lists what it needs in a `references.yml` manifest and the build hydrates those files into it, so every shipped skill is self-contained.
+- `src/SKILL_TREE.md` is the generated flat sitemap of every skill.
 
 **Adding a new skill:**
-1. Create `src/skills/<skill-name>/SKILL.md` with standard frontmatter
-2. Add `category`, `parent`, `disable-model-invocation: true` to frontmatter
-3. Add breadcrumb as first body line: `> [All Skills](../../SKILL_TREE.md) > [Category](../router/SKILL.md) > Skill Name`
-4. Add the skill to the parent router's routing table
-5. Run `scripts/build-skill-tree.sh` to regenerate `src/SKILL_TREE.md` and validate
-6. CI validates automatically on every PR
-
-**Adding a new category:**
-- When a category exceeds ~10 skills, consider splitting
-- Create a new router skill with `role: router` in frontmatter
-- Update existing skills' `category` and `parent` fields
-- Update this file to document the new category
+1. Create `src/skills/<skill-name>/SKILL.md` with `name`, `description`, and `license` frontmatter.
+2. Write the `description` as the task a user would ask for, so model-invocation triggers cleanly.
+3. If it needs shared references, add a `references.yml` manifest listing them (globs allowed).
+4. Run `scripts/build-skill-tree.sh` to regenerate `src/SKILL_TREE.md` and validate.
+5. CI validates automatically on every PR.
 
 **Validation:**
 - `scripts/build-skill-tree.sh` — regenerates `src/SKILL_TREE.md`, validates all frontmatter, breadcrumbs, and router tables
