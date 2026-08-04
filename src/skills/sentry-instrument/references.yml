@@ -4,6 +4,7 @@ needs:
   - sdks/*/*.md
   # Readable stack traces (source maps / debug files) — shared with fix-stack-traces.
   - debug-artifacts/*.md
+  - auth-token.md
   # Whole concepts dir + the query grammar: the docs cross-link each other, and
   # hydration only places files on disk, so presence is free and links resolve.
   # What the skill actually *reads* is decided by SKILL.md, not by this list.
@@ -11,4 +12,7 @@ needs:
   - search-query-language.md
   - first-error-setup.md
   - new-project.md
+  # Releases — the `release`/`environment` tag is part of a production-ready
+  # setup; the CI half is available here too when the user wants it.
+  - releases/*.md
   - setup-verification.md

@@ -81,7 +81,7 @@ already readable and no upload is needed — confirm that before adding a build 
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Nothing uploaded, build green | Maps not emitted, or token unset | Enable `sourcemap` in the bundler; see `auth-token.md` |
+| Nothing uploaded, build green | Maps not emitted, or token unset | Enable `sourcemap` in the bundler; see `../auth-token.md` |
 | Uploaded, frames still minified | Upload ran without `inject`, so no Debug IDs | Add `sourcemaps inject` before `upload` |
 | Only *some* frames readable | Partial upload — a chunk or the framework's own bundle wasn't included | Widen the upload path / `widenClientFileUpload` |
 | Was fine, broke after a deploy | Upload happens after deploy, or a build cache reused stale maps | Move upload into the build, before deploy |

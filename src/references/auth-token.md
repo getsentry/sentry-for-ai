@@ -1,8 +1,9 @@
 # Auth token (the build-time secret)
 
-Uploading artifacts is a *write* to your Sentry org, so it needs an auth token. This is **not the
-DSN**: the DSN is public and identifies where events go; the token is a secret and grants upload
-rights. Confusing the two is the most common cause of "I configured everything and nothing uploaded."
+Anything your build writes *to* your Sentry org needs an auth token — uploading artifacts, and
+creating or finalizing releases. This is **not the DSN**: the DSN is public and identifies where
+events go; the token is a secret and grants write rights. Confusing the two is the most common cause
+of "I configured everything and nothing happened."
 
 ## Which token
 

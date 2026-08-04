@@ -45,7 +45,7 @@ Two facts that change the answer, worth establishing early:
 | .NET — ASP.NET Core, MAUI, WPF, WinForms, Azure Functions | Portable PDB | [`dotnet.md`](dotnet.md) |
 | Python, Ruby, PHP, Go, Elixir | Usually none — frames come from readable source | see below |
 
-Every path needs an auth token: [`auth-token.md`](auth-token.md). It is the single most common reason
+Every path needs an auth token: [`../auth-token.md`](../auth-token.md). It is the single most common reason
 a correct-looking setup uploads nothing.
 
 For the last row, unreadable frames are rarely an artifact problem. Check that the deployed code

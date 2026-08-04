@@ -51,7 +51,7 @@ discouraged for exactly that reason.
 - **CI:** set `SENTRY_AUTH_TOKEN` from the platform's secret store.
 - **Docker:** BuildKit's `--secret`, so the token never persists into an image layer.
 
-Details in [`auth-token.md`](auth-token.md).
+Details in [`../auth-token.md`](../auth-token.md).
 
 ## Traps
 
