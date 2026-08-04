@@ -23,9 +23,10 @@ asking why a release feature is empty. Start here, route to the file.
 Establish both before writing anything. Pull a recent event and read its `release` tag; then look the
 release object up by that exact name — `get_release_details` via the MCP, which reports the commits
 and deploys attached to it (deploys carry their environment), or the Releases page. When the exact
-name is in doubt, `find_releases` lists releases with a `lastCommit` / `lastDeploy` summary on each,
-which is enough to see which ones CI touched. Both are **catalog tools** and usually aren't exposed
-directly; reach them through `search_sentry_tools` / `execute_sentry_tool`.
+name is in doubt, `find_releases` lists releases with a `lastCommit` / `lastDeploy` summary on each —
+a useful hint, though a null `lastCommit` isn't proof CI skipped that release. Both are **catalog
+tools** and usually aren't exposed directly; reach them through `search_sentry_tools` /
+`execute_sentry_tool`.
 
 These are two separate lookups. An event search filtered by `release:` only ever tells you about the
 tag, never about the object.

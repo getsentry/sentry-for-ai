@@ -12,27 +12,35 @@ there is no manual dashboard trip.
   case hand off to `https://sentry.io/signup` (there is no agent flow for account creation), then
   have them come back and connect the MCP.
 
-Most of the tools below are catalog tools — reach them via `search_sentry_tools` /
-`execute_sentry_tool` if they are not directly exposed.
+`find_dsns`, `create_project`, `find_teams`, and `create_team` are catalog tools — reach them via
+`search_sentry_tools` / `execute_sentry_tool`. `find_organizations` and `find_projects` are exposed
+directly.
 
 ## Steps
 
-### 1. Find the org and existing projects
+### 1. Find the org, projects, and teams
 
-- `find_organizations` — confirm auth and get the organization slug.
-- `find_projects` — list the org's existing projects.
+- `find_organizations` — confirm auth and get the organization slug. Users often belong to several;
+  ask rather than guessing.
+- `find_projects` — lists the org's projects, **slugs only**. It can't tell you a project's platform,
+  so judge fit by name or check with the user.
+- `find_teams` — `create_project` requires a team slug, so get one now.
 
 ### 2. Select or create
 
 **A fitting project already exists** → pick it and read its DSN:
 
-- `find_dsns` (the client-keys lookup) — returns the project's DSN(s).
+- `find_dsns` (the client-keys lookup) — takes the org **and** project slug, returns the DSN(s).
 
 **No project, or none that fits** → create one. This is a mutating action, so **propose it and
 create only on a yes — never silently**:
 
-- `create_project` — mints the project **and** a DSN in a single call. You'll need the org slug, a
-  team, a project name/slug, and the platform. The response includes the DSN — capture it.
+- `create_project` — mints the project and its DSN. Requires `organizationSlug`, `teamSlug`, and
+  `name`; `slug`, `platform`, and `repository` are optional. If the org has no team yet, `create_team`
+  first.
+- If the DSN comes back as `unavailable`, the project was still created — call `create_dsn` for it.
+- Members can hit `403 … disabled this feature for members`. If so, have the user create the project
+  in the UI, then come back to `find_dsns`.
 
 ## Result
 

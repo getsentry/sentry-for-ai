@@ -55,8 +55,10 @@ An alert is **sources → triggers → filters → actions**:
 
 Alert creation is automatable via Sentry's workflow-engine API; several monitor types (uptime,
 dashboards) are heavier UI/API hand-offs today — be upfront about what the agent can do end-to-end vs.
-where it walks the user through the UI. The MCP can generally only **read** alert rules, still useful for
-verifying after creation.
+where it walks the user through the UI. The MCP is **read-only** here: it can inspect alert rules
+(`find_alert_rules`, `get_alert_rule`), cron monitors and their check-ins (`find_monitors`,
+`get_monitor_details`), and dashboards — useful for verifying after creation — but there is no create
+or update path for any of them, and uptime monitors have no MCP surface at all.
 
 ## Related
 

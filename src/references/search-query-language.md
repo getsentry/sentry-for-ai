@@ -5,8 +5,9 @@ the Issues stream, Explore, Dashboards, alert/monitor conditions, and the MCP
 tools. Authoring a good query (and reading one back) is the same skill everywhere, so the
 grammar lives here once.
 
-> The web UI auto-completes these as you type. You only need to *write* the raw syntax when
-> driving the API / MCP.
+> The web UI auto-completes these as you type. You need the raw syntax for the API, saved queries,
+> alerts, and dashboards. The MCP accepts it *or* natural language, but rewrites both — see
+> [Through the MCP](#through-the-mcp).
 
 ## Grammar
 
@@ -30,12 +31,14 @@ tag), and the raw search `example error`.
   `:` for numeric/duration fields (an exact `:` match rarely exists):
   - `transaction.duration:>5s`
   - `count_dead_clicks:<=10`
-  - `event.timestamp:>2023-09-28T00:00:00-07:00`
+  - `event.timestamp:>2023-09-28T00:00:00-07:00` (Issues; elsewhere the key is `timestamp`)
 - **Value lists** (OR on one key): `release:[12.0, 13.0]` ≡ `release:12.0 OR release:13.0`.
-  Not allowed with `is:` and not combinable with wildcards.
+  Wildcards work inside a list. Not allowed with `is:` — a list desugars to `OR`, which the Issues
+  search rejects.
 - **Wildcards:** `*` matches any characters — `browser:"Safari 11*"`, `!message:"*Timeout"`.
 - **`has:`** — field/tag exists regardless of value: `has:user`. Negate as `!has:`.
-- **`is:`** — issue/feedback **state** (see catalogs below); not usable with value lists.
+- **`is:`** — issue **state** (see catalogs below), on both the Issues stream and the errors dataset;
+  not usable with value lists.
 - **Explicit tag syntax** when a tag name collides with a reserved key:
   `tags[project_id]:value`.
 
@@ -75,6 +78,9 @@ count_if(transaction.duration,greater,1000):>5
 - `age:+12h` — older than 12 hours.
 - `age:+12h age:-24h` — created between 12 and 24 hours ago.
 
+> The MCP doesn't know `age:` and rewrites it to `firstSeen:`, flipping `+` to `-` — which silently
+> reverses "older than". Use `firstSeen:` / `lastSeen:` directly there.
+
 ---
 
 ## Searchable properties by dataset
@@ -113,6 +119,9 @@ evaluation), `has`.
 
 ### Events (Discover, error + transaction events)
 
+> The MCP has no transaction-events dataset (`errors`, `logs`, `spans`, `metrics`, `profiles`,
+> `replays`) — query transactions as `spans` with `is_transaction:true`.
+
 Everything in Issues that's event-level, plus **aggregate functions**: `count()`,
 `count_unique(field)`, `count_if(column,operator,value)`, `count_miserable(field,threshold)`,
 `count_web_vitals(vital,threshold)`, `avg(field)`, `min`/`max`/`sum(field)`,
@@ -141,9 +150,9 @@ Trace linking: `trace`, `trace.span`, `trace.parent_span`. Time bucketing:
 
 ### Logs
 
-Logs search on the log `message`, `level` / `severity`, `timestamp`, the trace it belongs to
-(`trace`), and any **structured attributes** you attached (searched as keys). Plus the common
-context keys (`release`, `environment`, `project`).
+Logs search on the log `message`, `severity` (`level` is the errors/issues key), `timestamp`, the
+trace it belongs to (`trace`), and any **structured attributes** you attached (searched as keys).
+Plus the common context keys (`release`, `environment`, `project`).
 
 ### Session Replay
 
@@ -180,9 +189,22 @@ Session/identity: `id`, `replay_type`, `url`, `screen`, `trace`, `error_ids`, `i
 - **Authoring monitors & dashboards** — alerts, metric monitors, and dashboards are authored as
   saved queries in this grammar.
 
+## Through the MCP
+
+`search_events` and `search_issues` accept either natural language or this grammar, but there is no
+raw query path — both run your input through an LLM that rewrites fields to fit the target dataset.
+**What you write is not necessarily what runs**, it isn't reproducible between calls, and a rewrite
+into invalid syntax surfaces as a confusing API error rather than a rejection of your query.
+
+So read back what executed: `search_events` always prints an `## Executed Search` block, and
+`search_issues` prints nothing unless you pass `includeExplanation: true`. Both tools also take a
+`period` argument that intersects with any time filter in the query rather than overriding it —
+`search_issues` defaults to 30 days.
+
 ## Pitfalls
 
-- Using a key from the wrong dataset (it won't validate — the API errors, the UI fails to
-  auto-complete).
+- A key from the wrong dataset fails loudly in the UI/API, but **silently through the MCP** — either
+  substituted or run as-is for **zero results with no error**. An empty result set isn't evidence of
+  no data; check `## Executed Search`.
 - Using `:` instead of a comparison operator on a numeric/duration/date field.
 - Expecting `OR`/`AND` in the basic Issues search (only Discover/Dashboards/Monitors).

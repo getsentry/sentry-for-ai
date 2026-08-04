@@ -49,36 +49,38 @@ confirmed.
 
 ### 3. Confirm via the MCP
 
-Poll for it. These are catalog tools — reach them via `search_sentry_tools` / `execute_sentry_tool`
-if not directly exposed:
+Poll for it:
 
-- `search_events` — fastest "did anything arrive in the last few minutes" check (counts/events).
+- `search_events` — fastest "did anything arrive recently" check (counts/events). Its `period`
+  accepts `^\d+[hdw]$`, minimum `1h`.
 - `search_issues` — did a grouped issue appear for the error?
-- `get_issue_details` — drill into the captured event to confirm the stack trace / payload / your
-  unique marker.
+- `get_sentry_resource` (`resourceType: 'issue'`) — drill into the captured event to confirm the
+  stack trace / payload / your unique marker. Identical to the catalog tool `get_issue_details`, but
+  directly exposed.
 
-Give ingestion a moment — events usually appear within ~30s. Poll a few times before concluding.
+Give ingestion a moment — events usually appear within ~30s. Poll a few times before concluding; a
+transient 400 from `search_issues` is a query-rewrite artifact, not "nothing landed" — retry.
 
-When found, **show the user what Sentry actually captured** — don't just hand over a link. Pull
-from `get_issue_details` the issue **title**, the **error message / value** (the exception message
-the SDK sent), and the `permalink`, and surface all three together before any cleanup or moving on.
-Seeing the real title and message it captured — not just a URL — is what makes it click ("ah,
-that's the test error the agent drove to create"):
+When found, **show the user what Sentry actually captured** — don't just hand over a link. The
+output's `Description` field already reads `Type: value`, so quote it with the `URL` before any
+cleanup or moving on:
 
 > "Confirmed — your test error landed in Sentry end to end:
-> <title>
-> <error message / value>
-> <issue URL>"
+> <Description>
+> <URL>"
 
 Offer to open the issue in the user's browser. Then **offer to resolve the test issue as
 cleanup** — share the URL and let the user open it before you change anything.
 
 ### 4. Verify it's *usable*
 
-Arrival isn't the whole story. If `get_issue_details` shows **minified** frames (JavaScript) or
-**unsymbolicated** frames (native/mobile), the event arrived but the stack trace isn't yet readable.
-Say so plainly — readable stack traces need source maps (JS) or debug symbols (native/mobile) — and
-treat it as not-yet-done rather than calling it complete.
+Arrival isn't the whole story. The event may have landed with **minified** frames (JavaScript) or
+**unsymbolicated** ones (native/mobile). Nothing in the output labels this — judge it by the frames
+themselves: readable frames carry a **source-context line** under them, while minified ones show
+single-char function names and huge column numbers. (Ignore the boilerplate note about first-party
+vs third-party code; it is printed even for events with no stack trace at all.) Say so plainly —
+readable stack traces need source maps (JS) or debug symbols (native/mobile) — and treat it as
+not-yet-done rather than calling it complete.
 [`debug-artifacts/index.md`](debug-artifacts/index.md) has the fix, per platform; note that uploading
 artifacts now won't repair *this* event on its own (native events can be reprocessed, source maps
 can't), so re-verify on a new one.
