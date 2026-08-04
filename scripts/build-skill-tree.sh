@@ -2,8 +2,11 @@
 # ============================================================
 # build-skill-tree.sh — Generate and validate the Sentry skill tree
 # ============================================================
-# Scans all src/skills/*/SKILL.md files, regenerates src/SKILL_TREE.md,
-# validates the skill hierarchy, and checks breadcrumb links.
+# Scans all src/skills/*/SKILL.md files, regenerates src/SKILL_TREE.md, and
+# validates each skill's frontmatter.
+#
+# Link checking lives in validate-skill-links.py — it needs the reference
+# manifests, which this script does not read.
 #
 # Usage:
 #   scripts/build-skill-tree.sh           # regenerate + validate
@@ -111,98 +114,18 @@ done < <(find "$SKILLS_DIR" -name "SKILL.md" | sort)
 TOTAL_SKILLS=${#ALL_SKILLS[@]}
 
 # ============================================================
-# SECTION 3: Categorize
+# SECTION 3: Generate SKILL_TREE.md content
 # ============================================================
-
-ROUTERS=()
-STANDALONE=()
-SKILLS_SDK_SETUP=()
-SKILLS_WORKFLOW=()
-SKILLS_FEATURE_SETUP=()
-
-for name in "${ALL_SKILLS[@]}"; do
-  role="$(skill_get "$name" role)"
-  cat="$(skill_get "$name" category)"
-
-  if [[ "$role" == "router" ]]; then
-    ROUTERS+=("$name")
-  elif [[ -z "$cat" ]]; then
-    # Standalone skill: flat and self-contained, no router/category. These are
-    # the next-generation skills; the router/leaf skills below are migrating
-    # toward this shape.
-    STANDALONE+=("$name")
-  else
-    case "$cat" in
-      sdk-setup)     SKILLS_SDK_SETUP+=("$name") ;;
-      workflow)      SKILLS_WORKFLOW+=("$name") ;;
-      feature-setup) SKILLS_FEATURE_SETUP+=("$name") ;;
-      internal)      ;; # validated but not shown in public skill tree
-    esac
-  fi
-done
-
-TOTAL_ROUTERS=${#ROUTERS[@]}
-
-# ============================================================
-# SECTION 4: Generate SKILL_TREE.md content
-# ============================================================
-
-# Extract a short column value from a description.
-# sdk-setup: "Full Sentry SDK setup for X." -> "X"
-# others: first sentence
-get_column_value() {
-  local desc="$1"
-  local category="$2"
-
-  case "$category" in
-    sdk-setup)
-      echo "$desc" \
-        | sed 's/Full Sentry SDK setup for //' \
-        | sed 's/\. .*//' \
-        | sed 's/\.$//'
-      ;;
-    *)
-      echo "$desc" \
-        | sed 's/\. .*//' \
-        | sed 's/\.$//'
-      ;;
-  esac
-}
-
-column_header() {
-  case "$1" in
-    sdk-setup)     echo "Platform" ;;
-    workflow)      echo "Use when" ;;
-    feature-setup) echo "Feature" ;;
-    internal)      echo "Purpose" ;;
-    *)             echo "Notes" ;;
-  esac
-}
-
-# Build markdown table rows for a list of skills in a category
-build_table_rows() {
-  local category="$1"
-  shift
-  local skills=("$@")
-
-  for name in ${skills[@]+"${skills[@]}"}; do
-    local file desc col_val
-    file="$(skill_get "$name" file)"
-    desc="$(skill_get "$name" desc)"
-    col_val="$(get_column_value "$desc" "$category")"
-    printf "| %s | [\`%s\`](%s) |\n" "$col_val" "$name" "${file#src/}"
-  done
-}
 
 # Escape characters that would break a markdown table cell.
 escape_cell() {
   printf '%s' "$1" | tr '\n' ' ' | sed 's/|/\\|/g'
 }
 
-# Build markdown rows for standalone skills, using the full description (it is
-# the routing signal for these flat skills).
-build_standalone_rows() {
-  for name in ${STANDALONE[@]+"${STANDALONE[@]}"}; do
+# Build a markdown row per skill, using the full description — it is the
+# routing signal now that there is nothing else to route through.
+build_skill_rows() {
+  for name in "${ALL_SKILLS[@]}"; do
     local file desc
     file="$(skill_get "$name" file)"
     desc="$(escape_cell "$(skill_get "$name" desc)")"
@@ -228,150 +151,52 @@ You are **Sentry's AI assistant**. You help developers set up Sentry, debug prod
 
 2. **Wait for their answer.** Do not proceed until the user tells you what they want.
 
-3. **Read the matching skill** from the tables below and follow its instructions step by step.
+3. **Read the matching skill** from the table below and follow its instructions step by step.
 
 Each skill file contains its own detection logic, prerequisites, and configuration steps. Trust the skill — read it carefully and follow it. Do not improvise or take shortcuts.
 
 ---
 HEADER
 
-  # Standalone Skills — flat, self-contained; surfaced first.
-  cat <<'STANDALONE_HEADER'
+  cat <<'SKILLS_HEADER'
 
-## Standalone Skills
+## Available Skills
 
-Self-contained skills — start here. If you're not sure what the user needs, read `sentry-get-started`; it orients you and points to the right skill.
+Each one is self-contained and named for the job it does. If you're not sure what the user needs, read `sentry-get-started`; it orients you and points to the right skill.
 
 | Skill | What it does |
 |---|---|
-STANDALONE_HEADER
-  build_standalone_rows
-
-  # Workflows
-  local col_wf col_fs
-  col_wf="$(column_header workflow)"
-  cat <<'WF_HEADER'
-
-## Workflows
-
-Debug production issues and maintain code quality with Sentry context.
-
-WF_HEADER
-  printf "| %s | Skill |\n" "$col_wf"
-  printf "|---|---|\n"
-  build_table_rows "workflow" ${SKILLS_WORKFLOW[@]+"${SKILLS_WORKFLOW[@]}"}
-
-  # Feature Setup
-  col_fs="$(column_header feature-setup)"
-  cat <<'FS_HEADER'
-
-## Feature Setup
-
-Configure specific Sentry capabilities beyond basic SDK setup.
-
-FS_HEADER
-  printf "| %s | Skill |\n" "$col_fs"
-  printf "|---|---|\n"
-  build_table_rows "feature-setup" ${SKILLS_FEATURE_SETUP[@]+"${SKILLS_FEATURE_SETUP[@]}"}
+SKILLS_HEADER
+  build_skill_rows
 
   printf "\n"
 }
 
 # ============================================================
-# SECTION 5: Validate
+# SECTION 4: Validate
 # ============================================================
 
-KNOWN_CATEGORIES=("sdk-setup" "workflow" "feature-setup" "internal")
+# Frontmatter fields from the retired router model. Skills are flat and
+# task-shaped now: one skill = one job, discoverable from its own description.
+# A skill carrying any of these is either a stale copy-paste or an attempt to
+# reintroduce routing -- both worth stopping on, since nothing renders them.
+# Stored field name : the frontmatter key to name in the error.
+RETIRED_FIELDS=("category:category" "parent:parent" "role:role" "disable:disable-model-invocation")
 
 validate() {
   for name in "${ALL_SKILLS[@]}"; do
-    local role cat parent disable skill_file
-    role="$(skill_get "$name" role)"
-    cat="$(skill_get "$name" category)"
-    parent="$(skill_get "$name" parent)"
-    disable="$(skill_get "$name" disable)"
-    skill_file="$(skill_get "$name" file)"
+    [[ -n "$(skill_get "$name" desc)" ]] || \
+      error "$name: missing 'description' field"
 
-    # ── (a/b/c) Required fields per skill type ───────────────
-
-    if [[ "$role" == "router" ]]; then
-      : # role: router is sufficient
-    elif [[ -z "$cat" ]]; then
-      # (a) Standalone skill — flat and self-contained. Only a name (guaranteed
-      # via directory fallback) and a description are required; no category,
-      # parent, breadcrumb, or disable-model-invocation.
-      [[ -n "$(skill_get "$name" desc)" ]] || \
-        error "$name: standalone skill missing 'description' field"
-    elif [[ "$cat" == "internal" ]]; then
-      # (b) Internal skills
-      [[ "$disable" == "true" ]] || \
-        error "$name: internal skill missing 'disable-model-invocation: true'"
-    else
-      # (c) Router leaf skills
-      [[ -n "$parent" ]] || \
-        error "$name: leaf skill missing 'parent' field"
-      [[ "$disable" == "true" ]] || \
-        error "$name: leaf skill missing 'disable-model-invocation: true'"
-    fi
-
-    # ── (g) Warn on unknown category ─────────────────────────
-    if [[ -n "$cat" && "$role" != "router" ]]; then
-      local known=false
-      for kc in "${KNOWN_CATEGORIES[@]}"; do
-        [[ "$cat" == "$kc" ]] && known=true && break
-      done
-      $known || warn "$name: unknown category '$cat'"
-    fi
-
-    # ── (d) Parent must exist and be a router ────────────────
-    if [[ -n "$parent" ]]; then
-      local parent_role
-      parent_role="$(skill_get "$parent" role)"
-      if [[ -z "$(skill_get "$parent" file)" ]]; then
-        error "$name: parent '$parent' does not exist"
-      elif [[ "$parent_role" != "router" ]]; then
-        error "$name: parent '$parent' is not a router (role=${parent_role:-none})"
-      fi
-    fi
-
-    # ── (e) Skill appears in its router's SKILL.md ───────────
-    if [[ -n "$parent" ]]; then
-      local router_file
-      router_file="$(skill_get "$parent" file)"
-      if [[ -n "$router_file" && -f "$router_file" ]]; then
-        if ! grep -q "$name" "$router_file" 2>/dev/null; then
-          error "$name: not listed in router '$parent' ($router_file)"
-        fi
-      fi
-    fi
-
-    # ── (f) Breadcrumb links resolve (router/leaf skills only) ──
-    # Standalone skills link shared references (references/…) that are copied
-    # in by the build's hydrate step, so they don't exist beside the raw
-    # source; skip the sibling-link check for them.
-    if [[ "$role" != "router" && -z "$cat" ]]; then
-      continue
-    fi
-
-    local skill_dir
-    skill_dir="$(dirname "$skill_file")"
-
-    while IFS= read -r breadcrumb_line; do
-      # Extract only markdown link paths ending in .md: ](path.md)
-      # Pattern ](path) where path ends with .md (skip http links)
-      while IFS= read -r link_path; do
-        [[ "$link_path" =~ ^https?:// ]] && continue
-        local resolved="$skill_dir/$link_path"
-        if [[ ! -f "$resolved" ]]; then
-          error "$name: broken breadcrumb link '$link_path' (resolved: $resolved)"
-        fi
-      done < <(echo "$breadcrumb_line" | grep -oE '\]\([^)]+\.md\)' | sed 's/^](\(.*\))$/\1/')
-    done < <(grep '^> ' "$skill_file" 2>/dev/null || true)
+    for entry in "${RETIRED_FIELDS[@]}"; do
+      [[ -z "$(skill_get "$name" "${entry%%:*}")" ]] || \
+        error "$name: '${entry#*:}' is no longer supported -- every skill is standalone"
+    done
   done
 }
 
 # ============================================================
-# SECTION 6: Run
+# SECTION 5: Run
 # ============================================================
 
 echo "Scanning ${TOTAL_SKILLS} skills in ${SKILLS_DIR}/..."
@@ -411,7 +236,7 @@ fi
 # ── Summary ──────────────────────────────────────────────────
 
 echo ""
-echo "Summary: ${TOTAL_SKILLS} skills scanned, ${TOTAL_ROUTERS} routers, ${#ERRORS[@]} errors"
+echo "Summary: ${TOTAL_SKILLS} skills scanned, ${#ERRORS[@]} errors"
 
 if [[ ${#ERRORS[@]} -gt 0 ]]; then
   echo ""
