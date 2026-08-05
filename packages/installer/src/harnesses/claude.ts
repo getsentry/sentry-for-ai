@@ -9,6 +9,13 @@ const INSTALL_COMMAND = `claude plugin install ${PLUGIN_ID}`;
 const UPDATE_COMMAND = `claude plugin update ${PLUGIN_ID}`;
 const UNINSTALL_COMMAND = `claude plugin uninstall ${PLUGIN_ID}`;
 
+// Our plugin reaches Claude two ways: Anthropic's official catalog above, which is
+// what the installer uses, and our own catalog under the marketplace name it
+// declares. Both resolve to the same repository, so a machine carrying both runs
+// two plugins serving the same skills.
+const OUR_MARKETPLACE = "sentry-plugin-marketplace";
+const OUR_PLUGIN_ID = `sentry@${OUR_MARKETPLACE}`;
+
 // `claude plugin list --json` emits an array of installed plugins. We only care
 // about the marketplace-qualified id of each entry.
 interface ClaudePlugin {
@@ -21,9 +28,9 @@ interface ClaudeMarketplace {
   name?: string;
 }
 
-async function isSentryInstalled(system: SystemDeps): Promise<boolean> {
+async function hasPlugin(system: SystemDeps, pluginId: string): Promise<boolean> {
   const plugins = await runJson<ClaudePlugin[]>(system, "claude plugin list --json");
-  return Array.isArray(plugins) && plugins.some((plugin) => plugin.id === PLUGIN_ID);
+  return Array.isArray(plugins) && plugins.some((plugin) => plugin.id === pluginId);
 }
 
 async function isMarketplaceRegistered(system: SystemDeps): Promise<boolean> {
@@ -52,9 +59,18 @@ export function createClaude(system: SystemDeps): Harness {
 
     detect: async () => detectOnPath(system, "claude"),
 
-    isInstalled: async () => isSentryInstalled(system),
+    isInstalled: async () => hasPlugin(system, PLUGIN_ID),
 
     canInstall: async () => ({ ok: true }),
+
+    cleanup: async (output) => {
+      if (!(await hasPlugin(system, OUR_PLUGIN_ID))) {
+        return null;
+      }
+
+      await runCommand(system, `claude plugin uninstall ${OUR_PLUGIN_ID}`, output);
+      return `Removed conflicting plugin ${OUR_PLUGIN_ID}`;
+    },
 
     install: async (output): Promise<InstallOutcome> => {
       await ensureMarketplace(system, output);
