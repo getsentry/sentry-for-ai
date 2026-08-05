@@ -39,7 +39,7 @@ PLUGIN="$TARGET_DIR/plugins/$PLUGIN_NAME"
 
 mkdir -p "$PLUGIN/.codex-plugin" "$TARGET_DIR/.agents/plugins"
 
-cp "$SRC_DIR/plugin.json" "$PLUGIN/.codex-plugin/plugin.json"
+install_plugin_manifest "$SRC_DIR/plugin.json" "$PLUGIN/.codex-plugin/plugin.json"
 cp "$SRC_DIR/marketplace.json" "$TARGET_DIR/.agents/plugins/marketplace.json"
 cp "$SRC_DIR/README.md" "$TARGET_DIR/README.md"
 cp LICENSE "$TARGET_DIR/LICENSE"
