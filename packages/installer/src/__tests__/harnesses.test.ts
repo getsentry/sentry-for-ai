@@ -141,6 +141,27 @@ describe("claude harness", () => {
     expect(system.run).not.toHaveBeenCalledWith(expect.stringContaining("marketplace remove"));
   });
 
+  it("removes the copy installed from our own marketplace", async () => {
+    const system = fakeSystem({
+      run: (cmd) => (isList(cmd) ? claudeList(["sentry@sentry-plugin-marketplace"]) : ok),
+    });
+    const removed = await createClaude(system).cleanup!();
+
+    expect(system.run).toHaveBeenCalledWith(
+      "claude plugin uninstall sentry@sentry-plugin-marketplace",
+    );
+    expect(removed).toContain("sentry@sentry-plugin-marketplace");
+  });
+
+  it("leaves cleanup a no-op when only the official plugin is installed", async () => {
+    const system = fakeSystem({
+      run: (cmd) => (isList(cmd) ? claudeList(["sentry@claude-plugins-official"]) : ok),
+    });
+
+    expect(await createClaude(system).cleanup!()).toBeNull();
+    expect(system.run).not.toHaveBeenCalledWith(expect.stringContaining("uninstall"));
+  });
+
   it("surfaces stderr when install fails", async () => {
     const harness = createClaude(
       fakeSystem({ run: () => ({ ok: false, stderr: "boom", message: "exit 1" }) }),
