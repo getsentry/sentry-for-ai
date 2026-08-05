@@ -16,13 +16,17 @@ const claudeList = (ids: string[]): ShellResult => ({
   stdout: JSON.stringify(ids.map((id) => ({ id }))),
 });
 
-const codexList = (pluginIds: string[]): ShellResult => ({
+// Entries may carry a version, which is what distinguishes a develop build from
+// a release for the harnesses whose plugin id is the same on both channels.
+const codexList = (plugins: (string | { pluginId: string; version: string })[]): ShellResult => ({
   ok: true,
-  stdout: JSON.stringify({ installed: pluginIds.map((pluginId) => ({ pluginId })) }),
+  stdout: JSON.stringify({
+    installed: plugins.map((p) => (typeof p === "string" ? { pluginId: p } : p)),
+  }),
 });
 
 const grokList = (
-  plugins: { name: string; source: string; marketplace?: string | null }[],
+  plugins: { name: string; source: string; marketplace?: string | null; version?: string }[],
 ): ShellResult => ({
   ok: true,
   stdout: JSON.stringify(plugins.map((p) => ({ marketplace: null, ...p }))),
@@ -410,9 +414,15 @@ describe("cursor harness", () => {
     expect(await harness.detect()).toBe(false);
   });
 
-  it("reports installed when the plugin directory exists", async () => {
+  it("reports installed when the checkout is on the stable branch", async () => {
     const target = "/home/user/.cursor/plugins/local/sentry";
-    const harness = createCursor(fakeSystem({ homedir: "/home/user", existing: [target] }));
+    const harness = createCursor(
+      fakeSystem({
+        homedir: "/home/user",
+        existing: [target],
+        run: () => ({ ok: true, stdout: "main\n" }),
+      }),
+    );
     expect(await harness.isInstalled()).toBe(true);
   });
 
@@ -442,7 +452,7 @@ describe("cursor harness", () => {
 
     expect(outcome.kind).toBe("done");
     expect(system.run).toHaveBeenCalledWith(
-      'git clone https://github.com/getsentry/plugin-cursor.git "/home/user/.cursor/plugins/local/sentry"',
+      'git clone --branch main https://github.com/getsentry/plugin-cursor.git "/home/user/.cursor/plugins/local/sentry"',
     );
   });
 
@@ -471,5 +481,208 @@ describe("cursor harness", () => {
     await createCursor(system).remove();
 
     expect(system.run).toHaveBeenCalledWith(`rmdir /s /q "${target}"`);
+  });
+});
+
+// The `--develop` channel: every harness installs from the develop ref of our own
+// distribution repo, and takes out whatever occupies the same slot on the other
+// channel so only one copy of the skills resolves.
+describe("develop channel", () => {
+  const DEVELOP = { ref: "develop" };
+  const CURSOR_DIR = "/home/user/.cursor/plugins/local/sentry";
+
+  const onBranch =
+    (branch: string) =>
+    (cmd: string): ShellResult =>
+      cmd.includes("rev-parse --abbrev-ref") ? { ok: true, stdout: `${branch}\n` } : ok;
+
+  it("claude adds our marketplace pinned to the ref and installs from it", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const outcome = await createClaude(system, DEVELOP).install();
+
+    expect(outcome.kind).toBe("done");
+    expect(system.run).toHaveBeenCalledWith(
+      "claude plugin marketplace add getsentry/plugin-claude@develop",
+    );
+    expect(system.run).toHaveBeenCalledWith(
+      "claude plugin install sentry@sentry-plugin-marketplace",
+    );
+  });
+
+  it("claude removes the official plugin before a develop install", async () => {
+    const system = fakeSystem({
+      run: (cmd) => (isList(cmd) ? claudeList(["sentry@claude-plugins-official"]) : ok),
+    });
+    const cleaned = await createClaude(system, DEVELOP).cleanup?.();
+
+    expect(cleaned).toContain("sentry@claude-plugins-official");
+    expect(system.run).toHaveBeenCalledWith(
+      "claude plugin uninstall sentry@claude-plugins-official",
+    );
+  });
+
+  it("claude removes the develop plugin when going back to stable", async () => {
+    const system = fakeSystem({
+      run: (cmd) => (isList(cmd) ? claudeList(["sentry@sentry-plugin-marketplace"]) : ok),
+    });
+    const cleaned = await createClaude(system).cleanup?.();
+
+    expect(cleaned).toContain("sentry@sentry-plugin-marketplace");
+    expect(system.run).toHaveBeenCalledWith(
+      "claude plugin uninstall sentry@sentry-plugin-marketplace",
+    );
+  });
+
+  it("claude does not treat the stable install as a develop install", async () => {
+    const system = fakeSystem({
+      run: (cmd) => (isList(cmd) ? claudeList(["sentry@claude-plugins-official"]) : ok),
+    });
+
+    expect(await createClaude(system, DEVELOP).isInstalled()).toBe(false);
+    expect(await createClaude(system).isInstalled()).toBe(true);
+  });
+
+  it("claude removes both channels under anyChannel", async () => {
+    const system = fakeSystem({
+      run: (cmd) =>
+        isList(cmd)
+          ? claudeList(["sentry@sentry-plugin-marketplace", "sentry@claude-plugins-official"])
+          : ok,
+    });
+    const outcome = await createClaude(system, { anyChannel: true }).remove();
+
+    expect(outcome.kind).toBe("done");
+    expect(system.run).toHaveBeenCalledWith(
+      "claude plugin uninstall sentry@sentry-plugin-marketplace",
+    );
+    expect(system.run).toHaveBeenCalledWith(
+      "claude plugin uninstall sentry@claude-plugins-official",
+    );
+  });
+
+  it("codex re-points the marketplace at the ref", async () => {
+    const system = fakeSystem({ run: (cmd) => (isList(cmd) ? codexList([]) : ok) });
+    const outcome = await createCodex(system, DEVELOP).install();
+
+    expect(outcome.kind).toBe("done");
+    expect(system.run).toHaveBeenCalledWith(
+      "codex plugin marketplace remove sentry-plugin-marketplace",
+    );
+    expect(system.run).toHaveBeenCalledWith(
+      "codex plugin marketplace add getsentry/plugin-codex --ref develop",
+    );
+  });
+
+  it("codex tells the channels apart by version", async () => {
+    const develop = fakeSystem({
+      run: (cmd) =>
+        isList(cmd)
+          ? codexList([
+              { pluginId: "sentry@sentry-plugin-marketplace", version: "1.2.1-dev.4.gabc" },
+            ])
+          : ok,
+    });
+    const release = fakeSystem({
+      run: (cmd) =>
+        isList(cmd)
+          ? codexList([{ pluginId: "sentry@sentry-plugin-marketplace", version: "1.3.0" }])
+          : ok,
+    });
+
+    expect(await createCodex(develop, DEVELOP).isInstalled()).toBe(true);
+    expect(await createCodex(develop).isInstalled()).toBe(false);
+    expect(await createCodex(release, DEVELOP).isInstalled()).toBe(false);
+    expect(await createCodex(release).isInstalled()).toBe(true);
+  });
+
+  it("codex re-points a stable run that finds a develop build", async () => {
+    const system = fakeSystem({
+      run: (cmd) =>
+        isList(cmd)
+          ? codexList([
+              { pluginId: "sentry@sentry-plugin-marketplace", version: "1.2.1-dev.4.gabc" },
+            ])
+          : ok,
+    });
+    await createCodex(system).install();
+
+    expect(system.run).toHaveBeenCalledWith(
+      "codex plugin marketplace remove sentry-plugin-marketplace",
+    );
+    expect(system.run).toHaveBeenCalledWith("codex plugin marketplace add getsentry/plugin-codex");
+  });
+
+  it("grok installs from the ref-pinned source", async () => {
+    const system = fakeSystem({ run: (cmd) => (isList(cmd) ? grokList([]) : ok) });
+    const outcome = await createGrok(system, DEVELOP).install();
+
+    expect(outcome.kind).toBe("done");
+    expect(system.run).toHaveBeenCalledWith(
+      "grok plugin install getsentry/plugin-grok@develop --trust",
+    );
+  });
+
+  it("grok clears a release build out of its single sentry slot", async () => {
+    const system = fakeSystem({
+      run: (cmd) =>
+        isList(cmd)
+          ? grokList([
+              {
+                name: "sentry",
+                source: "https://github.com/getsentry/plugin-grok",
+                version: "1.3.0",
+              },
+            ])
+          : ok,
+    });
+    const cleaned = await createGrok(system, DEVELOP).cleanup?.();
+
+    expect(cleaned).toContain("1.3.0");
+    expect(system.run).toHaveBeenCalledWith("grok plugin uninstall sentry");
+  });
+
+  it("cursor clones the ref and reports the branch as the channel", async () => {
+    const system = fakeSystem({ homedir: "/home/user", run: onBranch("develop") });
+    const outcome = await createCursor(system, DEVELOP).install();
+
+    expect(outcome.kind).toBe("done");
+    expect(system.run).toHaveBeenCalledWith(
+      `git clone --branch develop https://github.com/getsentry/plugin-cursor.git "${CURSOR_DIR}"`,
+    );
+  });
+
+  it("cursor discards a stable checkout when the develop ref is asked for", async () => {
+    const system = fakeSystem({
+      homedir: "/home/user",
+      existing: [CURSOR_DIR],
+      run: onBranch("main"),
+    });
+    const harness = createCursor(system, DEVELOP);
+
+    expect(await harness.isInstalled()).toBe(false);
+    expect(await harness.cleanup?.()).toContain("main");
+    expect(system.run).toHaveBeenCalledWith(`rm -rf "${CURSOR_DIR}"`);
+  });
+
+  it("cursor keeps a checkout already on the requested ref", async () => {
+    const system = fakeSystem({
+      homedir: "/home/user",
+      existing: [CURSOR_DIR],
+      run: onBranch("develop"),
+    });
+    const harness = createCursor(system, DEVELOP);
+
+    expect(await harness.isInstalled()).toBe(true);
+    expect(await harness.cleanup?.()).toBeNull();
+  });
+
+  it("cursor under anyChannel counts any branch as installed", async () => {
+    const system = fakeSystem({
+      homedir: "/home/user",
+      existing: [CURSOR_DIR],
+      run: onBranch("develop"),
+    });
+
+    expect(await createCursor(system, { anyChannel: true }).isInstalled()).toBe(true);
   });
 });

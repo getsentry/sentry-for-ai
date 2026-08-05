@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { defineCommand, runMain } from "citty";
-import { harnesses } from "./harnesses";
+import { buildHarnesses } from "./harnesses";
 import { captureAndFlush, initTelemetry } from "./instrument";
 import { runInstaller, runRemover } from "./ui";
 
@@ -20,6 +20,10 @@ initTelemetry(telemetryEnabled);
 const { version, description } = JSON.parse(
   readFileSync(join(__dirname, "../package.json"), "utf8"),
 ) as { version: string; description: string };
+
+// The ref `--develop` resolves to, matching the branch each plugin repo deploys
+// every merge to.
+const DEVELOP_REF = "develop";
 
 // Both subcommands take the same agent-selection flags.
 const agentSelectionArgs = {
@@ -56,10 +60,19 @@ const install = defineCommand({
       description: "Instruction to include in the prompt copied after installation",
       required: false,
     },
+    develop: {
+      type: "boolean",
+      description:
+        "Install the develop version of the plugins. Removes official marketplace installs",
+      default: false,
+    },
     ...agentSelectionArgs,
   },
   async run({ args }) {
     const interactive = args.interactive && !args.yes;
+    // The flag is the only channel the CLI exposes; the harnesses take a ref so
+    // pinning something else later needs no new surface here.
+    const harnesses = buildHarnesses({ ref: args.develop ? DEVELOP_REF : undefined });
     try {
       const ok = await runInstaller(harnesses, { interactive, instruction: args.instruction });
       process.exit(ok ? 0 : 1);
@@ -80,6 +93,9 @@ const remove = defineCommand({
   args: agentSelectionArgs,
   async run({ args }) {
     const interactive = args.interactive && !args.yes;
+    // No channel flag here on purpose: removal takes out whichever build is
+    // installed, so a develop install does not need to be remembered to undo.
+    const harnesses = buildHarnesses({ anyChannel: true });
     try {
       const ok = await runRemover(harnesses, { interactive });
       process.exit(ok ? 0 : 1);

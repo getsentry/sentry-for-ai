@@ -31,12 +31,20 @@ Restart your AI tools afterward to load the plugin.
 npx @sentry/ai install                         # interactive — pick which agents to set up
 npx @sentry/ai install "Setup logging"         # copy a custom prompt after installation
 npx @sentry/ai install --no-interactive        # install into every detected agent
+npx @sentry/ai install --develop               # install the develop build instead of the release
 ```
 
 When an instruction follows `install`, the installer offers to copy a prompt such as
 `The Sentry plugin has just been installed. Setup logging` after installation.
 Without an instruction, it offers the default get-started prompt.
 The non-interactive mode is intended for CI and unattended runs and skips this prompt.
+
+`--develop` installs from the `develop` branch of each plugin repository, which is
+rebuilt on every merge, rather than the released build.
+Because both builds provide the same skills, it first removes any install of the
+released plugin — including the one from the assistant’s official marketplace — so only
+one copy resolves. Switching back is `install` without the flag, and a plain `remove`
+takes out whichever build is present.
 
 ## What it installs
 
