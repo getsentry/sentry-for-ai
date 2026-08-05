@@ -172,9 +172,10 @@ sort=timestamp
 
 ### MCP Plugin Attribution
 
-Plugin users drive MCP traffic through distributed plugin configs. All four plugins
-send `X-Sentry-Utm-Source: plugin` with a bare `/mcp` URL. The MCP server captures that
-as `app.utm_source:plugin` on spans (legacy `?utm_source=plugin` still works).
+Plugin users drive MCP traffic through distributed plugin configs.
+All four plugins send `X-Sentry-Utm-Source: plugin` with a bare `/mcp` URL. The MCP
+server captures that as `app.utm_source:plugin` on spans (legacy `?utm_source=plugin`
+still works).
 
 Use for: adoption volume, tool popularity, client family distribution, error rates, and
 latency for plugin-originated traffic vs the broader MCP baseline.

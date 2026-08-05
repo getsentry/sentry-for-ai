@@ -51,8 +51,8 @@ Sentry MCP server configured at `https://mcp.sentry.dev/mcp` with attribution vi
 query-free). The source of truth is `mcp.json`: Cursor consumes it as-is at the plugin
 root, while the Codex and Grok builds emit it as `.mcp.json` (Codex’s validator requires
 the dotted name; Grok auto-discovers it).
-Claude declares the same server inline in its `plugin.json` (`mcpServers`), so the Claude
-build ships no MCP file.
+Claude declares the same server inline in its `plugin.json` (`mcpServers`), so the
+Claude build ships no MCP file.
 The root `.mcp.json` is a backwards-compat copy (identical to `mcp.json`) retained for
 existing installs that consumed the plugin from this repo’s root; keep the two in sync
 until the root compat surface is removed.
