@@ -56,9 +56,6 @@ Claude build ships no MCP file.
 The root `.mcp.json` is a backwards-compat copy (identical to `mcp.json`) retained for
 existing installs that consumed the plugin from this repo’s root; keep the two in sync
 until the root compat surface is removed.
-The root `.mcp.json` is a backwards-compat copy (identical to `mcp.json`) retained for
-existing installs that consumed the plugin from this repo’s root; keep the two in sync
-until the root compat surface is removed.
 
 ## Releasing the Plugins
 
