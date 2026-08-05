@@ -29,7 +29,7 @@ resolve_content_root "$REPO_ROOT/src"
 
 mkdir -p "$TARGET_DIR/.grok-plugin"
 
-cp "$SRC_DIR/plugin.json" "$TARGET_DIR/.grok-plugin/plugin.json"
+install_plugin_manifest "$SRC_DIR/plugin.json" "$TARGET_DIR/.grok-plugin/plugin.json"
 cp "$SRC_DIR/marketplace.json" "$TARGET_DIR/.grok-plugin/marketplace.json"
 copy_skills "$CONTENT_ROOT" "$TARGET_DIR/skills"
 copy_skill_tree "$CONTENT_ROOT" "$TARGET_DIR/SKILL_TREE.md"

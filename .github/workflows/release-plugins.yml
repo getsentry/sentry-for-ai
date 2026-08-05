@@ -1,0 +1,109 @@
+# Cut a plugin release: bump the shared version, tag it here, then publish the
+# tagged tree onto each plugin repository's `main` and tag it there too.
+#
+# The four agent plugins version in lockstep from src/plugins/version.json, which
+# the builds stamp into every manifest, so a release is one bump commit and one
+# tag. Tags here are named `plugin/v*` to keep them clear of the installer's npm
+# releases, which craft owns separately via .craft.yml.
+#
+# Needs the release App token rather than GITHUB_TOKEN: the bump commit goes
+# straight to main, and a push made with GITHUB_TOKEN starts no workflows, so the
+# follow-on develop deploy would never run.
+
+name: Release plugins
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to release (e.g. 1.3.0)
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  tag:
+    runs-on: ubuntu-24.04
+    name: "Bump and tag"
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+    steps:
+      - name: Get auth token
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.SENTRY_RELEASE_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.SENTRY_RELEASE_BOT_PRIVATE_KEY }}
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          token: ${{ steps.token.outputs.token }}
+          fetch-depth: 0
+
+      - name: Bump and tag
+        id: bump
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "::error::run this from main; got ${GITHUB_REF}"
+            exit 1
+          fi
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::version must be MAJOR.MINOR.PATCH; got '${VERSION}'"
+            exit 1
+          fi
+
+          TAG="plugin/v${VERSION}"
+
+          # An existing tag is survivable only when this run would land on the
+          # very same commit: that is a re-run after the publish half failed, and
+          # it has to converge the way the publish job does rather than block the
+          # retry. Any other case -- main moved on, or version.json names a
+          # different version -- is a real conflict, and retagging would ship a
+          # tree nobody released.
+          if existing="$(git rev-parse -q --verify "refs/tags/${TAG}^{commit}")"; then
+            released="$(jq -r .version src/plugins/version.json)"
+            if [[ "$released" != "$VERSION" || "$existing" != "$(git rev-parse HEAD)" ]]; then
+              echo "::error::${TAG} already exists at ${existing}; delete it or pick another version"
+              exit 1
+            fi
+            echo "::notice::${TAG} already tagged; re-publishing that commit"
+            echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          jq --arg version "$VERSION" '.version = $version' src/plugins/version.json > version.tmp
+          mv version.tmp src/plugins/version.json
+
+          # An already-correct version.json means an earlier release bumped and got
+          # no further. Release the tip as it stands: a release is a snapshot of
+          # main, so the retry carries anything merged since that bump.
+          if git diff --quiet -- src/plugins/version.json; then
+            echo "::notice::version.json already at ${VERSION}; releasing main as it stands"
+          else
+            git commit -m "release: plugins v${VERSION}" -- src/plugins/version.json
+            git push origin HEAD:main
+          fi
+
+          git tag "$TAG"
+          git push origin "$TAG"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "::notice::tagged ${TAG}"
+
+  deploy:
+    needs: tag
+    name: "Publish to plugin repositories"
+    uses: ./.github/workflows/deploy-plugins.yml
+    with:
+      ref: refs/tags/plugin/v${{ needs.tag.outputs.version }}
+      target_branch: main
+      dist_tag: v${{ needs.tag.outputs.version }}
+    secrets: inherit
