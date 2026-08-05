@@ -12,7 +12,10 @@
   "mcpServers": {
     "sentry": {
       "type": "http",
-      "url": "https://mcp.sentry.dev/mcp?utm_source=plugin"
+      "url": "https://mcp.sentry.dev/mcp",
+      "headers": {
+        "X-Sentry-Utm-Source": "plugin"
+      }
     }
   }
 }
