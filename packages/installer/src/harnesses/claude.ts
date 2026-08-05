@@ -1,4 +1,4 @@
-import { realSystem, type OutputSink, type SystemDeps } from "../system";
+import type { OutputSink, SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
 import { detectOnPath, runCommand, runJson } from "./shell";
 
@@ -74,5 +74,3 @@ export function createClaude(system: SystemDeps): Harness {
     },
   };
 }
-
-export const claude = createClaude(realSystem);
