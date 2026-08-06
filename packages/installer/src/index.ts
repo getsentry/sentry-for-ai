@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { defineCommand, runMain } from "citty";
-import { harnesses } from "./harnesses";
+import { buildHarnesses } from "./harnesses";
 import { captureAndFlush, initTelemetry } from "./instrument";
 import { runInstaller, runRemover } from "./ui";
 
@@ -61,7 +61,10 @@ const install = defineCommand({
   async run({ args }) {
     const interactive = args.interactive && !args.yes;
     try {
-      const ok = await runInstaller(harnesses, { interactive, instruction: args.instruction });
+      const ok = await runInstaller(buildHarnesses(), {
+        interactive,
+        instruction: args.instruction,
+      });
       process.exit(ok ? 0 : 1);
     } catch (err) {
       // Unexpected error outside the Listr runner: capture and flush before exit
@@ -81,7 +84,7 @@ const remove = defineCommand({
   async run({ args }) {
     const interactive = args.interactive && !args.yes;
     try {
-      const ok = await runRemover(harnesses, { interactive });
+      const ok = await runRemover(buildHarnesses(), { interactive });
       process.exit(ok ? 0 : 1);
     } catch (err) {
       await captureAndFlush(err);

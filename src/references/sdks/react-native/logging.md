@@ -1,10 +1,10 @@
 # Logging — Sentry React Native SDK
 
-> **Minimum SDK:** `@sentry/react-native` ≥7.0.0 for `Sentry.logger` API  
-> **Scope-based attribute setters** (`getGlobalScope`, `withScope`): requires ≥7.8.0  
+> **Minimum SDK:** `@sentry/react-native` ≥7.0.0 for `Sentry.logger` API\
+> **Scope-based attribute setters** (`getGlobalScope`, `withScope`): requires ≥7.8.0\
 > **`consoleLoggingIntegration()`**: requires ≥7.0.0
 
----
+* * *
 
 ## Enabling Logs
 
@@ -19,9 +19,10 @@ Sentry.init({
 });
 ```
 
-Place this in your app entry point — `index.js`, `App.tsx`, or `app/_layout.tsx` (Expo Router), depending on your project structure.
+Place this in your app entry point — `index.js`, `App.tsx`, or `app/_layout.tsx` (Expo
+Router), depending on your project structure.
 
----
+* * *
 
 ## Logger API — Six Levels
 
@@ -57,21 +58,24 @@ Sentry.logger.fatal("Database unavailable", { host: "db-primary" });
 ### Level Selection Guide
 
 | Level | When to Use |
-|-------|-------------|
+| --- | --- |
 | `trace` | Step-by-step internals, loop iterations, low-level flow tracking |
 | `debug` | Diagnostic information useful during development |
 | `info` | Business events, user actions, meaningful state transitions |
 | `warn` | Recoverable errors, degraded performance, approaching limits |
-| `error` | Failures that need investigation but don't crash the app |
+| `error` | Failures that need investigation but don’t crash the app |
 | `fatal` | Unrecoverable failures — app or critical subsystem is down |
 
-**Attribute value types:** `string`, `number`, and `boolean` only. Other types will be dropped or coerced.
+**Attribute value types:** `string`, `number`, and `boolean` only.
+Other types will be dropped or coerced.
 
----
+* * *
 
 ## Parameterized Messages with `logger.fmt`
 
-Use `Sentry.logger.fmt` as a tagged template literal to make message variables **individually searchable** in Sentry. Each interpolated value becomes a `message.parameter.N` attribute:
+Use `Sentry.logger.fmt` as a tagged template literal to make message variables
+**individually searchable** in Sentry.
+Each interpolated value becomes a `message.parameter.N` attribute:
 
 ```typescript
 const userId = "user_123";
@@ -91,13 +95,15 @@ Sentry.logger.error(
 );
 ```
 
-You can now filter and search for logs by individual parameter values in the Sentry Logs UI — not just by the full message string.
+You can now filter and search for logs by individual parameter values in the Sentry Logs
+UI — not just by the full message string.
 
----
+* * *
 
 ## Structured Attributes
 
-Pass attributes as the second argument. They become **queryable columns** in Sentry Logs:
+Pass attributes as the second argument.
+They become **queryable columns** in Sentry Logs:
 
 ```typescript
 Sentry.logger.info("Checkout completed", {
@@ -117,11 +123,12 @@ Sentry.logger.error("Navigation failed", {
 });
 ```
 
----
+* * *
 
 ## Scope-Based Automatic Attributes (SDK ≥7.8.0)
 
-Set attributes once on a scope and they are **automatically attached to all logs** emitted within that scope.
+Set attributes once on a scope and they are **automatically attached to all logs**
+emitted within that scope.
 
 ### Global scope — entire app lifetime
 
@@ -150,13 +157,17 @@ Sentry.withScope(async (scope) => {
 });
 ```
 
----
+* * *
 
 ## Console Logging Integration
 
-Automatically forwards `console.log`, `console.warn`, and `console.error` calls to Sentry as structured logs. Requires SDK ≥7.0.0.
+Automatically forwards `console.log`, `console.warn`, and `console.error` calls to
+Sentry as structured logs.
+Requires SDK ≥7.0.0.
 
-**SDK ≥8.14.0:** Console capture is enabled by default when `enableLogs: true`. Set `enableAutoConsoleLogs: false` to disable automatic console capture and use only manual `Sentry.logger.*` calls.
+**SDK ≥8.14.0:** Console capture is enabled by default when `enableLogs: true`. Set
+`enableAutoConsoleLogs: false` to disable automatic console capture and use only manual
+`Sentry.logger.*` calls.
 
 ```typescript
 Sentry.init({
@@ -164,7 +175,7 @@ Sentry.init({
   enableLogs: true,
   // SDK ≥8.14.0: console capture is automatic. To disable:
   // enableAutoConsoleLogs: false,
-  
+
   // SDK <8.14.0: add consoleLoggingIntegration manually:
   integrations: [
     Sentry.consoleLoggingIntegration({
@@ -182,13 +193,16 @@ console.warn("Memory pressure detected", memoryUsage);
 console.error("Fetch failed:", error.message);
 ```
 
-> **React Native note:** All `console.*` calls in React Native go through the JS bridge. In development, the console capture will forward them all — use `beforeSendLog` to filter out noise before it reaches Sentry.
+> **React Native note:** All `console.*` calls in React Native go through the JS bridge.
+> In development, the console capture will forward them all — use `beforeSendLog` to
+> filter out noise before it reaches Sentry.
 
----
+* * *
 
 ## Filtering with `beforeSendLog`
 
-Filter or mutate every log before it is transmitted. Return `null` to drop the log entirely:
+Filter or mutate every log before it is transmitted.
+Return `null` to drop the log entirely:
 
 ```typescript
 Sentry.init({
@@ -219,20 +233,20 @@ Sentry.init({
 The `log` object has the following shape:
 
 | Field | Type | Description |
-|-------|------|-------------|
+| --- | --- | --- |
 | `level` | `string` | `"trace"`, `"debug"`, `"info"`, `"warn"`, `"error"`, `"fatal"` |
 | `message` | `string` | The log message (template-expanded) |
 | `timestamp` | `number` | Unix timestamp |
 | `attributes` | `object` | All structured attributes |
 
----
+* * *
 
 ## Auto-Generated Attributes
 
 The SDK automatically attaches these attributes to every log:
 
 | Attribute | Source |
-|-----------|--------|
+| --- | --- |
 | `sentry.environment` | `Sentry.init({ environment })` |
 | `sentry.release` | `Sentry.init({ release })` |
 | `sentry.sdk.name` | SDK internals |
@@ -248,15 +262,18 @@ React Native **does not** emit the following attributes that web SDKs include:
 
 - `browser.name` / `browser.version` — not applicable on native
 - `sentry.trace.parent_span_id` — not linked unless using the web tracing stack
-- `sentry.replay_id` — not automatically attached to log events in React Native (mobile replay uses a different linking mechanism)
+- `sentry.replay_id` — not automatically attached to log events in React Native (mobile
+  replay uses a different linking mechanism)
 - `server.address` — server-side only
 - `payload_size` — web-only
 
----
+* * *
 
 ## Log Correlation with Traces
 
-When tracing is enabled, logs emitted inside an active span are **automatically correlated** in the Sentry UI. Navigate from a log to its parent span or from a trace to all logs emitted during it.
+When tracing is enabled, logs emitted inside an active span are **automatically
+correlated** in the Sentry UI. Navigate from a log to its parent span or from a trace to
+all logs emitted during it.
 
 ```typescript
 Sentry.init({
@@ -281,7 +298,7 @@ await Sentry.startSpan({ name: "checkout", op: "ui.action" }, async () => {
 // All three logs are linked to the "checkout" span in the Sentry trace view
 ```
 
----
+* * *
 
 ## Practical Patterns
 
@@ -377,48 +394,56 @@ function checkoutMiddleware(store) {
 }
 ```
 
----
+* * *
 
 ## Configuration Reference
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `enableLogs` | `boolean` | `false` | Master switch — must be `true` for all logging features |
 | `enableAutoConsoleLogs` | `boolean` | `true` | When `enableLogs: true`, automatically capture `console.*` calls. Set `false` to disable auto-capture and use only manual `Sentry.logger.*` (SDK ≥8.14.0) |
 | `beforeSendLog` | `(log) => log \| null` | `undefined` | Filter/mutate logs before transmission |
 | `consoleLoggingIntegration` | integration | not added | Capture `console.*` calls as structured logs |
 
----
+* * *
 
 ## Performance Considerations
 
-- **Log volume:** Every `Sentry.logger.*` call is batched and sent asynchronously — there is no synchronous network overhead per call.
-- **Sampling:** Unlike errors and transactions, logs do not currently support sampling rates. Use `beforeSendLog` to drop entire log levels in production (e.g., drop `trace` and `debug`).
-- **Size limit:** Log payloads over **1 MB** are dropped server-side. If logs are silently disappearing, check your Sentry org stats.
-- **Missing logs on crash:** If the app terminates before the SDK flushes its buffer, the most recent logs may not reach Sentry. This is a known limitation under active improvement.
-- **`console.*` forwarding overhead:** `consoleLoggingIntegration` wraps native console methods. In development this is fine; in production, scope it tightly using the `levels` option.
+- **Log volume:** Every `Sentry.logger.*` call is batched and sent asynchronously —
+  there is no synchronous network overhead per call.
+- **Sampling:** Unlike errors and transactions, logs do not currently support sampling
+  rates. Use `beforeSendLog` to drop entire log levels in production (e.g., drop `trace`
+  and `debug`).
+- **Size limit:** Log payloads over **1 MB** are dropped server-side.
+  If logs are silently disappearing, check your Sentry org stats.
+- **Missing logs on crash:** If the app terminates before the SDK flushes its buffer,
+  the most recent logs may not reach Sentry.
+  This is a known limitation under active improvement.
+- **`console.*` forwarding overhead:** `consoleLoggingIntegration` wraps native console
+  methods. In development this is fine; in production, scope it tightly using the
+  `levels` option.
 
----
+* * *
 
 ## Known Limitations
 
 | Limitation | Details |
-|------------|---------|
+| --- | --- |
 | Crash buffer loss | Logs buffered since last flush are lost on unexpected termination |
 | No per-log sampling | Use `beforeSendLog` to reduce volume; sampling is all-or-nothing |
 | 1 MB size cap | Logs larger than 1 MB are dropped server-side |
 | No `browser.*` attributes | React Native emits no browser context — these columns are empty in the Logs UI |
-| Session Replay not on logs | Expected — mobile replay doesn't populate this attribute on log events; replay is still linked via trace context |
+| Session Replay not on logs | Expected — mobile replay doesn’t populate this attribute on log events; replay is still linked via trace context |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not appearing in Sentry | Check `enableLogs: true` is set in `Sentry.init()` |
 | SDK version too old | Upgrade to `@sentry/react-native` ≥7.0.0 for `Sentry.logger`; ≥7.0.0 for `consoleLoggingIntegration`; ≥7.8.0 for scope attribute setters |
-| `logger.fmt` not creating `parameter.*` attributes | Ensure it is called as a tagged template literal: `Sentry.logger.fmt\`...\`` — not as a function `Sentry.logger.fmt(...)` |
+| `logger.fmt` not creating `parameter.*` attributes | Ensure it is used as a tagged template literal — not as the function call `Sentry.logger.fmt(...)` |
 | Logs disappearing silently | Check Sentry org stats for rate limiting or logs exceeding 1 MB |
 | Attribute values showing `[Filtered]` | Server-side PII scrubbing rule matched — adjust **Data Scrubbing** settings in your Sentry project |
 | `console.log` calls not forwarded | Add `consoleLoggingIntegration()` to `integrations` and ensure the `levels` array includes `"log"` |

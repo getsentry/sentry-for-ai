@@ -40,4 +40,6 @@ export default {
 };
 ```
 
-> **Tip:** Set `disableAutoUpload: true` during local development to speed up builds by skipping source map and dSYM uploads. The option is available in SDK ≥8.13.0.
+> **Tip:** Set `disableAutoUpload: true` during local development to speed up builds by
+> skipping source map and dSYM uploads.
+> The option is available in SDK ≥8.13.0.

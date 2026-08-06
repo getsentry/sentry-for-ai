@@ -11,19 +11,34 @@
 #   grok   -> getsentry/plugin-grok
 #   pi     -> getsentry/plugin-pi
 #
+# Each plugin repository carries two rolling branches, and which one a run writes
+# is the whole difference between a deploy and a release:
+#
+#   develop  every push to this repo's main, so its tip is always the latest
+#            build. Nothing installs from it by default; it is where a change is
+#            visible and testable before it ships.
+#   main     release tags only, driven by release-plugins.yml. This is the branch
+#            consumers resolve -- Anthropic's marketplace pins plugin-claude by
+#            SHA, the installer clones plugin-cursor, and the codex/grok CLIs
+#            install by repository -- so it moves when we say a version is out,
+#            not on every merge.
+#
+# A release also tags the plugin repository (`v<version>`), giving each shipped
+# version an addressable ref for pinning and rollback.
+#
 # Marketplaces consume `getsentry/plugin-<agent>` by git ref. Each build job
 # validates its agent's tree without deployment credentials and uploads it as an
 # artifact. A separate deploy job then mints a repository-scoped token and
-# commits only that validated artifact onto the target repo's `main`. The five
-# matrix entries target five different repos, so they run in parallel without
-# contention.
+# commits only that validated artifact onto the target branch of the target
+# repo. The five matrix entries target five different repos, so they run in
+# parallel without contention.
 #
 # Cross-repo writes use a GitHub App token scoped per-job to a single plugin
 # repo; the default GITHUB_TOKEN cannot push to other repositories. The app must
 # be installed on the org with contents:write on the five plugin repos, its ID
 # stored as the PLUGIN_DEPLOY_APP_ID variable and its private key as the
 # PLUGIN_DEPLOY_KEY secret. Each target repo must already exist with `main` as
-# its default branch.
+# its default branch; `develop` is branched off it on the first deploy.
 
 name: Deploy plugins
 
@@ -41,6 +56,25 @@ on:
       - "scripts/**"
       - ".github/workflows/deploy-plugins.yml"
   workflow_dispatch:
+  # Called by release-plugins.yml to publish a tagged tree. A tag push cannot
+  # drive this directly: `paths` filters do not match a push that adds no
+  # commits, so a tag pointing at an existing commit would silently skip the
+  # deploy. The release workflow calls in with an explicit ref instead.
+  workflow_call:
+    inputs:
+      ref:
+        description: Ref of this repository to build from.
+        type: string
+        required: true
+      target_branch:
+        description: Branch to publish onto in each plugin repository.
+        type: string
+        required: true
+      dist_tag:
+        description: Tag to create in each plugin repository. Empty creates none.
+        type: string
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -49,6 +83,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      # Every matrix entry builds the same checkout, so the last writer wins
+      # with the same value. Read out of the checkout rather than github.sha,
+      # which in a called workflow reports the caller's commit instead.
+      src_sha: ${{ steps.build.outputs.src_sha }}
     strategy:
       fail-fast: false
       matrix:
@@ -56,6 +95,11 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          # scripts/dev-version.sh derives the develop stamp from `git describe`,
+          # which needs the tags and the commits since the last one.
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
@@ -71,10 +115,22 @@ jobs:
         run: npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.83.0
 
       - name: Build plugin-${{ matrix.agent }}
+        id: build
         env:
           AGENT: ${{ matrix.agent }}
+          DIST_TAG: ${{ inputs.dist_tag || '' }}
         run: |
           set -euo pipefail
+
+          echo "src_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+          # A release stamps the version being released; anything else is a
+          # develop build and gets labelled with its distance from the last tag.
+          if [[ -z "$DIST_TAG" ]]; then
+            PLUGIN_VERSION="$(scripts/dev-version.sh)"
+            export PLUGIN_VERSION
+            echo "::notice::stamping develop build as ${PLUGIN_VERSION}"
+          fi
 
           DIST_DIR="$(mktemp -d)/dist"
           "src/plugins/${AGENT}/build.sh" "$DIST_DIR"
@@ -104,7 +160,7 @@ jobs:
       matrix:
         agent: [claude, cursor, codex, grok, pi]
     concurrency:
-      group: deploy-plugin-${{ matrix.agent }}
+      group: deploy-plugin-${{ matrix.agent }}-${{ inputs.target_branch || 'develop' }}
       cancel-in-progress: false
     steps:
       - name: Download validated plugin-${{ matrix.agent }}
@@ -127,7 +183,9 @@ jobs:
       - name: Deploy plugin-${{ matrix.agent }}
         env:
           AGENT: ${{ matrix.agent }}
-          SRC_SHA: ${{ github.sha }}
+          TARGET_BRANCH: ${{ inputs.target_branch || 'develop' }}
+          DIST_TAG: ${{ inputs.dist_tag || '' }}
+          SRC_SHA: ${{ needs.build.outputs.src_sha }}
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
           set -euo pipefail
@@ -140,6 +198,15 @@ jobs:
           git -C "$WORKTREE" config user.name "github-actions[bot]"
           git -C "$WORKTREE" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          # Land on the target branch, branching it off the default branch on the
+          # first deploy that needs it.
+          if git -C "$WORKTREE" ls-remote --exit-code --heads origin "$TARGET_BRANCH" > /dev/null; then
+            git -C "$WORKTREE" checkout "$TARGET_BRANCH"
+          else
+            echo "::notice::${TARGET_REPO} has no ${TARGET_BRANCH} yet; creating it"
+            git -C "$WORKTREE" checkout -b "$TARGET_BRANCH"
+          fi
+
           # Rewrite the whole tree from the already validated artifact. No build
           # tool or third-party package executes while GH_TOKEN is in scope.
           git -C "$WORKTREE" rm -rfq --ignore-unmatch .
@@ -148,9 +215,43 @@ jobs:
           # Commit only if something changed.
           git -C "$WORKTREE" add -A
           if git -C "$WORKTREE" diff --cached --quiet; then
-            echo "::notice::${TARGET_REPO} unchanged; nothing to deploy"
+            echo "::notice::${TARGET_REPO} ${TARGET_BRANCH} unchanged; nothing to commit"
+          elif [[ -n "$DIST_TAG" ]]; then
+            git -C "$WORKTREE" commit -m "build: release ${DIST_TAG} from getsentry/sentry-for-ai@${SRC_SHA}"
+          else
+            git -C "$WORKTREE" commit -m "build: deploy from getsentry/sentry-for-ai@${SRC_SHA}"
+          fi
+
+          git -C "$WORKTREE" push origin "$TARGET_BRANCH"
+          echo "::notice::deployed ${TARGET_REPO} ${TARGET_BRANCH}"
+
+          if [[ -z "$DIST_TAG" ]]; then
             exit 0
           fi
-          git -C "$WORKTREE" commit -m "build: deploy from getsentry/sentry-for-ai@${SRC_SHA}"
-          git -C "$WORKTREE" push origin main
-          echo "::notice::deployed ${TARGET_REPO}"
+
+          # Tag wherever the branch now points, whether or not this run made a
+          # commit: a release whose tree already matches main still has to end up
+          # tagged, and re-running a failed release has to converge on the tag
+          # rather than skip it.
+          #
+          # An existing tag on a different commit is a conflict, not a converged
+          # retry -- skipping it would leave v<version> naming something other
+          # than the tree that just shipped. The peeled `^{}` line is what makes
+          # the comparison hold for an annotated tag, whose own object sha is not
+          # the commit sha.
+          TARGET_COMMIT="$(git -C "$WORKTREE" rev-parse HEAD)"
+          EXISTING_TAG_COMMIT="$(git -C "$WORKTREE" ls-remote --tags origin \
+            "refs/tags/${DIST_TAG}" "refs/tags/${DIST_TAG}^{}" | tail -1 | cut -f1)"
+
+          if [[ -n "$EXISTING_TAG_COMMIT" ]]; then
+            if [[ "$EXISTING_TAG_COMMIT" != "$TARGET_COMMIT" ]]; then
+              echo "::error::${TARGET_REPO} ${DIST_TAG} points at ${EXISTING_TAG_COMMIT}, not the ${TARGET_COMMIT} just published"
+              exit 1
+            fi
+            echo "::notice::${TARGET_REPO} already tagged ${DIST_TAG}"
+            exit 0
+          fi
+
+          git -C "$WORKTREE" tag "$DIST_TAG"
+          git -C "$WORKTREE" push origin "$DIST_TAG"
+          echo "::notice::tagged ${TARGET_REPO} ${DIST_TAG}"

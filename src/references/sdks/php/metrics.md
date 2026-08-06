@@ -1,17 +1,20 @@
 # Metrics — Sentry PHP SDK
 
-> Minimum SDK versions: `sentry/sentry` ≥ 4.19.0 · `sentry/sentry-laravel` ≥ 4.20.0 · `sentry/sentry-symfony` ≥ 5.8.0
+> Minimum SDK versions: `sentry/sentry` ≥ 4.19.0 · `sentry/sentry-laravel` ≥ 4.20.0 ·
+> `sentry/sentry-symfony` ≥ 5.8.0
 
 ## Overview
 
-Custom metrics (counters, distributions, gauges) are enabled by default — no extra flag required. Use `\Sentry\traceMetrics()` as the entry point.
+Custom metrics (counters, distributions, gauges) are enabled by default — no extra flag
+required. Use `\Sentry\traceMetrics()` as the entry point.
 
-> **Note:** The old `\Sentry\metrics()` API is **fully deprecated** — all methods are no-ops. Use `\Sentry\traceMetrics()` instead.
+> **Note:** The old `\Sentry\metrics()` API is **fully deprecated** — all methods are
+> no-ops. Use `\Sentry\traceMetrics()` instead.
 
 ## Metric Types
 
 | Type | Method | Aggregations | Use for |
-|------|--------|--------------|---------|
+| --- | --- | --- | --- |
 | Counter | `count()` | sum | Event occurrences, request counts |
 | Distribution | `distribution()` | p90, min, max, avg | Latencies, sizes — supports percentiles |
 | Gauge | `gauge()` | min, max, avg, sum, count | Current values — no percentiles |
@@ -49,7 +52,8 @@ use \Sentry\Metrics\Unit;
 
 ### Flushing manually
 
-Metrics are buffered (up to 1000 entries). Flush explicitly in CLI scripts or when emitting high volumes:
+Metrics are buffered (up to 1000 entries).
+Flush explicitly in CLI scripts or when emitting high volumes:
 
 ```php
 \Sentry\traceMetrics()->flush();
@@ -107,17 +111,19 @@ Unit::none()
 Metrics are buffered in a ring buffer (capacity: 1000 entries):
 
 | Context | Behavior |
-|---------|----------|
+| --- | --- |
 | PHP (CLI/scripts) | Call `\Sentry\traceMetrics()->flush()` manually |
 | Laravel | Auto-flushed at end of each request or command |
 | Symfony (HTTP) | Auto-flushed on `kernel.terminate` |
 | Symfony (console) | Auto-flushed on `console.terminate` |
 
-**Buffer limit:** When more than 1000 metrics are buffered, the oldest entries are dropped. Flush periodically in high-volume scripts.
+**Buffer limit:** When more than 1000 metrics are buffered, the oldest entries are
+dropped. Flush periodically in high-volume scripts.
 
 ## Auto-Flush Threshold
 
-Use `metric_flush_threshold` to automatically flush buffered metrics after N entries, without needing to call `flush()` manually:
+Use `metric_flush_threshold` to automatically flush buffered metrics after N entries,
+without needing to call `flush()` manually:
 
 **PHP / Laravel:**
 ```php
@@ -134,7 +140,9 @@ sentry:
     metric_flush_threshold: 500
 ```
 
-This is useful in CLI scripts or workers that emit metrics continuously. The threshold triggers a flush mid-process so the buffer never fills to its 1000-entry cap.
+This is useful in CLI scripts or workers that emit metrics continuously.
+The threshold triggers a flush mid-process so the buffer never fills to its 1000-entry
+cap.
 
 ## Symfony Configuration
 
@@ -152,7 +160,7 @@ sentry:
 Every metric receives these automatically:
 
 | Attribute | Description |
-|-----------|-------------|
+| --- | --- |
 | `sentry.environment` | Environment from SDK config |
 | `sentry.release` | Release from SDK config |
 | `sentry.sdk.name` / `sentry.sdk.version` | SDK metadata |
@@ -161,16 +169,19 @@ Every metric receives these automatically:
 
 ## Best Practices
 
-- Keep attribute cardinality low — avoid user IDs, UUIDs, or timestamps as attribute values
+- Keep attribute cardinality low — avoid user IDs, UUIDs, or timestamps as attribute
+  values
 - Use `distribution` over `gauge` when you need percentile analysis (p90, p99)
 - Prefix metric names with your service: `"payments.charge_time"` not `"charge_time"`
-- In high-throughput scripts, flush periodically to prevent the buffer from dropping old entries
-- Laravel closures in `config/sentry.php` may cause issues with `config:cache` — see [Laravel closures config docs](https://docs.sentry.io/platforms/php/guides/laravel/configuration/laravel-options/#closures-and-config-caching)
+- In high-throughput scripts, flush periodically to prevent the buffer from dropping old
+  entries
+- Laravel closures in `config/sentry.php` may cause issues with `config:cache` — see
+  [Laravel closures config docs](https://docs.sentry.io/platforms/php/guides/laravel/configuration/laravel-options/#closures-and-config-caching)
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Metrics not appearing | Verify SDK version meets minimum; check `enable_metrics` is `true` |
 | Metrics being dropped | Buffer cap is 1000 — flush periodically with `\Sentry\traceMetrics()->flush()` |
 | No percentiles in Sentry UI | Switch from `gauge` to `distribution` — gauges do not support percentiles |

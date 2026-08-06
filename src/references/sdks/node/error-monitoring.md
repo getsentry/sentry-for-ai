@@ -1,15 +1,17 @@
 # Error Monitoring — Sentry Node.js SDK
 
-> Minimum SDK: `@sentry/node` ≥8.0.0  
-> NestJS integration: `@sentry/nestjs` ≥8.0.0  
-> Bun integration: `@sentry/bun` ≥8.0.0 (thin wrapper over `@sentry/node`)  
+> Minimum SDK: `@sentry/node` ≥8.0.0\
+> NestJS integration: `@sentry/nestjs` ≥8.0.0\
+> Bun integration: `@sentry/bun` ≥8.0.0 (thin wrapper over `@sentry/node`)\
 > Deno integration: `npm:@sentry/deno` (Deno 2+)
 
----
+* * *
 
 ## The Instrument-First Rule
 
-`@sentry/node` patches modules at import time via OpenTelemetry. The instrument file **must be loaded before everything else** — before your framework, before your database driver, before any HTTP client.
+`@sentry/node` patches modules at import time via OpenTelemetry.
+The instrument file **must be loaded before everything else** — before your framework,
+before your database driver, before any HTTP client.
 
 ```javascript
 // instrument.js — loaded first
@@ -51,12 +53,12 @@ node --import ./instrument.mjs app.mjs
 NODE_OPTIONS="--import ./instrument.mjs" npm start
 ```
 
----
+* * *
 
 ## What Is Captured Automatically
 
 | Error Type | Captured? | Mechanism |
-|-----------|-----------|-----------|
+| --- | --- | --- |
 | Uncaught exceptions | ✅ Yes | `process.on("uncaughtException")` |
 | Unhandled promise rejections | ✅ Yes | `process.on("unhandledRejection")` |
 | Framework errors (Express, Fastify, Koa, Hapi, Connect) | ✅ Yes | Error handler middleware (see below) |
@@ -67,7 +69,7 @@ NODE_OPTIONS="--import ./instrument.mjs" npm start
 
 ### The Core Rule
 
-> **"If you catch an error and don't re-throw it, Sentry never sees it."**
+> **“If you catch an error and don’t re-throw it, Sentry never sees it.”**
 
 ```javascript
 // ✅ Auto-captured — unhandled, bubbles up
@@ -96,14 +98,15 @@ try {
 }
 ```
 
----
+* * *
 
 ## Framework Error Handler Placement
 
-**Critical: placement rules differ per framework. Getting this wrong silently misses errors.**
+**Critical: placement rules differ per framework.
+Getting this wrong silently misses errors.**
 
 | Framework | Function | Placement | Async? |
-|-----------|----------|-----------|--------|
+| --- | --- | --- | --- |
 | Express | `setupExpressErrorHandler(app)` | **AFTER routes** | No |
 | Fastify | `setupFastifyErrorHandler(app)` | **BEFORE routes** | No |
 | Koa | `setupKoaErrorHandler(app)` | **FIRST middleware** | No |
@@ -111,7 +114,7 @@ try {
 | Connect | `setupConnectErrorHandler(app)` | **BEFORE routes** | No |
 | NestJS | `SentryGlobalFilter` + `SentryModule.forRoot()` | AppModule providers | No |
 
----
+* * *
 
 ## Express
 
@@ -154,11 +157,12 @@ app.use((err, req, res, next) => {
 app.listen(3000);
 ```
 
----
+* * *
 
 ## Fastify
 
-Error handler goes **before routes**. Internally registers a Fastify plugin using `onError` lifecycle hook.
+Error handler goes **before routes**. Internally registers a Fastify plugin using
+`onError` lifecycle hook.
 
 ```javascript
 require("./instrument");
@@ -185,7 +189,7 @@ app.get("/debug-sentry", async () => {
 app.listen({ port: 3000 });
 ```
 
----
+* * *
 
 ## Koa
 
@@ -211,13 +215,15 @@ app.use(router.allowedMethods());
 app.listen(3000);
 ```
 
-> **Note:** `setupKoaErrorHandler` has no `shouldHandleError` option — it captures all errors.
+> **Note:** `setupKoaErrorHandler` has no `shouldHandleError` option — it captures all
+> errors.
 
----
+* * *
 
 ## Hapi
 
-`setupHapiErrorHandler` is **async** — you must `await` it. Internally registers a Hapi lifecycle extension on `onPreResponse`.
+`setupHapiErrorHandler` is **async** — you must `await` it.
+Internally registers a Hapi lifecycle extension on `onPreResponse`.
 
 ```javascript
 require("./instrument");
@@ -243,9 +249,10 @@ const init = async () => {
 init();
 ```
 
-> **Caution:** Forgetting `await` silently skips Sentry registration. No error is thrown.
+> **Caution:** Forgetting `await` silently skips Sentry registration.
+> No error is thrown.
 
----
+* * *
 
 ## Connect
 
@@ -279,22 +286,24 @@ app.use((err, req, res, next) => {
 require("http").createServer(app).listen(3000);
 ```
 
----
+* * *
 
 ## NestJS
 
 > **NestJS has a dedicated skill: [`nestjs`](../nestjs/index.md)**
->
+> 
 > NestJS uses a separate package (`@sentry/nestjs`) with NestJS-native error handling
-> via `SentryGlobalFilter`, `SentryModule.forRoot()`, `@SentryExceptionCaptured` decorator,
-> and GraphQL/Microservices support. Load that skill for complete NestJS error monitoring
-> setup including `HttpException` filtering, custom filters, and background job isolation.
+> via `SentryGlobalFilter`, `SentryModule.forRoot()`, `@SentryExceptionCaptured`
+> decorator, and GraphQL/Microservices support.
+> Load that skill for complete NestJS error monitoring setup including `HttpException`
+> filtering, custom filters, and background job isolation.
 
----
+* * *
 
 ## Vanilla Node.js (`http` Module)
 
-No framework integration needed — rely on the global `uncaughtException` / `unhandledRejection` handlers plus manual `captureException` for caught errors.
+No framework integration needed — rely on the global `uncaughtException` /
+`unhandledRejection` handlers plus manual `captureException` for caught errors.
 
 ```javascript
 require("./instrument");
@@ -318,7 +327,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(3000);
 ```
 
----
+* * *
 
 ## `captureException` — Full API
 
@@ -373,7 +382,7 @@ const eventId = Sentry.captureException(err);
 res.status(500).json({ error: "Something went wrong", eventId });
 ```
 
----
+* * *
 
 ## `captureMessage`
 
@@ -405,14 +414,15 @@ Sentry.captureMessage("Rate limit exceeded", {
 });
 ```
 
----
+* * *
 
 ## Scope Management (v8+ — Hub Removed)
 
-In SDK v8, `Hub` is removed. Use the three scope types directly.
+In SDK v8, `Hub` is removed.
+Use the three scope types directly.
 
 | Scope | Accessor | Lifetime | Use For |
-|-------|----------|----------|---------|
+| --- | --- | --- | --- |
 | **Global** | `Sentry.getGlobalScope()` | Process lifetime | App version, region, build ID |
 | **Isolation** | `Sentry.getIsolationScope()` | Per HTTP request (auto-forked) | User identity, request metadata |
 | **Current** | `Sentry.getCurrentScope()` | Narrow/temporary | Per-operation context |
@@ -452,7 +462,8 @@ Sentry.withScope((scope) => {
 
 ### `withIsolationScope` — Full Isolation (Background Jobs)
 
-Use for background jobs, workers, and queue processors where you need a completely clean scope.
+Use for background jobs, workers, and queue processors where you need a completely clean
+scope.
 
 ```javascript
 Sentry.withIsolationScope(async (scope) => {
@@ -466,20 +477,21 @@ Sentry.withIsolationScope(async (scope) => {
 ### Scope Decision Guide
 
 | Goal | API |
-|------|-----|
+| --- | --- |
 | Data on ALL events (app version, build ID) | `Sentry.getGlobalScope().setTag(...)` |
 | Current request data | `Sentry.setTag(...)` (writes to isolation scope) |
 | One specific capture only | `Sentry.withScope((scope) => { ... })` |
 | Background job / worker | `Sentry.withIsolationScope(async (scope) => { ... })` |
 | Inline on a single event | Second arg to `captureException(err, { tags: {...} })` |
 
----
+* * *
 
 ## Context Enrichment
 
 ### `setTag` / `setTags` — Indexed, Searchable
 
-Tags are **indexed** — use them for filtering, grouping, and alerting. Key: max 32 chars, `[a-zA-Z0-9_.:−]`. Value: max 200 chars.
+Tags are **indexed** — use them for filtering, grouping, and alerting.
+Key: max 32 chars, `[a-zA-Z0-9_.:−]`. Value: max 200 chars.
 
 ```javascript
 Sentry.setTag("db_region", "us-east-1");
@@ -493,7 +505,9 @@ Sentry.setTags({
 
 ### `setContext` — Structured, Non-Searchable
 
-Attaches structured data visible in the issue detail view. Not indexed. Normalized to 3 levels deep. The `type` key is reserved — don't use it.
+Attaches structured data visible in the issue detail view.
+Not indexed. Normalized to 3 levels deep.
+The `type` key is reserved — don’t use it.
 
 ```javascript
 Sentry.setContext("order", {
@@ -535,7 +549,8 @@ app.use((req, res, next) => {
 
 ### `setExtra` / `setExtras` — Arbitrary Data
 
-Non-indexed supplementary data. Prefer `setContext` for structured objects.
+Non-indexed supplementary data.
+Prefer `setContext` for structured objects.
 
 ```javascript
 Sentry.setExtra("server_memory_mb", process.memoryUsage().heapUsed / 1024 / 1024);
@@ -548,20 +563,20 @@ Sentry.setExtras({
 ### Tags vs Context vs Extra
 
 | Feature | Searchable? | Indexed? | Best For |
-|---------|-----------|---------|---------|
+| --- | --- | --- | --- |
 | **Tags** | ✅ Yes | ✅ Yes | Filtering, grouping, alerting |
 | **Context** | ❌ No | ❌ No | Structured debug info (nested objects) |
 | **Extra** | ❌ No | ❌ No | Arbitrary debug values |
 | **User** | ✅ Partially | ✅ Yes | User attribution and filtering |
 
----
+* * *
 
 ## Breadcrumbs
 
 ### Automatic Breadcrumbs (Zero Config)
 
-| Type | What's Captured |
-|------|----------------|
+| Type | What’s Captured |
+| --- | --- |
 | `http` | Outgoing HTTP requests (URL, method, status code) |
 | `console` | `console.log`, `warn`, `error` calls |
 | `db` | Database queries (via OTel auto-instrumentation) |
@@ -598,7 +613,7 @@ Sentry.addBreadcrumb({
 ### Breadcrumb Properties
 
 | Key | Type | Values |
-|-----|------|--------|
+| --- | --- | --- |
 | `type` | string | `"default"` \| `"debug"` \| `"error"` \| `"info"` \| `"http"` \| `"navigation"` \| `"query"` \| `"ui"` \| `"user"` |
 | `category` | string | Dot-notation: `"auth"`, `"db.query"`, `"job.start"` |
 | `message` | string | Human-readable description |
@@ -606,13 +621,16 @@ Sentry.addBreadcrumb({
 | `timestamp` | number | Unix timestamp (auto-set if omitted) |
 | `data` | object | Arbitrary key/value data |
 
----
+* * *
 
 ## `beforeSend` and Filtering Hooks
 
 ### `beforeSend` — Modify or Drop Error Events
 
-Last chance to modify or drop events. Runs after all event processors. Return `null` to drop. **Only one `beforeSend` is allowed** — use `addEventProcessor` for multiple processors.
+Last chance to modify or drop events.
+Runs after all event processors.
+Return `null` to drop.
+**Only one `beforeSend` is allowed** — use `addEventProcessor` for multiple processors.
 
 ```javascript
 Sentry.init({
@@ -714,11 +732,12 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Fingerprinting and Custom Grouping
 
-All events have a `fingerprint` array. Events with the same fingerprint group into the same Sentry issue.
+All events have a `fingerprint` array.
+Events with the same fingerprint group into the same Sentry issue.
 
 ### Per-Capture Fingerprinting
 
@@ -767,17 +786,19 @@ Sentry.init({
 ### Template Variables
 
 | Variable | Description |
-|----------|-------------|
-| `{{ default }}` | Sentry's normally computed hash — extend rather than replace |
+| --- | --- |
+| `{{ default }}` | Sentry’s normally computed hash — extend rather than replace |
 | `{{ transaction }}` | Current transaction name |
 | `{{ function }}` | Top function in stack trace |
 | `{{ type }}` | Exception type name |
 
----
+* * *
 
 ## Event Processors
 
-Unlike `beforeSend` (one allowed), multiple event processors can be registered. Order is not guaranteed. `beforeSend` always runs last.
+Unlike `beforeSend` (one allowed), multiple event processors can be registered.
+Order is not guaranteed.
+`beforeSend` always runs last.
 
 ```javascript
 // Runs on every event — enrich with deploy metadata
@@ -808,21 +829,23 @@ Sentry.withScope((scope) => {
 
 **`addEventProcessor` vs `beforeSend`:**
 
-| | `addEventProcessor` | `beforeSend` |
-|---|---|---|
+|  | `addEventProcessor` | `beforeSend` |
+| --- | --- | --- |
 | Count | Unlimited | One only |
 | Order | Undefined (before `beforeSend`) | Always last |
 | Async | ✅ Yes | ✅ Yes |
 | Drop events | Return `null` | Return `null` |
 
----
+* * *
 
 ## `requestDataIntegration` — Per-Request Data
 
-Auto-enabled. Attaches HTTP request data to all events during a request. Each framework auto-forks an isolation scope per request via OpenTelemetry `AsyncLocalStorage` — concurrent requests stay separate.
+Auto-enabled. Attaches HTTP request data to all events during a request.
+Each framework auto-forks an isolation scope per request via OpenTelemetry
+`AsyncLocalStorage` — concurrent requests stay separate.
 
 | Field | Captured | Notes |
-|-------|----------|-------|
+| --- | --- | --- |
 | `url` | ✅ Always | Full request URL |
 | `method` | ✅ Always | GET, POST, etc. |
 | `headers` | ✅ Always | Auth header scrubbed automatically |
@@ -855,7 +878,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Error Chains
 
@@ -897,11 +920,12 @@ class HttpError extends Error {
 }
 ```
 
----
+* * *
 
 ## Lifecycle: Flush Before Shutdown
 
-`@sentry/node` batches events and sends asynchronously. Always flush before process exit to avoid losing the last events.
+`@sentry/node` batches events and sends asynchronously.
+Always flush before process exit to avoid losing the last events.
 
 ```javascript
 // Graceful shutdown — HTTP server
@@ -924,7 +948,7 @@ export const handler = async (event) => {
 };
 ```
 
----
+* * *
 
 ## `Sentry.init()` — Error-Relevant Options
 
@@ -967,11 +991,12 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Bun
 
-`@sentry/bun` is a thin wrapper over `@sentry/node`. The API is identical — use `--preload` instead of `require("./instrument")` first.
+`@sentry/bun` is a thin wrapper over `@sentry/node`. The API is identical — use
+`--preload` instead of `require("./instrument")` first.
 
 ```typescript
 // instrument.ts
@@ -1010,9 +1035,10 @@ const server = Bun.serve({
 });
 ```
 
-> **Profiling:** `@sentry/profiling-node` uses a native addon — incompatible with Bun's runtime. Omit `nodeProfilingIntegration()` in Bun apps.
+> **Profiling:** `@sentry/profiling-node` uses a native addon — incompatible with Bun’s
+> runtime. Omit `nodeProfilingIntegration()` in Bun apps.
 
----
+* * *
 
 ## Deno
 
@@ -1041,9 +1067,10 @@ Deno.serve({ port: 3000 }, async (request) => {
 });
 ```
 
-> **Requirements:** Deno 2+. Run with `--allow-net --allow-env --allow-read`. No `setupExpressErrorHandler` equivalent — use `try/catch` + `captureException`.
+> **Requirements:** Deno 2+. Run with `--allow-net --allow-env --allow-read`. No
+> `setupExpressErrorHandler` equivalent — use `try/catch` + `captureException`.
 
----
+* * *
 
 ## Quick Reference
 
@@ -1091,20 +1118,20 @@ Sentry.setupConnectErrorHandler(app);          // Connect: BEFORE routes
 await Sentry.flush(2000);
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Cause | Solution |
-|-------|-------|----------|
-| Errors not appearing in Sentry | `instrument.js` loaded too late | Ensure it's the first `require()` or loaded via `--import` / `--preload` before app code |
+| --- | --- | --- |
+| Errors not appearing in Sentry | `instrument.js` loaded too late | Ensure it’s the first `require()` or loaded via `--import` / `--preload` before app code |
 | Express errors not captured | `setupExpressErrorHandler` placed before routes | Move it **after** all route definitions |
 | Fastify errors not captured | `setupFastifyErrorHandler` placed after routes | Move it **before** route definitions (opposite of Express) |
-| Hapi error handler silently fails | `setupHapiErrorHandler` not awaited | Must `await Sentry.setupHapiErrorHandler(server)` — it's the only async handler |
+| Hapi error handler silently fails | `setupHapiErrorHandler` not awaited | Must `await Sentry.setupHapiErrorHandler(server)` — it’s the only async handler |
 | NestJS `HttpException` not captured | Intentional — `SentryGlobalFilter` skips control flow exceptions | Create a custom filter extending `SentryGlobalFilter` and override `catch()` to capture `HttpException` if desired |
-| `setUser()` leaks between requests | Using global scope for user data | Use `Sentry.setUser()` (isolation scope) — it's auto-forked per request by framework integrations |
-| `withScope` changes persisting | Wrong scope layer | `withScope` creates a temporary current scope — changes don't survive the callback. Use `setTag()` for request-lifetime data |
+| `setUser()` leaks between requests | Using global scope for user data | Use `Sentry.setUser()` (isolation scope) — it’s auto-forked per request by framework integrations |
+| `withScope` changes persisting | Wrong scope layer | `withScope` creates a temporary current scope — changes don’t survive the callback. Use `setTag()` for request-lifetime data |
 | `beforeSend` returning wrong type | Not returning `event` or `null` | `beforeSend` must return the event object or `null` to drop — `undefined` causes silent failures |
 | Breadcrumbs not showing | `maxBreadcrumbs: 0` | Check init config — default is 100; set to desired max |
-| Duplicate error events | Multiple capture paths | Ensure only one handler captures each error — e.g., don't both re-throw and call `captureException` |
+| Duplicate error events | Multiple capture paths | Ensure only one handler captures each error — e.g., don’t both re-throw and call `captureException` |
 | Stack traces show minified code | Source maps not uploaded | Configure `@sentry/cli` sourcemap upload in your build pipeline |

@@ -1,11 +1,14 @@
 # Sentry PHP SDK
 
-Opinionated wizard that scans your PHP project and guides you through complete Sentry setup.
+Opinionated wizard that scans your PHP project and guides you through complete Sentry
+setup.
 
-> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry/sentry 4.x, sentry/sentry-laravel 4.x, sentry/sentry-symfony 5.x).
-> Always verify against [docs.sentry.io/platforms/php/](https://docs.sentry.io/platforms/php/) before implementing.
+> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing
+> (sentry/sentry 4.x, sentry/sentry-laravel 4.x, sentry/sentry-symfony 5.x). Always
+> verify against [docs.sentry.io/platforms/php/](https://docs.sentry.io/platforms/php/)
+> before implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -34,33 +37,43 @@ cat package.json 2>/dev/null | grep -E '"react"|"svelte"|"vue"|"next"'
 ```
 
 **What to note:**
-- Is `sentry/sentry` (or `-laravel` / `-symfony`) already in `composer.json`? If yes, check if the init call exists — may just need feature config.
-- Framework detected? **Laravel** (has `artisan` + `laravel/framework` in composer.json), **Symfony** (has `bin/console` + `symfony/framework-bundle`), or **plain PHP**.
-- Queue system? (Laravel Queue / Horizon, Symfony Messenger need queue worker configuration.)
-- AI libraries? (`laravel/ai` is auto-instrumented by `sentry/sentry-laravel >= 4.27.0` when tracing is enabled; other PHP AI libraries need manual spans.)
+- Is `sentry/sentry` (or `-laravel` / `-symfony`) already in `composer.json`? If yes,
+  check if the init call exists — may just need feature config.
+- Framework detected? **Laravel** (has `artisan` + `laravel/framework` in composer.json),
+  **Symfony** (has `bin/console` + `symfony/framework-bundle`), or **plain PHP**.
+- Queue system? (Laravel Queue / Horizon, Symfony Messenger need queue worker
+  configuration.)
+- AI libraries? (`laravel/ai` is auto-instrumented by `sentry/sentry-laravel >= 4.27.0`
+  when tracing is enabled; other PHP AI libraries need manual spans.)
 - Companion frontend? (Triggers Phase 4 cross-link.)
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Based on what you found, present a concrete proposal. Don't ask open-ended questions — lead with a recommendation:
+Based on what you found, present a concrete proposal.
+Don’t ask open-ended questions — lead with a recommendation:
 
 **Always recommended (core coverage):**
 - ✅ **Error Monitoring** — captures unhandled exceptions and PHP errors
-- ✅ **Logging** — Monolog integration (Laravel/Symfony auto-configure; plain PHP uses `MonologHandler`)
+- ✅ **Logging** — Monolog integration (Laravel/Symfony auto-configure; plain PHP uses
+  `MonologHandler`)
 
 **Recommend when detected:**
-- ✅ **Tracing** — web framework detected (Laravel/Symfony auto-instrument HTTP, DB, Twig/Blade, cache)
-- ⚡ **Profiling** — production apps where performance matters (requires `excimer` PHP extension, Linux/macOS only)
-- ⚡ **Crons** — scheduler patterns detected (Laravel Scheduler, Symfony Scheduler, custom cron jobs)
+- ✅ **Tracing** — web framework detected (Laravel/Symfony auto-instrument HTTP, DB,
+  Twig/Blade, cache)
+- ⚡ **Profiling** — production apps where performance matters (requires `excimer` PHP
+  extension, Linux/macOS only)
+- ⚡ **Crons** — scheduler patterns detected (Laravel Scheduler, Symfony Scheduler,
+  custom cron jobs)
 - ⚡ **Metrics** — business KPIs or SLO tracking (uses `TraceMetrics` API)
-- ✅ **AI Monitoring** — `laravel/ai` detected in a Laravel app (auto-instrumented in `sentry/sentry-laravel >= 4.27.0`)
+- ✅ **AI Monitoring** — `laravel/ai` detected in a Laravel app (auto-instrumented in
+  `sentry/sentry-laravel >= 4.27.0`)
 
 **Recommendation matrix:**
 
-| Feature | Recommend when... | Reference |
-|---------|------------------|-----------|
+| Feature | Recommend when … | Reference |
+| --- | --- | --- |
 | Error Monitoring | **Always** — non-negotiable baseline | `./error-monitoring.md` |
 | Tracing | Laravel/Symfony detected, or manual spans needed | `./tracing.md` |
 | Profiling | Production + `excimer` extension available | `./profiling.md` |
@@ -69,9 +82,10 @@ Based on what you found, present a concrete proposal. Don't ask open-ended quest
 | Crons | Scheduler or cron patterns detected | `./crons.md` |
 | AI Monitoring | `laravel/ai` detected in a Laravel app, or manual PHP AI spans needed | `./ai-monitoring.md` |
 
-Propose: *"I recommend Error Monitoring + Tracing [+ Logging]. Want Profiling, Crons, Metrics, or AI Monitoring too?"*
+Propose: *“I recommend Error Monitoring + Tracing [+ Logging]. Want Profiling, Crons,
+Metrics, or AI Monitoring too?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
@@ -100,7 +114,8 @@ composer require sentry/sentry-symfony "^5.0"
 
 #### Plain PHP
 
-Place `\Sentry\init()` at the top of your entry point (`index.php`, `bootstrap.php`, or equivalent), before any application code:
+Place `\Sentry\init()` at the top of your entry point (`index.php`, `bootstrap.php`, or
+equivalent), before any application code:
 
 ```php
 <?php
@@ -205,10 +220,11 @@ Full init enabling the most features with sensible defaults:
 
 ### For Each Agreed Feature
 
-Walk through features one at a time. Load the reference, follow its steps, verify before moving on:
+Walk through features one at a time.
+Load the reference, follow its steps, verify before moving on:
 
-| Feature | Reference file | Load when... |
-|---------|---------------|-------------|
+| Feature | Reference file | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always (baseline) |
 | Tracing | `./tracing.md` | HTTP handlers / distributed tracing |
 | Profiling | `./profiling.md` | Performance-sensitive production |
@@ -219,14 +235,14 @@ Walk through features one at a time. Load the reference, follow its steps, verif
 
 For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Key `\Sentry\init()` Options (Plain PHP)
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `dsn` | `string\|bool\|null` | `$_SERVER['SENTRY_DSN']` | SDK disabled if empty or `false` |
 | `environment` | `string\|null` | `$_SERVER['SENTRY_ENVIRONMENT']` | e.g., `"staging"` |
 | `release` | `string\|null` | `$_SERVER['SENTRY_RELEASE']` | e.g., `"myapp@1.0.0"` |
@@ -248,21 +264,22 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 | `before_send` | `callable` | identity | `fn(Event $event, ?EventHint $hint): ?Event` — return `null` to drop |
 | `before_breadcrumb` | `callable` | identity | `fn(Breadcrumb $b): ?Breadcrumb` — return `null` to discard |
 | `trace_propagation_targets` | `string[]\|null` | `null` | Downstream hosts to inject `sentry-trace` headers into; `null` = all, `[]` = none |
-| `strict_trace_continuation` | `bool` | `false` | Only continue an incoming distributed trace if the `sentry-org_id` baggage matches the SDK's org ID; prevents trace contamination from third-party Sentry-instrumented services (>=4.21.0) |
+| `strict_trace_continuation` | `bool` | `false` | Only continue an incoming distributed trace if the `sentry-org_id` baggage matches the SDK’s org ID; prevents trace contamination from third-party Sentry-instrumented services (>=4.21.0) |
 | `debug` | `bool` | `false` | Verbose SDK output (use a PSR-3 `logger` option instead for structured output) |
 
 ### Environment Variables
 
 | Variable | Maps to | Notes |
-|----------|---------|-------|
+| --- | --- | --- |
 | `SENTRY_DSN` | `dsn` | Also `$_SERVER['SENTRY_DSN']` |
-| `SENTRY_ENVIRONMENT` | `environment` | |
+| `SENTRY_ENVIRONMENT` | `environment` |  |
 | `SENTRY_RELEASE` | `release` | Also reads `$_SERVER['AWS_LAMBDA_FUNCTION_VERSION']` |
-| `SENTRY_SPOTLIGHT` | `spotlight` | |
+| `SENTRY_SPOTLIGHT` | `spotlight` |  |
 
-> **Laravel note:** Uses `SENTRY_LARAVEL_DSN` (falls back to `SENTRY_DSN`). Other options follow `SENTRY_TRACES_SAMPLE_RATE`, `SENTRY_PROFILES_SAMPLE_RATE`, etc.
+> **Laravel note:** Uses `SENTRY_LARAVEL_DSN` (falls back to `SENTRY_DSN`). Other
+> options follow `SENTRY_TRACES_SAMPLE_RATE`, `SENTRY_PROFILES_SAMPLE_RATE`, etc.
 
----
+* * *
 
 ## Verification
 
@@ -294,9 +311,10 @@ If nothing appears:
    ```
 2. Verify the DSN is correct (format: `https://<key>@o<org>.ingest.sentry.io/<project>`)
 3. Check `SENTRY_DSN` (or `SENTRY_LARAVEL_DSN`) env var is set in the running process
-4. For queue workers: ensure Sentry is initialized **inside the worker process**, not just the web process
+4. For queue workers: ensure Sentry is initialized **inside the worker process**, not
+   just the web process
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
@@ -311,18 +329,18 @@ cat package.json frontend/package.json 2>/dev/null \
 If a frontend exists without Sentry, suggest the matching skill:
 
 | Frontend detected | Suggest skill |
-|-------------------|--------------|
+| --- | --- |
 | React / Next.js | [`react`](../react/index.md) |
 | Svelte / SvelteKit | [`svelte`](../svelte/index.md) |
 | Vue / Nuxt | Use `@sentry/vue` — see [docs.sentry.io/platforms/javascript/guides/vue/](https://docs.sentry.io/platforms/javascript/guides/vue/) |
 | Other JS/TS | [`react`](../react/index.md) (covers generic browser JS patterns) |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing | Enable `logger` option (`DebugStdOutLogger`), verify DSN, check env vars in the running process |
 | Malformed DSN error | Format: `https://<key>@o<org>.ingest.sentry.io/<project>` |
 | Laravel exceptions not captured | Ensure `Integration::handles($exceptions)` is in `bootstrap/app.php` |
@@ -335,4 +353,4 @@ If a frontend exists without Sentry, suggest the matching skill:
 | PII not captured | Set `send_default_pii: true`; for Laravel set `send_default_pii: true` in `config/sentry.php` |
 | `@`-suppressed errors missing | Set `capture_silenced_errors: true` |
 | Cross-service traces broken | Check `trace_propagation_targets`; ensure downstream services have Sentry installed |
-| Trace contamination from third-party services | Set `strict_trace_continuation: true` to only continue traces where the incoming `sentry-org_id` baggage matches your SDK's org ID (>=4.21.0) |
+| Trace contamination from third-party services | Set `strict_trace_continuation: true` to only continue traces where the incoming `sentry-org_id` baggage matches your SDK’s org ID (>=4.21.0) |

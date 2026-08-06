@@ -1,15 +1,17 @@
 # Tracing — Sentry .NET SDK
 
-> Minimum SDK: `Sentry` ≥4.0.0  
-> OpenTelemetry bridge: `Sentry.OpenTelemetry` ≥3.34.0 · OTLP export: `Sentry.OpenTelemetry.Exporter` ≥6.5.0  
-> Custom measurements: `Sentry` ≥3.23.0  
+> Minimum SDK: `Sentry` ≥4.0.0\
+> OpenTelemetry bridge: `Sentry.OpenTelemetry` ≥3.34.0 · OTLP export:
+> `Sentry.OpenTelemetry.Exporter` ≥6.5.0\
+> Custom measurements: `Sentry` ≥3.23.0\
 > Profiling (Alpha): `Sentry.Profiling` ≥4.0.0, .NET 8+ only
 
----
+* * *
 
 ## How Tracing Is Activated
 
-Tracing is **disabled by default**. Enable it by setting `TracesSampleRate` or `TracesSampler` during `SentrySdk.Init()`:
+Tracing is **disabled by default**. Enable it by setting `TracesSampleRate` or
+`TracesSampler` during `SentrySdk.Init()`:
 
 ```csharp
 SentrySdk.Init(options =>
@@ -19,23 +21,27 @@ SentrySdk.Init(options =>
 });
 ```
 
-> **Without one of these set**, no spans or transactions are created regardless of other configuration.
+> **Without one of these set**, no spans or transactions are created regardless of other
+> configuration.
 
----
+* * *
 
 ## `TracesSampleRate` — Uniform Sampling
 
-A `double?` between `0.0` (capture nothing) and `1.0` (capture everything). Defaults to `null` (disabled).
+A `double?` between `0.0` (capture nothing) and `1.0` (capture everything).
+Defaults to `null` (disabled).
 
 ```csharp
 options.TracesSampleRate = 0.2; // sample 20% of transactions
 ```
 
----
+* * *
 
 ## `TracesSampler` — Dynamic Per-Transaction Sampling
 
-When set, takes **precedence** over `TracesSampleRate`. Receives a `TransactionSamplingContext` and returns `double?` (0.0–1.0) or `null` (falls back to `TracesSampleRate`).
+When set, takes **precedence** over `TracesSampleRate`. Receives a
+`TransactionSamplingContext` and returns `double?` (0.0–1.0) or `null` (falls back to
+`TracesSampleRate`).
 
 ```csharp
 options.TracesSampler = context =>
@@ -78,7 +84,7 @@ public class TransactionSamplingContext
 }
 ```
 
----
+* * *
 
 ## ASP.NET Core Middleware Integration
 
@@ -108,7 +114,7 @@ app.Run();
 ### What Happens Automatically
 
 | Behavior | Detail |
-|---|---|
+| --- | --- |
 | One transaction per request | `SentryTracingMiddleware` creates an `ITransactionTracer` for every HTTP request |
 | Route-based naming | Transaction name = route template (e.g., `GET /api/users/{id}`) with `TransactionNameSource.Route` |
 | Error linking | Transaction is set on scope → all errors captured during the request are linked to it |
@@ -129,12 +135,12 @@ options.SetBeforeSendTransaction(transaction =>
 });
 ```
 
----
+* * *
 
 ## Auto-Instrumentation Reference
 
 | Integration | Spans Created | Package | Notes |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | ASP.NET Core requests | `http.server` transaction per request | `Sentry.AspNetCore` | Enabled automatically by `UseSentry()` |
 | Outgoing HTTP (`IHttpClientFactory`) | `http.client` spans | `Sentry.AspNetCore` | Requires active transaction on scope |
 | EF Core queries | `db.query.compile`, `db.connection`, `db.query` | `Sentry.DiagnosticSource` (auto in `Sentry.AspNetCore` ≥3.9.0) | Opt out with `DisableDiagnosticSourceIntegration()` |
@@ -155,7 +161,8 @@ db.query           — actual SQL execution
 
 ### Outgoing HTTP Auto-Instrumentation
 
-Spans are only created when there is an **active transaction on scope**. For manual `HttpClient` construction outside of `IHttpClientFactory`:
+Spans are only created when there is an **active transaction on scope**. For manual
+`HttpClient` construction outside of `IHttpClientFactory`:
 
 ```csharp
 var sentryHandler = new SentryHttpMessageHandler();
@@ -171,7 +178,7 @@ var response = await httpClient.GetStringAsync("https://api.example.com");
 tx.Finish();
 ```
 
----
+* * *
 
 ## Custom Instrumentation
 
@@ -302,7 +309,7 @@ public class OrderService
 }
 ```
 
----
+* * *
 
 ## Distributed Tracing
 
@@ -311,21 +318,25 @@ public class OrderService
 Sentry uses two HTTP headers to propagate trace context between services:
 
 | Header | Format | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | `sentry-trace` | `traceId-spanId-samplingDecision` | Links spans across services into one trace |
 | `baggage` | W3C Baggage | Carries Dynamic Sampling Context (DSC): `sentry-trace_id`, `sentry-public_key`, `sentry-environment`, `sentry-release`, `sentry-transaction`, etc. |
 
-> **CORS note:** If you have browser frontends, explicitly allowlist `sentry-trace` and `baggage` in your CORS policy — they're blocked by default as non-simple headers.
+> **CORS note:** If you have browser frontends, explicitly allowlist `sentry-trace` and
+> `baggage` in your CORS policy — they’re blocked by default as non-simple headers.
 
 ### Automatic Propagation (ASP.NET Core)
 
 No configuration needed:
-- **Incoming:** `SentryTracingMiddleware` reads `sentry-trace` + `baggage` and calls `ContinueTrace()` automatically
-- **Outgoing:** `SentryHttpMessageHandler` injects `sentry-trace` + `baggage` into all `IHttpClientFactory` requests
+- **Incoming:** `SentryTracingMiddleware` reads `sentry-trace` + `baggage` and calls
+  `ContinueTrace()` automatically
+- **Outgoing:** `SentryHttpMessageHandler` injects `sentry-trace` + `baggage` into all
+  `IHttpClientFactory` requests
 
 ### Restrict Which Hosts Receive Trace Headers
 
-By default, headers are injected into **all** outgoing requests. Restrict with:
+By default, headers are injected into **all** outgoing requests.
+Restrict with:
 
 ```csharp
 options.TracePropagationTargets = new List<StringOrRegex>
@@ -424,14 +435,17 @@ catch (Exception ex)
 }
 ```
 
----
+* * *
 
 ## OpenTelemetry Integration
 
 Sentry offers two ways to integrate with OpenTelemetry:
 
-1. **OTLP Export (Recommended)** — Send OTel traces directly to Sentry's OTLP endpoint using standard protocol. Added in 6.5.0.
-2. **Bridge Pattern** — Convert OTel spans to Sentry's proprietary format via a span processor. Available since 6.1.0.
+1. **OTLP Export (Recommended)** — Send OTel traces directly to Sentry’s OTLP endpoint
+   using standard protocol.
+   Added in 6.5.0.
+2. **Bridge Pattern** — Convert OTel spans to Sentry’s proprietary format via a span
+   processor. Available since 6.1.0.
 
 **Use OTLP Export when:**
 - Starting a new OTel integration
@@ -440,15 +454,18 @@ Sentry offers two ways to integrate with OpenTelemetry:
 
 **Use Bridge Pattern when:**
 - You need to maintain compatibility with existing integrations
-- You want to mix Sentry's built-in instrumentations with OTel
+- You want to mix Sentry’s built-in instrumentations with OTel
 
----
+* * *
 
 ### Option 1: OTLP Export (Recommended)
 
 > **Added in:** `Sentry` ≥6.5.0, `Sentry.OpenTelemetry.Exporter` ≥6.5.0
 
-Sends OpenTelemetry traces directly to Sentry's OTLP endpoint using the standard OpenTelemetry Protocol. This disables Sentry's built-in tracing instrumentation — all span creation must be done via OTel libraries.
+Sends OpenTelemetry traces directly to Sentry’s OTLP endpoint using the standard
+OpenTelemetry Protocol.
+This disables Sentry’s built-in tracing instrumentation — all span creation must be done
+via OTel libraries.
 
 #### Install
 
@@ -519,10 +536,13 @@ await host.RunAsync();
 #### What `UseOtlp()` Does
 
 - Sets `options.Instrumenter = Instrumenter.OpenTelemetry`
-- Sets `options.DisableSentryTracing = true` — disables `SentryHttpMessageHandler`, `DiagnosticSource` listeners, and EF Core interception
+- Sets `options.DisableSentryTracing = true` — disables `SentryHttpMessageHandler`,
+  `DiagnosticSource` listeners, and EF Core interception
 - Configures `ExternalPropagationContext` to read trace IDs from OTel `Activity`
 
-**Critical:** All tracing must be done via OTel instrumentation libraries. Sentry's built-in span creation (`SentrySdk.StartTransaction()`, auto HTTP/DB spans) is disabled.
+**Critical:** All tracing must be done via OTel instrumentation libraries.
+Sentry’s built-in span creation (`SentrySdk.StartTransaction()`, auto HTTP/DB spans) is
+disabled.
 
 #### Custom OTLP Endpoint
 
@@ -539,7 +559,8 @@ builder.Services.AddOpenTelemetry()
 
 #### ⚠️ Exception Capture
 
-OTel's exception APIs strip exception data before Sentry sees it. Use Sentry's or ILogger's capture methods:
+OTel’s exception APIs strip exception data before Sentry sees it.
+Use Sentry’s or ILogger’s capture methods:
 
 ```csharp
 // ❌ Loses exception details
@@ -550,18 +571,21 @@ _logger.LogError(ex, "Something failed");
 SentrySdk.CaptureException(ex);
 ```
 
----
+* * *
 
 ### Option 2: Bridge Pattern
 
 > **Added in:** `Sentry.OpenTelemetry` ≥3.34.0 (brings in `Sentry` transitively)
 
-Registers a `SentrySpanProcessor` that converts OTel spans to Sentry's proprietary transaction/span format before sending. Use when you need compatibility with existing Sentry integrations or want to mix instrumentation approaches.
+Registers a `SentrySpanProcessor` that converts OTel spans to Sentry’s proprietary
+transaction/span format before sending.
+Use when you need compatibility with existing Sentry integrations or want to mix
+instrumentation approaches.
 
 #### Version Requirements
 
 | Package | Minimum Version |
-|---|---|
+| --- | --- |
 | `Sentry.OpenTelemetry` | 3.34.0 |
 | `OpenTelemetry` | 1.5.0 |
 
@@ -571,11 +595,15 @@ dotnet add package Sentry.OpenTelemetry
 
 #### How It Works
 
-The `AddSentry()` extension registers a `SentrySpanProcessor` with the OTel `TracerProvider`. Span mapping:
+The `AddSentry()` extension registers a `SentrySpanProcessor` with the OTel
+`TracerProvider`. Span mapping:
 
-- The **first** OTel `Span` flowing through the processor becomes a Sentry **Transaction**
-- **Child** OTel `Span`s with the same parent become Sentry **child Spans** on that transaction
-- A new top-level OTel `Span` from a different service creates a new Sentry **Transaction**, linked via the same distributed trace
+- The **first** OTel `Span` flowing through the processor becomes a Sentry
+  **Transaction**
+- **Child** OTel `Span`s with the same parent become Sentry **child Spans** on that
+  transaction
+- A new top-level OTel `Span` from a different service creates a new Sentry
+  **Transaction**, linked via the same distributed trace
 
 #### Full ASP.NET Core Setup
 
@@ -609,7 +637,8 @@ app.Run();
 
 #### ⚠️ Exception Capture
 
-**Do NOT use OTel's exception APIs** — they strip exception data before Sentry can see it:
+**Do NOT use OTel’s exception APIs** — they strip exception data before Sentry can see
+it:
 
 ```csharp
 // ❌ These lose exception details
@@ -621,22 +650,26 @@ _logger.LogError(ex, "Something went wrong"); // ILogger (Sentry captures via lo
 SentrySdk.CaptureException(ex);               // or capture directly
 ```
 
----
+* * *
 
 ## Dynamic Sampling
 
-Sentry's dynamic sampling uses the **Dynamic Sampling Context (DSC)** carried in `baggage` to make consistent sampling decisions across a distributed trace.
+Sentry’s dynamic sampling uses the **Dynamic Sampling Context (DSC)** carried in
+`baggage` to make consistent sampling decisions across a distributed trace.
 
 ### How It Works
 
 1. The **head service** (first in the trace) makes the sampling decision.
 2. The decision is encoded in `baggage` as `sentry-sampled=true|false`.
 3. All downstream services receive `baggage` and honor the upstream decision.
-4. DSC fields: `sentry-trace_id`, `sentry-public_key`, `sentry-sample_rate`, `sentry-sampled`, `sentry-release`, `sentry-environment`, `sentry-transaction`, `sentry-user_segment`.
+4. DSC fields: `sentry-trace_id`, `sentry-public_key`, `sentry-sample_rate`,
+   `sentry-sampled`, `sentry-release`, `sentry-environment`, `sentry-transaction`,
+   `sentry-user_segment`.
 
 ### `TransactionNameSource` — Critical for Grouping
 
-High-cardinality names (raw URLs) break dynamic sampling grouping. Use parameterized routes:
+High-cardinality names (raw URLs) break dynamic sampling grouping.
+Use parameterized routes:
 
 ```csharp
 // ❌ Raw URL — creates unbounded unique groups, defeats sampling
@@ -651,7 +684,7 @@ SentrySdk.StartTransaction(new TransactionContext(
 ```
 
 | `TransactionNameSource` | Cardinality | Use For |
-|---|---|---|
+| --- | --- | --- |
 | `Route` | Low ✅ | Parameterized route templates (e.g., `GET /users/{id}`) |
 | `Custom` | Low ✅ | User-defined names (background jobs, tasks) |
 | `View` | Low ✅ | Controller / view class names |
@@ -659,14 +692,15 @@ SentrySdk.StartTransaction(new TransactionContext(
 | `Url` | High ❌ | Raw URLs — avoid for dynamic sampling |
 | `Task` | Low ✅ | Background task names |
 
----
+* * *
 
 ## Operation Types and Naming Conventions
 
-The `operation` string categorizes and color-codes spans in the Sentry UI. Follow these conventions:
+The `operation` string categorizes and color-codes spans in the Sentry UI. Follow these
+conventions:
 
 | Category | Operation | Example Description |
-|---|---|---|
+| --- | --- | --- |
 | HTTP server | `http.server` | `GET /api/users` |
 | HTTP client | `http.client` | `GET https://api.stripe.com/v1/charges` |
 | DB query | `db.query` | `SELECT * FROM orders WHERE id = ?` |
@@ -687,14 +721,14 @@ The `operation` string categorizes and color-codes spans in the Sentry UI. Follo
 Indicates whether a span was created by auto-instrumentation or by your code:
 
 | Value | Source |
-|---|---|
+| --- | --- |
 | `auto.http.aspnetcore` | ASP.NET Core middleware |
 | `auto.http.client` | `SentryHttpMessageHandler` |
 | `auto.db.ef_core_listener` | EF Core DiagnosticSource |
 | `auto.db.sql_listener` | SQLClient DiagnosticSource |
 | `manual` | User code |
 
----
+* * *
 
 ## Custom Measurements
 
@@ -716,15 +750,17 @@ if (span != null)
 ### `MeasurementUnit` Quick Reference
 
 | Category | Values |
-|---|---|
+| --- | --- |
 | Duration | `Nanosecond`, `Microsecond`, `Millisecond`, `Second`, `Minute`, `Hour`, `Day`, `Week` |
 | Information | `Bit`, `Byte`, `Kilobyte`/`Kibibyte`, `Megabyte`/`Mebibyte`, `Gigabyte`/`Gibibyte`, … |
 | Fraction | `Ratio`, `Percent` |
 | Unitless | Omit unit parameter |
 
-> **⚠️ Unit consistency:** `("latency", 60, Second)` and `("latency", 3, Minute)` are stored as **separate measurements**, not aggregated. Always use the same unit per measurement name.
+> **⚠️ Unit consistency:** `("latency", 60, Second)` and `("latency", 3, Minute)` are
+> stored as **separate measurements**, not aggregated.
+> Always use the same unit per measurement name.
 
----
+* * *
 
 ## `SpanStatus` Reference
 
@@ -745,9 +781,12 @@ SpanStatus.Aborted           // conflicting operation
 SpanStatus.DataLoss          // unrecoverable data loss
 ```
 
-`span.Finish(exception)` auto-maps exception type → `SpanStatus`. HTTP status codes from `SentryHttpMessageHandler` are also mapped automatically (`2xx→Ok`, `401→Unauthenticated`, `403→PermissionDenied`, `404→NotFound`, `429→ResourceExhausted`, `5xx→InternalError`).
+`span.Finish(exception)` auto-maps exception type → `SpanStatus`. HTTP status codes from
+`SentryHttpMessageHandler` are also mapped automatically (`2xx→Ok`,
+`401→Unauthenticated`, `403→PermissionDenied`, `404→NotFound`, `429→ResourceExhausted`,
+`5xx→InternalError`).
 
----
+* * *
 
 ## Complete Configuration Reference
 
@@ -791,7 +830,7 @@ SentrySdk.Init(options =>
 ### Key Options Table
 
 | Option | Type | Default | Purpose |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `TracesSampleRate` | `double?` | `null` (disabled) | Uniform sampling rate 0.0–1.0 |
 | `TracesSampler` | `Func<TransactionSamplingContext, double?>` | `null` | Dynamic sampler; overrides `TracesSampleRate` |
 | `TracePropagationTargets` | `IList<StringOrRegex>` | `[".*"]` (all) | Hosts that receive `sentry-trace` + `baggage` headers |
@@ -800,7 +839,7 @@ SentrySdk.Init(options =>
 | `UseOpenTelemetry()` | method | — | Enable OTel-based trace context propagation |
 | `DisableDiagnosticSourceIntegration()` | method | — | Opt out of EF Core / SQLClient auto-spans |
 
----
+* * *
 
 ## Quick Reference Cheat Sheet
 
@@ -838,12 +877,12 @@ var ctx    = SentrySdk.ContinueTrace(incomingTraceHeader, incomingBaggageHeader,
 var linked = SentrySdk.StartTransaction(ctx);
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Likely Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | No transactions appear in Sentry | `TracesSampleRate` and `TracesSampler` are both unset | Set `options.TracesSampleRate = 1.0` (or `>0`) during `SentrySdk.Init()` |
 | Transactions appear but have no child spans | Transaction not set on scope | Call `SentrySdk.ConfigureScope(s => s.Transaction = tx)` after starting the transaction |
 | Outgoing HTTP spans missing | `HttpClient` created manually without `SentryHttpMessageHandler` | Use `IHttpClientFactory`, or wrap with `new HttpClient(new SentryHttpMessageHandler())` |

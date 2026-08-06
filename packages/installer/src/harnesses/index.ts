@@ -1,10 +1,28 @@
-import { claude, createClaude } from "./claude";
-import { codex, createCodex } from "./codex";
-import { cursor, createCursor } from "./cursor";
-import { grok, createGrok } from "./grok";
-import { pi, createPi } from "./pi";
+import { realSystem } from "../system";
+import { createClaude } from "./claude";
+import { createCodex } from "./codex";
+import { createCursor } from "./cursor";
+import { createGrok } from "./grok";
+import { createPi } from "./pi";
+import type { Harness } from "./types";
 
 export type { Harness, InstallOutcome } from "./types";
 export { createClaude, createCodex, createCursor, createGrok, createPi };
 
-export const harnesses = [claude, codex, cursor, grok, pi];
+/**
+ * Every harness, built against the real system.
+ *
+ * Built on call rather than at module load: the harnesses used to be
+ * module-level constants, which meant importing this barrel constructed all of
+ * them as a side effect and left two ways to get one. Now there is a single
+ * construction path.
+ */
+export function buildHarnesses(): Harness[] {
+  return [
+    createClaude(realSystem),
+    createCodex(realSystem),
+    createCursor(realSystem),
+    createGrok(realSystem),
+    createPi(realSystem),
+  ];
+}

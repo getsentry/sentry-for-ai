@@ -1,18 +1,19 @@
 # User Feedback — Sentry React Native SDK
 
-> **Minimum SDK:** `@sentry/react-native` ≥6.5.0 for `captureFeedback()` API  
-> **Feedback widget** (`showFeedbackWidget`, `feedbackIntegration`): ≥6.9.0  
-> **Self-hosted Sentry:** ≥24.4.2 required for full user feedback functionality  
+> **Minimum SDK:** `@sentry/react-native` ≥6.5.0 for `captureFeedback()` API\
+> **Feedback widget** (`showFeedbackWidget`, `feedbackIntegration`): ≥6.9.0\
+> **Self-hosted Sentry:** ≥24.4.2 required for full user feedback functionality\
 > **New Architecture (Fabric):** Feedback widget requires React Native ≥0.71+
 
----
+* * *
 
 ## Overview
 
-Sentry provides three complementary approaches to collecting user feedback in React Native:
+Sentry provides three complementary approaches to collecting user feedback in React
+Native:
 
 | Approach | When to Use |
-|----------|-------------|
+| --- | --- |
 | **Feedback Widget** | Built-in modal; minimal code; works out of the box |
 | **`FeedbackWidget` component** | Embed feedback form inline within your own screen |
 | **`captureFeedback()` API** | Full control; build your own UI and submit programmatically |
@@ -20,13 +21,15 @@ Sentry provides three complementary approaches to collecting user feedback in Re
 All approaches support:
 - Linking feedback to specific error events via `associatedEventId`
 - Offline caching (stored on-device, sent when connectivity restores)
-- Session Replay integration (buffers last 60 seconds of activity with submitted feedback)
+- Session Replay integration (buffers last 60 seconds of activity with submitted
+  feedback)
 
----
+* * *
 
 ## Prerequisites
 
-Wrap your root component with `Sentry.wrap` — this is **required** for the feedback widget and error boundary integration:
+Wrap your root component with `Sentry.wrap` — this is **required** for the feedback
+widget and error boundary integration:
 
 ```typescript
 import * as Sentry from "@sentry/react-native";
@@ -34,13 +37,17 @@ import * as Sentry from "@sentry/react-native";
 export default Sentry.wrap(App);
 ```
 
-Without `Sentry.wrap`, `Sentry.showFeedbackWidget()` and `Sentry.showFeedbackButton()` will not function correctly.
+Without `Sentry.wrap`, `Sentry.showFeedbackWidget()` and `Sentry.showFeedbackButton()`
+will not function correctly.
 
----
+* * *
 
 ## Approach 1: Built-In Feedback Widget
 
-The simplest integration. Call `Sentry.showFeedbackWidget()` from anywhere — a button, menu item, or support screen. For automatic shake-to-report, see [Shake to Report](#shake-to-report-built-in-native-detection) below.
+The simplest integration.
+Call `Sentry.showFeedbackWidget()` from anywhere — a button, menu item, or support
+screen. For automatic shake-to-report, see
+[Shake to Report](#shake-to-report-built-in-native-detection) below.
 
 ### Trigger the Widget
 
@@ -72,7 +79,10 @@ Sentry.hideFeedbackButton();
 
 ### Shake to Report (Built-In Native Detection)
 
-The SDK provides built-in device shake detection that automatically shows the feedback widget when the user shakes their device. This delegates to native shake detectors in the iOS and Android SDKs — no permissions required.
+The SDK provides built-in device shake detection that automatically shows the feedback
+widget when the user shakes their device.
+This delegates to native shake detectors in the iOS and Android SDKs — no permissions
+required.
 
 **Option A: Enable via `feedbackIntegration` config**
 
@@ -150,15 +160,16 @@ Sentry.init({
 ### Architecture Requirements
 
 | Architecture | Support |
-|---|---|
+| --- | --- |
 | Legacy (Bridge) | ✅ Fully supported |
 | New Architecture (Fabric) | ✅ Requires React Native ≥0.71 |
 
----
+* * *
 
 ## Approach 2: `FeedbackWidget` Component
 
-Embed the feedback form directly into your own screen layout instead of showing it as a modal:
+Embed the feedback form directly into your own screen layout instead of showing it as a
+modal:
 
 ```typescript
 import { FeedbackWidget } from "@sentry/react-native";
@@ -183,13 +194,15 @@ const styles = StyleSheet.create({
 });
 ```
 
-The `FeedbackWidget` component respects the same configuration set in `feedbackIntegration` within `Sentry.init`.
+The `FeedbackWidget` component respects the same configuration set in
+`feedbackIntegration` within `Sentry.init`.
 
----
+* * *
 
 ## Approach 3: Programmatic API (`captureFeedback`)
 
-Build a completely custom feedback UI and submit via the SDK. Gives full control over form layout, validation, and submission flow.
+Build a completely custom feedback UI and submit via the SDK. Gives full control over
+form layout, validation, and submission flow.
 
 ### Basic Feedback (Standalone)
 
@@ -222,7 +235,8 @@ Sentry.captureFeedback({
 
 ### Link Feedback to the Most Recent Event
 
-`Sentry.lastEventId()` retrieves the ID of the last event captured in the current session — useful for post-crash feedback flows:
+`Sentry.lastEventId()` retrieves the ID of the last event captured in the current
+session — useful for post-crash feedback flows:
 
 ```typescript
 import * as Sentry from "@sentry/react-native";
@@ -269,11 +283,13 @@ Sentry.captureFeedback(
 );
 ```
 
----
+* * *
 
 ## Crash Report Modal (Post-Crash Feedback)
 
-Show a feedback form on the next app launch after a crash. This is the recommended pattern for collecting context around hard crashes that the user survived.
+Show a feedback form on the next app launch after a crash.
+This is the recommended pattern for collecting context around hard crashes that the user
+survived.
 
 ### Pattern: Check for Last Event on Launch
 
@@ -342,13 +358,17 @@ function App() {
 }
 ```
 
-> **Tip:** `Sentry.lastEventId()` returns the ID of the most recent event captured during the *current* app session. For post-crash context, call it at app start before any other Sentry calls that might create a new event.
+> **Tip:** `Sentry.lastEventId()` returns the ID of the most recent event captured
+> during the *current* app session.
+> For post-crash context, call it at app start before any other Sentry calls that might
+> create a new event.
 
----
+* * *
 
 ## Linking Feedback to Errors via `ErrorBoundary`
 
-The `Sentry.ErrorBoundary` component can automatically show a feedback dialog after capturing a React render error, using the `showDialog` prop:
+The `Sentry.ErrorBoundary` component can automatically show a feedback dialog after
+capturing a React render error, using the `showDialog` prop:
 
 ```typescript
 import * as Sentry from "@sentry/react-native";
@@ -368,7 +388,8 @@ function App() {
 
 ### Custom Post-Error Feedback Form
 
-For full control, use `onError` to capture the `eventId` and trigger your own feedback form:
+For full control, use `onError` to capture the `eventId` and trigger your own feedback
+form:
 
 ```typescript
 import * as Sentry from "@sentry/react-native";
@@ -421,11 +442,12 @@ function App() {
 }
 ```
 
----
+* * *
 
 ## Screenshots in Feedback
 
-Allow users to attach screenshots to feedback reports. Use `attachments` in `captureFeedback` to include screenshots captured from the device:
+Allow users to attach screenshots to feedback reports.
+Use `attachments` in `captureFeedback` to include screenshots captured from the device:
 
 ```typescript
 import * as Sentry from "@sentry/react-native";
@@ -455,7 +477,9 @@ async function submitFeedbackWithScreenshot(feedbackMessage: string) {
 }
 ```
 
-> **Alternative:** Enable `attachScreenshot: true` in `Sentry.init` to automatically attach a screenshot to every error event — the screenshot then appears alongside any feedback linked to that event via `associatedEventId`.
+> **Alternative:** Enable `attachScreenshot: true` in `Sentry.init` to automatically
+> attach a screenshot to every error event — the screenshot then appears alongside any
+> feedback linked to that event via `associatedEventId`.
 
 ```typescript
 Sentry.init({
@@ -464,11 +488,15 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Session Replay Integration with Feedback
 
-When `mobileReplayIntegration()` is enabled and a user submits feedback via the widget, Sentry automatically buffers and attaches **up to 60 seconds of prior session replay** to the feedback submission. This gives you visual context for what the user experienced before they filed the report — no extra code required.
+When `mobileReplayIntegration()` is enabled and a user submits feedback via the widget,
+Sentry automatically buffers and attaches **up to 60 seconds of prior session replay**
+to the feedback submission.
+This gives you visual context for what the user experienced before they filed the report
+— no extra code required.
 
 ```typescript
 Sentry.init({
@@ -482,13 +510,16 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Offline Feedback
 
-Feedback captured while the device is offline is **automatically cached on-device** by the native SDK layer and replayed to Sentry when connectivity is restored. This applies to all three approaches (`showFeedbackWidget`, `FeedbackWidget`, `captureFeedback`). No additional configuration is needed.
+Feedback captured while the device is offline is **automatically cached on-device** by
+the native SDK layer and replayed to Sentry when connectivity is restored.
+This applies to all three approaches (`showFeedbackWidget`, `FeedbackWidget`,
+`captureFeedback`). No additional configuration is needed.
 
----
+* * *
 
 ## Complete Custom Feedback Form Example
 
@@ -623,7 +654,7 @@ const styles = StyleSheet.create({
 });
 ```
 
----
+* * *
 
 ## `captureFeedback` API Reference
 
@@ -637,27 +668,27 @@ Sentry.captureFeedback(
 ### `feedback` object
 
 | Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `message` | `string` | ✅ | User's feedback text |
-| `name` | `string` | ❌ | User's display name |
-| `email` | `string` | ❌ | User's email address |
+| --- | --- | --- | --- |
+| `message` | `string` | ✅ | User’s feedback text |
+| `name` | `string` | ❌ | User’s display name |
+| `email` | `string` | ❌ | User’s email address |
 | `associatedEventId` | `string` | ❌ | Links feedback to a specific Sentry event (error or message) |
 
 ### `hint` object (optional)
 
 | Field | Type | Description |
-|-------|------|-------------|
+| --- | --- | --- |
 | `captureContext` | `CaptureContext` | Scope data to attach (tags, extra, user, level, contexts) |
 | `attachments` | `Attachment[]` | Files to attach (screenshots, logs, etc.) |
 
 Returns the feedback event ID (or `undefined` if SDK is disabled).
 
----
+* * *
 
 ## `feedbackIntegration` Configuration Reference
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `formTitle` | `string` | `"Report a Bug"` | Widget modal title |
 | `submitButtonLabel` | `string` | `"Send Bug Report"` | Submit button text |
 | `cancelButtonLabel` | `string` | `"Cancel"` | Cancel button text |
@@ -673,12 +704,12 @@ Returns the feedback event ID (or `undefined` if SDK is disabled).
 | `enableShakeToReport` | `boolean` | `false` | Show feedback widget when the user shakes the device (native iOS/Android only) |
 | `styles` | `object` | — | Style overrides for widget UI elements |
 
----
+* * *
 
 ## API Summary
 
 | Method | Description |
-|--------|-------------|
+| --- | --- |
 | `Sentry.showFeedbackWidget()` | Open the built-in feedback modal |
 | `Sentry.showFeedbackButton()` | Show the persistent floating feedback button |
 | `Sentry.hideFeedbackButton()` | Hide the persistent floating feedback button |
@@ -688,12 +719,12 @@ Returns the feedback event ID (or `undefined` if SDK is disabled).
 | `Sentry.lastEventId()` | Get the ID of the most recent captured event (for linking) |
 | `Sentry.feedbackIntegration(options)` | Configure the built-in widget |
 
----
+* * *
 
 ## Version Requirements
 
 | Feature | Min SDK | Notes |
-|---------|---------|-------|
+| --- | --- | --- |
 | `captureFeedback()` | ≥6.5.0 | Replaces deprecated `captureUserFeedback()` |
 | `showFeedbackWidget()` | ≥6.9.0 | Requires `Sentry.wrap(App)` |
 | `feedbackIntegration()` | ≥6.9.0 | Configure widget appearance |
@@ -704,12 +735,13 @@ Returns the feedback event ID (or `undefined` if SDK is disabled).
 | Session Replay attachment | ≥6.9.0 | When `mobileReplayIntegration` enabled |
 | New Architecture (Fabric) support | React Native ≥0.71 | Widget works on new arch |
 
----
+* * *
 
 ## Expo Considerations
 
 - The feedback widget works in **Expo managed and bare** workflows
-- `showFeedbackWidget()` requires a **native build** — it does **not** function in Expo Go
+- `showFeedbackWidget()` requires a **native build** — it does **not** function in Expo
+  Go
 - `captureFeedback()` (programmatic API) works in both Expo Go and native builds
 - Use `isRunningInExpoGo()` to guard widget calls in dev:
 
@@ -739,7 +771,7 @@ function ReportButton() {
 }
 ```
 
----
+* * *
 
 ## Migration: `captureUserFeedback` → `captureFeedback`
 
@@ -763,14 +795,14 @@ Sentry.captureFeedback({
 });
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | `showFeedbackWidget()` has no effect | Confirm `Sentry.wrap(App)` wraps your root component |
-| Widget doesn't open on New Architecture | Requires React Native ≥0.71; check architecture compatibility |
+| Widget doesn’t open on New Architecture | Requires React Native ≥0.71; check architecture compatibility |
 | Feedback not appearing in Sentry dashboard | Verify DSN is correct; check network connectivity; enable `debug: true` for SDK logs |
 | `captureFeedback` not sending in Expo Go | Expected — use `captureFeedback()` (works) but not `showFeedbackWidget()` (native only) |
 | `lastEventId()` returns `undefined` | No events have been captured in the current session yet; ensure an error or message was captured first |
@@ -780,4 +812,4 @@ Sentry.captureFeedback({
 | `associatedEventId` not linking correctly | Pass the exact event ID string returned by `captureException`, `captureMessage`, or `lastEventId()` |
 | Widget styles not applying | Pass `styles` config inside `feedbackIntegration({ styles: { ... } })` in `Sentry.init` |
 | Shake to report not working | Confirm `Sentry.wrap(App)` wraps your root component; shake detection is native-only (not available on Web or Expo Go) |
-| Shake detected but widget doesn't appear | Ensure `feedbackIntegration()` is in the `integrations` array; check `debug: true` for logs |
+| Shake detected but widget doesn’t appear | Ensure `feedbackIntegration()` is in the `integrations` array; check `debug: true` for logs |

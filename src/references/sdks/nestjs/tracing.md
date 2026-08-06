@@ -1,19 +1,20 @@
 # Tracing — Sentry NestJS SDK
 
-> Minimum SDK: `@sentry/nestjs` 8.x (requires Node >= 18.0.0; 18.19.0+ or 19.9.0+ recommended)
+> Minimum SDK: `@sentry/nestjs` 8.x (requires Node >= 18.0.0; 18.19.0+ or 19.9.0+
+> recommended)
 
 ## Configuration
 
-| Option                     | Type                   | Default     | Purpose                                                                                      |
-| -------------------------- | ---------------------- | ----------- | -------------------------------------------------------------------------------------------- |
-| `tracesSampleRate`         | `number`               | `undefined` | Fraction of transactions to trace (0.0–1.0); omit to disable tracing                         |
-| `tracesSampler`            | `function`             | `undefined` | Per-transaction sampling function; overrides `tracesSampleRate`                              |
-| `tracePropagationTargets`  | `(string \| RegExp)[]` | all origins | URLs/patterns to inject `sentry-trace` / `baggage` headers into                              |
-| `profileSessionSampleRate` | `number`               | `undefined` | Fraction of **process sessions** to profile (0.0–1.0); decided once at init                  |
-| `profileLifecycle`         | `'trace' \| 'manual'`  | `'trace'`   | `'trace'` = auto start/stop with spans; `'manual'` = call `startProfiler()`/`stopProfiler()` |
-| `beforeSendSpan`           | `function`             | `undefined` | Callback to mutate or drop individual spans before sending                                   |
-| `skipOpenTelemetrySetup`   | `boolean`              | `false`     | Skip automatic OTel provider setup (for custom OTel configurations)                          |
-| `strictTraceContinuation`  | `boolean`              | `false`     | Only continue traces from same Sentry org (v10+)                                             |
+| Option | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `tracesSampleRate` | `number` | `undefined` | Fraction of transactions to trace (0.0–1.0); omit to disable tracing |
+| `tracesSampler` | `function` | `undefined` | Per-transaction sampling function; overrides `tracesSampleRate` |
+| `tracePropagationTargets` | `(string \| RegExp)[]` | all origins | URLs/patterns to inject `sentry-trace` / `baggage` headers into |
+| `profileSessionSampleRate` | `number` | `undefined` | Fraction of **process sessions** to profile (0.0–1.0); decided once at init |
+| `profileLifecycle` | `'trace' \| 'manual'` | `'trace'` | `'trace'` = auto start/stop with spans; `'manual'` = call `startProfiler()`/`stopProfiler()` |
+| `beforeSendSpan` | `function` | `undefined` | Callback to mutate or drop individual spans before sending |
+| `skipOpenTelemetrySetup` | `boolean` | `false` | Skip automatic OTel provider setup (for custom OTel configurations) |
+| `strictTraceContinuation` | `boolean` | `false` | Only continue traces from same Sentry org (v10+) |
 
 ## Architecture
 
@@ -31,7 +32,8 @@
   └── SentryGlobalFilter → captures unhandled exceptions (HTTP, GraphQL, RPC)
 ```
 
-Sentry is the OpenTelemetry provider — any OTel instrumentation automatically flows into Sentry.
+Sentry is the OpenTelemetry provider — any OTel instrumentation automatically flows into
+Sentry.
 
 ## Code Examples
 
@@ -80,20 +82,25 @@ export class AppModule {}
 ```
 
 > **`@sentry/nestjs` vs `@sentry/nestjs/setup` — two separate entry points:**
->
-> - `@sentry/nestjs` — `Sentry.init()`, decorators, span APIs, all `@sentry/node` re-exports
-> - `@sentry/nestjs/setup` — `SentryModule`, `SentryTracingInterceptor`, `SentryGlobalFilter`
+> 
+> - `@sentry/nestjs` — `Sentry.init()`, decorators, span APIs, all `@sentry/node`
+>   re-exports
+> - `@sentry/nestjs/setup` — `SentryModule`, `SentryTracingInterceptor`,
+>   `SentryGlobalFilter`
 
 ### HTTP request auto-tracing
 
-HTTP tracing requires no extra code. Two mechanisms work together:
+HTTP tracing requires no extra code.
+Two mechanisms work together:
 
-1. **`nestIntegration`** (via `@opentelemetry/instrumentation-nestjs-core`) creates spans:
+1. **`nestIntegration`** (via `@opentelemetry/instrumentation-nestjs-core`) creates
+   spans:
    - `app_creation.nestjs` — NestJS bootstrap
    - `request_context.nestjs` — overall request handling
    - `handler.nestjs` — each route handler
 
-2. **`SentryTracingInterceptor`** (registered via `SentryModule.forRoot()`) sets the transaction name from the parameterized route:
+2. **`SentryTracingInterceptor`** (registered via `SentryModule.forRoot()`) sets the
+   transaction name from the parameterized route:
    - Express: `GET /users/:id` (from `req.route.path`)
    - Fastify: `GET /users/:id` (from `req.routeOptions.url`)
 
@@ -110,7 +117,8 @@ GET /api/users/:id  (transaction name)
         └── LoggingInterceptor - Interceptors - After Route  (middleware.nestjs)
 ```
 
-> All NestJS lifecycle spans (middleware, guards, pipes, interceptors, filters) share op `middleware.nestjs`.
+> All NestJS lifecycle spans (middleware, guards, pipes, interceptors, filters) share op
+> `middleware.nestjs`.
 
 ### `@SentryTraced` decorator
 
@@ -185,15 +193,15 @@ span.end();
 
 ### Span options reference
 
-| Option             | Type                                          | Description                                                             |
-| ------------------ | --------------------------------------------- | ----------------------------------------------------------------------- |
-| `name`             | `string`                                      | **Required.** Span name                                                 |
-| `op`               | `string`                                      | Operation type (`db`, `http.client`, `function`, `queue.process`, etc.) |
-| `attributes`       | `Record<string, string \| number \| boolean>` | Key-value metadata                                                      |
-| `startTime`        | `number`                                      | Custom start timestamp (Unix seconds)                                   |
-| `parentSpan`       | `Span`                                        | Explicit parent (overrides auto-parent from context)                    |
-| `onlyIfParent`     | `boolean`                                     | Skip creating span if no active parent exists                           |
-| `forceTransaction` | `boolean`                                     | Display as root transaction in Sentry UI                                |
+| Option | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | **Required.** Span name |
+| `op` | `string` | Operation type (`db`, `http.client`, `function`, `queue.process`, etc.) |
+| `attributes` | `Record<string, string \| number \| boolean>` | Key-value metadata |
+| `startTime` | `number` | Custom start timestamp (Unix seconds) |
+| `parentSpan` | `Span` | Explicit parent (overrides auto-parent from context) |
+| `onlyIfParent` | `boolean` | Skip creating span if no active parent exists |
+| `forceTransaction` | `boolean` | Display as root transaction in Sentry UI |
 
 ### Accessing and modifying the active span
 
@@ -274,7 +282,8 @@ Sentry.init({
 
 ### Event emitter auto-tracing (`@OnEvent`)
 
-Requires `@nestjs/event-emitter` >= 2.0.0. Handlers are auto-wrapped — no code changes needed:
+Requires `@nestjs/event-emitter` >= 2.0.0. Handlers are auto-wrapped — no code changes
+needed:
 
 ```typescript
 import { OnEvent } from "@nestjs/event-emitter";
@@ -303,12 +312,13 @@ export class NotificationListener {
 }
 ```
 
-> **Note:** Event spans always use `forceTransaction: true` — they appear as isolated root
-> transactions, not child spans of the HTTP request that emitted the event.
+> **Note:** Event spans always use `forceTransaction: true` — they appear as isolated
+> root transactions, not child spans of the HTTP request that emitted the event.
 
 ### GraphQL resolver tracing
 
-GraphQL is auto-traced via `graphqlIntegration` (enabled by default). No configuration needed:
+GraphQL is auto-traced via `graphqlIntegration` (enabled by default).
+No configuration needed:
 
 ```typescript
 // Spans auto-created for:
@@ -322,18 +332,19 @@ GraphQL is auto-traced via `graphqlIntegration` (enabled by default). No configu
 
 ### Microservices — transport support matrix
 
-| Transport       | Auto-traced? | Mechanism                                                                                  |
-| --------------- | ------------ | ------------------------------------------------------------------------------------------ |
-| AMQP / RabbitMQ | ✅           | `amqplibIntegration` — `amqp.publish` + `amqp.process` spans, headers auto-injected        |
-| Kafka (KafkaJS) | ✅           | `kafkaIntegration` — `kafka.send` + `kafka.process` spans, trace context in record headers |
-| Redis pub/sub   | ⚠️ Partial   | `redisIntegration` traces Redis commands only                                              |
-| TCP             | ❌           | No OTel instrumentation                                                                    |
-| NATS            | ❌           | Community OTel NATS package needed                                                         |
-| gRPC            | ❌           | Community OTel gRPC package needed                                                         |
+| Transport | Auto-traced? | Mechanism |
+| --- | --- | --- |
+| AMQP / RabbitMQ | ✅ | `amqplibIntegration` — `amqp.publish` + `amqp.process` spans, headers auto-injected |
+| Kafka (KafkaJS) | ✅ | `kafkaIntegration` — `kafka.send` + `kafka.process` spans, trace context in record headers |
+| Redis pub/sub | ⚠️ Partial | `redisIntegration` traces Redis commands only |
+| TCP | ❌ | No OTel instrumentation |
+| NATS | ❌ | Community OTel NATS package needed |
+| gRPC | ❌ | Community OTel gRPC package needed |
 
 ### WebSocket gateway tracing (manual)
 
-No dedicated WebSocket auto-tracing exists. `SentryTracingInterceptor` only handles HTTP contexts:
+No dedicated WebSocket auto-tracing exists.
+`SentryTracingInterceptor` only handles HTTP contexts:
 
 ```typescript
 import {
@@ -375,7 +386,8 @@ socket.emit("message", {
 
 ### Bull/BullMQ job tracing (manual)
 
-No dedicated Bull integration — use manual spans in `@Process()` handlers. Always wrap with `withIsolationScope` to prevent scope leakage between concurrent jobs.
+No dedicated Bull integration — use manual spans in `@Process()` handlers.
+Always wrap with `withIsolationScope` to prevent scope leakage between concurrent jobs.
 
 #### BullMQ with `WorkerHost` (recommended for `@nestjs/bullmq`)
 
@@ -410,7 +422,8 @@ export class EmailProcessor extends WorkerHost {
 }
 ```
 
-> **Why `withIsolationScope`?** BullMQ processes jobs concurrently in the same process. Without isolation, `setTag`, `setUser`, and breadcrumbs leak between concurrent jobs.
+> **Why `withIsolationScope`?** BullMQ processes jobs concurrently in the same process.
+> Without isolation, `setTag`, `setUser`, and breadcrumbs leak between concurrent jobs.
 
 #### Bull with `@Process()` decorator
 
@@ -463,7 +476,10 @@ async queueWelcomeEmail(userId: string) {
 
 ### Kafka / NATS microservice handler tracing
 
-Kafka messages are auto-instrumented by `kafkaIntegration` (KafkaJS), but NATS and other transports require manual spans. For consistency, wrapping `@EventPattern()` and `@MessagePattern()` handlers with explicit spans is recommended for all transports:
+Kafka messages are auto-instrumented by `kafkaIntegration` (KafkaJS), but NATS and other
+transports require manual spans.
+For consistency, wrapping `@EventPattern()` and `@MessagePattern()` handlers with
+explicit spans is recommended for all transports:
 
 ```typescript
 import { Controller } from "@nestjs/common";
@@ -491,11 +507,13 @@ export class OrderController {
 }
 ```
 
-> Use `forceTransaction: true` for event handlers that should appear as root transactions in Sentry UI.
+> Use `forceTransaction: true` for event handlers that should appear as root
+> transactions in Sentry UI.
 
 ### Distributed tracing between services
 
-HTTP services propagate `sentry-trace` and `baggage` headers automatically. For custom channels:
+HTTP services propagate `sentry-trace` and `baggage` headers automatically.
+For custom channels:
 
 ```typescript
 // Service A — publish with trace context
@@ -543,18 +561,18 @@ Sentry.init({
 
 ### Database auto-instrumentation
 
-| Driver / ORM         | Auto-enabled | Notes                                                                              |
-| -------------------- | ------------ | ---------------------------------------------------------------------------------- |
-| PostgreSQL (`pg`)    | ✅           | `postgresIntegration`                                                              |
-| MySQL                | ✅           | `mysqlIntegration`                                                                 |
-| MySQL2               | ✅           | `mysql2Integration`                                                                |
-| MongoDB              | ✅           | `mongoIntegration`                                                                 |
-| Mongoose             | ✅           | `mongooseIntegration`                                                              |
-| Prisma               | ⚠️ Manual    | `prismaIntegration` — add explicitly: `integrations: [Sentry.prismaIntegration()]` |
-| SQL Server (Tedious) | ✅           | `tediousIntegration`                                                               |
-| Knex                 | ❌           | Must add manually                                                                  |
-| TypeORM              | ❌           | Use `opentelemetry-instrumentation-typeorm` community package                      |
-| Sequelize            | ❌           | No known integration                                                               |
+| Driver / ORM | Auto-enabled | Notes |
+| --- | --- | --- |
+| PostgreSQL (`pg`) | ✅ | `postgresIntegration` |
+| MySQL | ✅ | `mysqlIntegration` |
+| MySQL2 | ✅ | `mysql2Integration` |
+| MongoDB | ✅ | `mongoIntegration` |
+| Mongoose | ✅ | `mongooseIntegration` |
+| Prisma | ⚠️ Manual | `prismaIntegration` — add explicitly: `integrations: [Sentry.prismaIntegration()]` |
+| SQL Server (Tedious) | ✅ | `tediousIntegration` |
+| Knex | ❌ | Must add manually |
+| TypeORM | ❌ | Use `opentelemetry-instrumentation-typeorm` community package |
+| Sequelize | ❌ | No known integration |
 
 ```typescript
 // Knex — must add explicitly:
@@ -645,99 +663,114 @@ Sentry.init({
 });
 ```
 
-| `profileLifecycle`  | Start                             | Stop                             | Use case                        |
-| ------------------- | --------------------------------- | -------------------------------- | ------------------------------- |
-| `"trace"` (default) | First active span                 | Last span ends                   | General profiling — zero config |
-| `"manual"`          | `Sentry.profiler.startProfiler()` | `Sentry.profiler.stopProfiler()` | Targeted hot paths              |
+| `profileLifecycle` | Start | Stop | Use case |
+| --- | --- | --- | --- |
+| `"trace"` (default) | First active span | Last span ends | General profiling — zero config |
+| `"manual"` | `Sentry.profiler.startProfiler()` | `Sentry.profiler.stopProfiler()` | Targeted hot paths |
 
-> **`profileSessionSampleRate` is process-level** — decided once at startup, not per-request.
-> Use `0.1` to profile 10% of pods in a fleet without overhead on the rest.
+> **`profileSessionSampleRate` is process-level** — decided once at startup, not
+> per-request. Use `0.1` to profile 10% of pods in a fleet without overhead on the rest.
 
 ## Auto-Instrumented Integrations
 
 ### Framework & HTTP (all auto-enabled)
 
-| Integration                  | What is traced                                                        |
-| ---------------------------- | --------------------------------------------------------------------- |
-| `nestIntegration`            | Middleware, guards, pipes, interceptors, filters, `@OnEvent` handlers |
-| `httpIntegration`            | Incoming HTTP requests + outgoing `http`/`https` calls                |
-| `nativeNodeFetchIntegration` | Outgoing `fetch()` calls                                              |
-| `requestDataIntegration`     | HTTP request data attached to error events                            |
+| Integration | What is traced |
+| --- | --- |
+| `nestIntegration` | Middleware, guards, pipes, interceptors, filters, `@OnEvent` handlers |
+| `httpIntegration` | Incoming HTTP requests + outgoing `http`/`https` calls |
+| `nativeNodeFetchIntegration` | Outgoing `fetch()` calls |
+| `requestDataIntegration` | HTTP request data attached to error events |
 
 ### Databases (all auto-enabled)
 
-`mongoIntegration`, `mongooseIntegration`, `mysqlIntegration`, `mysql2Integration`, `postgresIntegration`, `tediousIntegration`
+`mongoIntegration`, `mongooseIntegration`, `mysqlIntegration`, `mysql2Integration`,
+`postgresIntegration`, `tediousIntegration`
 
 ### Cache & Queues (all auto-enabled)
 
-`redisIntegration` (ioredis + node-redis), `amqplibIntegration` (AMQP/RabbitMQ), `kafkaIntegration` (KafkaJS)
+`redisIntegration` (ioredis + node-redis), `amqplibIntegration` (AMQP/RabbitMQ),
+`kafkaIntegration` (KafkaJS)
 
 ### AI / LLM (all auto-enabled)
 
-`openAIIntegration`, `anthropicAIIntegration`, `googleGenAIIntegration`, `langChainIntegration`, `vercelAiIntegration`
+`openAIIntegration`, `anthropicAIIntegration`, `googleGenAIIntegration`,
+`langChainIntegration`, `vercelAiIntegration`
 
 ### Must be added manually
 
-`knexIntegration`, `dataloaderIntegration`, `supabaseIntegration`, `captureConsoleIntegration`
+`knexIntegration`, `dataloaderIntegration`, `supabaseIntegration`,
+`captureConsoleIntegration`
 
-## What Is and Isn't Auto-Traced
+## What Is and Isn’t Auto-Traced
 
 ### Auto-traced (no code changes needed)
 
-| Feature                                            | Mechanism                                                    |
-| -------------------------------------------------- | ------------------------------------------------------------ |
-| HTTP requests + transaction naming                 | `nestIntegration` + `SentryTracingInterceptor`               |
+| Feature | Mechanism |
+| --- | --- |
+| HTTP requests + transaction naming | `nestIntegration` + `SentryTracingInterceptor` |
 | Middleware, guard, pipe, interceptor, filter spans | `SentryNestInstrumentation` (patches `@Injectable`/`@Catch`) |
-| `@OnEvent` handler spans                           | `SentryNestEventInstrumentation` (patches `@OnEvent`)        |
-| GraphQL queries/mutations/resolvers                | `graphqlIntegration`                                         |
-| AMQP/RabbitMQ + Kafka messages                     | `amqplibIntegration` + `kafkaIntegration`                    |
-| Redis, MongoDB, Mongoose, MySQL, PG                | Auto-integrations                                            |
-| Outgoing HTTP (axios, fetch, http)                 | `httpIntegration` + `nativeNodeFetchIntegration`             |
-| Any OTel instrumentation                           | Auto-forwarded via OTel bridge                               |
+| `@OnEvent` handler spans | `SentryNestEventInstrumentation` (patches `@OnEvent`) |
+| GraphQL queries/mutations/resolvers | `graphqlIntegration` |
+| AMQP/RabbitMQ + Kafka messages | `amqplibIntegration` + `kafkaIntegration` |
+| Redis, MongoDB, Mongoose, MySQL, PG | Auto-integrations |
+| Outgoing HTTP (axios, fetch, http) | `httpIntegration` + `nativeNodeFetchIntegration` |
+| Any OTel instrumentation | Auto-forwarded via OTel bridge |
 
 ### Requires manual instrumentation
 
-| Feature                        | API                                                                  |
-| ------------------------------ | -------------------------------------------------------------------- |
-| Custom business logic spans    | `Sentry.startSpan()`, `startSpanManual()`, `startInactiveSpan()`     |
-| Method-level tracing           | `@SentryTraced()` decorator                                          |
-| Cron job monitoring            | `@SentryCron()` decorator                                            |
-| Exception filter error capture | `@SentryExceptionCaptured()` decorator                               |
-| WebSocket gateway tracing      | `continueTrace()` + `startSpan()` in message handler                 |
-| TCP/NATS/gRPC microservices    | Manual `startSpan()` + `continueTrace()`                             |
-| Bull/BullMQ job tracing        | `withIsolationScope()` + `startSpan()` in `process()` / `@Process()` |
-| Non-HTTP distributed tracing   | `getTraceData()` + `continueTrace()`                                 |
-| TypeORM / Sequelize tracing    | Community OTel packages or manual spans                              |
-| Node.js profiling              | `@sentry/profiling-node` + `nodeProfilingIntegration()`              |
+| Feature | API |
+| --- | --- |
+| Custom business logic spans | `Sentry.startSpan()`, `startSpanManual()`, `startInactiveSpan()` |
+| Method-level tracing | `@SentryTraced()` decorator |
+| Cron job monitoring | `@SentryCron()` decorator |
+| Exception filter error capture | `@SentryExceptionCaptured()` decorator |
+| WebSocket gateway tracing | `continueTrace()` + `startSpan()` in message handler |
+| TCP/NATS/gRPC microservices | Manual `startSpan()` + `continueTrace()` |
+| Bull/BullMQ job tracing | `withIsolationScope()` + `startSpan()` in `process()` / `@Process()` |
+| Non-HTTP distributed tracing | `getTraceData()` + `continueTrace()` |
+| TypeORM / Sequelize tracing | Community OTel packages or manual spans |
+| Node.js profiling | `@sentry/profiling-node` + `nodeProfilingIntegration()` |
 
 ## Best Practices
 
-- Always import `instrument.ts` as the **very first import** in `main.ts` — before `@nestjs/core` or any app module
-- Use `tracesSampler` instead of `tracesSampleRate` in production — drop health checks, adjust per-route, honour distributed decisions
-- Set `tracePropagationTargets` to avoid leaking `sentry-trace` headers to third-party services
-- Prefer `startSpan()` (auto-ends) over `startSpanManual()` — forgetting `span.end()` silently drops the span
-- Add `sentry-trace` and `baggage` to your CORS allowlist when tracing browser-to-backend flows
+- Always import `instrument.ts` as the **very first import** in `main.ts` — before
+  `@nestjs/core` or any app module
+- Use `tracesSampler` instead of `tracesSampleRate` in production — drop health checks,
+  adjust per-route, honour distributed decisions
+- Set `tracePropagationTargets` to avoid leaking `sentry-trace` headers to third-party
+  services
+- Prefer `startSpan()` (auto-ends) over `startSpanManual()` — forgetting `span.end()`
+  silently drops the span
+- Add `sentry-trace` and `baggage` to your CORS allowlist when tracing
+  browser-to-backend flows
 - Pin `@sentry/profiling-node` to the **exact same version** as `@sentry/nestjs`
-- Use `profileSessionSampleRate` to profile a fraction of pods rather than every pod — the decision is per-process, not per-request
-- Always wrap background job handlers (`@Process()`, `WorkerHost.process()`, `@Cron()`, `@OnEvent()`) with `withIsolationScope()` before `startSpan()` — without isolation, concurrent jobs share scope state
-- If the project uses a DI wrapper for Sentry (e.g. `SENTRY_PROXY_TOKEN`), use the injected service for `startSpan`, `captureException`, etc. — only `instrument.ts` should import `@sentry/nestjs` directly
-- When using a config class for `Sentry.init()`, add new SDK options to the config type rather than hardcoding them — this keeps options configurable per environment
+- Use `profileSessionSampleRate` to profile a fraction of pods rather than every pod —
+  the decision is per-process, not per-request
+- Always wrap background job handlers (`@Process()`, `WorkerHost.process()`, `@Cron()`,
+  `@OnEvent()`) with `withIsolationScope()` before `startSpan()` — without isolation,
+  concurrent jobs share scope state
+- If the project uses a DI wrapper for Sentry (e.g. `SENTRY_PROXY_TOKEN`), use the
+  injected service for `startSpan`, `captureException`, etc.
+  — only `instrument.ts` should import `@sentry/nestjs` directly
+- When using a config class for `Sentry.init()`, add new SDK options to the config type
+  rather than hardcoding them — this keeps options configurable per environment
 
 ## Troubleshooting
 
-| Issue                                                                  | Solution                                                                                            |
-| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| No transactions appearing                                              | Verify `tracesSampleRate > 0` or `tracesSampler` returns non-zero                                   |
-| Transaction names show raw URL (e.g., `/users/123`) instead of pattern | `SentryModule.forRoot()` not imported; or `instrument.ts` loaded after `@nestjs/core`               |
-| Middleware/guard/pipe spans missing                                    | `nestIntegration` not registered; ensure `instrument.ts` is first import                            |
-| `@OnEvent` spans not appearing                                         | `@nestjs/event-emitter` < 2.0.0; or `instrument.ts` loaded after event emitter                      |
-| Distributed traces broken across services                              | Check `sentry-trace` and `baggage` headers pass through proxies/API gateways                        |
-| DB spans missing                                                       | Driver loaded before `instrument.ts`; reorder imports                                               |
-| Profiler crashes at startup                                            | `@sentry/profiling-node` version doesn't match `@sentry/nestjs`                                     |
-| Event spans appear as isolated transactions                            | Expected — `@OnEvent` uses `forceTransaction: true` by design                                       |
-| RPC exceptions not captured or app crashes                             | Use a dedicated `@Catch(RpcException)` filter; `SentryGlobalFilter` logs a warning for RPC          |
-| OTel instrumentation spans not appearing                               | Ensure the OTel package is loaded after `instrument.ts`                                             |
-| BullMQ jobs share tags/user/breadcrumbs                                | Wrap `process()` body with `Sentry.withIsolationScope(() => ...)`                                   |
-| `profilesSampleRate` not working                                       | Deprecated in SDK 10.x — use `profileSessionSampleRate` + `profileLifecycle: "trace"`               |
-| `SentryModule.forRoot()` registered twice                              | Only register once — if a shared library module already imports it, skip in `AppModule`             |
-| `import * as Sentry` blocked by ESLint                                 | Use named imports or the project's DI proxy; namespace imports trigger `no-restricted-syntax` rules |
+| Issue | Solution |
+| --- | --- |
+| No transactions appearing | Verify `tracesSampleRate > 0` or `tracesSampler` returns non-zero |
+| Transaction names show raw URL (e.g., `/users/123`) instead of pattern | `SentryModule.forRoot()` not imported; or `instrument.ts` loaded after `@nestjs/core` |
+| Middleware/guard/pipe spans missing | `nestIntegration` not registered; ensure `instrument.ts` is first import |
+| `@OnEvent` spans not appearing | `@nestjs/event-emitter` < 2.0.0; or `instrument.ts` loaded after event emitter |
+| Distributed traces broken across services | Check `sentry-trace` and `baggage` headers pass through proxies/API gateways |
+| DB spans missing | Driver loaded before `instrument.ts`; reorder imports |
+| Profiler crashes at startup | `@sentry/profiling-node` version doesn’t match `@sentry/nestjs` |
+| Event spans appear as isolated transactions | Expected — `@OnEvent` uses `forceTransaction: true` by design |
+| RPC exceptions not captured or app crashes | Use a dedicated `@Catch(RpcException)` filter; `SentryGlobalFilter` logs a warning for RPC |
+| OTel instrumentation spans not appearing | Ensure the OTel package is loaded after `instrument.ts` |
+| BullMQ jobs share tags/user/breadcrumbs | Wrap `process()` body with `Sentry.withIsolationScope(() => ...)` |
+| `profilesSampleRate` not working | Deprecated in SDK 10.x — use `profileSessionSampleRate` + `profileLifecycle: "trace"` |
+| `SentryModule.forRoot()` registered twice | Only register once — if a shared library module already imports it, skip in `AppModule` |
+| `import * as Sentry` blocked by ESLint | Use named imports or the project’s DI proxy; namespace imports trigger `no-restricted-syntax` rules |

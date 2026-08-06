@@ -4,12 +4,13 @@
 
 ## Overview
 
-`sentry_sdk.metrics` provides custom counters, gauges, and distributions. Metrics are enabled by default — no extra `init()` flag needed.
+`sentry_sdk.metrics` provides custom counters, gauges, and distributions.
+Metrics are enabled by default — no extra `init()` flag needed.
 
 ## Metric Types
 
 | Type | API | Use for |
-|------|-----|---------|
+| --- | --- | --- |
 | Counter | `metrics.count()` | Event occurrences, request counts |
 | Distribution | `metrics.distribution()` | Latencies, sizes — supports p50/p90/p95/p99 |
 | Gauge | `metrics.gauge()` | Current values (min, max, avg, sum, count — no percentiles) |
@@ -113,7 +114,7 @@ sentry_sdk.metrics.count(
 ### Unit strings
 
 | Category | Values |
-|----------|--------|
+| --- | --- |
 | Time | `"nanosecond"`, `"microsecond"`, `"millisecond"`, `"second"`, `"minute"`, `"hour"`, `"day"`, `"week"` |
 | Data | `"bit"`, `"byte"`, `"kilobyte"`, `"megabyte"`, `"gigabyte"`, `"terabyte"` |
 | Fractions | `"ratio"`, `"percent"` |
@@ -122,7 +123,7 @@ sentry_sdk.metrics.count(
 ### `before_send_metric` — `Metric` schema
 
 | Key | Type | Description |
-|-----|------|-------------|
+| --- | --- | --- |
 | `name` | `str` | Metric identifier |
 | `type` | `str` | `"counter"` / `"gauge"` / `"distribution"` |
 | `value` | `float` | Numeric measurement |
@@ -134,16 +135,19 @@ sentry_sdk.metrics.count(
 
 ## Best Practices
 
-- Keep attribute cardinality low — avoid user IDs, UUIDs, or timestamps as attribute values
+- Keep attribute cardinality low — avoid user IDs, UUIDs, or timestamps as attribute
+  values
 - Use `distribution` over `gauge` when you need percentile analysis
-- Prefix metric names with your service name: `"payments.charge_time"` not `"charge_time"`
+- Prefix metric names with your service name: `"payments.charge_time"` not
+  `"charge_time"`
 - Use standard unit strings — Sentry renders them in the UI with proper labels
-- Metrics are buffered and flushed periodically — avoid using them for critical alerting requiring sub-second latency
+- Metrics are buffered and flushed periodically — avoid using them for critical alerting
+  requiring sub-second latency
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Metrics not appearing | Verify SDK version ≥ 2.44.0; check `debug=True` output |
 | Metric dropped silently | Check `before_send_metric` hook; verify metric name contains no special characters |
 | High cardinality warning | Reduce attribute values — avoid per-user or per-request identifiers |

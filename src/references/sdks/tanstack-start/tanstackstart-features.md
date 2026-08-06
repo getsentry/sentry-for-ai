@@ -2,7 +2,7 @@
 
 > Framework target: TanStack Start React `1.0 RC`
 
----
+* * *
 
 ## `sentryTanstackStart` Vite Plugin
 
@@ -25,9 +25,10 @@ export default defineConfig({
 });
 ```
 
-This plugin manages source map upload and instruments middleware tracing when tracing is enabled.
+This plugin manages source map upload and instruments middleware tracing when tracing is
+enabled.
 
----
+* * *
 
 ## Environment Token Handling
 
@@ -55,7 +56,7 @@ export default defineConfig(({ mode }) => {
 });
 ```
 
----
+* * *
 
 ## Runtime Startup Options
 
@@ -87,9 +88,10 @@ Use when host/runtime does not allow startup flags.
 import "../instrument.server.mjs";
 ```
 
-Limitation: only native Node.js APIs are instrumented; third-party library instrumentation is limited.
+Limitation: only native Node.js APIs are instrumented; third-party library
+instrumentation is limited.
 
----
+* * *
 
 ## Server Entry and Middleware Checklist
 
@@ -99,7 +101,7 @@ For full server coverage, confirm all three are present:
 2. `src/server.ts` wraps handler with `wrapFetchWithSentry`.
 3. `src/start.ts` includes both Sentry global middleware first in arrays.
 
----
+* * *
 
 ## Optional Tunnel Configuration
 
@@ -114,12 +116,12 @@ Sentry.init({
 
 Then implement a server endpoint that forwards tunnel traffic to Sentry ingest.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Build succeeds but no source maps in Sentry | Verify `sentryTanstackStart` is configured and token is available at build time |
 | `process.env.SENTRY_AUTH_TOKEN` undefined | Use `loadEnv` in Vite config or `.env.sentry-build-plugin` |
 | Works in dev but not production | Ensure `instrument.server.mjs` is copied into final server output and imported at runtime |

@@ -17,7 +17,7 @@ sentry.Init(sentry.ClientOptions{
 ```
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `DisableMetrics` | `bool` | `false` | Set `true` to disable all metrics emission |
 | `BeforeSendMetric` | `func(*Metric) *Metric` | `nil` | Mutate or drop individual metrics |
 
@@ -29,7 +29,8 @@ Create a `Meter` from any context:
 meter := sentry.NewMeter(ctx)
 ```
 
-Returns a no-op `Meter` (silently drops all calls) if no client is bound to the hub or `DisableMetrics: true`.
+Returns a no-op `Meter` (silently drops all calls) if no client is bound to the hub or
+`DisableMetrics: true`.
 
 ### Meter interface
 
@@ -43,7 +44,8 @@ type Meter interface {
 }
 ```
 
-> **The Go SDK has exactly three metric types: `Count`, `Gauge`, `Distribution`. Sets and timing helpers are not implemented.**
+> **The Go SDK has exactly three metric types: `Count`, `Gauge`, `Distribution`. Sets
+> and timing helpers are not implemented.**
 
 ## Code Examples
 
@@ -105,7 +107,7 @@ meter.Gauge("cpu.usage", 0.73, sentry.WithUnit(sentry.UnitRatio))
 
 ### Trace-linked metrics
 
-Associate metrics with the current request's trace span using `WithCtx`:
+Associate metrics with the current request’s trace span using `WithCtx`:
 
 ```go
 http.HandleFunc("/checkout", func(w http.ResponseWriter, r *http.Request) {
@@ -189,7 +191,7 @@ sentry.WithScopeOverride(scope *sentry.Scope)   // override scope for this metri
 **Duration:**
 
 | Constant | Value |
-|----------|-------|
+| --- | --- |
 | `UnitNanosecond` | `"nanosecond"` |
 | `UnitMicrosecond` | `"microsecond"` |
 | `UnitMillisecond` | `"millisecond"` |
@@ -202,7 +204,7 @@ sentry.WithScopeOverride(scope *sentry.Scope)   // override scope for this metri
 **Information:**
 
 | Constant | Value |
-|----------|-------|
+| --- | --- |
 | `UnitByte` | `"byte"` |
 | `UnitKilobyte` | `"kilobyte"` |
 | `UnitMegabyte` | `"megabyte"` |
@@ -213,7 +215,7 @@ sentry.WithScopeOverride(scope *sentry.Scope)   // override scope for this metri
 **Fraction:**
 
 | Constant | Value |
-|----------|-------|
+| --- | --- |
 | `UnitRatio` | `"ratio"` |
 | `UnitPercent` | `"percent"` |
 
@@ -232,7 +234,7 @@ attribute.Bool(key string, v bool) Builder
 ## Auto-Attached Attributes
 
 | Attribute | Source |
-|-----------|--------|
+| --- | --- |
 | `sentry.release` | `ClientOptions.Release` |
 | `sentry.environment` | `ClientOptions.Environment` |
 | `sentry.server.address` | `ClientOptions.ServerName` or `os.Hostname()` |
@@ -241,7 +243,7 @@ attribute.Bool(key string, v bool) Builder
 ## Metric Type Reference
 
 | Method | Value type | Use for |
-|--------|-----------|---------|
+| --- | --- | --- |
 | `Count` | `int64` | Incrementing counters (events, errors, requests) |
 | `Gauge` | `float64` | Current state snapshot (queue depth, memory, connections) |
 | `Distribution` | `float64` | Variable measurements supporting percentiles (latency, file sizes) |
@@ -251,17 +253,19 @@ Note: `Count` takes `int64`, not `int`. `IntervalSchedule` also takes `int64`.
 ## Best Practices
 
 - Use `Count` for events that accumulate (requests served, emails sent, errors thrown)
-- Use `Gauge` for values that represent current state (queue depth, active connections, cache size)
+- Use `Gauge` for values that represent current state (queue depth, active connections,
+  cache size)
 - Use `Distribution` for latency and sizes — it enables P50/P95/P99 analysis
 - Keep metric names lowercase, dot-separated (`api.response_time`, `queue.depth`)
 - Avoid high-cardinality tag values (user IDs, request IDs) — prefer categorical values
-- Call `meter.SetAttributes()` once with service-level tags rather than repeating them on every call
+- Call `meter.SetAttributes()` once with service-level tags rather than repeating them
+  on every call
 - Use `meter.WithCtx(ctx)` inside HTTP handlers to link metrics to the active trace span
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Metrics not appearing | Check `DisableMetrics` is not `true`; verify `sentry.Flush()` is called |
 | `NewMeter` returns no-op | No client bound to hub; check `sentry.Init` was called |
 | `Count` type error | `count` parameter is `int64`, not `int` — use explicit `int64(n)` cast |

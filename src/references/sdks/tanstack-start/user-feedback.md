@@ -1,9 +1,9 @@
 # User Feedback — Sentry TanStack Start React SDK
 
-> Minimum SDK: `@sentry/tanstackstart-react` with Feedback integration  
+> Minimum SDK: `@sentry/tanstackstart-react` with Feedback integration\
 > Framework target: TanStack Start React `1.0 RC`
 
----
+* * *
 
 ## Feedback Widget Setup
 
@@ -22,7 +22,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Common Configuration Options
 
@@ -45,7 +45,7 @@ Sentry.feedbackIntegration({
 });
 ```
 
----
+* * *
 
 ## Feedback From Error Flows
 
@@ -60,7 +60,7 @@ Sentry.showReportDialog({
 });
 ```
 
----
+* * *
 
 ## Verification
 
@@ -69,12 +69,12 @@ Sentry.showReportDialog({
 3. Open **User Feedback** in Sentry and confirm receipt.
 4. If using report dialogs, verify feedback is linked to the issue event.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Feedback button not shown | Ensure `feedbackIntegration()` is in browser `integrations` |
 | Styling/position conflicts | Customize trigger placement and check app z-index layers |
 | Missing user details | Set Sentry user context before feedback submission |

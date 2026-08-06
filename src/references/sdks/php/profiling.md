@@ -22,14 +22,15 @@ Excimer requires PHP 7.2+ and does **not** support Windows.
 ## Version Requirements
 
 | Framework | Min SDK Version |
-|-----------|----------------|
+| --- | --- |
 | PHP (base) | `sentry/sentry` ≥ 3.15.0 |
 | Laravel | `sentry/sentry-laravel` ≥ 3.3.0 |
 | Symfony | `sentry/sentry-symfony` ≥ 4.7.0 |
 
 ## Configuration
 
-Profiling requires `traces_sample_rate > 0`. `profiles_sample_rate` is relative to `traces_sample_rate`.
+Profiling requires `traces_sample_rate > 0`. `profiles_sample_rate` is relative to
+`traces_sample_rate`.
 
 ### PHP (base SDK)
 
@@ -68,7 +69,8 @@ sentry:
 
 ## How `profiles_sample_rate` Works
 
-`profiles_sample_rate` is a **fraction of already-sampled transactions**, not of all requests:
+`profiles_sample_rate` is a **fraction of already-sampled transactions**, not of all
+requests:
 
 ```
 Effective profiling rate = traces_sample_rate × profiles_sample_rate
@@ -83,9 +85,11 @@ Examples:
 
 Profiling data is sent to Sentry after generating the response, not before:
 
-- **Laravel (FastCGI):** Uses terminable middleware — data sent **after** response is dispatched
+- **Laravel (FastCGI):** Uses terminable middleware — data sent **after** response is
+  dispatched
 - **Symfony (FastCGI):** Uses `kernel.terminate` event — same behavior
-- **Non-FastCGI servers:** Use a local [Relay](https://docs.sentry.io/product/relay/) instance:
+- **Non-FastCGI servers:** Use a local [Relay](https://docs.sentry.io/product/relay/)
+  instance:
 
 ```
 PHP App → local Relay (127.0.0.1) → Sentry Cloud
@@ -94,14 +98,16 @@ PHP App → local Relay (127.0.0.1) → Sentry Cloud
 ## Best Practices
 
 - Start with `profiles_sample_rate: 1.0` in development to verify setup
-- In production, reduce `traces_sample_rate` (e.g., `0.1`) — profiling follows automatically
-- Profiling has no meaningful overhead on Linux with Excimer; Relay is only needed to avoid latency on non-FastCGI servers
+- In production, reduce `traces_sample_rate` (e.g., `0.1`) — profiling follows
+  automatically
+- Profiling has no meaningful overhead on Linux with Excimer; Relay is only needed to
+  avoid latency on non-FastCGI servers
 - Profiles are capped at **30 seconds** per transaction
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No profiles appearing | Verify Excimer is installed (`php -m \| grep excimer`) and `traces_sample_rate > 0` |
 | `profiles_sample_rate has no effect` | Check SDK version meets minimum requirement |
 | Windows deployment | Profiling is not supported on Windows — use Linux or macOS |

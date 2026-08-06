@@ -4,10 +4,11 @@
 
 ## Overview
 
-Sentry Crons monitors scheduled jobs by receiving check-ins at job start, success, and failure. Three approaches:
+Sentry Crons monitors scheduled jobs by receiving check-ins at job start, success, and
+failure. Three approaches:
 
 | Approach | Use when |
-|----------|---------|
+| --- | --- |
 | `withMonitor()` wrapper | Simple wrapping of any callable |
 | `captureCheckIn()` manually | Need control over timing, status, or heartbeats |
 | `sentryMonitor()` macro (Laravel) | Laravel scheduled tasks — minimal boilerplate |
@@ -58,7 +59,8 @@ try {
 
 ### Heartbeat (single check-in)
 
-Only notifies if the job **didn't start** when expected (missed). Does not detect max runtime exceeded.
+Only notifies if the job **didn’t start** when expected (missed).
+Does not detect max runtime exceeded.
 
 ```php
 // Success
@@ -77,7 +79,8 @@ Only notifies if the job **didn't start** when expected (missed). Does not detec
 
 ### Upsert monitor config programmatically
 
-Define monitor settings in code so Sentry creates/updates the monitor automatically on first check-in:
+Define monitor settings in code so Sentry creates/updates the monitor automatically on
+first check-in:
 
 ```php
 use Sentry\CheckInStatus;
@@ -146,11 +149,13 @@ Schedule::command(SendEmailsCommand::class)
     );
 ```
 
-> **Limitation:** Tasks using `between`, `unlessBetween`, `when`, or `skip` are not supported. Use Laravel's `cron()` method for schedule frequency in those cases.
+> **Limitation:** Tasks using `between`, `unlessBetween`, `when`, or `skip` are not
+> supported. Use Laravel’s `cron()` method for schedule frequency in those cases.
 
 ### Symfony — same as base PHP SDK
 
-The Symfony bundle has no dedicated cron integration. Use `captureCheckIn()` or `withMonitor()` directly:
+The Symfony bundle has no dedicated cron integration.
+Use `captureCheckIn()` or `withMonitor()` directly:
 
 ```php
 use Sentry\CheckInStatus;
@@ -197,7 +202,7 @@ MonitorScheduleUnit::year()
 ## `MonitorConfig` Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `$monitorSchedule` | `MonitorSchedule` | ✅ | Crontab or interval schedule |
 | `$checkinMargin` | `int\|null` | No | Minutes late before MISSED alert |
 | `$maxRuntime` | `int\|null` | No | Minutes after IN_PROGRESS before TIMEOUT |
@@ -208,7 +213,7 @@ MonitorScheduleUnit::year()
 ## Laravel `sentryMonitor()` Parameters
 
 | Parameter | Default | Description |
-|-----------|---------|-------------|
+| --- | --- | --- |
 | `monitorSlug` | `null` | Custom slug; auto-generated from command name if null |
 | `checkInMargin` | `5` | Minutes before check-in is considered missed |
 | `maxRuntime` | `15` | Minutes before in-progress is marked timed out |
@@ -218,7 +223,8 @@ MonitorScheduleUnit::year()
 
 ## Rate Limits
 
-**6 check-ins per minute per monitor-environment.** Excess check-ins are silently dropped.
+**6 check-ins per minute per monitor-environment.** Excess check-ins are silently
+dropped.
 
 Example:
 - `database-backup` in `production` → up to 6/min
@@ -228,26 +234,31 @@ Verify dropped check-ins on the Sentry Usage Stats page.
 
 ## Alerts Setup
 
-When a job misses a check-in or reports failure, Sentry creates an error event tagged with `monitor.slug`:
+When a job misses a check-in or reports failure, Sentry creates an error event tagged
+with `monitor.slug`:
 
 1. Go to **Alerts** → **Create Alert** → select **Issues** under Errors
 2. Filter: `The event's tags match monitor.slug equals my-monitor-slug-here`
 
 ## Best Practices
 
-- Use `withMonitor()` for simple jobs; use manual `captureCheckIn()` when you need error handling or heartbeats
-- Provide `MonitorConfig` on the first check-in so Sentry creates the monitor automatically — no UI setup needed
-- For jobs longer than `maxRuntime`, send periodic `IN_PROGRESS` check-ins as heartbeats to reset the timeout clock
+- Use `withMonitor()` for simple jobs; use manual `captureCheckIn()` when you need error
+  handling or heartbeats
+- Provide `MonitorConfig` on the first check-in so Sentry creates the monitor
+  automatically — no UI setup needed
+- For jobs longer than `maxRuntime`, send periodic `IN_PROGRESS` check-ins as heartbeats
+  to reset the timeout clock
 - In Laravel, prefer `sentryMonitor()` macro over manual check-ins for scheduled tasks
-- Set `updateMonitorConfig: false` in Laravel when the monitor schedule is managed in the Sentry UI
+- Set `updateMonitorConfig: false` in Laravel when the monitor schedule is managed in
+  the Sentry UI
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Monitor not created in Sentry | Provide `MonitorConfig` — monitors are not auto-created without it |
 | MISSED alerts firing too early | Increase `checkinMargin` to allow for job startup time |
 | TIMEOUT alerts on slow jobs | Increase `maxRuntime` or send periodic `IN_PROGRESS` heartbeats |
 | Laravel `sentryMonitor()` not working | Check SDK version ≥ 3.3.1; verify `ConsoleSchedulingIntegration` is active |
-| `between`/`when` tasks not monitored | Use Laravel's `cron()` method for schedule frequency instead |
+| `between`/`when` tasks not monitored | Use Laravel’s `cron()` method for schedule frequency instead |
 | Check-ins silently dropped | You may be hitting the 6/min rate limit — check Usage Stats page |

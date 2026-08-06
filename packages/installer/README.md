@@ -1,8 +1,12 @@
 # @sentry/ai
 
-Install the [Sentry plugin](https://github.com/getsentry/sentry-for-ai) into your AI coding assistants.
+Install the [Sentry plugin](https://github.com/getsentry/sentry-for-ai) into your AI
+coding assistants.
 
-The plugin teaches your assistant Sentry — how to set it up in any project, how to find and fix production issues, and how to configure alerts, AI monitoring, and more. This package detects which assistants you have installed and wires the plugin into each one for you.
+The plugin teaches your assistant Sentry — how to set it up in any project, how to find
+and fix production issues, and how to configure alerts, AI monitoring, and more.
+This package detects which assistants you have installed and wires the plugin into each
+one for you.
 
 Supports **Claude Code**, **Codex**, **Cursor**, **Grok**, and **Pi**.
 
@@ -10,12 +14,14 @@ Supports **Claude Code**, **Codex**, **Cursor**, **Grok**, and **Pi**.
 npx @sentry/ai install
 ```
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/demo-dark.gif">
-  <img src="assets/demo-light.gif" alt="Installing the Sentry plugin with npx @sentry/ai install">
+<picture> <source media="(prefers-color-scheme: dark)" srcset="assets/demo-dark.gif">
+<img src="assets/demo-light.gif" alt="Installing the Sentry plugin with npx @sentry/ai install">
 </picture>
 
-This detects the AI coding tools on your machine, lets you choose which ones to set up, and installs the Sentry plugin into each. Already have it installed? The same command updates it to the latest version.
+This detects the AI coding tools on your machine, lets you choose which ones to set up,
+and installs the Sentry plugin into each.
+Already have it installed?
+The same command updates it to the latest version.
 
 Restart your AI tools afterward to load the plugin.
 
@@ -27,21 +33,26 @@ npx @sentry/ai install "Setup logging"         # copy a custom prompt after inst
 npx @sentry/ai install --no-interactive        # install into every detected agent
 ```
 
-When an instruction follows `install`, the installer offers to copy a prompt such as `The Sentry plugin has just been installed. Setup logging` after installation. Without an instruction, it offers the default get-started prompt. The non-interactive mode is intended for CI and unattended runs and skips this prompt.
+When an instruction follows `install`, the installer offers to copy a prompt such as
+`The Sentry plugin has just been installed. Setup logging` after installation.
+Without an instruction, it offers the default get-started prompt.
+The non-interactive mode is intended for CI and unattended runs and skips this prompt.
 
 ## What it installs
 
-For each detected assistant, the installer runs that tool's native plugin command:
+For each detected assistant, the installer runs that tool’s native plugin command:
 
-| Assistant   | How it's installed                                                            |
-| ----------- | ----------------------------------------------------------------------------- |
-| Claude Code | `claude plugin install sentry` from the official plugin marketplace           |
-| Codex       | `codex plugin add sentry` from the Sentry plugin marketplace                  |
-| Cursor      | Clones [`getsentry/plugin-cursor`](https://github.com/getsentry/plugin-cursor) into `~/.cursor/plugins/local/sentry` |
-| Grok        | `grok plugin install getsentry/plugin-grok`                                   |
-| Pi          | `pi install git:github.com/getsentry/plugin-pi`                               |
+| Assistant | How it’s installed |
+| --- | --- |
+| Claude Code | `claude plugin install sentry` from the official plugin marketplace |
+| Codex | `codex plugin add sentry` from the Sentry plugin marketplace |
+| Cursor | Clones [`getsentry/plugin-cursor`](https://github.com/getsentry/plugin-cursor) into `~/.cursor/plugins/local/sentry` |
+| Grok | `grok plugin install getsentry/plugin-grok` |
+| Pi | `pi install git:github.com/getsentry/plugin-pi` |
 
-Each per-agent plugin is built and published from the [`sentry-for-ai`](https://github.com/getsentry/sentry-for-ai) repository, which is the source of truth for all skills.
+Each per-agent plugin is built and published from the
+[`sentry-for-ai`](https://github.com/getsentry/sentry-for-ai) repository, which is the
+source of truth for all skills.
 
 ## Removing the plugin
 
@@ -50,7 +61,9 @@ npx @sentry/ai remove                  # interactive — pick which agents to re
 npx @sentry/ai remove --no-interactive # remove from every agent that has it
 ```
 
-`uninstall` is an alias for `remove`. This only offers agents that currently have the plugin, and removes the Sentry plugin itself — each tool's plugin marketplace is left registered. Restart your AI tools afterward to drop the plugin.
+`uninstall` is an alias for `remove`. This only offers agents that currently have the
+plugin, and removes the Sentry plugin itself — each tool’s plugin marketplace is left
+registered. Restart your AI tools afterward to drop the plugin.
 
 ## Requirements
 

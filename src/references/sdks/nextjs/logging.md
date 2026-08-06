@@ -1,12 +1,12 @@
 # Logging — Sentry Next.js SDK
 
-> Minimum SDK: `@sentry/nextjs` ≥9.41.0+ for `Sentry.logger` API and `enableLogs`  
-> `consoleLoggingIntegration()` multi-arg parsing: requires ≥10.13.0+  
+> Minimum SDK: `@sentry/nextjs` ≥9.41.0+ for `Sentry.logger` API and `enableLogs`\
+> `consoleLoggingIntegration()` multi-arg parsing: requires ≥10.13.0+\
 > Scope-based attributes (`getGlobalScope`, `getIsolationScope`): requires ≥10.32.0+
 
 > ⚠️ **Not available via CDN/loader snippet** — NPM install required.
 
----
+* * *
 
 ## Enabling Logs
 
@@ -26,7 +26,7 @@ Sentry.init({
 
 Without `enableLogs: true`, all `Sentry.logger.*` calls are silently no-ops.
 
----
+* * *
 
 ## Logger API — Six Levels
 
@@ -42,7 +42,7 @@ Sentry.logger.fatal("Database unavailable", { host: "db-primary" });
 ```
 
 | Level | Method | Typical Use |
-|-------|--------|-------------|
+| --- | --- | --- |
 | `trace` | `Sentry.logger.trace()` | Ultra-granular function entry/exit; high-volume — filter out in production |
 | `debug` | `Sentry.logger.debug()` | Development diagnostics, cache hits/misses |
 | `info` | `Sentry.logger.info()` | Normal business milestones, confirmations |
@@ -50,13 +50,15 @@ Sentry.logger.fatal("Database unavailable", { host: "db-primary" });
 | `error` | `Sentry.logger.error()` | Failures requiring attention |
 | `fatal` | `Sentry.logger.fatal()` | Critical failures, system unavailable |
 
-**Attribute value types:** `string`, `number`, `boolean` only — `undefined`, arrays, and objects are not accepted.
+**Attribute value types:** `string`, `number`, `boolean` only — `undefined`, arrays, and
+objects are not accepted.
 
----
+* * *
 
 ## Parameterized Messages — `Sentry.logger.fmt`
 
-The `fmt` tagged template literal binds each interpolated variable as a **structured, searchable attribute** in Sentry:
+The `fmt` tagged template literal binds each interpolated variable as a **structured,
+searchable attribute** in Sentry:
 
 ```typescript
 const userId = "user_123";
@@ -76,18 +78,19 @@ message.parameter.1:  "Widget Pro"
 message.parameter.2:  49.99
 ```
 
-Each parameter is independently searchable in Sentry's log explorer.
+Each parameter is independently searchable in Sentry’s log explorer.
 
-> ⚠️ `logger.fmt` must be used as a **tagged template literal** — not a function call. `Sentry.logger.fmt("text")` will not produce structured parameters.
+> ⚠️ `logger.fmt` must be used as a **tagged template literal** — not a function call.
+> `Sentry.logger.fmt("text")` will not produce structured parameters.
 
 ### When to use `fmt` vs plain attributes
 
 | Approach | Use when |
-|----------|----------|
+| --- | --- |
 | `Sentry.logger.info(msg, { key: val })` | Variables are logically distinct attributes with names |
-| `Sentry.logger.info(Sentry.logger.fmt\`...\`)` | Variables are part of a human-readable sentence |
+| `Sentry.logger.info` with a `Sentry.logger.fmt` tagged template | Variables are part of a human-readable sentence |
 
----
+* * *
 
 ## Console Capture — `consoleLoggingIntegration`
 
@@ -113,7 +116,7 @@ console.log("User action recorded", userId, success)
 ```
 
 | Console method | Sentry log level |
-|----------------|-----------------|
+| --- | --- |
 | `console.log` | `info` |
 | `console.info` | `info` |
 | `console.warn` | `warn` |
@@ -121,11 +124,12 @@ console.log("User action recorded", userId, success)
 | `console.debug` | `debug` |
 | `console.assert` (failing) | `error` |
 
----
+* * *
 
 ## Log Filtering — `beforeSendLog`
 
-Use `beforeSendLog` to drop, modify, or scrub logs before they are sent. Return `null` to discard:
+Use `beforeSendLog` to drop, modify, or scrub logs before they are sent.
+Return `null` to discard:
 
 ```typescript
 Sentry.init({
@@ -158,13 +162,13 @@ Sentry.init({
 ### The `log` object shape
 
 | Field | Type | Description |
-|-------|------|-------------|
+| --- | --- | --- |
 | `level` | `string` | `"trace"` \| `"debug"` \| `"info"` \| `"warn"` \| `"error"` \| `"fatal"` |
 | `message` | `string` | The log message text |
 | `timestamp` | `number` | Unix timestamp |
 | `attributes` | `object` | Key/value pairs attached to this log |
 
----
+* * *
 
 ## Scope-Based Automatic Attributes (SDK ≥10.32.0)
 
@@ -192,9 +196,11 @@ Sentry.withScope((scope) => {
 });
 ```
 
-> ⚠️ **Next.js server-side isolation:** Always use `getIsolationScope()` for per-request data on the server. The isolation scope is unique per request, preventing attributes from one user's request from bleeding into another's concurrent request.
+> ⚠️ **Next.js server-side isolation:** Always use `getIsolationScope()` for per-request
+> data on the server. The isolation scope is unique per request, preventing attributes
+> from one user’s request from bleeding into another’s concurrent request.
 
----
+* * *
 
 ## Third-Party Logger Integrations
 
@@ -237,14 +243,14 @@ const logger = winston.createLogger({
 });
 ```
 
----
+* * *
 
 ## Auto-Generated Attributes
 
 These are added by the SDK to every log without any developer configuration:
 
 | Attribute | Notes |
-|-----------|-------|
+| --- | --- |
 | `sentry.environment` | Always present |
 | `sentry.release` | Always present |
 | `sentry.sdk.name` | e.g., `"sentry.javascript.nextjs"` |
@@ -257,7 +263,7 @@ These are added by the SDK to every log without any developer configuration:
 | `message.template` | When using `logger.fmt` |
 | `message.parameter.N` | When using `logger.fmt` or `consoleLoggingIntegration` |
 
----
+* * *
 
 ## Next.js-Specific: Three-Runtime Configuration
 
@@ -319,7 +325,7 @@ export async function createOrder(formData: FormData) {
 }
 ```
 
----
+* * *
 
 ## Best Practice: Wide Events
 
@@ -343,12 +349,12 @@ Sentry.logger.info("Payment processed");
 Sentry.logger.info("Checkout done");
 ```
 
----
+* * *
 
 ## SDK Version Matrix
 
 | Feature | Min SDK Version |
-|---------|----------------|
+| --- | --- |
 | `enableLogs` / `Sentry.logger.*` | **9.41.0** |
 | Winston transport | 9.13.0 |
 | Consola reporter | 10.12.0 |
@@ -356,14 +362,14 @@ Sentry.logger.info("Checkout done");
 | Pino integration | 10.18.0 |
 | Scope attributes (`setAttributes`) | **10.32.0** |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not appearing in Sentry | Verify `enableLogs: true` in `Sentry.init()`; check all three config files (client, server, edge) |
-| `logger.fmt` not creating `message.parameter.*` | Use as tagged template: `Sentry.logger.fmt\`text ${var}\`` — not `Sentry.logger.fmt("text", var)` |
+| `logger.fmt` not creating `message.parameter.*` | Use it as a tagged template literal — not as the function call `Sentry.logger.fmt("text", var)` |
 | Logs not linked to traces | Ensure `tracesSampleRate` > 0 and the log is emitted inside an active span |
 | `consoleLoggingIntegration` not available | Upgrade to ≥10.13.0 |
 | Scope attributes not appearing | Upgrade to ≥10.32.0; use `getIsolationScope()` (not `getGlobalScope()`) for server request data |

@@ -1,12 +1,14 @@
 # Metrics — Sentry Flutter SDK
 
-> **Minimum SDK:** `sentry_flutter` ≥ **9.11.0** for trace-connected metrics  
-> **Supported metric types:** Counter, Distribution, Gauge (no `set` type)  
+> **Minimum SDK:** `sentry_flutter` ≥ **9.11.0** for trace-connected metrics\
+> **Supported metric types:** Counter, Distribution, Gauge (no `set` type)\
 > **Per-metric key limit:** 2 KB
 
-Metrics let you track quantitative data about your app's behavior — things like button tap counts, API latency distributions, or active session gauges. Unlike error events, metrics are aggregated before being sent to Sentry.
+Metrics let you track quantitative data about your app’s behavior — things like button
+tap counts, API latency distributions, or active session gauges.
+Unlike error events, metrics are aggregated before being sent to Sentry.
 
----
+* * *
 
 ## Table of Contents
 
@@ -19,24 +21,27 @@ Metrics let you track quantitative data about your app's behavior — things lik
 7. [Known Limitations](#7-known-limitations)
 8. [Troubleshooting](#8-troubleshooting)
 
----
+* * *
 
 ## 1. Metric Types Overview
 
 | Type | Method | Use Case | Example |
-|------|--------|----------|---------|
+| --- | --- | --- | --- |
 | **Counter** | `Sentry.metrics.increment()` | Count occurrences | Button taps, API calls, errors |
 | **Distribution** | `Sentry.metrics.distribution()` | Measure value distributions | API response times, image sizes |
 | **Gauge** | `Sentry.metrics.gauge()` | Track min/max/avg of a value | Active sessions, queue depth |
 | ~~Set~~ | ~~`Sentry.metrics.set()`~~ | ~~Count unique occurrences~~ | **Not supported in Flutter SDK** |
 
-> **Note on `set` metrics:** The `set` type is not available in the Sentry Flutter/Dart SDK. Use a counter or external unique-value tracking if you need to count distinct users or IDs.
+> **Note on `set` metrics:** The `set` type is not available in the Sentry Flutter/Dart
+> SDK. Use a counter or external unique-value tracking if you need to count distinct
+> users or IDs.
 
----
+* * *
 
 ## 2. Counter
 
-Counters track how many times something happens. Use `increment()` — each call adds to the running total.
+Counters track how many times something happens.
+Use `increment()` — each call adds to the running total.
 
 ```dart
 import 'package:sentry/sentry.dart';
@@ -89,11 +94,12 @@ void onExperimentAction(String variant, String action) {
 }
 ```
 
----
+* * *
 
 ## 3. Distribution
 
-Distributions capture the **spread of values** over time — min, max, sum, count, and percentiles (p50, p75, p95, p99). Ideal for latency and size measurements.
+Distributions capture the **spread of values** over time — min, max, sum, count, and
+percentiles (p50, p75, p95, p99). Ideal for latency and size measurements.
 
 ```dart
 import 'package:sentry/sentry.dart';
@@ -174,11 +180,13 @@ void onCheckoutCompleted(double cartTotal) {
 }
 ```
 
----
+* * *
 
 ## 4. Gauge
 
-Gauges track the **statistical properties** (last, min, max, sum, count) of a set of values emitted during the aggregation window. Use for things that have a meaningful current state.
+Gauges track the **statistical properties** (last, min, max, sum, count) of a set of
+values emitted during the aggregation window.
+Use for things that have a meaningful current state.
 
 ```dart
 import 'package:sentry/sentry.dart';
@@ -203,13 +211,15 @@ Sentry.metrics.gauge(
 );
 ```
 
----
+* * *
 
 ## 5. Tags and Trace Correlation
 
 ### Tags
 
-All metric types accept a `tags` map. Tags are key-value strings used to **filter and group metrics** in the Sentry Metrics UI:
+All metric types accept a `tags` map.
+Tags are key-value strings used to **filter and group metrics** in the Sentry Metrics
+UI:
 
 ```dart
 Sentry.metrics.increment(
@@ -224,7 +234,9 @@ Sentry.metrics.increment(
 
 ### Trace correlation
 
-As of `sentry_flutter` 9.11.0, metrics are **automatically linked to the active trace** when emitted inside a span. This allows you to view metric data alongside transaction performance in the Sentry UI:
+As of `sentry_flutter` 9.11.0, metrics are **automatically linked to the active trace**
+when emitted inside a span.
+This allows you to view metric data alongside transaction performance in the Sentry UI:
 
 ```dart
 final transaction = Sentry.startTransaction('checkout', 'ui.action');
@@ -251,14 +263,15 @@ try {
 }
 ```
 
----
+* * *
 
 ## 6. Configuration Reference
 
-No special configuration is required for metrics beyond initializing the SDK with a valid DSN. Metrics are enabled by default.
+No special configuration is required for metrics beyond initializing the SDK with a
+valid DSN. Metrics are enabled by default.
 
 | Method | Signature |
-|--------|-----------|
+| --- | --- |
 | `Sentry.metrics.increment(key, {value, unit, tags})` | Increment a counter |
 | `Sentry.metrics.distribution(key, {value, unit, tags})` | Record a distribution value |
 | `Sentry.metrics.gauge(key, {value, unit, tags})` | Record a gauge observation |
@@ -266,16 +279,16 @@ No special configuration is required for metrics beyond initializing the SDK wit
 ### Version requirements
 
 | Feature | Min SDK |
-|---------|---------|
+| --- | --- |
 | `Sentry.metrics.*` basic API | `9.0.0` |
 | Trace-connected metrics | `9.11.0` |
 
----
+* * *
 
 ## 7. Known Limitations
 
 | Limitation | Details |
-|------------|---------|
+| --- | --- |
 | No `set` type | `Sentry.metrics.set()` is **not supported** in the Flutter/Dart SDK. Use counters or external tracking for unique-value counting. |
 | 2 KB per-metric key limit | The metric key name + all tag key-value pairs must fit within 2 KB total. |
 | Active development | The metrics API is stable but under active development. Some edge cases may change in future minor versions. |
@@ -283,14 +296,14 @@ No special configuration is required for metrics beyond initializing the SDK wit
 | No sampling for metrics | Unlike errors and transactions, there is no sample rate for metrics — all emitted metrics are sent. Use tags and filtering instead of emitting fewer data points. |
 | Tag values must be strings | Passing non-string tag values will be coerced or dropped. |
 
----
+* * *
 
 ## 8. Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Metrics not appearing in Sentry | Verify DSN is correct and the SDK is initialized. Check Sentry → Metrics to ensure the feature is enabled for your organization. |
-| SDK version doesn't have `Sentry.metrics` | Upgrade `sentry_flutter` to ≥ 9.0.0 |
+| SDK version doesn’t have `Sentry.metrics` | Upgrade `sentry_flutter` to ≥ 9.0.0 |
 | Metrics not linked to traces | Upgrade to `sentry_flutter` ≥ 9.11.0 and emit metrics inside an active transaction (`Sentry.startTransaction()`) |
 | `set` metric type not available | Expected — not supported in Flutter SDK. Use `increment` with a counter instead. |
 | Metrics appear intermittently | Expected — metrics are batched and flushed on a schedule. Low-volume metrics may appear in Sentry with a delay. |

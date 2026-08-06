@@ -63,7 +63,9 @@ sentry.CrontabSchedule("*/10 * * * *")
 sentry.IntervalSchedule(1, sentry.MonitorScheduleUnitHour)
 ```
 
-`MonitorScheduleUnit` constants: `MonitorScheduleUnitMinute`, `MonitorScheduleUnitHour`, `MonitorScheduleUnitDay`, `MonitorScheduleUnitWeek`, `MonitorScheduleUnitMonth`, `MonitorScheduleUnitYear`.
+`MonitorScheduleUnit` constants: `MonitorScheduleUnitMinute`, `MonitorScheduleUnitHour`,
+`MonitorScheduleUnitDay`, `MonitorScheduleUnitWeek`, `MonitorScheduleUnitMonth`,
+`MonitorScheduleUnitYear`.
 
 > `IntervalSchedule` takes `int64`, not `int`.
 
@@ -71,7 +73,8 @@ sentry.IntervalSchedule(1, sentry.MonitorScheduleUnitHour)
 
 ### Check-in pattern (recommended)
 
-Sends both a start and a completion check-in. Detects **missed** and **timed-out** jobs.
+Sends both a start and a completion check-in.
+Detects **missed** and **timed-out** jobs.
 
 ```go
 func runHourlyReport() error {
@@ -115,7 +118,8 @@ func runHourlyReport() error {
 
 ### Heartbeat pattern
 
-Sends only a completion check-in. Detects **missed** jobs only (no timeout detection).
+Sends only a completion check-in.
+Detects **missed** jobs only (no timeout detection).
 
 ```go
 func runDailyCleanup() {
@@ -221,14 +225,15 @@ func CaptureCheckIn(checkIn *CheckIn, monitorConfig *MonitorConfig) *EventID
 func (hub *Hub) CaptureCheckIn(checkIn *CheckIn, monitorConfig *MonitorConfig) *EventID
 ```
 
-Both return `*EventID`. Always dereference with `*id` when passing to the completion call. Returns `nil` if no client is bound — guard with `if id != nil`.
+Both return `*EventID`. Always dereference with `*id` when passing to the completion
+call. Returns `nil` if no client is bound — guard with `if id != nil`.
 
 ## MonitorConfig Guidance
 
 | Field | Recommended value | Notes |
-|-------|------------------|-------|
+| --- | --- | --- |
 | `Schedule` | Match your actual cron expression | Required |
-| `CheckInMargin` | 1–5 min for fast jobs; 10–30 min for slow | Grace period before "missed" alert |
+| `CheckInMargin` | 1–5 min for fast jobs; 10–30 min for slow | Grace period before “missed” alert |
 | `MaxRuntime` | 2–3× expected runtime | Triggers timeout alert |
 | `Timezone` | e.g., `"America/New_York"` | Defaults to UTC if unset |
 | `FailureIssueThreshold` | `2` | Avoid noise from one-off failures |
@@ -238,24 +243,27 @@ Pass `MonitorConfig` on the **start** check-in only; pass `nil` on the completio
 
 ## Rate Limits
 
-Sentry limits check-ins to **6 per minute per monitor + environment combination**. For jobs running more frequently than every 10 seconds, consider sampling.
+Sentry limits check-ins to **6 per minute per monitor + environment combination**. For
+jobs running more frequently than every 10 seconds, consider sampling.
 
 ## Best Practices
 
-- Always send both a start (`InProgress`) and a completion (`OK`/`Error`) check-in — this enables timeout detection
+- Always send both a start (`InProgress`) and a completion (`OK`/`Error`) check-in —
+  this enables timeout detection
 - Use `defer sentry.Flush(2 * time.Second)` in `main()` — check-ins are queued async
 - Set `MaxRuntime` to roughly 2–3× your expected job duration
 - Set `FailureIssueThreshold: 2` to avoid noisy alerts from transient failures
-- Create the monitor in the Sentry UI first, then use its slug — or let the SDK auto-create it on first check-in
-- Don't reuse the same `MonitorSlug` for different jobs
+- Create the monitor in the Sentry UI first, then use its slug — or let the SDK
+  auto-create it on first check-in
+- Don’t reuse the same `MonitorSlug` for different jobs
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Check-ins not appearing | Check DSN; ensure `sentry.Flush()` is called; set `Debug: true` |
-| Monitor shows "missed" unexpectedly | Increase `CheckInMargin`; ensure `InProgress` is sent before work starts |
-| Monitor shows "timeout" | Increase `MaxRuntime`; check for job hangs |
+| Monitor shows “missed” unexpectedly | Increase `CheckInMargin`; ensure `InProgress` is sent before work starts |
+| Monitor shows “timeout” | Increase `MaxRuntime`; check for job hangs |
 | Nil pointer on `*checkinID` | `CaptureCheckIn` returns `nil` if no client — check `sentry.Init` was called |
 | Duplicate issues for the same failure | Set `FailureIssueThreshold: 2` to batch consecutive failures |
 | Check-ins rate limited | Reduce frequency; batch work; check Sentry plan limits |

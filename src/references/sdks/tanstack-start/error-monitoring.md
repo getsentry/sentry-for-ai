@@ -1,14 +1,14 @@
 # Error Monitoring — Sentry TanStack Start React SDK
 
-> Minimum SDK: `@sentry/tanstackstart-react` (alpha)  
+> Minimum SDK: `@sentry/tanstackstart-react` (alpha)\
 > Framework target: TanStack Start React `1.0 RC`
 
----
+* * *
 
 ## Automatic vs Manual Capture
 
 | Area | Auto Captured? | Mechanism |
-|------|----------------|-----------|
+| --- | --- | --- |
 | Unhandled client exceptions | ✅ Yes | Browser global handlers after `Sentry.init` |
 | Unhandled promise rejections (client) | ✅ Yes | Browser global handlers |
 | Server request exceptions | ✅ Yes | `sentryGlobalRequestMiddleware` + `wrapFetchWithSentry` |
@@ -20,7 +20,7 @@ Core rule:
 
 > If an error is caught and not re-thrown, capture it manually.
 
----
+* * *
 
 ## Required Server Error Hooks
 
@@ -56,7 +56,7 @@ export default createServerEntry(
 );
 ```
 
----
+* * *
 
 ## Client-Side Manual Capture
 
@@ -81,7 +81,7 @@ try {
 Sentry.captureMessage("Unexpected state encountered", "warning");
 ```
 
----
+* * *
 
 ## Error Boundaries and TanStack Router `errorComponent`
 
@@ -120,7 +120,7 @@ export const MySentryWrappedErrorBoundary = Sentry.withErrorBoundary(MyErrorBoun
 });
 ```
 
----
+* * *
 
 ## Enrichment APIs
 
@@ -137,12 +137,12 @@ Sentry.addBreadcrumb({
 });
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Server errors missing | Verify both `wrapFetchWithSentry` and global middleware are in place |
 | Error boundary issues not appearing | Add explicit `captureException` inside `errorComponent` or boundary hooks |
 | Missing user context | Call `setUser` after auth state is known |

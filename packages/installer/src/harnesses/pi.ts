@@ -1,4 +1,4 @@
-import { realSystem, type OutputSink, type SystemDeps } from "../system";
+import type { OutputSink, SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
 import { detectOnPath, runCommand } from "./shell";
 
@@ -50,5 +50,3 @@ export function createPi(system: SystemDeps): Harness {
     },
   };
 }
-
-export const pi = createPi(realSystem);

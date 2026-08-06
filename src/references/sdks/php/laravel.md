@@ -1,9 +1,9 @@
 # Laravel — Sentry SDK Deep Dive
 
-> Package: `sentry/sentry-laravel` · Requires `sentry/sentry ^4.21.0`  
+> Package: `sentry/sentry-laravel` · Requires `sentry/sentry ^4.21.0`\
 > Laravel versions: `^6.0` through `^12.0` (Lumen supported)
 
----
+* * *
 
 ## Installation & Setup
 
@@ -19,7 +19,8 @@
 composer require sentry/sentry-laravel
 ```
 
-Auto-registration via Laravel Package Discovery — no manual `config/app.php` entry needed. Two service providers register automatically:
+Auto-registration via Laravel Package Discovery — no manual `config/app.php` entry
+needed. Two service providers register automatically:
 
 - `Sentry\Laravel\ServiceProvider`
 - `Sentry\Laravel\Tracing\ServiceProvider`
@@ -69,12 +70,12 @@ Route::get('/debug-sentry', function () {
 });
 ```
 
----
+* * *
 
 ## Environment Variables
 
 | Variable | Purpose | Notes |
-|----------|---------|-------|
+| --- | --- | --- |
 | `SENTRY_LARAVEL_DSN` | Primary DSN | Takes priority over `SENTRY_DSN` |
 | `SENTRY_DSN` | Generic DSN fallback | Used if `SENTRY_LARAVEL_DSN` not set |
 | `SENTRY_RELEASE` | Release version string | Mapped to `release` option |
@@ -88,14 +89,14 @@ Route::get('/debug-sentry', function () {
 | `LOG_LEVEL` | Log level threshold | e.g., `info` |
 | `SENTRY_LOG_LEVEL` | Sentry-specific log level override | Defaults to `LOG_LEVEL` |
 
----
+* * *
 
 ## `config/sentry.php` — Complete Options
 
 ### Root Options
 
 | Key | Default | Description |
-|-----|---------|-------------|
+| --- | --- | --- |
 | `dsn` | `env('SENTRY_LARAVEL_DSN', env('SENTRY_DSN'))` | Sentry DSN |
 | `release` | `env('SENTRY_RELEASE')` | Release version |
 | `environment` | `env('SENTRY_ENVIRONMENT')` | Falls back to `APP_ENV` |
@@ -113,7 +114,7 @@ Route::get('/debug-sentry', function () {
 All controlled per-feature in the `breadcrumbs` sub-array:
 
 | Key | ENV Variable | Default | What it captures |
-|-----|-------------|---------|-----------------|
+| --- | --- | --- | --- |
 | `breadcrumbs.logs` | `SENTRY_BREADCRUMBS_LOGS_ENABLED` | `true` | Log message breadcrumbs |
 | `breadcrumbs.cache` | `SENTRY_BREADCRUMBS_CACHE_ENABLED` | `true` | Cache operation breadcrumbs |
 | `breadcrumbs.livewire` | `SENTRY_BREADCRUMBS_LIVEWIRE_ENABLED` | `true` | Livewire breadcrumbs |
@@ -127,7 +128,7 @@ All controlled per-feature in the `breadcrumbs` sub-array:
 ### Tracing Options
 
 | Key | ENV Variable | Default | Description |
-|-----|-------------|---------|-------------|
+| --- | --- | --- | --- |
 | `tracing.queue_job_transactions` | `SENTRY_TRACE_QUEUE_ENABLED` | `true` | Queue jobs as root transactions |
 | `tracing.queue_jobs` | `SENTRY_TRACE_QUEUE_JOBS_ENABLED` | `true` | Queue jobs as child spans |
 | `tracing.sql_queries` | `SENTRY_TRACE_SQL_QUERIES_ENABLED` | `true` | SQL queries as spans |
@@ -150,14 +151,15 @@ All controlled per-feature in the `breadcrumbs` sub-array:
 | `tracing.features.gen_ai_execute_tool` | `SENTRY_TRACE_GEN_AI_EXECUTE_TOOL_ENABLED` | `true` | Capture Laravel AI tool execution spans |
 | `tracing.features.gen_ai_embeddings` | `SENTRY_TRACE_GEN_AI_EMBEDDINGS_ENABLED` | `true` | Capture Laravel AI embedding spans |
 
----
+* * *
 
 ## Auto-Instrumented Operations
 
-The Laravel SDK auto-instruments the following (via `EventHandler` + feature integrations):
+The Laravel SDK auto-instruments the following (via `EventHandler` + feature
+integrations):
 
 | Operation | Span Op | Minimum Version |
-|-----------|---------|----------------|
+| --- | --- | --- |
 | HTTP request lifecycle | `http.server` | All |
 | Database queries | `db.sql.query` | All |
 | Database transactions | `db.transaction` | All |
@@ -179,9 +181,12 @@ The Laravel SDK auto-instruments the following (via `EventHandler` + feature int
 
 ### Laravel AI Instrumentation
 
-Laravel AI instrumentation auto-enables when `laravel/ai` is installed and tracing is enabled. It captures agent invocations, provider chat requests, tool executions, embeddings, token usage, provider/model metadata, and conversation IDs.
+Laravel AI instrumentation auto-enables when `laravel/ai` is installed and tracing is
+enabled. It captures agent invocations, provider chat requests, tool executions,
+embeddings, token usage, provider/model metadata, and conversation IDs.
 
-To capture prompts, responses, tool arguments, tool results, and embeddings input, explicitly enable PII capture after confirming the application's privacy requirements:
+To capture prompts, responses, tool arguments, tool results, and embeddings input,
+explicitly enable PII capture after confirming the application’s privacy requirements:
 
 ```ini
 SENTRY_SEND_DEFAULT_PII=true
@@ -210,23 +215,28 @@ For setup and verification steps, read `./ai-monitoring.md`.
 ], /* enableSpans: */ true, /* enableBreadcrumbs: */ true),
 ```
 
----
+* * *
 
 ## Middleware
 
 Three middleware are auto-registered — no manual setup needed:
 
 | Middleware | Purpose |
-|-----------|---------|
+| --- | --- |
 | `SetRequestMiddleware` | Converts and caches PSR-7 request early (prevents upload parsing failures) |
 | `SetRequestIpMiddleware` | Sets request IP on Sentry scope |
 | `FlushEventsMiddleware` | Flushes pending events in `terminate()` phase after response sent |
 
-The tracing middleware (`Tracing\Middleware`) is auto-prepended via `$httpKernel->prependMiddleware()` — it runs before all user middleware and records the full boot time.
+The tracing middleware (`Tracing\Middleware`) is auto-prepended via
+`$httpKernel->prependMiddleware()` — it runs before all user middleware and records the
+full boot time.
 
-**FastCGI behavior:** On FastCGI, the terminate phase runs after the response is sent to the client, so Sentry upload does not add user-visible latency. On non-FastCGI (built-in server, RoadRunner), the response is delayed by the Sentry upload — use a local Relay proxy in that case.
+**FastCGI behavior:** On FastCGI, the terminate phase runs after the response is sent to
+the client, so Sentry upload does not add user-visible latency.
+On non-FastCGI (built-in server, RoadRunner), the response is delayed by the Sentry
+upload — use a local Relay proxy in that case.
 
----
+* * *
 
 ## Log Channels
 
@@ -280,19 +290,22 @@ Log::error('Something went wrong', ['user_id' => auth()->id(), 'action' => 'upda
 Log::channel('sentry_logs')->error('This goes only to Sentry');
 ```
 
-**Auto-flush:** When `enable_logs` is `true`, the ServiceProvider registers a terminating callback that flushes pending logs automatically.
+**Auto-flush:** When `enable_logs` is `true`, the ServiceProvider registers a
+terminating callback that flushes pending logs automatically.
 
-**Troubleshooting Tinker:** `tinker` doesn't trigger the normal request lifecycle — flush manually:
+**Troubleshooting Tinker:** `tinker` doesn’t trigger the normal request lifecycle —
+flush manually:
 
 ```php
 \Sentry\logger()->flush();
 ```
 
----
+* * *
 
 ## Queue Integration
 
-The queue integration is the most complete in any framework. All of the following is automatic when `traces_sample_rate` is set:
+The queue integration is the most complete in any framework.
+All of the following is automatic when `traces_sample_rate` is set:
 
 ### Distributed Tracing Across Queue
 
@@ -304,14 +317,16 @@ const QUEUE_PAYLOAD_TRACE_PARENT_DATA = 'sentry_trace_parent_data';
 const QUEUE_PAYLOAD_PUBLISH_TIME      = 'sentry_publish_time';
 ```
 
-The worker side automatically reads these and calls `continueTrace()` — the queue job transaction is linked to the originating HTTP request transaction, giving you end-to-end distributed traces.
+The worker side automatically reads these and calls `continueTrace()` — the queue job
+transaction is linked to the originating HTTP request transaction, giving you end-to-end
+distributed traces.
 
 ### Transaction Attributes
 
 Queue process transactions include OpenTelemetry-aligned attributes:
 
 | Attribute | Description |
-|-----------|-------------|
+| --- | --- |
 | `messaging.system` | Queue driver (e.g., `redis`, `sqs`) |
 | `messaging.destination.name` | Queue name |
 | `messaging.message.id` | Job ID |
@@ -330,7 +345,7 @@ Queue process transactions include OpenTelemetry-aligned attributes:
 ],
 ```
 
----
+* * *
 
 ## Cron Monitoring (Scheduled Tasks)
 
@@ -361,7 +376,8 @@ Schedule::command(SendEmailsCommand::class)
     );
 ```
 
-**⚠️ Limitation:** Tasks using `between`, `unlessBetween`, `when`, and `skip` methods are **not supported**. Use `cron('...')` for the schedule frequency instead.
+**⚠️ Limitation:** Tasks using `between`, `unlessBetween`, `when`, and `skip` methods
+are **not supported**. Use `cron('...')` for the schedule frequency instead.
 
 ### Automatic Slug Generation
 
@@ -371,22 +387,23 @@ When no slug is provided:
 
 ### Automatic Transaction Tracing
 
-`ConsoleSchedulingIntegration` also creates tracing transactions for scheduled tasks automatically (no additional config beyond `traces_sample_rate`):
+`ConsoleSchedulingIntegration` also creates tracing transactions for scheduled tasks
+automatically (no additional config beyond `traces_sample_rate`):
 
 - `op: 'console.command.scheduled'`
 - `source: TransactionSource::task()`
 
----
+* * *
 
 ## Artisan Commands
 
 | Command | Description |
-|---------|-------------|
+| --- | --- |
 | `php artisan sentry:publish --dsn=DSN` | Publish `config/sentry.php`, write DSN to `.env`, optionally enable PII/tracing, send test event |
 | `php artisan sentry:test` | Send a test exception (and optionally a test transaction) to verify configuration |
 | `php artisan about` | Displays Sentry version/config info (via `AboutCommandIntegration`) |
 
----
+* * *
 
 ## User Context
 
@@ -401,11 +418,13 @@ When no slug is provided:
 
 Requires `'send_default_pii' => true` in `config/sentry.php`.
 
----
+* * *
 
 ## Closures and Config Caching
 
-`php artisan config:cache` will **fail** if `config/sentry.php` contains PHP closures (e.g., inline `before_send` callbacks). Use a static class method callable instead:
+`php artisan config:cache` will **fail** if `config/sentry.php` contains PHP closures
+(e.g., inline `before_send` callbacks).
+Use a static class method callable instead:
 
 ```php
 // config/sentry.php — safe for config:cache
@@ -437,7 +456,7 @@ class Callbacks
 }
 ```
 
----
+* * *
 
 ## Lumen Support
 
@@ -446,26 +465,31 @@ class Callbacks
 $app->register(Sentry\Laravel\ServiceProvider::class);
 ```
 
-Lumen does not auto-register service providers via Package Discovery. No `artisan sentry:publish` — create `config/sentry.php` manually and configure it as a Lumen config file:
+Lumen does not auto-register service providers via Package Discovery.
+No `artisan sentry:publish` — create `config/sentry.php` manually and configure it as a
+Lumen config file:
 
 ```php
 $app->configure('sentry');
 ```
 
----
+* * *
 
 ## Laravel Octane (Long-Running Server)
 
-When using Laravel Octane (Swoole/RoadRunner/FrankenPHP), requests are handled in long-lived workers. Sentry scope must be isolated per request:
+When using Laravel Octane (Swoole/RoadRunner/FrankenPHP), requests are handled in
+long-lived workers. Sentry scope must be isolated per request:
 
 ```php
 // The SDK automatically handles this via context isolation
 // when the Octane integration is active
 ```
 
-**⚠️ Important:** If using `withScope()` / `configureScope()` for per-request context, ensure you're using `withScope()` (not `configureScope()`) in Octane environments — `configureScope()` persists across requests in long-running workers.
+**⚠️ Important:** If using `withScope()` / `configureScope()` for per-request context,
+ensure you’re using `withScope()` (not `configureScope()`) in Octane environments —
+`configureScope()` persists across requests in long-running workers.
 
----
+* * *
 
 ## Feature Flags (Laravel Pennant)
 
@@ -481,7 +505,7 @@ $active = Feature::active('new-onboarding');
 
 No configuration needed — enabled automatically when `laravel/pennant` is installed.
 
----
+* * *
 
 ## Complete `.env` Reference
 

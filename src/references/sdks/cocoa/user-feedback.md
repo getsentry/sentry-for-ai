@@ -1,14 +1,13 @@
 # User Feedback — Sentry Cocoa SDK
 
-> Minimum SDK: `sentry-cocoa` v8.46.0+
-> Self-hosted Sentry server: 24.4.2+
+> Minimum SDK: `sentry-cocoa` v8.46.0+ Self-hosted Sentry server: 24.4.2+
 
 ## Configuration
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `configureUserFeedback` | `((SentryUserFeedbackConfiguration) -> Void)?` | `nil` | Configure the feedback widget and form |
-| `autoInject` | `Bool` | `true` | Auto-show floating "Report a Bug" button |
+| `autoInject` | `Bool` | `true` | Auto-show floating “Report a Bug” button |
 | `useShakeGesture` | `Bool` | `false` | Open the form on device shake |
 | `showFormForScreenshots` | `Bool` | `false` | Auto-open form when user takes a screenshot |
 | `animations` | `Bool` | `true` | Enable present/dismiss animations |
@@ -22,7 +21,7 @@
 
 ### Basic widget setup (auto-inject mode)
 
-By default (`autoInject = true`), the SDK injects a floating "Report a Bug" button:
+By default (`autoInject = true`), the SDK injects a floating “Report a Bug” button:
 
 ```swift
 import Sentry
@@ -51,11 +50,13 @@ SentrySDK.feedback.showWidget()
 SentrySDK.feedback.hideWidget()
 ```
 
-> `SentrySDK.feedback` is of type `SentryFeedbackAPI`. There is no `showUserFeedbackForm()` method — always use `showWidget()` to trigger the UI.
+> `SentrySDK.feedback` is of type `SentryFeedbackAPI`. There is no
+> `showUserFeedbackForm()` method — always use `showWidget()` to trigger the UI.
 
 ### SwiftUI integration
 
-The feedback widget is UIKit-based. In a SwiftUI app, inject it via `.onAppear` on the root view:
+The feedback widget is UIKit-based.
+In a SwiftUI app, inject it via `.onAppear` on the root view:
 
 ```swift
 import SwiftUI
@@ -103,7 +104,8 @@ options.configureUserFeedback = { config in
 
 ### Programmatic feedback capture (no widget, custom UI)
 
-Use `SentrySDK.capture(feedback:)` to send feedback from your own UI without any Sentry widget:
+Use `SentrySDK.capture(feedback:)` to send feedback from your own UI without any Sentry
+widget:
 
 ```swift
 import Sentry
@@ -119,7 +121,8 @@ SentrySDK.capture(feedback: .init(
 
 ### Link feedback to an error event
 
-To associate a feedback submission with a specific Sentry issue, capture the error first and use the resulting event ID:
+To associate a feedback submission with a specific Sentry issue, capture the error first
+and use the resulting event ID:
 
 ```swift
 let eventId = SentrySDK.capture(error: error)
@@ -180,7 +183,7 @@ options.configureUserFeedback = { config in
 Theme properties:
 
 | Property | Light Default | Dark Default |
-|----------|--------------|--------------|
+| --- | --- | --- |
 | `background` | `rgb(255,255,255)` | `rgb(41,35,47)` |
 | `foreground` | `rgb(43,34,51)` | `rgb(235,230,239)` |
 | `submitBackground` | `rgb(88,74,192)` | `rgb(88,74,192)` |
@@ -192,7 +195,10 @@ Theme properties:
 
 ### Session Replay integration
 
-When a user opens the feedback form and Session Replay is enabled, the SDK automatically buffers up to **30 seconds** of the session. On submission, that replay clip is sent alongside the feedback event — no extra configuration needed.
+When a user opens the feedback form and Session Replay is enabled, the SDK automatically
+buffers up to **30 seconds** of the session.
+On submission, that replay clip is sent alongside the feedback event — no extra
+configuration needed.
 
 ### Full configuration example
 
@@ -244,7 +250,7 @@ SentrySDK.start { options in
 ## SentryUserFeedbackWidgetConfiguration Reference
 
 | Property | Type | Default |
-|----------|------|---------|
+| --- | --- | --- |
 | `autoInject` | `Bool` | `true` |
 | `location` | `[NSDirectionalRectEdge]` | `[.bottom, .trailing]` |
 | `layoutUIOffset` | `UIOffset` | `.zero` |
@@ -253,12 +259,13 @@ SentrySDK.start { options in
 | `labelText` | `String?` | `"Report a Bug"` |
 | `widgetAccessibilityLabel` | `String` | `labelText` |
 
-`customButton` is on `SentryUserFeedbackConfiguration`, not `SentryUserFeedbackWidgetConfiguration`. If it is set, `configureWidget` is ignored.
+`customButton` is on `SentryUserFeedbackConfiguration`, not
+`SentryUserFeedbackWidgetConfiguration`. If it is set, `configureWidget` is ignored.
 
 ## SentryUserFeedbackFormConfiguration Reference
 
 | Property | Type | Default |
-|----------|------|---------|
+| --- | --- | --- |
 | `formTitle` | `String` | `"Report a Bug"` |
 | `showBranding` | `Bool` | `true` |
 | `submitButtonLabel` | `String` | `"Send Bug Report"` |
@@ -276,17 +283,23 @@ SentrySDK.start { options in
 
 ## Best Practices
 
-- Set `useSentryUser = true` (default) and call `SentrySDK.setUser(...)` so the form pre-fills name and email — reduces friction
-- Enable `showFormForScreenshots = true` — users often take screenshots when something goes wrong; it's a natural trigger
-- Disable `autoInject` for SwiftUI, or set `config.customButton = myButton` to bind the form to your own UIKit button
-- Use `config.onSubmitSuccess` to show a native confirmation (toast/alert) after the Sentry form dismisses
-- If collecting feedback from a known event ID, use `associatedEventId` to link the feedback to the specific issue in Sentry
-- Add `tags` on the configuration to automatically tag all feedback events with context (e.g., app version, screen name)
+- Set `useSentryUser = true` (default) and call `SentrySDK.setUser(...)` so the form
+  pre-fills name and email — reduces friction
+- Enable `showFormForScreenshots = true` — users often take screenshots when something
+  goes wrong; it’s a natural trigger
+- Disable `autoInject` for SwiftUI, or set `config.customButton = myButton` to bind the
+  form to your own UIKit button
+- Use `config.onSubmitSuccess` to show a native confirmation (toast/alert) after the
+  Sentry form dismisses
+- If collecting feedback from a known event ID, use `associatedEventId` to link the
+  feedback to the specific issue in Sentry
+- Add `tags` on the configuration to automatically tag all feedback events with context
+  (e.g., app version, screen name)
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Widget not appearing | Verify `autoInject = true`; in SwiftUI apps call `SentrySDK.feedback.showWidget()` in `.onAppear` |
 | Form not opening on shake | Set `useShakeGesture = true`; verify the device is not muted (shake may be overridden by system) |
 | Name/email fields not pre-filled | Ensure `useSentryUser = true` (default) and `SentrySDK.setUser(...)` was called before the form opens |

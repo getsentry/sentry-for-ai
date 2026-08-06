@@ -1,12 +1,15 @@
 # Error Monitoring & Crash Reporting — Sentry Android SDK
 
-> **Minimum SDK:** `io.sentry:sentry-android` ≥ 7.0.0 (≥ 8.0.0 recommended)
-> **NDK support:** `io.sentry:sentry-android-ndk` (included in `sentry-android` BOM)
-> **Languages:** Kotlin and Java — all examples in Kotlin with Java equivalents where they differ
+> **Minimum SDK:** `io.sentry:sentry-android` ≥ 7.0.0 (≥ 8.0.0 recommended) **NDK
+> support:** `io.sentry:sentry-android-ndk` (included in `sentry-android` BOM)
+> **Languages:** Kotlin and Java — all examples in Kotlin with Java equivalents where
+> they differ
 
-Android error monitoring covers three crash layers: **Java/Kotlin exceptions** (JVM), **ANR (Application Not Responding)** events, and **native C/C++ crashes** via NDK. All three are handled automatically after initialization.
+Android error monitoring covers three crash layers: **Java/Kotlin exceptions** (JVM),
+**ANR (Application Not Responding)** events, and **native C/C++ crashes** via NDK. All
+three are handled automatically after initialization.
 
----
+* * *
 
 ## Table of Contents
 
@@ -23,11 +26,12 @@ Android error monitoring covers three crash layers: **Java/Kotlin exceptions** (
 11. [Configuration Reference](#11-configuration-reference)
 12. [Troubleshooting](#12-troubleshooting)
 
----
+* * *
 
 ## 1. Core Capture APIs
 
-All methods are static on `io.sentry.Sentry`. Returns a `SentryId` that can be referenced for user feedback.
+All methods are static on `io.sentry.Sentry`. Returns a `SentryId` that can be
+referenced for user feedback.
 
 ### `Sentry.captureException()`
 
@@ -105,18 +109,19 @@ Sentry.captureUserFeedback(feedback)
 ### Error Levels
 
 | Level | Android use case |
-|-------|-----------------|
+| --- | --- |
 | `FATAL` | App crash, unrecoverable state |
 | `ERROR` | Feature broken, user action failed |
 | `WARNING` | Degraded state, non-critical failure |
 | `INFO` | Informational, notable events |
 | `DEBUG` | Development diagnostics |
 
----
+* * *
 
 ## 2. Automatic Crash Handling
 
-The SDK installs `UncaughtExceptionHandlerIntegration` at init time, which wraps `Thread.defaultUncaughtExceptionHandler`.
+The SDK installs `UncaughtExceptionHandlerIntegration` at init time, which wraps
+`Thread.defaultUncaughtExceptionHandler`.
 
 ### How it works
 
@@ -131,11 +136,13 @@ UncaughtExceptionHandlerIntegration.uncaughtException()
    └── calls original defaultUncaughtExceptionHandler (re-throws to Android runtime)
 ```
 
-Crashes are persisted to disk immediately and transmitted on the **next app launch**. This ensures crash data is never lost even when the process dies.
+Crashes are persisted to disk immediately and transmitted on the **next app launch**.
+This ensures crash data is never lost even when the process dies.
 
 ### Startup crash handling
 
-If the app crashes within ~2 seconds of SDK init, `SentryAndroid.init()` blocks for up to 5 seconds to flush the crash before the process exits:
+If the app crashes within ~2 seconds of SDK init, `SentryAndroid.init()` blocks for up
+to 5 seconds to flush the crash before the process exits:
 
 ```kotlin
 SentryAndroid.init(this) { options ->
@@ -149,15 +156,19 @@ SentryAndroid.init(this) { options ->
 options.isEnableUncaughtExceptionHandler = false
 ```
 
----
+* * *
 
 ## 3. ANR Detection
 
-ANR (Application Not Responding) events fire when the main thread is blocked for more than 5 seconds.
+ANR (Application Not Responding) events fire when the main thread is blocked for more
+than 5 seconds.
 
 ### How it works
 
-`AnrIntegration` runs a watchdog thread (`ANRWatchDog`) that posts a `Runnable` to the main `Looper` every 500 ms. If the main thread hasn't processed the runnable within `anrTimeoutIntervalMillis`, an ANR event is reported.
+`AnrIntegration` runs a watchdog thread (`ANRWatchDog`) that posts a `Runnable` to the
+main `Looper` every 500 ms.
+If the main thread hasn’t processed the runnable within `anrTimeoutIntervalMillis`, an
+ANR event is reported.
 
 ```
 ANRWatchDog (background thread)
@@ -187,17 +198,19 @@ Via `AndroidManifest.xml`:
 
 ### ANR v2 — ApplicationExitInfo (Android 11+)
 
-On API 30+, the SDK reads `ActivityManager.getHistoricalProcessExitReasons()` to report ANRs from the previous app run that the watchdog couldn't capture in real-time:
+On API 30+, the SDK reads `ActivityManager.getHistoricalProcessExitReasons()` to report
+ANRs from the previous app run that the watchdog couldn’t capture in real-time:
 
 ```kotlin
 options.isReportHistoricalAnrs = true  // default: false — report previous-run ANRs
 ```
 
----
+* * *
 
 ## 4. NDK / Native Crash Capture
 
-Native crashes (SIGSEGV, SIGABRT, C++ exceptions) are captured by `sentry-android-ndk`, which wraps the `sentry-native` C SDK.
+Native crashes (SIGSEGV, SIGABRT, C++ exceptions) are captured by `sentry-android-ndk`,
+which wraps the `sentry-native` C SDK.
 
 ### Dependency
 
@@ -218,7 +231,8 @@ dependencies {
 
 ### NDK Scope Sync
 
-Java scope changes (user, tags, breadcrumbs) are propagated to the native layer so NDK crashes include the same context as Java events:
+Java scope changes (user, tags, breadcrumbs) are propagated to the native layer so NDK
+crashes include the same context as Java events:
 
 ```kotlin
 options.isEnableScopeSync = true // default: true
@@ -241,14 +255,16 @@ Via manifest:
 options.isEnableNdk = false
 ```
 
----
+* * *
 
 ## 5. Scope Management
 
-Sentry uses a three-layer scope hierarchy. Data merges in order: **Global → Isolation → Current** (current takes precedence for single-value fields).
+Sentry uses a three-layer scope hierarchy.
+Data merges in order: **Global → Isolation → Current** (current takes precedence for
+single-value fields).
 
 | Scope | Lifespan | How to access |
-|-------|----------|---------------|
+| --- | --- | --- |
 | **Global** | Entire app lifetime | `Sentry.configureScope(ScopeType.GLOBAL) { }` |
 | **Isolation** | Per-request/session | `Sentry.configureScope { }` (default) |
 | **Current** | Block-level | `Sentry.withScope { }` |
@@ -309,13 +325,14 @@ Sentry.setFingerprint(listOf("my-key"))
 Sentry.setTransaction("CheckoutFlow")
 ```
 
----
+* * *
 
 ## 6. Context Enrichment — Tags, User, Breadcrumbs
 
 ### Tags — indexed and searchable
 
-Tags are key/value string pairs indexed in Sentry, enabling full-text search and filtering.
+Tags are key/value string pairs indexed in Sentry, enabling full-text search and
+filtering.
 
 **Constraints:** key ≤ 32 chars; value ≤ 200 chars; no newlines in values.
 
@@ -368,11 +385,12 @@ Sentry.configureScope { scope ->
 }
 ```
 
-> **Note:** The key `"type"` is reserved — don't use it as a context key.
+> **Note:** The key `"type"` is reserved — don’t use it as a context key.
 
 ### Breadcrumbs — event trail
 
-Breadcrumbs buffer until the next event is captured. They do not create Sentry issues on their own.
+Breadcrumbs buffer until the next event is captured.
+They do not create Sentry issues on their own.
 
 ```kotlin
 import io.sentry.Breadcrumb
@@ -398,7 +416,7 @@ Sentry.addBreadcrumb("Database query completed", "db")
 **Breadcrumb fields:**
 
 | Field | Type | Description |
-|-------|------|-------------|
+| --- | --- | --- |
 | `message` | `String` | Human-readable description |
 | `category` | `String` | Dot-separated origin (e.g., `ui.click`, `http`, `auth`) |
 | `level` | `SentryLevel` | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `FATAL` |
@@ -410,7 +428,7 @@ Sentry.addBreadcrumb("Database query completed", "db")
 The SDK automatically collects these breadcrumbs — all enabled by default:
 
 | Source | Category | What it records |
-|--------|----------|-----------------|
+| --- | --- | --- |
 | Activity lifecycle | `ui.lifecycle` | Created, started, resumed, paused, stopped, destroyed |
 | App foreground/background | `app.lifecycle` | Foreground, background transitions |
 | System events | `device.*` | Battery, screen on/off, network, locale, timezone changes |
@@ -442,15 +460,17 @@ Via manifest:
 options.maxBreadcrumbs = 50
 ```
 
----
+* * *
 
 ## 7. Event Filtering — `beforeSend`, `beforeBreadcrumb`
 
 ### `beforeSend` — filter/mutate error events
 
-Called immediately before an error event is transmitted. Return `null` to drop.
+Called immediately before an error event is transmitted.
+Return `null` to drop.
 
-> **Important:** `beforeSend` only applies to Java/Kotlin events. Native NDK crashes bypass this hook entirely.
+> **Important:** `beforeSend` only applies to Java/Kotlin events.
+> Native NDK crashes bypass this hook entirely.
 
 ```kotlin
 SentryAndroid.init(this) { options ->
@@ -517,11 +537,12 @@ options.addIgnoredError("android.os.NetworkOnMainThreadException")
 options.addIgnoredError("java.net.UnknownHostException")
 ```
 
----
+* * *
 
 ## 8. Fingerprinting & Grouping
 
-Fingerprinting controls how Sentry groups events into issues. Default grouping is by stack trace.
+Fingerprinting controls how Sentry groups events into issues.
+Default grouping is by stack trace.
 
 ### SDK-level fingerprinting
 
@@ -550,8 +571,8 @@ Sentry.captureException(e) { scope ->
 ### Fingerprint variables
 
 | Variable | Resolves to |
-|----------|-------------|
-| `{{ default }}` | Sentry's default stack-trace hash |
+| --- | --- |
+| `{{ default }}` | Sentry’s default stack-trace hash |
 | `{{ error.type }}` | Exception class name |
 | `{{ error.value }}` | Exception message |
 | `{{ transaction }}` | Current transaction name |
@@ -565,13 +586,14 @@ error.type:SQLiteException -> database-error
 error.type:IOException     -> io-error, {{ transaction }}
 ```
 
----
+* * *
 
 ## 9. Attachments — Screenshots & View Hierarchy
 
 ### Screenshots
 
-Captures a PNG of the current UI when an error occurs. **Disabled by default** (may contain PII).
+Captures a PNG of the current UI when an error occurs.
+**Disabled by default** (may contain PII).
 
 ```kotlin
 options.isAttachScreenshot = true
@@ -616,11 +638,13 @@ options.setBeforeViewHierarchyCaptureCallback { event, hint, debounce ->
 }
 ```
 
-> **Debounce:** View hierarchy is captured at most once every 2 seconds (max 3 times per window) to prevent overhead during rapid error cascades.
+> **Debounce:** View hierarchy is captured at most once every 2 seconds (max 3 times per
+> window) to prevent overhead during rapid error cascades.
 
 ### Jetpack Compose node names
 
-Add the Sentry Kotlin Compiler Plugin to include composable function names in view hierarchy JSON:
+Add the Sentry Kotlin Compiler Plugin to include composable function names in view
+hierarchy JSON:
 
 ```kotlin
 // build.gradle.kts
@@ -644,7 +668,7 @@ Sentry.captureException(e) { scope ->
 }
 ```
 
----
+* * *
 
 ## 10. Release Health & Sessions
 
@@ -658,13 +682,15 @@ SentryAndroid.init(this) { options ->
 }
 ```
 
-Sessions are sent automatically. No additional API calls required.
+Sessions are sent automatically.
+No additional API calls required.
 
-A session ends when the app goes to the background for longer than `sessionTrackingIntervalMillis`. Each session maps to a release, so Sentry can compute:
+A session ends when the app goes to the background for longer than
+`sessionTrackingIntervalMillis`. Each session maps to a release, so Sentry can compute:
 - **Crash-free session rate** — % of sessions without a fatal crash
 - **Crash-free user rate** — % of users without a crash per release
 
----
+* * *
 
 ## 11. Configuration Reference
 
@@ -724,7 +750,7 @@ SentryAndroid.init(this) { options ->
 ### `AndroidManifest.xml` — key meta-data entries
 
 | Key | Type | Default | Description |
-|-----|------|---------|-------------|
+| --- | --- | --- | --- |
 | `io.sentry.dsn` | String | — | DSN (required for auto-init) |
 | `io.sentry.environment` | String | — | Environment name |
 | `io.sentry.release` | String | — | Release version string |
@@ -744,12 +770,12 @@ SentryAndroid.init(this) { options ->
 | `io.sentry.breadcrumbs.system-events` | Boolean | `true` | System event breadcrumbs |
 | `io.sentry.breadcrumbs.network-events` | Boolean | `true` | Network breadcrumbs |
 
----
+* * *
 
 ## 12. Troubleshooting
 
 | Issue | Cause | Solution |
-|-------|-------|----------|
+| --- | --- | --- |
 | Events not appearing in Sentry | DSN incorrect or SDK not initialized | Verify DSN; set `options.isDebug = true`; check Logcat for `[Sentry]` output |
 | Crash events missing | UncaughtExceptionHandler disabled | Ensure `isEnableUncaughtExceptionHandler = true`; check for competing crash handlers (Firebase, Crashlytics) |
 | NDK crashes not reported | NDK module not included or `isEnableNdk = false` | Add `sentry-android-ndk` dependency; confirm `isEnableNdk = true` |

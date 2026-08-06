@@ -1,27 +1,32 @@
 # Metrics — Sentry .NET SDK
 
-> Minimum SDK: `Sentry` ≥ 6.1.0  
-> Roslyn Analyzer (`SENTRY1001`): `Sentry.Compiler.Extensions` (ships with `Sentry` NuGet)
+> Minimum SDK: `Sentry` ≥ 6.1.0\
+> Roslyn Analyzer (`SENTRY1001`): `Sentry.Compiler.Extensions` (ships with `Sentry`
+> NuGet)
 
----
+* * *
 
 ## Overview
 
-Sentry Trace-connected Metrics lets you emit counters, gauges, and distributions that are automatically linked to your Sentry traces. Metrics are batched and flushed periodically (every 5 seconds or 100 items).
+Sentry Trace-connected Metrics lets you emit counters, gauges, and distributions that
+are automatically linked to your Sentry traces.
+Metrics are batched and flushed periodically (every 5 seconds or 100 items).
 
 Three metric types:
 
 | Type | Method | Purpose |
-|------|--------|---------|
+| --- | --- | --- |
 | Counter | `EmitCounter` | Increment a value (e.g. request count, items processed) |
 | Gauge | `EmitGauge` | Track a current value (e.g. queue depth, active connections) |
 | Distribution | `EmitDistribution` | Record a measured value for statistical analysis (e.g. response time, payload size) |
 
----
+* * *
 
 ## Enabling Metrics
 
-Metrics are **enabled by default** — once the SDK is initialized, `SentrySdk.Metrics` works with no extra configuration. Set `EnableMetrics = false` to turn them off:
+Metrics are **enabled by default** — once the SDK is initialized, `SentrySdk.Metrics`
+works with no extra configuration.
+Set `EnableMetrics = false` to turn them off:
 
 ```csharp
 SentrySdk.Init(options =>
@@ -31,9 +36,10 @@ SentrySdk.Init(options =>
 });
 ```
 
-> **When `EnableMetrics = false`**, all `EmitCounter` / `EmitGauge` / `EmitDistribution` calls are no-ops.
+> **When `EnableMetrics = false`**, all `EmitCounter` / `EmitGauge` / `EmitDistribution`
+> calls are no-ops.
 
----
+* * *
 
 ## Emitting Metrics
 
@@ -74,14 +80,15 @@ SentrySdk.Metrics.EmitDistribution("payload.size", 4096L,
     scope);
 ```
 
----
+* * *
 
 ## Supported Numeric Types
 
-The metrics API accepts a generic `T` constrained to `struct`, but only the following numeric types are supported at runtime:
+The metrics API accepts a generic `T` constrained to `struct`, but only the following
+numeric types are supported at runtime:
 
 | Type | C# keyword | Supported |
-|------|-----------|-----------|
+| --- | --- | --- |
 | `System.Byte` | `byte` | ✅ Yes |
 | `System.Int16` | `short` | ✅ Yes |
 | `System.Int32` | `int` | ✅ Yes |
@@ -94,18 +101,22 @@ The metrics API accepts a generic `T` constrained to `struct`, but only the foll
 | `System.UInt64` | `ulong` | ❌ No |
 | `System.Decimal` | `decimal` | ❌ No |
 
-Unsupported types are dropped at runtime (a no-op that emits a `Warning`-level diagnostic log message). The Roslyn analyzer `SENTRY1001` catches these at compile time instead.
+Unsupported types are dropped at runtime (a no-op that emits a `Warning`-level
+diagnostic log message).
+The Roslyn analyzer `SENTRY1001` catches these at compile time instead.
 
----
+* * *
 
 ## `SENTRY1001` — Roslyn Diagnostic Analyzer
 
-The SDK ships a compile-time Roslyn analyzer that reports a **warning** when a metrics API is called with an unsupported numeric type.
+The SDK ships a compile-time Roslyn analyzer that reports a **warning** when a metrics
+API is called with an unsupported numeric type.
 
-**Diagnostic ID:** `SENTRY1001`  
-**Category:** `Sentry`  
-**Severity:** Warning  
-**Message:** `{type} is unsupported type for Sentry Metrics. The only supported types are byte, short, int, long, float, and double.`
+**Diagnostic ID:** `SENTRY1001`\
+**Category:** `Sentry`\
+**Severity:** Warning\
+**Message:**
+`{type} is unsupported type for Sentry Metrics. The only supported types are byte, short, int, long, float, and double.`
 
 **Triggers on:**
 - `SentryMetricEmitter.EmitCounter<T>()` with unsupported `T`
@@ -126,13 +137,15 @@ SentrySdk.Metrics.EmitCounter("my.counter", (ulong)100);  // ulong
 SentrySdk.Metrics.EmitCounter("my.counter", (uint)1);     // uint
 ```
 
-**To suppress** (not recommended): Add `#pragma warning disable SENTRY1001` or `[SuppressMessage]`. However, the metric will still be silently dropped at runtime.
+**To suppress** (not recommended): Add `#pragma warning disable SENTRY1001` or
+`[SuppressMessage]`. However, the metric will still be silently dropped at runtime.
 
----
+* * *
 
 ## `SetBeforeSendMetric` Callback
 
-Filter or modify metrics before they are sent to Sentry. Return `null` to drop a metric.
+Filter or modify metrics before they are sent to Sentry.
+Return `null` to drop a metric.
 
 ```csharp
 SentrySdk.Init(options =>
@@ -153,11 +166,13 @@ SentrySdk.Init(options =>
 
 **Signature:** `void SetBeforeSendMetric(Func<SentryMetric, SentryMetric?> callback)`
 
----
+* * *
 
 ## `SentryMetric.TryGetValue<T>`
 
-Extract the numeric value from a `SentryMetric` with a type check. Returns `false` if the metric's value type does not match `T`. The same supported-type rules apply — using an unsupported type triggers `SENTRY1001`.
+Extract the numeric value from a `SentryMetric` with a type check.
+Returns `false` if the metric’s value type does not match `T`. The same supported-type
+rules apply — using an unsupported type triggers `SENTRY1001`.
 
 ```csharp
 options.SetBeforeSendMetric(static (SentryMetric metric) =>
@@ -178,12 +193,12 @@ options.SetBeforeSendMetric(static (SentryMetric metric) =>
 });
 ```
 
----
+* * *
 
 ## `SentryMetric` Properties
 
 | Property | Type | Description |
-|----------|------|-------------|
+| --- | --- | --- |
 | `Timestamp` | `DateTimeOffset` | When the metric was recorded |
 | `TraceId` | `SentryId` | Trace ID linking metric to a trace |
 | `SpanId` | `SpanId?` | Span that was active when metric was emitted |
@@ -191,21 +206,21 @@ options.SetBeforeSendMetric(static (SentryMetric metric) =>
 | `Name` | `string` | Hierarchical name (e.g. `api.response_time`) |
 | `Unit` | `string?` | Unit of measurement (only for Gauge/Distribution) |
 
----
+* * *
 
 ## Config Options
 
 | Option | Type | Default | Notes |
-|--------|------|---------|-------|
+| --- | --- | --- | --- |
 | `EnableMetrics` | `bool` | `true` | Enabled by default; set to `false` to disable the `SentrySdk.Metrics` APIs |
 | `SetBeforeSendMetric` | `Func<SentryMetric, SentryMetric?>` | — | Filter/modify metrics before send; return `null` to drop |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Cause | Solution |
-|-------|-------|----------|
+| --- | --- | --- |
 | Metrics not appearing in Sentry | `EnableMetrics` set to `false` | Metrics are on by default; make sure `options.EnableMetrics` is not being set to `false` |
 | `SENTRY1001` compiler warning | Unsupported numeric type | Use `byte`, `short`, `int`, `long`, `float`, or `double` instead |
 | Metric emitted but silently dropped | Unsupported type at runtime (no analyzer) | Ensure the `Sentry.Compiler.Extensions` analyzer is loaded; check build output for `SENTRY1001` |

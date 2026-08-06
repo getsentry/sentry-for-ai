@@ -1,14 +1,13 @@
 # Session Replay — Sentry Cocoa SDK
 
-> Minimum SDK: `sentry-cocoa` v8.31.1+
-> View Renderer V2 (default): v8.50.0+
-> Official support: iOS 16+ with UIKit and SwiftUI. tvOS 16+ may work but is not officially supported.
-> SDK 9.12.0+ runs on iOS 26 Liquid Glass; verify masking for your app.
+> Minimum SDK: `sentry-cocoa` v8.31.1+ View Renderer V2 (default): v8.50.0+ Official
+> support: iOS 16+ with UIKit and SwiftUI. tvOS 16+ may work but is not officially
+> supported. SDK 9.12.0+ runs on iOS 26 Liquid Glass; verify masking for your app.
 
 ## Configuration
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `sessionReplay.sessionSampleRate` | `Float` (0.0–1.0) | `0` | Continuous recording sample rate |
 | `sessionReplay.onErrorSampleRate` | `Float` (0.0–1.0) | `0` | Buffered recording sample rate (uploads on error) |
 | `sessionReplay.maskAllText` | `Bool` | `true` | Mask all text content |
@@ -47,7 +46,10 @@ SentrySDK.start { options in
 }
 ```
 
-**Sampling logic:** `sessionSampleRate` is evaluated first. If not selected for continuous recording, the SDK switches to buffered mode and evaluates `onErrorSampleRate` — keeping a rolling buffer that is uploaded only when an error fires.
+**Sampling logic:** `sessionSampleRate` is evaluated first.
+If not selected for continuous recording, the SDK switches to buffered mode and
+evaluates `onErrorSampleRate` — keeping a rolling buffer that is uploaded only when an
+error fires.
 
 ### Session lifecycle
 
@@ -100,7 +102,8 @@ myLabel.sentryReplayUnmask()
 SentrySDK.replay.unmaskView(view: myLabel)
 ```
 
-> Note: Masking targets `UIView` subclasses only. You **cannot** target `UIViewController` types directly.
+> Note: Masking targets `UIView` subclasses only.
+> You **cannot** target `UIViewController` types directly.
 
 ### Class-level masking (all instances of a class)
 
@@ -141,7 +144,8 @@ SentrySDK.start { options in
 }
 ```
 
-Keep request and response bodies disabled unless you have explicitly reviewed them for sensitive data.
+Keep request and response bodies disabled unless you have explicitly reviewed them for
+sensitive data.
 
 ### Exclude views from subtree traversal
 
@@ -171,20 +175,23 @@ if ProcessInfo.processInfo.isLowPowerModeEnabled {
 ### Quality enum values
 
 | Value | Bit Rate | Resolution |
-|-------|---------|------------|
+| --- | --- | --- |
 | `.low` | ~50 kbps | Reduced |
 | `.medium` | Default | Default |
 | `.high` | Higher | Full |
 
----
+* * *
 
 ## iOS 26 / Xcode 26 / Liquid Glass
 
 There is version-specific behavior here:
 
-- SDK 8.57.0 through 9.11.x auto-disabled Session Replay on iOS 26 Liquid Glass builds to avoid masking risks.
-- SDK 9.12.0+ removed that safeguard after redaction fixes; Session Replay records on iOS 26 again.
-- If your app needs to keep replay disabled for Liquid Glass, gate `sessionSampleRate` and `onErrorSampleRate` yourself.
+- SDK 8.57.0 through 9.11.x auto-disabled Session Replay on iOS 26 Liquid Glass builds
+  to avoid masking risks.
+- SDK 9.12.0+ removed that safeguard after redaction fixes; Session Replay records on
+  iOS 26 again.
+- If your app needs to keep replay disabled for Liquid Glass, gate `sessionSampleRate`
+  and `onErrorSampleRate` yourself.
 
 Example manual gate:
 
@@ -206,37 +213,43 @@ options.sessionReplay.sessionSampleRate = sessionRate
 options.sessionReplay.onErrorSampleRate = errorRate
 ```
 
----
+* * *
 
 ## Performance Overhead (iPhone 14 Pro benchmarks)
 
 | Metric | Without Replay | With Replay |
-|--------|---------------|-------------|
+| --- | --- | --- |
 | FPS | 55 | 53 |
 | Memory | 102 MB | 121 MB |
 | CPU | 4% | 13% |
 | Main thread per capture | — | ~25 ms |
 | Network bandwidth | — | ~10 KB/s |
 
-> iPhone 8 and older: The ~25 ms capture time exceeds the 16.7 ms frame budget, causing scrolling jank. View Renderer V2 (default since v8.50.0) improved from ~155 ms to ~25 ms per capture.
+> iPhone 8 and older: The ~25 ms capture time exceeds the 16.7 ms frame budget, causing
+> scrolling jank. View Renderer V2 (default since v8.50.0) improved from ~155 ms to ~25
+> ms per capture.
 
----
+* * *
 
 ## Best Practices
 
-- Set `maskAllText = true` and `maskAllImages = true` (both default) — only unmask content that is explicitly safe to show
-- Use `.sentryReplayUnmask()` sparingly on known-safe content rather than globally disabling masking
-- Start with `onErrorSampleRate = 1.0` and `sessionSampleRate = 0` to capture replays only on errors (lowest overhead)
-- Test masking on real devices — use `SentrySDK.replay.showMaskPreview()` in DEBUG builds to verify
+- Set `maskAllText = true` and `maskAllImages = true` (both default) — only unmask
+  content that is explicitly safe to show
+- Use `.sentryReplayUnmask()` sparingly on known-safe content rather than globally
+  disabling masking
+- Start with `onErrorSampleRate = 1.0` and `sessionSampleRate = 0` to capture replays
+  only on errors (lowest overhead)
+- Test masking on real devices — use `SentrySDK.replay.showMaskPreview()` in DEBUG
+  builds to verify
 - Re-test masking on iOS 26+ Liquid Glass after every SDK or Xcode upgrade
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No replays appearing | Verify `sessionSampleRate > 0` or `onErrorSampleRate > 0`; both default to `0` |
 | Replay disabled on iOS 26 | SDK 8.57.0–9.11.x auto-disabled Liquid Glass builds; SDK 9.12+ records again unless you gate sample rates yourself |
-| PII visible in replay | Verify `maskAllText = true` and `maskAllImages = true`; check `.sentryReplayUnmask()` isn't applied too broadly |
+| PII visible in replay | Verify `maskAllText = true` and `maskAllImages = true`; check `.sentryReplayUnmask()` isn’t applied too broadly |
 | Scrolling jank during replay | Enable `enableFastViewRendering = true`; switch to `quality = .low`; consider disabling on low-end devices |
 | Replay stops after 60 minutes | Expected — `maximumDuration = 3600` seconds is the default cap |
 | Error buffer not uploading | Verify `onErrorSampleRate > 0`; buffer is only uploaded when `SentrySDK.capture(error:)` is called |

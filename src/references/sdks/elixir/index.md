@@ -1,11 +1,14 @@
 # Sentry Elixir SDK
 
-Opinionated wizard that scans your Elixir project and guides you through complete Sentry setup.
+Opinionated wizard that scans your Elixir project and guides you through complete Sentry
+setup.
 
-> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry v13.2.0, requires Elixir ~> 1.13).
-> Always verify against [docs.sentry.io/platforms/elixir/](https://docs.sentry.io/platforms/elixir/) before implementing.
+> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry
+> v13.2.0, requires Elixir ~> 1.13). Always verify against
+> [docs.sentry.io/platforms/elixir/](https://docs.sentry.io/platforms/elixir/) before
+> implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -41,7 +44,7 @@ ls assets/ frontend/ web/ client/ 2>/dev/null
 **What to note:**
 
 | Signal | Impact |
-|--------|--------|
+| --- | --- |
 | `sentry` already in `mix.exs`? | Skip install; go to Phase 2 (configure features) |
 | Phoenix detected? | Add `Sentry.PlugCapture`, `Sentry.PlugContext`, optionally `Sentry.LiveViewHook` |
 | LiveView detected? | Add `Sentry.LiveViewHook` to the `live_view` macro in `my_app_web.ex` |
@@ -50,11 +53,12 @@ ls assets/ frontend/ web/ client/ 2>/dev/null
 | OpenTelemetry already present? | Tracing setup only needs `Sentry.OpenTelemetry.*` config |
 | Frontend directory found? | Trigger Phase 4 cross-link suggestion |
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Based on what you found, present a concrete recommendation. Don't ask open-ended questions — lead with a proposal:
+Based on what you found, present a concrete recommendation.
+Don’t ask open-ended questions — lead with a proposal:
 
 **Recommended (core coverage):**
 - ✅ **Error Monitoring** — always; captures exceptions and crash reports
@@ -62,40 +66,45 @@ Based on what you found, present a concrete recommendation. Don't ask open-ended
 - ✅ **Tracing** — if Phoenix, Plug, or Ecto detected (via OpenTelemetry)
 
 **Optional (enhanced observability):**
-- ⚡ **Crons** — detect silent failures in scheduled jobs (Oban, Quantum, or manual GenServer)
+- ⚡ **Crons** — detect silent failures in scheduled jobs (Oban, Quantum, or manual
+  GenServer)
 - ⚡ **Sentry Logs** — forward structured logs to Sentry Logs Protocol (sentry v12.0.0+)
 
 **Recommendation logic:**
 
-| Feature | Recommend when... |
-|---------|------------------|
+| Feature | Recommend when … |
+| --- | --- |
 | Error Monitoring | **Always** — non-negotiable baseline |
-| Logging | **Always** — `LoggerHandler` captures crashes that aren't explicit `capture_exception` calls |
+| Logging | **Always** — `LoggerHandler` captures crashes that aren’t explicit `capture_exception` calls |
 | Tracing | Phoenix, Plug, Ecto, or OpenTelemetry imports detected |
 | Crons | Oban, Quantum, or periodic `GenServer`/`Task` patterns detected |
 | Sentry Logs | sentry v12.0.0+ in use and structured log search is needed |
 
-Propose: *"I recommend setting up Error Monitoring + Logging [+ Tracing if Phoenix/Ecto detected]. Want me to also add Crons or Sentry Logs?"*
+Propose: *“I recommend setting up Error Monitoring + Logging
+[+ Tracing if Phoenix/Ecto detected]. Want me to also add Crons or Sentry Logs?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
 ### Option 1: Igniter Installer (Recommended)
 
-> **You need to run this yourself** — the Igniter installer requires interactive terminal input that the agent can't handle. Copy-paste into your terminal:
->
+> **You need to run this yourself** — the Igniter installer requires interactive
+> terminal input that the agent can’t handle.
+> Copy-paste into your terminal:
+> 
 > ```bash
 > mix igniter.install sentry
 > ```
->
-> Available since sentry v11.0.0. It auto-configures `config/config.exs`, `config/prod.exs`, `config/runtime.exs`, and `lib/my_app/application.ex`.
->
+> 
+> Available since sentry v11.0.0. It auto-configures `config/config.exs`,
+> `config/prod.exs`, `config/runtime.exs`, and `lib/my_app/application.ex`.
+> 
 > **Once it finishes, come back and skip to [Verification](#verification).**
 
 If the user skips the Igniter installer, proceed with Option 2 (Manual Setup) below.
 
----
+* * *
 
 ### Option 2: Manual Setup
 
@@ -208,7 +217,10 @@ defmodule MyAppWeb.Endpoint do
 end
 ```
 
-> **Note:** `Sentry.PlugCapture` is only needed for the **Cowboy** adapter. Phoenix 1.7+ defaults to **Bandit**, where `PlugCapture` is harmless but unnecessary. `Sentry.PlugContext` is always recommended — it enriches events with HTTP request data.
+> **Note:** `Sentry.PlugCapture` is only needed for the **Cowboy** adapter.
+> Phoenix 1.7+ defaults to **Bandit**, where `PlugCapture` is harmless but unnecessary.
+> `Sentry.PlugContext` is always recommended — it enriches events with HTTP request
+> data.
 
 **LiveView errors — `lib/my_app_web.ex`**
 
@@ -237,10 +249,12 @@ end
 
 ### For Each Agreed Feature
 
-Walk through features one at a time. Load the reference file for each, follow its steps, and verify before moving to the next:
+Walk through features one at a time.
+Load the reference file for each, follow its steps, and verify before moving to the
+next:
 
-| Feature | Reference file | Load when... |
-|---------|---------------|-------------|
+| Feature | Reference file | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always (baseline) |
 | Tracing | `./tracing.md` | Phoenix / Ecto / OpenTelemetry detected |
 | Logging | `./logging.md` | `LoggerHandler` or Sentry Logs setup |
@@ -248,21 +262,21 @@ Walk through features one at a time. Load the reference file for each, follow it
 
 For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Key Config Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `:dsn` | `string \| nil` | `nil` | SDK disabled if nil; env: `SENTRY_DSN` |
 | `:environment_name` | `atom \| string` | `"production"` | e.g., `:prod`; env: `SENTRY_ENVIRONMENT` |
 | `:release` | `string \| nil` | `nil` | e.g., `"my-app@1.0.0"`; env: `SENTRY_RELEASE` |
 | `:sample_rate` | `float` | `1.0` | Error event sample rate (0.0–1.0) |
 | `:enable_source_code_context` | `boolean` | `false` | Include source lines around errors |
 | `:root_source_code_paths` | `[path]` | `[]` | Required when source context is enabled |
-| `:in_app_otp_apps` | `[atom]` | `[]` | OTP apps whose modules are "in-app" in stacktraces |
+| `:in_app_otp_apps` | `[atom]` | `[]` | OTP apps whose modules are “in-app” in stacktraces |
 | `:before_send` | `(event -> event \| nil) \| {m, f}` | `nil` | Hook to mutate or drop error events |
 | `:after_send_event` | `(event, result -> any) \| {m, f}` | `nil` | Hook called after event is sent |
 | `:filter` | `module` | `Sentry.DefaultEventFilter` | Module implementing `Sentry.EventFilter` |
@@ -278,19 +292,27 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
 ### Default PII Guidance
 
-Most Sentry SDKs expose a send-default-PII option. As of sentry v12, the Elixir SDK does not expose a `send_default_pii` config option in its documented option list or current config schema, so do **not** add a non-existent option. For richer user context, use `Sentry.PlugContext` and explicitly set allowed fields with `Sentry.Context.set_user_context/1`, then scrub with `:before_send` if needed. If a future Elixir SDK release adds `send_default_pii`, recommend setting it.
+Most Sentry SDKs expose a send-default-PII option.
+As of sentry v12, the Elixir SDK does not expose a `send_default_pii` config option in
+its documented option list or current config schema, so do **not** add a non-existent
+option. For richer user context, use `Sentry.PlugContext` and explicitly set allowed
+fields with `Sentry.Context.set_user_context/1`, then scrub with `:before_send` if
+needed. If a future Elixir SDK release adds `send_default_pii`, recommend setting it.
 
-**Automatic PII Scrubbing:** As of v13.1.0, stacktrace frame variables and `FunctionClauseError`/`Phoenix.ActionClauseError` arguments are automatically scrubbed for sensitive data using the same scrubber rules as HTTP request data. Use `:scrubber` config to customize which `Plug.Conn.private` keys are retained.
+**Automatic PII Scrubbing:** As of v13.1.0, stacktrace frame variables and
+`FunctionClauseError`/`Phoenix.ActionClauseError` arguments are automatically scrubbed
+for sensitive data using the same scrubber rules as HTTP request data.
+Use `:scrubber` config to customize which `Plug.Conn.private` keys are retained.
 
 ### Environment Variables
 
 | Variable | Maps to | Purpose |
-|----------|---------|---------|
+| --- | --- | --- |
 | `SENTRY_DSN` | `:dsn` | Data Source Name |
 | `SENTRY_RELEASE` | `:release` | App version (e.g., `my-app@1.0.0`) |
 | `SENTRY_ENVIRONMENT` | `:environment_name` | Deployment environment |
 
----
+* * *
 
 ## Verification
 
@@ -311,12 +333,13 @@ def index(conn, _params) do
 end
 ```
 
-Check the Sentry dashboard within a few seconds. If nothing appears:
+Check the Sentry dashboard within a few seconds.
+If nothing appears:
 1. Set `config :sentry, log_level: :debug` for verbose SDK output
 2. Verify `SENTRY_DSN` is set and the project exists
 3. Confirm `:environment_name` is not set to a value Sentry filters in your alert rules
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
@@ -330,20 +353,22 @@ cat assets/package.json frontend/package.json 2>/dev/null | grep -E '"react"|"sv
 If a frontend directory exists without Sentry configured, suggest the matching skill:
 
 | Frontend detected | Suggest skill |
-|-------------------|--------------|
+| --- | --- |
 | React / Next.js | [`react`](../react/index.md) or [`nextjs`](../nextjs/index.md) |
 | Svelte / SvelteKit | [`svelte`](../svelte/index.md) |
 | Vue | See [docs.sentry.io/platforms/javascript/guides/vue/](https://docs.sentry.io/platforms/javascript/guides/vue/) |
 | Other JS/TS | [`browser`](../browser/index.md) |
 
-Connecting Phoenix backend and JavaScript frontend with linked Sentry projects enables **distributed tracing** — stack traces that span the browser, Phoenix HTTP server, and downstream services in a single trace view.
+Connecting Phoenix backend and JavaScript frontend with linked Sentry projects enables
+**distributed tracing** — stack traces that span the browser, Phoenix HTTP server, and
+downstream services in a single trace view.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing | Verify `SENTRY_DSN` is set; run `mix sentry.send_test_event`; set `log_level: :debug` |
 | Missing stack traces on captured exceptions | Pass `stacktrace: __STACKTRACE__` in the `rescue` block: `Sentry.capture_exception(e, stacktrace: __STACKTRACE__)` |
 | `PlugCapture` not working on Bandit | `Sentry.PlugCapture` is Cowboy-only; with Bandit errors surface via `LoggerHandler` |

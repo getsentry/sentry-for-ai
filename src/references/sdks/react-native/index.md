@@ -1,11 +1,15 @@
 # Sentry React Native SDK
 
-Opinionated wizard that scans your React Native or Expo project and guides you through complete Sentry setup — error monitoring, tracing, profiling, session replay, logging, and more.
+Opinionated wizard that scans your React Native or Expo project and guides you through
+complete Sentry setup — error monitoring, tracing, profiling, session replay, logging,
+and more.
 
-> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/react-native` ≥6.0.0, minimum recommended ≥8.0.0).
-> Always verify against [docs.sentry.io/platforms/react-native/](https://docs.sentry.io/platforms/react-native/) before implementing.
+> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing
+> (`@sentry/react-native` ≥6.0.0, minimum recommended ≥8.0.0). Always verify against
+> [docs.sentry.io/platforms/react-native/](https://docs.sentry.io/platforms/react-native/)
+> before implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -46,7 +50,7 @@ find . -maxdepth 3 \( -name "go.mod" -o -name "requirements.txt" -o -name "Gemfi
 **What to determine:**
 
 | Question | Impact |
-|----------|--------|
+| --- | --- |
 | `expo` in `package.json`? | Expo path (config plugin + `getSentryExpoConfig`) vs bare/vanilla RN path |
 | Expo SDK ≥50? | `@sentry/react-native` directly; older = `sentry-expo` (legacy, do not use) |
 | `app.json` has `"expo"` key? | Managed Expo — wizard is simplest; config plugin handles all native config |
@@ -56,26 +60,32 @@ find . -maxdepth 3 \( -name "go.mod" -o -name "requirements.txt" -o -name "Gemfi
 | `react-native-navigation` present? | Recommend `reactNativeNavigationIntegration` (Wix) |
 | Backend directory detected? | Trigger Phase 4 cross-link |
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Present a concrete recommendation based on what you found. Don't ask open-ended questions — lead with a proposal:
+Present a concrete recommendation based on what you found.
+Don’t ask open-ended questions — lead with a proposal:
 
 **Recommended (core coverage — always set up these):**
-- ✅ **Error Monitoring** — captures JS exceptions, native crashes (iOS + Android), ANRs, and app hangs
-- ✅ **Tracing** — mobile performance is critical; auto-instruments navigation, app start, network requests
-- ✅ **Session Replay** — mobile replay captures screenshots and touch events for debugging user issues
+- ✅ **Error Monitoring** — captures JS exceptions, native crashes (iOS + Android), ANRs,
+  and app hangs
+- ✅ **Tracing** — mobile performance is critical; auto-instruments navigation, app
+  start, network requests
+- ✅ **Session Replay** — mobile replay captures screenshots and touch events for
+  debugging user issues
 
 **Optional (enhanced observability):**
-- ⚡ **Profiling** — CPU profiling on iOS (JS profiling cross-platform); low overhead in production
-- ⚡ **Logging** — structured logs via `Sentry.logger.*`; links to traces for full context
+- ⚡ **Profiling** — CPU profiling on iOS (JS profiling cross-platform); low overhead in
+  production
+- ⚡ **Logging** — structured logs via `Sentry.logger.*`; links to traces for full
+  context
 - ⚡ **User Feedback** — collect user-submitted bug reports directly from your app
 
 **Recommendation logic:**
 
-| Feature | Recommend when... |
-|---------|------------------|
+| Feature | Recommend when … |
+| --- | --- |
 | Error Monitoring | **Always** — non-negotiable baseline for any mobile app |
 | Tracing | **Always for mobile** — app start, navigation, and network latency matter |
 | Session Replay | User-facing production app; debug user-reported issues visually |
@@ -83,50 +93,56 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 | Logging | App uses structured logging, or you want log-to-trace correlation in Sentry |
 | User Feedback | Beta or customer-facing app where you want user-submitted bug reports |
 
-Propose: *"For your [Expo managed / bare RN] app, I recommend setting up Error Monitoring + Tracing + Session Replay. Want me to also add Profiling and Logging?"*
+Propose: *“For your [Expo managed / bare RN] app, I recommend setting up Error
+Monitoring + Tracing + Session Replay.
+Want me to also add Profiling and Logging?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
 ### Determine Your Setup Path
 
 | Project type | Recommended setup | Complexity |
-|-------------|------------------|------------|
+| --- | --- | --- |
 | Expo managed (SDK 50+) | Wizard CLI or manual with config plugin | Low — wizard does everything |
 | Expo bare (SDK 50+) | Wizard CLI recommended | Medium — handles iOS/Android config |
 | Vanilla React Native (0.69+) | Wizard CLI recommended | Medium — handles Xcode + Gradle |
 | Expo SDK <50 | Use `sentry-expo` (legacy) | See [legacy docs](https://docs.sentry.io/platforms/react-native/manual-setup/expo/) |
 
----
+* * *
 
 ### Path A: Wizard CLI (Recommended for all project types)
 
-> **You need to run this yourself** — the wizard opens a browser for login and requires interactive input that the agent can't handle. Copy-paste into your terminal:
->
+> **You need to run this yourself** — the wizard opens a browser for login and requires
+> interactive input that the agent can’t handle.
+> Copy-paste into your terminal:
+> 
 > ```
 > npx @sentry/wizard@latest -i reactNative
 > ```
->
-> It handles login, org/project selection, SDK installation, native config, source map upload, and `Sentry.init()`. Here's what it creates/modifies:
->
-> | File | Action | Purpose |
-> |------|--------|---------|
-> | `package.json` | Installs `@sentry/react-native` | Core SDK |
-> | `metro.config.js` | Adds `@sentry/react-native/metro` serializer | Source map generation |
-> | `app.json` | Adds `@sentry/react-native/expo` plugin (Expo only) | Config plugin for native builds |
-> | `App.tsx` / `_layout.tsx` | Adds `Sentry.init()` and `Sentry.wrap()` | SDK initialization |
-> | `ios/sentry.properties` | Stores org/project/token | iOS source map + dSYM upload |
-> | `android/sentry.properties` | Stores org/project/token | Android source map upload |
-> | `android/app/build.gradle` | Adds Sentry Gradle plugin | Android source maps + proguard |
-> | `ios/[AppName].xcodeproj` | Wraps "Bundle RN" build phase + adds dSYM upload | iOS symbol upload |
-> | `.env.local` | `SENTRY_AUTH_TOKEN` | Auth token (add to `.gitignore`) |
->
+> 
+> It handles login, org/project selection, SDK installation, native config, source map
+> upload, and `Sentry.init()`. Here’s what it creates/modifies:
+> 
+| File | Action | Purpose |
+| --- | --- | --- |
+| `package.json` | Installs `@sentry/react-native` | Core SDK |
+| `metro.config.js` | Adds `@sentry/react-native/metro` serializer | Source map generation |
+| `app.json` | Adds `@sentry/react-native/expo` plugin (Expo only) | Config plugin for native builds |
+| `App.tsx` / `_layout.tsx` | Adds `Sentry.init()` and `Sentry.wrap()` | SDK initialization |
+| `ios/sentry.properties` | Stores org/project/token | iOS source map + dSYM upload |
+| `android/sentry.properties` | Stores org/project/token | Android source map upload |
+| `android/app/build.gradle` | Adds Sentry Gradle plugin | Android source maps + proguard |
+| `ios/[AppName].xcodeproj` | Wraps “Bundle RN” build phase + adds dSYM upload | iOS symbol upload |
+| `.env.local` | `SENTRY_AUTH_TOKEN` | Auth token (add to `.gitignore`) |
+> 
 > **Once it finishes, come back and skip to [Verification](#verification).**
 
-If the user skips the wizard, proceed with Path B or C (Manual Setup) below based on their project type.
+If the user skips the wizard, proceed with Path B or C (Manual Setup) below based on
+their project type.
 
----
+* * *
 
 ### Path B: Manual — Expo Managed (SDK 50+)
 
@@ -147,7 +163,7 @@ const config = getSentryExpoConfig(__dirname, {
 module.exports = config;
 ```
 
-If `metro.config.js` doesn't exist yet:
+If `metro.config.js` doesn’t exist yet:
 ```bash
 npx expo customize metro.config.js
 # Then replace contents with the above
@@ -156,7 +172,7 @@ npx expo customize metro.config.js
 **Metro config options:**
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `autoWrapExpoRouterErrorBoundary` | `boolean` | `false` | Automatically wrap `export { ErrorBoundary } from 'expo-router'` with Sentry at build time (SDK ≥8.17.0). Captures errors that hit per-route ErrorBoundaries without manual wrapping |
 | `annotateReactComponents` | `boolean` | `false` | Inject component names for better error context |
 | `includeWebReplay` | `boolean` | `true` | Include web replay bundle (set `false` for native-only apps) |
@@ -183,12 +199,13 @@ npx expo customize metro.config.js
 }
 ```
 
-> **Note:** Set `SENTRY_AUTH_TOKEN` as an environment variable for native builds — never commit it to version control.
+> **Note:** Set `SENTRY_AUTH_TOKEN` as an environment variable for native builds — never
+> commit it to version control.
 
 **Plugin options:**
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `url` | `string` | `"https://sentry.io/"` | Sentry instance URL |
 | `project` | `string` | — | Project slug |
 | `organization` | `string` | — | Organization slug |
@@ -237,13 +254,20 @@ function RootLayout() {
 export default Sentry.wrap(RootLayout);
 ```
 
-> **Note:** Expo Router automatically handles navigation tracking. The `Sentry.NavigationContainer` wrapper is not needed for Expo Router projects — navigation spans are captured automatically.
+> **Note:** Expo Router automatically handles navigation tracking.
+> The `Sentry.NavigationContainer` wrapper is not needed for Expo Router projects —
+> navigation spans are captured automatically.
 
 **Expo Router ErrorBoundary Setup (SDK ≥8.16.0)**
 
-Expo Router's per-route `ErrorBoundary` swallows render errors by default — Sentry won't see them unless you explicitly capture them. Two options:
+Expo Router’s per-route `ErrorBoundary` swallows render errors by default — Sentry won’t
+see them unless you explicitly capture them.
+Two options:
 
-1. **Auto-wrap (recommended, SDK ≥8.17.0)** — Enable `autoWrapExpoRouterErrorBoundary: true` in `metro.config.js` (shown above). The Babel plugin rewrites `export { ErrorBoundary } from 'expo-router'` automatically in all route files.
+1. **Auto-wrap (recommended, SDK ≥8.17.0)** — Enable
+   `autoWrapExpoRouterErrorBoundary: true` in `metro.config.js` (shown above).
+   The Babel plugin rewrites `export { ErrorBoundary } from 'expo-router'` automatically
+   in all route files.
 
 2. **Manual wrap** — Wrap the boundary yourself in each route file:
 
@@ -255,7 +279,9 @@ Expo Router's per-route `ErrorBoundary` swallows render errors by default — Se
    export const ErrorBoundary = Sentry.wrapExpoRouterErrorBoundary(ExpoErrorBoundary);
    ```
 
-Both methods capture errors that hit the boundary with route context (`route.name`, `route.path`, `route.params`), tag the active navigation span as errored, and emit a breadcrumb. Concrete paths/params respect `sendDefaultPii`.
+Both methods capture errors that hit the boundary with route context (`route.name`,
+`route.path`, `route.params`), tag the active navigation span as errored, and emit a
+breadcrumb. Concrete paths/params respect `sendDefaultPii`.
 
 For **standard Expo** (`App.tsx`):
 
@@ -289,7 +315,7 @@ function App() {
 export default Sentry.wrap(App);
 ```
 
----
+* * *
 
 ### Path C: Manual — Bare React Native (0.69+)
 
@@ -319,7 +345,9 @@ module.exports = withSentryConfig(config, {
 
 **Step 3 — iOS: Modify Xcode build phase**
 
-Open `ios/[AppName].xcodeproj` in Xcode. Find the **"Bundle React Native code and images"** build phase and replace the script content with:
+Open `ios/[AppName].xcodeproj` in Xcode.
+Find the **“Bundle React Native code and images”** build phase and replace the script
+content with:
 
 ```bash
 # RN 0.81.1+
@@ -329,7 +357,7 @@ SENTRY_XCODE="../node_modules/@sentry/react-native/scripts/sentry-xcode.sh"
 /bin/sh -c "$WITH_ENVIRONMENT $SENTRY_XCODE"
 ```
 
-**Step 4 — iOS: Add "Upload Debug Symbols to Sentry" build phase**
+**Step 4 — iOS: Add “Upload Debug Symbols to Sentry” build phase**
 
 Add a new **Run Script** build phase in Xcode (after the bundle phase):
 
@@ -354,7 +382,9 @@ Add before the `android {}` block:
 apply from: "../../node_modules/@sentry/react-native/sentry.gradle.kts"
 ```
 
-> **Note:** SDK ≥8.13.0 uses `sentry.gradle.kts` (Kotlin DSL). For older SDKs, use `sentry.gradle` (Groovy). Both are backward-compatible.
+> **Note:** SDK ≥8.13.0 uses `sentry.gradle.kts` (Kotlin DSL). For older SDKs, use
+> `sentry.gradle` (Groovy).
+> Both are backward-compatible.
 
 **Step 7 — Android: `android/sentry.properties`**
 
@@ -396,7 +426,7 @@ function App() {
 export default Sentry.wrap(App);
 ```
 
----
+* * *
 
 ### Quick Reference: Full-Featured `Sentry.init()`
 
@@ -447,7 +477,10 @@ export default Sentry.wrap(App);
 
 ### App Start Accuracy — `Sentry.appLoaded()` (SDK ≥8.x)
 
-If your app does significant async work after the root component mounts (e.g., fetching config, waiting for auth), call `Sentry.appLoaded()` once that work is complete. This signals the true end of app startup to Sentry and produces more accurate app start duration measurements.
+If your app does significant async work after the root component mounts (e.g., fetching
+config, waiting for auth), call `Sentry.appLoaded()` once that work is complete.
+This signals the true end of app startup to Sentry and produces more accurate app start
+duration measurements.
 
 ```typescript
 // Call after async initialization is complete, e.g., in a useEffect or after a loading screen:
@@ -458,15 +491,17 @@ useEffect(() => {
 }, []);
 ```
 
-If you don't call `Sentry.appLoaded()`, the SDK estimates the app start end automatically.
+If you don’t call `Sentry.appLoaded()`, the SDK estimates the app start end
+automatically.
 
----
+* * *
 
 ### Navigation Setup — React Navigation (v5+)
 
 **Recommended: Use `Sentry.NavigationContainer` wrapper (SDK ≥8.13.0)**
 
-Drop-in replacement for `NavigationContainer` that automatically wires up navigation tracking:
+Drop-in replacement for `NavigationContainer` that automatically wires up navigation
+tracking:
 
 ```typescript
 import * as Sentry from "@sentry/react-native";
@@ -479,7 +514,7 @@ import * as Sentry from "@sentry/react-native";
 </Sentry.NavigationContainer>
 ```
 
-That's it! The wrapper automatically:
+That’s it! The wrapper automatically:
 - Creates the `reactNavigationIntegration`
 - Registers the navigation container ref
 - Captures breadcrumbs for navigation events (SDK ≥8.13.0)
@@ -526,24 +561,26 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ### Wrap Your Root Component
 
-Always wrap your root component — this enables React error boundaries and ensures crashes at the component tree level are captured:
+Always wrap your root component — this enables React error boundaries and ensures
+crashes at the component tree level are captured:
 
 ```typescript
 export default Sentry.wrap(App);
 ```
 
----
+* * *
 
 ### For Each Agreed Feature
 
-Walk through features one at a time. Load the reference file for each, follow its steps, then verify before moving on:
+Walk through features one at a time.
+Load the reference file for each, follow its steps, then verify before moving on:
 
-| Feature | Reference | Load when... |
-|---------|-----------|-------------|
+| Feature | Reference | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always (baseline) |
 | Tracing & Performance | `./tracing.md` | Always for mobile (app start, navigation, network) |
 | Profiling | `./profiling.md` | Performance-sensitive production apps |
@@ -554,14 +591,14 @@ Walk through features one at a time. Load the reference file for each, follow it
 
 For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Core `Sentry.init()` Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `dsn` | `string` | — | **Required.** Project DSN; SDK disabled if empty. Env: `SENTRY_DSN` |
 | `environment` | `string` | — | e.g., `"production"`, `"staging"`. Env: `SENTRY_ENVIRONMENT` |
 | `release` | `string` | — | App version, e.g., `"my-app@1.0.0+42"`. Env: `SENTRY_RELEASE` |
@@ -598,7 +635,7 @@ Sentry.init({
 ```
 
 | Sub-option | Type | Default | Purpose |
-|------------|------|---------|---------|
+| --- | --- | --- | --- |
 | `maskAllText` | `boolean` | `true` | Mask all text nodes in the screenshot |
 | `maskAllImages` | `boolean` | `true` | Mask all images in the screenshot |
 | `maskedViewClasses` | `string[]` | `[]` | Native view class names to always mask (Android/iOS) |
@@ -607,7 +644,7 @@ Sentry.init({
 ### Tracing Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `tracesSampleRate` | `number` | `0` | Transaction sample rate (0–1). Use `1.0` in dev |
 | `tracesSampler` | `function` | — | Per-transaction sampling; overrides `tracesSampleRate` |
 | `tracePropagationTargets` | `(string \| RegExp)[]` | `[/.*/]` | Which API URLs receive distributed tracing headers |
@@ -616,7 +653,7 @@ Sentry.init({
 ### Native / Mobile Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `enableNative` | `boolean` | `true` | Set `false` for JS-only (no native SDK) |
 | `enableNativeCrashHandling` | `boolean` | `true` | Capture native hard crashes (iOS/Android) |
 | `enableNativeFramesTracking` | `boolean` | — | Slow/frozen frames tracking. **Disable in Expo Go** |
@@ -634,21 +671,21 @@ Sentry.init({
 ### Session & Release Health Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `autoSessionTracking` | `boolean` | `true` | Session tracking (crash-free users/sessions) |
 | `sessionTrackingIntervalMillis` | `number` | `30000` | ms of background before session ends |
 
 ### Replay Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `replaysSessionSampleRate` | `number` | `0` | Fraction of all sessions recorded |
 | `replaysOnErrorSampleRate` | `number` | `0` | Fraction of error sessions recorded |
 
 ### Logging Options (SDK ≥7.0.0)
 
 | Option | Type | Purpose |
-|--------|------|---------|
+| --- | --- | --- |
 | `enableLogs` | `boolean` | Enable `Sentry.logger.*` API |
 | `enableAutoConsoleLogs` | `boolean` | Auto-capture `console.*` calls when `enableLogs: true`. Set `false` to use only manual `Sentry.logger.*` (SDK ≥8.14.0, default: `true`) |
 | `beforeSendLog` | `function` | Filter/modify logs before sending |
@@ -657,7 +694,7 @@ Sentry.init({
 ### Hook Options
 
 | Option | Type | Purpose |
-|--------|------|---------|
+| --- | --- | --- |
 | `beforeSend` | `(event, hint) => event \| null` | Modify/drop JS error events. ⚠️ Does NOT apply to native crashes |
 | `beforeSendTransaction` | `(event) => event \| null` | Modify/drop transaction events |
 | `beforeBreadcrumb` | `(breadcrumb, hint) => breadcrumb \| null` | Process breadcrumbs before storage |
@@ -666,7 +703,7 @@ Sentry.init({
 ### Environment Variables
 
 | Variable | Purpose | Notes |
-|----------|---------|-------|
+| --- | --- | --- |
 | `SENTRY_DSN` | Data Source Name | Falls back from `dsn` option |
 | `SENTRY_AUTH_TOKEN` | Upload source maps and dSYMs | **Never commit — use CI secrets** |
 | `SENTRY_ORG` | Organization slug | Used by wizard and build plugins |
@@ -684,7 +721,7 @@ Sentry.init({
 These integrations are enabled automatically — no config needed:
 
 | Integration | What it does |
-|-------------|-------------|
+| --- | --- |
 | `ReactNativeErrorHandlers` | Catches unhandled JS exceptions and promise rejections |
 | `Release` | Attaches release/dist to all events |
 | `Breadcrumbs` | Records console logs, HTTP requests, user gestures as breadcrumbs |
@@ -700,7 +737,7 @@ These integrations are enabled automatically — no config needed:
 ### Opt-In Integrations
 
 | Integration | How to enable |
-|-------------|--------------|
+| --- | --- |
 | `mobileReplayIntegration()` | Add to `integrations` array |
 | `reactNavigationIntegration()` | Add to `integrations` array |
 | `reactNativeNavigationIntegration()` | Add to `integrations` array (Wix only) |
@@ -710,7 +747,9 @@ These integrations are enabled automatically — no config needed:
 
 ### Tracking Custom TurboModules
 
-The `TurboModuleContext` integration is enabled by default and automatically tracks the built-in `RNSentry` TurboModule. To track your own custom TurboModules, configure the integration explicitly:
+The `TurboModuleContext` integration is enabled by default and automatically tracks the
+built-in `RNSentry` TurboModule.
+To track your own custom TurboModules, configure the integration explicitly:
 
 ```typescript
 import * as Sentry from "@sentry/react-native";
@@ -733,11 +772,16 @@ Sentry.init({
 });
 ```
 
-When a native crash occurs inside a tracked TurboModule method call, the crash report will include `contexts.turbo_module` with the module name and method, making it easier to identify the exact RN API call that triggered the crash.
+When a native crash occurs inside a tracked TurboModule method call, the crash report
+will include `contexts.turbo_module` with the module name and method, making it easier
+to identify the exact RN API call that triggered the crash.
 
 ### Rage Tap Detection (TouchEventBoundary)
 
-`TouchEventBoundary` (wraps your app root) includes built-in rage tap detection. When a user taps the same element 3+ times within 1 second, a `ui.multiClick` breadcrumb is emitted and shown on the replay timeline. Configure via props:
+`TouchEventBoundary` (wraps your app root) includes built-in rage tap detection.
+When a user taps the same element 3+ times within 1 second, a `ui.multiClick` breadcrumb
+is emitted and shown on the replay timeline.
+Configure via props:
 
 ```tsx
 <Sentry.TouchEventBoundary
@@ -777,16 +821,18 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ### Source Maps & Debug Symbols
 
-Source maps and debug symbols are what transform minified stack traces into readable ones. When set up correctly, Sentry shows you the exact line of your source code that threw. The React Native-specific upload mechanics are below.
+Source maps and debug symbols are what transform minified stack traces into readable
+ones. When set up correctly, Sentry shows you the exact line of your source code that
+threw. The React Native-specific upload mechanics are below.
 
 #### How Uploads Work
 
-| Platform | What's uploaded | When |
-|----------|----------------|------|
+| Platform | What’s uploaded | When |
+| --- | --- | --- |
 | **iOS** (JS) | Source maps (`.map` files) | During Xcode build |
 | **iOS** (Native) | dSYM bundles | During Xcode archive / Xcode Cloud |
 | **Android** (JS) | Source maps + Hermes `.hbc.map` | During Gradle build |
@@ -794,7 +840,9 @@ Source maps and debug symbols are what transform minified stack traces into read
 
 #### Expo: Automatic Upload
 
-The `@sentry/react-native/expo` config plugin automatically sets up upload hooks for native builds. Source maps are uploaded during `eas build` and `expo run:ios/android` (release).
+The `@sentry/react-native/expo` config plugin automatically sets up upload hooks for
+native builds. Source maps are uploaded during `eas build` and `expo run:ios/android`
+(release).
 
 ```bash
 SENTRY_AUTH_TOKEN=sntrys_... npx expo run:ios --configuration Release
@@ -812,11 +860,14 @@ npx sentry-cli sourcemaps upload \
   ./dist
 ```
 
----
+* * *
 
 ### EAS Build Hooks
 
-Monitor your Expo Application Services (EAS) builds in Sentry. The SDK ships three binary hooks — `sentry-eas-build-on-complete`, `sentry-eas-build-on-error`, and `sentry-eas-build-on-success` — that capture build events as Sentry errors or messages.
+Monitor your Expo Application Services (EAS) builds in Sentry.
+The SDK ships three binary hooks — `sentry-eas-build-on-complete`,
+`sentry-eas-build-on-error`, and `sentry-eas-build-on-success` — that capture build
+events as Sentry errors or messages.
 
 **Step 1 — Register the hook in `package.json`**
 
@@ -828,7 +879,9 @@ Monitor your Expo Application Services (EAS) builds in Sentry. The SDK ships thr
 }
 ```
 
-Use `eas-build-on-complete` to capture both failures and (optionally) successes in one hook. Alternatively use `eas-build-on-error` or `eas-build-on-success` separately if you want independent control.
+Use `eas-build-on-complete` to capture both failures and (optionally) successes in one
+hook. Alternatively use `eas-build-on-error` or `eas-build-on-success` separately if you
+want independent control.
 
 **Step 2 — Set `SENTRY_DSN` in your EAS secrets**
 
@@ -836,20 +889,25 @@ Use `eas-build-on-complete` to capture both failures and (optionally) successes 
 eas secret:create --name SENTRY_DSN --value "https://...@sentry.io/..."
 ```
 
-The hook reads `SENTRY_DSN` from the build environment — it does not share the same `.env` as your app.
+The hook reads `SENTRY_DSN` from the build environment — it does not share the same
+`.env` as your app.
 
 **Optional environment variables:**
 
 | Variable | Purpose |
-|----------|---------|
+| --- | --- |
 | `SENTRY_EAS_BUILD_CAPTURE_SUCCESS` | Set `true` to also capture successful builds (default: errors only) |
 | `SENTRY_EAS_BUILD_TAGS` | JSON object of additional tags, e.g., `{"team":"mobile","channel":"production"}` |
 | `SENTRY_EAS_BUILD_ERROR_MESSAGE` | Custom error message for failed builds |
 | `SENTRY_EAS_BUILD_SUCCESS_MESSAGE` | Custom message for successful builds |
 
-> **How it works:** The hook script is an EAS [npm lifecycle hook](https://docs.expo.dev/build-reference/npm-hooks/). EAS calls `package.json` scripts matching `eas-build-on-*` at the end of the build process. The script loads env from `@expo/env`, `.env`, or `.env.sentry-build-plugin` — without overwriting EAS secrets already in the environment.
+> **How it works:** The hook script is an EAS
+> [npm lifecycle hook](https://docs.expo.dev/build-reference/npm-hooks/). EAS calls
+> `package.json` scripts matching `eas-build-on-*` at the end of the build process.
+> The script loads env from `@expo/env`, `.env`, or `.env.sentry-build-plugin` — without
+> overwriting EAS secrets already in the environment.
 
----
+* * *
 
 ## Verification
 
@@ -875,11 +933,14 @@ After setup, test that Sentry is receiving events:
 
 **Check the Sentry dashboard:**
 - **Issues** → your test error should appear within seconds
-- **Traces** → look for a "main" transaction with child spans
-- **Replays** → session recording visible after app interaction (native build only — not Expo Go)
+- **Traces** → look for a “main” transaction with child spans
+- **Replays** → session recording visible after app interaction (native build only — not
+  Expo Go)
 - **Logs** → structured log entries if `enableLogs: true`
 
-> ⚠️ **Expo Go limitation:** Native crashes, session replay, slow/frozen frames, TTID, and TTFD only work in native builds (`eas build` or `expo run`). Expo Go runs in a JS-only mode. Set `enableNativeFramesTracking: !isRunningInExpoGo()` to avoid warnings.
+> ⚠️ **Expo Go limitation:** Native crashes, session replay, slow/frozen frames, TTID,
+> and TTFD only work in native builds (`eas build` or `expo run`). Expo Go runs in a
+> JS-only mode. Set `enableNativeFramesTracking: !isRunningInExpoGo()` to avoid warnings.
 
 If nothing appears:
 1. Set `debug: true` — SDK logs to Metro console
@@ -887,11 +948,12 @@ If nothing appears:
 3. Ensure `Sentry.wrap(App)` is applied to the root component
 4. For native crashes, build a release build (crashes in debug mode may not forward)
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
-After completing React Native setup, check for a backend or web frontend missing Sentry coverage:
+After completing React Native setup, check for a backend or web frontend missing Sentry
+coverage:
 
 ```bash
 # Adjacent backend directories
@@ -912,7 +974,7 @@ grep -r "opentelemetry" ../backend/go.mod ../server/requirements.txt 2>/dev/null
 If a backend or web frontend exists without Sentry, suggest the matching skill:
 
 | Detected | Suggest skill |
-|----------|--------------|
+| --- | --- |
 | Go backend (`go.mod`) | [`go`](../go/index.md) |
 | Python backend (`requirements.txt`, `pyproject.toml`) | [`python`](../python/index.md) |
 | Ruby backend (`Gemfile`) | [`ruby`](../ruby/index.md) |
@@ -920,7 +982,8 @@ If a backend or web frontend exists without Sentry, suggest the matching skill:
 | React / Next.js web | [`react`](../react/index.md) |
 | Svelte / SvelteKit web | [`svelte`](../svelte/index.md) |
 
-**Distributed tracing setup** — if the backend skill is added, configure `tracePropagationTargets` in React Native to propagate trace context to your API:
+**Distributed tracing setup** — if the backend skill is added, configure
+`tracePropagationTargets` in React Native to propagate trace context to your API:
 
 ```typescript
 Sentry.init({
@@ -934,15 +997,15 @@ Sentry.init({
 
 This links mobile transactions to backend traces in the Sentry waterfall view.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing in Sentry | Set `debug: true`, check Metro/Xcode console for SDK errors; verify DSN is correct |
 | `pod install` fails | Run `cd ios && pod install --repo-update`; check CocoaPods version |
-| iOS build fails with Sentry script | Verify the "Bundle React Native code and images" script was replaced (not appended to) |
+| iOS build fails with Sentry script | Verify the “Bundle React Native code and images” script was replaced (not appended to) |
 | Android build fails after adding `sentry.gradle.kts` | Ensure `apply from` line is before the `android {}` block in `build.gradle`; use `sentry.gradle` for SDK <8.13.0 |
 | Android Gradle 8+ compatibility issue | Use `sentry-android-gradle-plugin` ≥4.0.0; check `sentry.gradle` version in your SDK |
 | Source maps not uploading | Verify `sentry.properties` has a valid `auth.token`; check build logs for `sentry-cli` output |
@@ -950,7 +1013,7 @@ This links mobile transactions to backend traces in the Sentry waterfall view.
 | Hermes source maps not working | Hermes emits `.hbc.map` — the Gradle plugin handles this automatically; verify `sentry.gradle` is applied |
 | Session replay not recording | Must use a native build (not Expo Go); confirm `mobileReplayIntegration()` is in `integrations` |
 | Replay shows blank/black screens | Check that `maskAllText`/`maskAllImages` settings match your privacy requirements |
-| Slow/frozen frames not tracked | Set `enableNativeFramesTracking: true` and confirm you're on a native build (not Expo Go) |
+| Slow/frozen frames not tracked | Set `enableNativeFramesTracking: true` and confirm you’re on a native build (not Expo Go) |
 | TTID / TTFD not appearing | Requires `enableTimeToInitialDisplay: true` in `reactNavigationIntegration()` on a native build |
 | App crashes on startup after adding Sentry | Likely a native initialization error — check Xcode/Logcat logs; try `enableNative: false` to isolate |
 | Expo SDK 49 or older | Use `sentry-expo` (legacy package); `@sentry/react-native` requires Expo SDK 50+ |
