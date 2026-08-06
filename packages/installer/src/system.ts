@@ -1,5 +1,5 @@
 import { exec, spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { promisify } from "node:util";
 
@@ -24,6 +24,8 @@ export interface SystemDeps {
   // captured in the result); without it, output is simply buffered.
   run(command: string, output?: OutputSink): Promise<ShellResult>;
   exists(path: string): boolean;
+  readTextFile(path: string): string;
+  writeTextFile(path: string, contents: string): void;
   platform: NodeJS.Platform;
   homedir: string;
 }
@@ -81,6 +83,8 @@ export const realSystem: SystemDeps = {
     }
   },
   exists: existsSync,
+  readTextFile: (path) => readFileSync(path, "utf8"),
+  writeTextFile: (path, contents) => writeFileSync(path, contents, "utf8"),
   platform: process.platform,
   homedir: homedir(),
 };

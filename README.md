@@ -2,13 +2,15 @@
 
 > [!IMPORTANT]
 > **This is a skill *source* repository — not something you install directly.** The
-> skills here are built from this source into installable plugins for
+> skills here are built from this source into installable distributions for
 > [Claude Code](https://github.com/getsentry/plugin-claude),
 > [Cursor](https://github.com/getsentry/plugin-cursor),
-> [Codex](https://github.com/getsentry/plugin-codex), and
-> [Grok](https://github.com/getsentry/plugin-grok) — install one of those, not this
-> repo. They’re also served over HTTP at [skills.sentry.dev](https://skills.sentry.dev)
-> for agents to fetch directly.
+> [Codex](https://github.com/getsentry/plugin-codex),
+> [Grok](https://github.com/getsentry/plugin-grok),
+> [OpenCode V1](https://github.com/getsentry/plugin-opencode), and
+> [OpenCode V2](https://github.com/getsentry/plugin-opencode2) — install one of those,
+> not this repo. They’re also served over HTTP at
+> [skills.sentry.dev](https://skills.sentry.dev) for agents to fetch directly.
 > In the future we may also publish the skills as a generic, standalone skills
 > repository.
 
@@ -22,8 +24,10 @@ The plugin gives your assistant the context it needs to do it right.
 
 Supports [**Claude Code**](https://github.com/getsentry/plugin-claude),
 [**Cursor**](https://github.com/getsentry/plugin-cursor),
-[**Codex**](https://github.com/getsentry/plugin-codex), and
-[**Grok**](https://github.com/getsentry/plugin-grok).
+[**Codex**](https://github.com/getsentry/plugin-codex),
+[**Grok**](https://github.com/getsentry/plugin-grok),
+[**OpenCode V1**](https://github.com/getsentry/plugin-opencode), and
+[**OpenCode V2**](https://github.com/getsentry/plugin-opencode2).
 
 ## What You Can Do
 
@@ -65,11 +69,12 @@ Set up OTel Collector with Sentry exporter
 ## Distribution
 
 This repository is the single source of truth for all skills, but it is not itself an
-installable plugin.
-Each assistant needs the plugin in a slightly different shape, so the
-per-agent plugins are **built** from it by the build scripts under
+installable distribution.
+Each assistant needs the integration in a slightly different shape, so the per-agent
+distributions are **built** from it by the build scripts under
 `src/plugins/<agent>/build.sh`. CI runs these on every push and deploys each result to
-its own **distribution repository**, whose root is exactly that agent’s plugin:
+its own **distribution repository**, whose root is exactly that agent’s installable
+bundle or native plugin:
 
 | Agent | Distribution repository |
 | --- | --- |
@@ -77,6 +82,8 @@ its own **distribution repository**, whose root is exactly that agent’s plugin
 | Cursor | [`getsentry/plugin-cursor`](https://github.com/getsentry/plugin-cursor) |
 | Codex | [`getsentry/plugin-codex`](https://github.com/getsentry/plugin-codex) |
 | Grok | [`getsentry/plugin-grok`](https://github.com/getsentry/plugin-grok) |
+| OpenCode V1 | [`getsentry/plugin-opencode`](https://github.com/getsentry/plugin-opencode) |
+| OpenCode V2 | [`getsentry/plugin-opencode2`](https://github.com/getsentry/plugin-opencode2) |
 
 These repositories are generated; do not edit them.
 Each one’s README has the install instructions for that agent.
@@ -94,11 +101,11 @@ skill tree’s `disable-model-invocation` flags for Codex’s `agents/openai.yam
 ```bash
 git clone https://github.com/getsentry/sentry-for-ai.git
 cd sentry-for-ai
-src/plugins/codex/build.sh /tmp/sentry-codex   # or src/plugins/{claude,cursor,grok}
+src/plugins/codex/build.sh /tmp/sentry-codex   # or src/plugins/{claude,cursor,grok,opencode,opencode2}
 ```
 
 To build any target locally, run `src/plugins/<agent>/build.sh <output-dir>` (`claude`,
-`cursor`, `codex`, or `grok`).
+`cursor`, `codex`, `grok`, `opencode`, or `opencode2`).
 
 ## Skills
 

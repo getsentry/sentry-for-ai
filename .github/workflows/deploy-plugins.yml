@@ -1,14 +1,16 @@
-# Deploy per-agent plugin distributions to their own repositories.
+# Deploy per-agent distributions to their own repositories.
 #
 # This repository is the single source of truth (skills + routing metadata,
-# feeding skills.sentry.dev). Each AI assistant needs the plugin in a different
-# shape, so this workflow builds each one and deploys it to a dedicated
-# repository whose ROOT is exactly that agent's plugin:
+# feeding skills.sentry.dev). Each AI assistant needs the integration in a
+# different shape, so this workflow builds each one and deploys it to a
+# dedicated repository whose root is exactly that agent's distribution:
 #
-#   claude -> getsentry/plugin-claude
-#   cursor -> getsentry/plugin-cursor
-#   codex  -> getsentry/plugin-codex
-#   grok   -> getsentry/plugin-grok
+#   claude    -> getsentry/plugin-claude
+#   cursor    -> getsentry/plugin-cursor
+#   codex     -> getsentry/plugin-codex
+#   grok      -> getsentry/plugin-grok
+#   opencode  -> getsentry/plugin-opencode
+#   opencode2 -> getsentry/plugin-opencode2
 #
 # Each plugin repository carries two rolling branches, and which one a run writes
 # is the whole difference between a deploy and a release:
@@ -25,14 +27,14 @@
 # A release also tags the plugin repository (`v<version>`), giving each shipped
 # version an addressable ref for pinning and rollback.
 #
-# Marketplaces consume `getsentry/plugin-<agent>` by git ref. Each job builds its
-# agent's tree from this repo, then commits it onto the target branch of the
-# target repo, replacing the previous contents. The four jobs target four
-# different repos, so they run in parallel without contention.
+# Marketplaces and installers consume `getsentry/plugin-<agent>` by git ref. Each
+# job builds its agent's tree from this repo, then commits it onto the target
+# branch of the target repo, replacing the previous contents. The six jobs target
+# six different repos, so they run in parallel without contention.
 #
 # Cross-repo writes use a GitHub App token scoped per-job to a single plugin
 # repo; the default GITHUB_TOKEN cannot push to other repositories. The app must
-# be installed on the org with contents:write on the four plugin repos, its ID
+# be installed on the org with contents:write on the six plugin repos, its ID
 # stored as the PLUGIN_DEPLOY_APP_ID variable and its private key as the
 # PLUGIN_DEPLOY_KEY secret. Each target repo must already exist with `main` as
 # its default branch; `develop` is branched off it on the first deploy.
@@ -83,7 +85,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        agent: [claude, cursor, codex, grok]
+        agent: [claude, cursor, codex, grok, opencode, opencode2]
     concurrency:
       group: deploy-plugin-${{ matrix.agent }}-${{ inputs.target_branch || 'develop' }}
       cancel-in-progress: false
@@ -107,6 +109,20 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+
+      - name: Set up Node for OpenCode validation
+        if: matrix.agent == 'opencode' || matrix.agent == 'opencode2'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+
+      - name: Install OpenCode V1 CLI
+        if: matrix.agent == 'opencode'
+        run: npm install -g opencode-ai@1.18.0
+
+      - name: Install OpenCode V2 CLI
+        if: matrix.agent == 'opencode2'
+        run: npm install -g @opencode-ai/cli@0.0.0-next-16420
 
       - name: Build and deploy plugin-${{ matrix.agent }}
         env:
