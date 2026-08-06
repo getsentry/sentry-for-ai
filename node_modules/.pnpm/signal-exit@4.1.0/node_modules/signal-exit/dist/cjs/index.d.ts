@@ -16,7 +16,7 @@ export { signals };
  * unhandled promise rejection, so it is impossible to stop safely.
  */
 export type Handler = (code: number | null | undefined, signal: NodeJS.Signals | null) => true | void;
-export declare const 
+export declare const
 /**
  * Called when the process is exiting, whether via signal, explicit
  * exit, or running out of stuff to do.
@@ -28,7 +28,7 @@ export declare const
  */
 onExit: (cb: Handler, opts?: {
     alwaysLast?: boolean | undefined;
-} | undefined) => () => void, 
+} | undefined) => () => void,
 /**
  * Load the listeners.  Likely you never need to call this, unless
  * doing a rather deep integration with signal-exit functionality.
@@ -36,7 +36,7 @@ onExit: (cb: Handler, opts?: {
  *
  * @internal
  */
-load: () => void, 
+load: () => void,
 /**
  * Unload the listeners.  Likely you never need to call this, unless
  * doing a rather deep integration with signal-exit functionality.

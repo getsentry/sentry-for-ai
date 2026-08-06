@@ -21,4 +21,3 @@ test('string', function() {
     stackback(err);
     assert.equal(typeof err.stack, 'string');
 });
-

@@ -43,4 +43,3 @@ module.exports = function(err) {
 
     return err._sb_callsites;
 };
-

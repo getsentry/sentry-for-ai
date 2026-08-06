@@ -249,7 +249,7 @@ class SignalExit extends SignalExitBase {
 const process = globalThis.process;
 // wrap so that we call the method on the actual handler, without
 // exporting it directly.
-_a = signalExitWrap(processOk(process) ? new SignalExit(process) : new SignalExitFallback()), 
+_a = signalExitWrap(processOk(process) ? new SignalExit(process) : new SignalExitFallback()),
 /**
  * Called when the process is exiting, whether via signal, explicit
  * exit, or running out of stuff to do.
@@ -259,7 +259,7 @@ _a = signalExitWrap(processOk(process) ? new SignalExit(process) : new SignalExi
  *
  * Returns a function that may be used to unload signal-exit.
  */
-exports.onExit = _a.onExit, 
+exports.onExit = _a.onExit,
 /**
  * Load the listeners.  Likely you never need to call this, unless
  * doing a rather deep integration with signal-exit functionality.
@@ -267,7 +267,7 @@ exports.onExit = _a.onExit,
  *
  * @internal
  */
-exports.load = _a.load, 
+exports.load = _a.load,
 /**
  * Unload the listeners.  Likely you never need to call this, unless
  * doing a rather deep integration with signal-exit functionality.

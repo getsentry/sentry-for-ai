@@ -245,7 +245,7 @@ class SignalExit extends SignalExitBase {
 const process = globalThis.process;
 // wrap so that we call the method on the actual handler, without
 // exporting it directly.
-export const { 
+export const {
 /**
  * Called when the process is exiting, whether via signal, explicit
  * exit, or running out of stuff to do.
@@ -255,7 +255,7 @@ export const {
  *
  * Returns a function that may be used to unload signal-exit.
  */
-onExit, 
+onExit,
 /**
  * Load the listeners.  Likely you never need to call this, unless
  * doing a rather deep integration with signal-exit functionality.
@@ -263,7 +263,7 @@ onExit,
  *
  * @internal
  */
-load, 
+load,
 /**
  * Unload the listeners.  Likely you never need to call this, unless
  * doing a rather deep integration with signal-exit functionality.
