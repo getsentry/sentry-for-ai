@@ -4,8 +4,8 @@
 # (--no-interactive) so it installs the Sentry plugin for every detected agent
 # without a prompt, and verifies each plugin actually landed.
 #
-# Claude Code, Codex, and Grok ship cross-platform npm CLIs, so they get a real
-# install against their default marketplaces. Cursor has no headless CLI to
+# Claude Code, Codex, Grok, and Pi ship cross-platform npm CLIs, so they get a
+# real install against their package sources. Cursor has no headless CLI to
 # install in CI, but our Cursor install is only a `git clone` of the public
 # plugin repo into ~/.cursor/plugins/local/sentry — so we put a `cursor` stub on
 # PATH to satisfy detection and verify the real clone (this is what exercises
@@ -57,8 +57,8 @@ jobs:
       - name: Build
         run: pnpm --filter @sentry/ai build
 
-      - name: Install Claude Code, Codex, and Grok CLIs
-        run: npm install -g @anthropic-ai/claude-code @openai/codex @xai-official/grok
+      - name: Install Claude Code, Codex, Grok, and Pi CLIs
+        run: npm install -g @anthropic-ai/claude-code @openai/codex @xai-official/grok @earendil-works/pi-coding-agent
 
       - name: Put a Cursor stub on PATH
         run: |
@@ -82,18 +82,26 @@ jobs:
           set -euo pipefail
 
           echo "== claude =="
-          claude plugin list
-          claude plugin list | grep -iq sentry || { echo "claude: sentry plugin missing"; exit 1; }
+          claude_plugins=$(claude plugin list)
+          printf '%s\n' "$claude_plugins"
+          printf '%s\n' "$claude_plugins" | grep -iq sentry || { echo "claude: sentry plugin missing"; exit 1; }
 
           echo "== codex =="
-          codex plugin list
-          codex plugin list | grep -iq sentry || { echo "codex: sentry plugin missing"; exit 1; }
+          codex_plugins=$(codex plugin list)
+          printf '%s\n' "$codex_plugins"
+          printf '%s\n' "$codex_plugins" | grep -iq sentry || { echo "codex: sentry plugin missing"; exit 1; }
 
           echo "== grok =="
-          grok plugin list
-          grok plugin list | grep -iq sentry || { echo "grok: sentry plugin missing"; exit 1; }
+          grok_plugins=$(grok plugin list)
+          printf '%s\n' "$grok_plugins"
+          printf '%s\n' "$grok_plugins" | grep -iq sentry || { echo "grok: sentry plugin missing"; exit 1; }
 
           echo "== cursor =="
           node -e "const p=require('path').join(require('os').homedir(),'.cursor','plugins','local','sentry'); if(!require('fs').existsSync(p)){console.error('cursor: plugin dir missing at '+p);process.exit(1)} console.log(p)"
+
+          echo "== pi =="
+          pi_plugins=$(pi list --no-approve)
+          printf '%s\n' "$pi_plugins"
+          printf '%s\n' "$pi_plugins" | grep -iq 'getsentry/plugin-pi' || { echo "pi: sentry package missing"; exit 1; }
 
           echo "All agents have the Sentry plugin."

@@ -5,6 +5,7 @@ import { createClaude } from "../harnesses/claude";
 import { createCodex } from "../harnesses/codex";
 import { createCursor } from "../harnesses/cursor";
 import { createGrok } from "../harnesses/grok";
+import { createPi } from "../harnesses/pi";
 import { fakeSystem } from "./fake-system";
 
 const ok: ShellResult = { ok: true };
@@ -379,6 +380,91 @@ describe("grok harness", () => {
   it("throws when the install fails", async () => {
     const harness = createGrok(fakeSystem({ run: () => ({ ok: false, stderr: "nope" }) }));
     await expect(harness.install()).rejects.toThrow("nope");
+  });
+});
+
+describe("pi harness", () => {
+  it("detects when the pi binary is on PATH", async () => {
+    const harness = createPi(fakeSystem({ run: () => ok }));
+    expect(await harness.detect()).toBe(true);
+  });
+
+  it("does not detect when which fails", async () => {
+    const harness = createPi(fakeSystem({ run: () => notFound }));
+    expect(await harness.detect()).toBe(false);
+  });
+
+  it("reports installed when pi list includes our git package", async () => {
+    const harness = createPi(
+      fakeSystem({
+        run: () => ({
+          ok: true,
+          stdout: "User packages:\n  git:github.com/getsentry/plugin-pi",
+        }),
+      }),
+    );
+    expect(await harness.isInstalled()).toBe(true);
+  });
+
+  it("reports not installed when pi list lacks our package", async () => {
+    const harness = createPi(
+      fakeSystem({ run: () => ({ ok: true, stdout: "User packages:\n  npm:other-package" }) }),
+    );
+    expect(await harness.isInstalled()).toBe(false);
+  });
+
+  it("reports not installed when pi list fails", async () => {
+    const harness = createPi(fakeSystem({ run: () => notFound }));
+    expect(await harness.isInstalled()).toBe(false);
+  });
+
+  it("installs from the Pi distribution repository without trusting project resources", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const outcome = await createPi(system).install();
+
+    expect(outcome).toMatchObject({
+      kind: "done",
+      command: "pi install git:github.com/getsentry/plugin-pi --no-approve",
+    });
+    expect(system.run).toHaveBeenCalledWith(
+      "pi install git:github.com/getsentry/plugin-pi --no-approve",
+    );
+  });
+
+  it("updates through Pi's package manager without trusting project resources", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const outcome = await createPi(system).update();
+
+    expect(outcome).toMatchObject({
+      kind: "done",
+      command: "pi update git:github.com/getsentry/plugin-pi --no-approve",
+    });
+    expect(system.run).toHaveBeenCalledWith(
+      "pi update git:github.com/getsentry/plugin-pi --no-approve",
+    );
+  });
+
+  it("removes through Pi's package manager without trusting project resources", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const outcome = await createPi(system).remove();
+
+    expect(outcome).toMatchObject({
+      kind: "done",
+      command: "pi remove git:github.com/getsentry/plugin-pi --no-approve",
+    });
+    expect(system.run).toHaveBeenCalledWith(
+      "pi remove git:github.com/getsentry/plugin-pi --no-approve",
+    );
+  });
+
+  it("forwards the output sink to package commands", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const sink = {} as NodeJS.WritableStream;
+    await createPi(system).install(sink);
+    expect(system.run).toHaveBeenCalledWith(
+      "pi install git:github.com/getsentry/plugin-pi --no-approve",
+      sink,
+    );
   });
 });
 

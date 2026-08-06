@@ -8,7 +8,7 @@ and fix production issues, and how to configure alerts, AI monitoring, and more.
 This package detects which assistants you have installed and wires the plugin into each
 one for you.
 
-Supports **Claude Code**, **Codex**, **Cursor**, and **Grok**.
+Supports **Claude Code**, **Codex**, **Cursor**, **Grok**, and **Pi**.
 
 ```bash
 npx @sentry/ai install
@@ -48,6 +48,7 @@ For each detected assistant, the installer runs that tool’s native plugin comm
 | Codex | `codex plugin add sentry` from the Sentry plugin marketplace |
 | Cursor | Clones [`getsentry/plugin-cursor`](https://github.com/getsentry/plugin-cursor) into `~/.cursor/plugins/local/sentry` |
 | Grok | `grok plugin install getsentry/plugin-grok` |
+| Pi | `pi install git:github.com/getsentry/plugin-pi` |
 
 Each per-agent plugin is built and published from the
 [`sentry-for-ai`](https://github.com/getsentry/sentry-for-ai) repository, which is the

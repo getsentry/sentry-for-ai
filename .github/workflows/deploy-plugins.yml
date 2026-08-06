@@ -9,6 +9,7 @@
 #   cursor -> getsentry/plugin-cursor
 #   codex  -> getsentry/plugin-codex
 #   grok   -> getsentry/plugin-grok
+#   pi     -> getsentry/plugin-pi
 #
 # Each plugin repository carries two rolling branches, and which one a run writes
 # is the whole difference between a deploy and a release:
@@ -25,14 +26,16 @@
 # A release also tags the plugin repository (`v<version>`), giving each shipped
 # version an addressable ref for pinning and rollback.
 #
-# Marketplaces consume `getsentry/plugin-<agent>` by git ref. Each job builds its
-# agent's tree from this repo, then commits it onto the target branch of the
-# target repo, replacing the previous contents. The four jobs target four
-# different repos, so they run in parallel without contention.
+# Marketplaces consume `getsentry/plugin-<agent>` by git ref. Each build job
+# validates its agent's tree without deployment credentials and uploads it as an
+# artifact. A separate deploy job then mints a repository-scoped token and
+# commits only that validated artifact onto the target branch of the target
+# repo. The five matrix entries target five different repos, so they run in
+# parallel without contention.
 #
 # Cross-repo writes use a GitHub App token scoped per-job to a single plugin
 # repo; the default GITHUB_TOKEN cannot push to other repositories. The app must
-# be installed on the org with contents:write on the four plugin repos, its ID
+# be installed on the org with contents:write on the five plugin repos, its ID
 # stored as the PLUGIN_DEPLOY_APP_ID variable and its private key as the
 # PLUGIN_DEPLOY_KEY secret. Each target repo must already exist with `main` as
 # its default branch; `develop` is branched off it on the first deploy.
@@ -77,16 +80,18 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      # Every matrix entry builds the same checkout, so the last writer wins
+      # with the same value. Read out of the checkout rather than github.sha,
+      # which in a called workflow reports the caller's commit instead.
+      src_sha: ${{ steps.build.outputs.src_sha }}
     strategy:
       fail-fast: false
       matrix:
-        agent: [claude, cursor, codex, grok]
-    concurrency:
-      group: deploy-plugin-${{ matrix.agent }}-${{ inputs.target_branch || 'develop' }}
-      cancel-in-progress: false
+        agent: [claude, cursor, codex, grok, pi]
     steps:
       - name: Checkout source
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -96,6 +101,76 @@ jobs:
           # which needs the tags and the commits since the last one.
           fetch-depth: 0
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+
+      - name: Set up Node for Pi validation
+        if: matrix.agent == 'pi'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+
+      - name: Install Pi CLI
+        if: matrix.agent == 'pi'
+        run: npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.83.0
+
+      - name: Build plugin-${{ matrix.agent }}
+        id: build
+        env:
+          AGENT: ${{ matrix.agent }}
+          DIST_TAG: ${{ inputs.dist_tag || '' }}
+        run: |
+          set -euo pipefail
+
+          echo "src_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+          # A release stamps the version being released; anything else is a
+          # develop build and gets labelled with its distance from the last tag.
+          if [[ -z "$DIST_TAG" ]]; then
+            PLUGIN_VERSION="$(scripts/dev-version.sh)"
+            export PLUGIN_VERSION
+            echo "::notice::stamping develop build as ${PLUGIN_VERSION}"
+          fi
+
+          DIST_DIR="$(mktemp -d)/dist"
+          "src/plugins/${AGENT}/build.sh" "$DIST_DIR"
+          "src/plugins/${AGENT}/validate.sh" "$DIST_DIR"
+
+          mkdir -p "artifacts/${AGENT}"
+          rsync -a --delete "$DIST_DIR/" "artifacts/${AGENT}/"
+
+      - name: Upload validated plugin-${{ matrix.agent }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: plugin-${{ matrix.agent }}-${{ github.sha }}
+          path: artifacts/${{ matrix.agent }}/
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
+
+  deploy:
+    needs: build
+    # A failed build omits only that agent's artifact. Run the deploy matrix for
+    # the remaining artifacts instead of treating the build matrix as one gate.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: [claude, cursor, codex, grok, pi]
+    concurrency:
+      group: deploy-plugin-${{ matrix.agent }}-${{ inputs.target_branch || 'develop' }}
+      cancel-in-progress: false
+    steps:
+      - name: Download validated plugin-${{ matrix.agent }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: plugin-${{ matrix.agent }}-${{ github.sha }}
+          path: artifact
+
+      # Mint the write credential only after every third-party package and
+      # artifact action has finished executing in this job.
       - name: Mint deploy token
         id: token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
@@ -105,32 +180,18 @@ jobs:
           owner: getsentry
           repositories: plugin-${{ matrix.agent }}
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
-
-      - name: Build and deploy plugin-${{ matrix.agent }}
+      - name: Deploy plugin-${{ matrix.agent }}
         env:
           AGENT: ${{ matrix.agent }}
           TARGET_BRANCH: ${{ inputs.target_branch || 'develop' }}
           DIST_TAG: ${{ inputs.dist_tag || '' }}
+          SRC_SHA: ${{ needs.build.outputs.src_sha }}
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
           set -euo pipefail
 
           TARGET_REPO="plugin-${AGENT}"
           WORKTREE="$(mktemp -d)/dist"
-
-          # Read the built commit out of the checkout rather than github.sha,
-          # which in a called workflow reports the caller's commit instead.
-          SRC_SHA="$(git rev-parse HEAD)"
-
-          # A release stamps the version being released; anything else is a
-          # develop build and gets labelled with its distance from the last tag.
-          if [[ -z "$DIST_TAG" ]]; then
-            PLUGIN_VERSION="$(scripts/dev-version.sh)"
-            export PLUGIN_VERSION
-            echo "::notice::stamping develop build as ${PLUGIN_VERSION}"
-          fi
 
           # Clone the target repo (lands on its default branch, `main`).
           git clone "https://x-access-token:${GH_TOKEN}@github.com/getsentry/${TARGET_REPO}.git" "$WORKTREE"
@@ -146,14 +207,10 @@ jobs:
             git -C "$WORKTREE" checkout -b "$TARGET_BRANCH"
           fi
 
-          # Rewrite the whole tree: clear tracked content (preserve the .git
-          # dir), then repopulate from source via the agent's build script.
+          # Rewrite the whole tree from the already validated artifact. No build
+          # tool or third-party package executes while GH_TOKEN is in scope.
           git -C "$WORKTREE" rm -rfq --ignore-unmatch .
-          "src/plugins/${AGENT}/build.sh" "$WORKTREE"
-
-          # Validate the built tree against the agent's schema/validator before
-          # it can be deployed.
-          "src/plugins/${AGENT}/validate.sh" "$WORKTREE"
+          rsync -a --delete --exclude='.git/' artifact/ "$WORKTREE/"
 
           # Commit only if something changed.
           git -C "$WORKTREE" add -A
