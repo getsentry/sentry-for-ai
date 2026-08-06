@@ -1,17 +1,18 @@
 # Tracing — Sentry PHP SDK
 
-> Minimum SDK: `sentry/sentry` ^4.0 · `sentry/sentry-laravel` ^4.0 · `sentry/sentry-symfony` ^5.0
+> Minimum SDK: `sentry/sentry` ^4.0 · `sentry/sentry-laravel` ^4.0 ·
+> `sentry/sentry-symfony` ^5.0
 
 ## Configuration
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `traces_sample_rate` | `float` | `null` | Fraction of transactions to trace (0.0–1.0); `null` disables tracing |
 | `traces_sampler` | `callable` | `null` | Per-transaction sampling function; takes precedence over `traces_sample_rate` |
 | `profiles_sample_rate` | `float` | `null` | Fraction of sampled transactions to profile (relative to `traces_sample_rate`) |
 | `ignore_transactions` | `array` | `[]` | Transaction names to never trace (e.g., `['/up', '/healthz']`) |
 | `before_send_transaction` | `callable` | no-op | Mutate or drop transaction events before sending |
-| `strict_trace_continuation` | `bool` | `false` | Only continue an incoming distributed trace if the `sentry-org_id` baggage matches the SDK's org ID; prevents trace contamination from third-party services (>=4.21.0). Replaces deprecated `strict_trace_propagation` |
+| `strict_trace_continuation` | `bool` | `false` | Only continue an incoming distributed trace if the `sentry-org_id` baggage matches the SDK’s org ID; prevents trace contamination from third-party services (>=4.21.0). Replaces deprecated `strict_trace_propagation` |
 
 ## Code Examples
 
@@ -226,14 +227,16 @@ if ($transaction !== null) {
 
 ### Plain PHP — No automatic instrumentation
 
-The plain PHP SDK provides **zero automatic instrumentation**. Every transaction and span must be created manually using the Custom Span API.
+The plain PHP SDK provides **zero automatic instrumentation**. Every transaction and
+span must be created manually using the Custom Span API.
 
 ### Laravel — Auto-instrumented operations
 
-The `Tracing\Middleware` is auto-prepended and the `Tracing\ServiceProvider` wires all listeners automatically.
+The `Tracing\Middleware` is auto-prepended and the `Tracing\ServiceProvider` wires all
+listeners automatically.
 
 | Operation | Span Op | Enabled by default |
-|-----------|---------|-------------------|
+| --- | --- | --- |
 | HTTP request lifecycle | `http.server` | ✅ Always |
 | Route handler dispatch | `http.route` | ✅ Always |
 | SQL queries | `db.sql.query` | ✅ (`tracing.sql_queries`) |
@@ -263,7 +266,7 @@ The `Tracing\Middleware` is auto-prepended and the `Tracing\ServiceProvider` wir
 `TracingRequestListener` and other compiler-wired listeners activate automatically.
 
 | Operation | Span Op | Origin |
-|-----------|---------|--------|
+| --- | --- | --- |
 | HTTP main request | `http.server` | `auto.http.server` |
 | HTTP sub-request | `http.server` | `auto.http.server` |
 | Console command | `console.command` | `auto.console` |
@@ -280,11 +283,12 @@ The `Tracing\Middleware` is auto-prepended and the `Tracing\ServiceProvider` wir
 Two headers carry trace context between services:
 
 | Header | Purpose |
-|--------|---------|
+| --- | --- |
 | `sentry-trace` | Trace ID, span ID, sampling decision (Sentry native format) |
 | `baggage` | Dynamic sampling context (W3C baggage spec) |
 
-> **CORS note:** Both headers must be in your CORS allowlist if browser requests are involved. Proxies and API gateways may strip unknown headers.
+> **CORS note:** Both headers must be in your CORS allowlist if browser requests are
+> involved. Proxies and API gateways may strip unknown headers.
 
 ### Extracting incoming trace context
 
@@ -353,7 +357,8 @@ try {
 
 ### HTML meta tag injection (frontend/backend trace stitching)
 
-Inject these tags into your HTML `<head>` so the Sentry JavaScript SDK can continue the backend trace in the browser.
+Inject these tags into your HTML `<head>` so the Sentry JavaScript SDK can continue the
+backend trace in the browser.
 
 ```php
 // Plain PHP
@@ -379,7 +384,7 @@ echo sprintf('<meta name="baggage" content="%s"/>', \Sentry\getBaggage());
 ### Framework-automatic propagation
 
 | Framework | Incoming (extract) | Outgoing (inject) |
-|-----------|--------------------|-------------------|
+| --- | --- | --- |
 | Plain PHP | Manual `continueTrace()` | Manual header injection |
 | Laravel | Auto in `Tracing\Middleware` | Auto on Laravel HTTP Client (≥ 8.45) |
 | Symfony | Auto in `TracingRequestListener` (supports both `sentry-trace` and `traceparent`) | Auto via HTTP Client decorator (injects `sentry-trace`, `baggage`, `traceparent`) |
@@ -436,30 +441,46 @@ Examples:
 ### Plain PHP
 
 - Zero automatic instrumentation — create every transaction and span manually
-- Call `\Sentry\flush()` before process exit in CLI scripts to ensure buffered data is sent
-- For queue workers and long-running processes, start a transaction per job with `continueTrace()` to preserve distributed trace context
+- Call `\Sentry\flush()` before process exit in CLI scripts to ensure buffered data is
+  sent
+- For queue workers and long-running processes, start a transaction per job with
+  `continueTrace()` to preserve distributed trace context
 
 ### Laravel
 
-- `Tracing\Middleware` is **auto-prepended** by `Tracing\ServiceProvider` — do not add it manually
-- Transaction start time is backdated to Laravel boot via `setBootedTimestamp()` — captures full request duration including framework startup
-- `missing_routes: false` (default) discards 404/unmatched route transactions; set to `true` to trace them
-- `config:cache` breaks if `traces_sampler` is a closure — use a class/callable string or only set it at runtime
-- Queue tracing: `tracing.queue_jobs: true` creates spans; `tracing.queue_job_transactions: true` creates standalone transactions with distributed trace propagation using payload keys `sentry_trace_parent_data` / `sentry_baggage_data`
-- On **Octane**: FastCGI terminable middleware dispatches spans after response — no user-visible latency. Without FastCGI, use a local Relay proxy
+- `Tracing\Middleware` is **auto-prepended** by `Tracing\ServiceProvider` — do not add
+  it manually
+- Transaction start time is backdated to Laravel boot via `setBootedTimestamp()` —
+  captures full request duration including framework startup
+- `missing_routes: false` (default) discards 404/unmatched route transactions; set to
+  `true` to trace them
+- `config:cache` breaks if `traces_sampler` is a closure — use a class/callable string
+  or only set it at runtime
+- Queue tracing: `tracing.queue_jobs: true` creates spans;
+  `tracing.queue_job_transactions: true` creates standalone transactions with
+  distributed trace propagation using payload keys `sentry_trace_parent_data` /
+  `sentry_baggage_data`
+- On **Octane**: FastCGI terminable middleware dispatches spans after response — no
+  user-visible latency.
+  Without FastCGI, use a local Relay proxy
 
 ### Symfony
 
-- `TracingRequestListener` accepts both `sentry-trace` (Sentry) and `traceparent` (W3C) headers for incoming distributed traces
-- HTTP Client decorator injects three outgoing headers: `sentry-trace`, `baggage`, `traceparent`
-- Console commands are auto-traced by `TracingConsoleListener` — creates a root transaction if none is active, otherwise creates a child span
-- Messenger integration is **error-capture only** (via `MessengerListener`) — no tracing spans for queue messages
-- FastCGI: spans are sent after response via `kernel.terminate`. Without FastCGI, use a local Relay proxy
+- `TracingRequestListener` accepts both `sentry-trace` (Sentry) and `traceparent` (W3C)
+  headers for incoming distributed traces
+- HTTP Client decorator injects three outgoing headers: `sentry-trace`, `baggage`,
+  `traceparent`
+- Console commands are auto-traced by `TracingConsoleListener` — creates a root
+  transaction if none is active, otherwise creates a child span
+- Messenger integration is **error-capture only** (via `MessengerListener`) — no tracing
+  spans for queue messages
+- FastCGI: spans are sent after response via `kernel.terminate`. Without FastCGI, use a
+  local Relay proxy
 
 ## Span Ops Reference
 
 | `op` | What it tracks |
-|------|---------------|
+| --- | --- |
 | `http.server` | Incoming HTTP request |
 | `http.client` | Outgoing HTTP request |
 | `http.route` | Controller/action dispatch (Laravel) |
@@ -481,14 +502,14 @@ Examples:
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No transactions appearing | Verify `traces_sample_rate > 0` or `traces_sampler` returns non-zero; confirm SDK is initialized before request handling |
 | Spans not linked to transaction | Ensure spans are created inside an active transaction; call `setSpan($transaction)` on the hub after `startTransaction()` |
 | Distributed traces broken | Verify `sentry-trace` and `baggage` headers pass through proxies, load balancers, and CORS middleware |
 | `traces_sampler` ignored in Laravel | Closures break `config:cache`; use an invokable class or only configure at runtime (not in config file) |
-| `traces_sampler` not working in Symfony | Must be a service factory — closures can't be serialized. Register as a service and reference by ID |
+| `traces_sampler` not working in Symfony | Must be a service factory — closures can’t be serialized. Register as a service and reference by ID |
 | Missing route transactions in Laravel | Set `tracing.missing_routes: true` in sentry config (default is `false` — 404s are discarded) |
-| No profiling data | Confirm Excimer extension is installed (`php -m | grep excimer`); Windows not supported; `traces_sample_rate` must be set |
+| No profiling data | Confirm Excimer extension is installed (`php -m \| grep excimer`); Windows not supported; `traces_sample_rate` must be set |
 | High response latency from tracing | Use FastCGI (terminable middleware) or deploy a local Relay proxy to make uploads async |
 | Queue jobs not traced | Set `tracing.queue_jobs: true`; for standalone transactions also set `tracing.queue_job_transactions: true` |
 | HTML meta tags show empty values | Call `getTraceparent()` / `getBaggage()` inside an active transaction; outside a transaction these return empty strings |

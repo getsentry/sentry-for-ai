@@ -1,11 +1,14 @@
 # Sentry Android SDK
 
-Opinionated wizard that scans your Android project and guides you through complete Sentry setup — error monitoring, tracing, profiling, session replay, logging, and more.
+Opinionated wizard that scans your Android project and guides you through complete
+Sentry setup — error monitoring, tracing, profiling, session replay, logging, and more.
 
-> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`io.sentry:sentry-android:8.33.0`, Gradle plugin `6.1.0`).
-> Always verify against [docs.sentry.io/platforms/android/](https://docs.sentry.io/platforms/android/) before implementing.
+> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing
+> (`io.sentry:sentry-android:8.33.0`, Gradle plugin `6.1.0`). Always verify against
+> [docs.sentry.io/platforms/android/](https://docs.sentry.io/platforms/android/) before
+> implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -70,10 +73,10 @@ find .. -maxdepth 2 \( -name "go.mod" -o -name "requirements.txt" -o -name "Gemf
 **What to determine:**
 
 | Question | Impact |
-|----------|--------|
+| --- | --- |
 | `build.gradle.kts` present? | Use Kotlin DSL syntax in all examples |
 | `gradle/libs.versions.toml` present? | Add Sentry to the version catalog; reference via `libs.*` in build files |
-| Catalog already has `sentry` entries? | Reuse the existing version ref; don't duplicate or hardcode versions |
+| Catalog already has `sentry` entries? | Reuse the existing version ref; don’t duplicate or hardcode versions |
 | `minSdk < 26`? | Note Session Replay requires API 26+ — silent no-op below that |
 | Compose detected? | Recommend `sentry-compose-android` and Compose-specific masking |
 | OkHttp present? | Recommend `sentry-okhttp` interceptor or Gradle plugin bytecode auto-instrumentation |
@@ -81,18 +84,22 @@ find .. -maxdepth 2 \( -name "go.mod" -o -name "requirements.txt" -o -name "Gemf
 | Timber present? | Recommend `sentry-android-timber` integration |
 | Jetpack Navigation? | Recommend `sentry-android-navigation` for screen tracking |
 | Already has `SentryAndroid.init()`? | Skip install, jump to feature config |
-| Application subclass exists? | That's where `SentryAndroid.init()` goes |
+| Application subclass exists? | That’s where `SentryAndroid.init()` goes |
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Present a concrete recommendation based on what you found. Don't ask open-ended questions — lead with a proposal:
+Present a concrete recommendation based on what you found.
+Don’t ask open-ended questions — lead with a proposal:
 
 **Recommended (core coverage — always set up these):**
-- ✅ **Error Monitoring** — captures uncaught exceptions, ANRs, and native NDK crashes automatically
-- ✅ **Tracing** — auto-instruments Activity lifecycle, app start, HTTP requests, and database queries
-- ✅ **Session Replay** — records screen captures and user interactions for debugging (API 26+)
+- ✅ **Error Monitoring** — captures uncaught exceptions, ANRs, and native NDK crashes
+  automatically
+- ✅ **Tracing** — auto-instruments Activity lifecycle, app start, HTTP requests, and
+  database queries
+- ✅ **Session Replay** — records screen captures and user interactions for debugging
+  (API 26+)
 
 **Optional (enhanced observability):**
 - ⚡ **Profiling** — continuous UI profiling (recommended) or transaction-based sampling
@@ -101,8 +108,8 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 
 **Recommendation logic:**
 
-| Feature | Recommend when... |
-|---------|------------------|
+| Feature | Recommend when … |
+| --- | --- |
 | Error Monitoring | **Always** — non-negotiable baseline for any Android app |
 | Tracing | **Always for Android** — app start time, Activity lifecycle, network latency matter |
 | Session Replay | User-facing production app on API 26+; visual debugging of user issues |
@@ -110,44 +117,48 @@ Present a concrete recommendation based on what you found. Don't ask open-ended 
 | Logging | App uses structured logging or you want log-to-trace correlation in Sentry |
 | User Feedback | Beta or customer-facing app where you want user-submitted bug reports |
 
-Propose: *"For your [Kotlin / Java] Android app (minSdk X), I recommend setting up Error Monitoring + Tracing + Session Replay. Want me to also add Profiling and Logging?"*
+Propose: *“For your [Kotlin / Java] Android app (minSdk X), I recommend setting up Error
+Monitoring + Tracing + Session Replay.
+Want me to also add Profiling and Logging?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
 ### Determine Your Setup Path
 
 | Project type | Recommended setup | Complexity |
-|-------------|------------------|------------|
+| --- | --- | --- |
 | New project, no existing Sentry | Gradle plugin (recommended) | Low — plugin handles most config |
 | Existing project, no Sentry | Gradle plugin or manual init | Medium — add dependency + Application class |
 | Manual full control | `SentryAndroid.init()` in Application | Medium — explicit config, most flexible |
 
 ### Option 1: Wizard (Recommended)
 
-> **You need to run this yourself** — the wizard opens a browser for login
-> and requires interactive input that the agent can't handle.
+> **You need to run this yourself** — the wizard opens a browser for login and requires
+> interactive input that the agent can’t handle.
 > Copy-paste into your terminal:
->
+> 
 > ```
 > npx @sentry/wizard@latest -i android
 > ```
->
-> It handles login, org/project selection, Gradle plugin setup, dependency
-> installation, DSN configuration, and ProGuard/R8 mapping upload.
->
+> 
+> It handles login, org/project selection, Gradle plugin setup, dependency installation,
+> DSN configuration, and ProGuard/R8 mapping upload.
+> 
 > **Once it finishes, come back and skip to [Verification](#verification).**
 
 If the user skips the wizard, proceed with Option 2 (Manual Setup) below.
 
----
+* * *
 
 ### Option 2: Manual Setup
 
 #### Using a Gradle Version Catalog (`gradle/libs.versions.toml`)
 
-If Phase 1 detected `gradle/libs.versions.toml`, add Sentry to the catalog **first**, then reference it from your build files. This keeps versions centralized and matches modern AGP project conventions.
+If Phase 1 detected `gradle/libs.versions.toml`, add Sentry to the catalog **first**,
+then reference it from your build files.
+This keeps versions centralized and matches modern AGP project conventions.
 
 **Step 1 — Add entries to `gradle/libs.versions.toml`**
 
@@ -172,8 +183,11 @@ sentry-kotlin-extensions = { module = "io.sentry:sentry-kotlin-extensions" }
 sentry-android-gradle = { id = "io.sentry.android.gradle", version.ref = "sentryGradlePlugin" }
 ```
 
-> **Note:** Optional integration entries omit `version.ref` — their versions come from the BOM at resolution time. Only `sentry-bom` needs the version ref.
-> If the catalog already defines a `sentry` version, reuse it instead of adding a duplicate entry.
+> **Note:** Optional integration entries omit `version.ref` — their versions come from
+> the BOM at resolution time.
+> Only `sentry-bom` needs the version ref.
+> If the catalog already defines a `sentry` version, reuse it instead of adding a
+> duplicate entry.
 
 **Step 2 — Reference the catalog from `build.gradle[.kts]`**
 
@@ -212,16 +226,20 @@ dependencies {
 }
 ```
 
-Then continue with the `sentry {}` configuration block from Path A, Step 2 below. The rest of the setup (Application class init, manifest registration, verification) is identical.
+Then continue with the `sentry {}` configuration block from Path A, Step 2 below.
+The rest of the setup (Application class init, manifest registration, verification) is
+identical.
 
----
+* * *
 
 #### Path A: Gradle Plugin (Recommended)
 
-The Sentry Gradle plugin is the easiest setup path. It:
+The Sentry Gradle plugin is the easiest setup path.
+It:
 - Uploads ProGuard/R8 mapping files automatically on release builds
 - Injects source context into stack frames
-- Optionally instruments OkHttp, Room/SQLite, File I/O, Compose navigation, and `android.util.Log` via bytecode transforms (zero source changes)
+- Optionally instruments OkHttp, Room/SQLite, File I/O, Compose navigation, and
+  `android.util.Log` via bytecode transforms (zero source changes)
 
 **Step 1 — Add the plugin to `build.gradle[.kts]` (project-level)**
 
@@ -328,7 +346,7 @@ sentry {
 
 **Step 3 — Initialize Sentry in your Application class**
 
-If you don't have an Application subclass, create one:
+If you don’t have an Application subclass, create one:
 
 ```kotlin
 // MyApplication.kt
@@ -396,11 +414,11 @@ public class MyApplication extends Application {
     ... >
 ```
 
----
+* * *
 
 #### Path B: Manual Setup (No Gradle Plugin)
 
-Use this if you can't use the Gradle plugin (e.g., non-standard build setups).
+Use this if you can’t use the Gradle plugin (e.g., non-standard build setups).
 
 **Step 1 — Add dependency in `app/build.gradle[.kts]`**
 
@@ -415,7 +433,8 @@ dependencies {
 
 **Step 3 — Configure ProGuard/R8 manually**
 
-The Sentry SDK ships a ProGuard rules file automatically. For manual mapping upload, install `sentry-cli` and add to your CI:
+The Sentry SDK ships a ProGuard rules file automatically.
+For manual mapping upload, install `sentry-cli` and add to your CI:
 
 ```bash
 sentry-cli releases files "my-app@1.0.0+42" upload-proguard \
@@ -423,7 +442,7 @@ sentry-cli releases files "my-app@1.0.0+42" upload-proguard \
   app/build/outputs/mapping/release/mapping.txt
 ```
 
----
+* * *
 
 ### Quick Reference: Full-Featured `SentryAndroid.init()`
 
@@ -471,14 +490,15 @@ SentryAndroid.init(this) { options ->
 }
 ```
 
----
+* * *
 
 ### For Each Agreed Feature
 
-Walk through features one at a time. Load the reference file for each, follow its steps, then verify before moving on:
+Walk through features one at a time.
+Load the reference file for each, follow its steps, then verify before moving on:
 
-| Feature | Reference | Load when... |
-|---------|-----------|-------------|
+| Feature | Reference | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always (baseline) |
 | Tracing & Performance | `./tracing.md` | Always for Android (Activity lifecycle, network) |
 | Profiling | `./profiling.md` | Performance-sensitive production apps |
@@ -490,14 +510,14 @@ Walk through features one at a time. Load the reference file for each, follow it
 
 For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Core `SentryOptions` (via `SentryAndroid.init`)
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `dsn` | `String` | — | **Required.** Project DSN; SDK silently disabled if empty |
 | `environment` | `String` | — | e.g., `"production"`, `"staging"`. Env: `SENTRY_ENVIRONMENT` |
 | `release` | `String` | — | App version, e.g., `"my-app@1.0.0+42"`. Env: `SENTRY_RELEASE` |
@@ -516,7 +536,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Tracing Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `tracesSampleRate` | `Double` | `0.0` | Transaction sample rate (0–1). Use `1.0` in dev |
 | `tracesSampler` | `TracesSamplerCallback` | — | Per-transaction sampling; overrides `tracesSampleRate` |
 | `tracePropagationTargets` | `List<String>` | `[".*"]` | Hosts/URLs to receive `sentry-trace` and `baggage` headers |
@@ -527,7 +547,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Profiling Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `profileSessionSampleRate` | `Double` | `0.0` | Continuous profiling sample rate (SDK ≥ 8.7.0, API 22+) |
 | `profilesSampleRate` | `Double` | `0.0` | Legacy transaction profiling rate (mutually exclusive with continuous) |
 | `isProfilingStartOnAppStart` | `Boolean` | `false` | Auto-start profiling session on app launch |
@@ -535,7 +555,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### ANR Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `isAnrEnabled` | `Boolean` | `true` | Enable ANR watchdog thread |
 | `anrTimeoutIntervalMillis` | `Long` | `5000` | Milliseconds before reporting ANR |
 | `isAnrReportInDebug` | `Boolean` | `false` | Report ANRs in debug builds (noisy in debugger) |
@@ -543,7 +563,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### NDK Options
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `isEnableNdk` | `Boolean` | `true` | Enable native crash capture via sentry-native |
 | `isEnableScopeSync` | `Boolean` | `true` | Sync Java scope (user, tags) to NDK layer |
 | `isEnableTombstoneFetchJob` | `Boolean` | `true` | Fetch NDK tombstone files for enrichment |
@@ -551,7 +571,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Session Replay Options (`options.sessionReplay`)
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `sessionSampleRate` | `Double` | `0.0` | Fraction of all sessions to record |
 | `onErrorSampleRate` | `Double` | `0.0` | Fraction of error sessions to record |
 | `maskAllText` | `Boolean` | `true` | Mask all text in replays |
@@ -561,14 +581,14 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Logging Options (`options.logs`)
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `isEnabled` | `Boolean` | `false` | Enable `Sentry.logger()` API (SDK ≥ 8.12.0) |
 | `setBeforeSend` | `BeforeSendLogCallback` | — | Filter/modify log entries before sending |
 
 ### Environment Variables
 
 | Variable | Purpose | Notes |
-|----------|---------|-------|
+| --- | --- | --- |
 | `SENTRY_DSN` | Data Source Name | Set in CI; SDK reads from environment at init |
 | `SENTRY_AUTH_TOKEN` | Upload ProGuard mappings and source context | **Never commit — use CI/CD secrets** |
 | `SENTRY_ORG` | Organization slug | Used by Gradle plugin `sentry.org` |
@@ -589,9 +609,11 @@ You can also configure DSN and many options via `AndroidManifest.xml` meta-data:
 </application>
 ```
 
-> ⚠️ Manifest meta-data is a convenient alternative but does **not** support the full option set. For complex configuration (session replay, profiling, hooks), use `SentryAndroid.init()`.
+> ⚠️ Manifest meta-data is a convenient alternative but does **not** support the full
+> option set. For complex configuration (session replay, profiling, hooks), use
+> `SentryAndroid.init()`.
 
----
+* * *
 
 ## Verification
 
@@ -630,15 +652,17 @@ Sentry.logger().error("Error log test", Exception("test error"))
 If nothing appears:
 1. Set `options.isDebug = true` — SDK logs to Logcat
 2. Verify DSN is correct and matches your Sentry project
-3. Check that your `Application` class is registered in `AndroidManifest.xml` as `android:name`
+3. Check that your `Application` class is registered in `AndroidManifest.xml` as
+   `android:name`
 4. Confirm the device/emulator has internet connectivity
 5. For NDK crashes, ensure `isEnableNdk = true` (default) and build with NDK support
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
-After completing Android setup, check for a backend or web frontend missing Sentry coverage:
+After completing Android setup, check for a backend or web frontend missing Sentry
+coverage:
 
 ```bash
 # Adjacent backend directories
@@ -656,7 +680,7 @@ find .. -maxdepth 3 -name "*.xcodeproj" 2>/dev/null | head -3
 If a backend or related platform exists without Sentry, suggest the matching skill:
 
 | Detected | Suggest skill |
-|----------|--------------|
+| --- | --- |
 | Go backend (`go.mod`) | [`go`](../go/index.md) |
 | Python backend (`requirements.txt`, `pyproject.toml`) | [`python`](../python/index.md) |
 | Ruby backend (`Gemfile`) | [`ruby`](../ruby/index.md) |
@@ -665,7 +689,8 @@ If a backend or related platform exists without Sentry, suggest the matching ski
 | React Native (`package.json` with `react-native`) | [`react-native`](../react-native/index.md) |
 | React / Next.js web | [`react`](../react/index.md) or [`nextjs`](../nextjs/index.md) |
 
-**Distributed tracing setup** — if the backend skill is added, configure `tracePropagationTargets` in Android to propagate trace context to your API:
+**Distributed tracing setup** — if the backend skill is added, configure
+`tracePropagationTargets` in Android to propagate trace context to your API:
 
 ```kotlin
 options.tracePropagationTargets = listOf(
@@ -676,12 +701,12 @@ options.tracePropagationTargets = listOf(
 
 This links mobile transactions to backend traces in the Sentry waterfall view.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing in Sentry | Set `isDebug = true`, check Logcat for SDK errors; verify DSN is correct and matches your project |
 | `SentryAndroid.init()` not called | Confirm `android:name=".MyApplication"` is set in `AndroidManifest.xml`; Application class not abstract |
 | Gradle plugin not found | Add the plugin to project-level `build.gradle.kts` first, then `apply false`; verify version `6.1.0` |
@@ -695,7 +720,7 @@ This links mobile transactions to backend traces in the Sentry waterfall view.
 | OkHttp spans not appearing | Add `SentryOkHttpInterceptor` to your `OkHttpClient`, or use Gradle plugin `OKHTTP` bytecode instrumentation |
 | Spans not attached to transaction | Ensure `TransactionOptions().setBindToScope(true)` when starting transaction; child spans look for scope root |
 | Tracing not recording | Verify `tracesSampleRate > 0`; Activity instrumentation requires `isEnableAutoActivityLifecycleTracing = true` (default) |
-| Continuous profiling not working | SDK ≥ 8.7.0 required; API 22+ required; set `profileSessionSampleRate > 0`; don't also set `profilesSampleRate` |
+| Continuous profiling not working | SDK ≥ 8.7.0 required; API 22+ required; set `profileSessionSampleRate > 0`; don’t also set `profilesSampleRate` |
 | Both profiling modes set | `profilesSampleRate` and `profileSessionSampleRate` are mutually exclusive — use only one |
 | TTFD spans missing | Set `isEnableTimeToFullDisplayTracing = true` and call `Sentry.reportFullyDisplayed()` when screen is ready |
 | Kotlin coroutine scope lost | Add `sentry-kotlin-extensions` dependency; use `Sentry.cloneMainContext()` to propagate trace context |
@@ -703,5 +728,5 @@ This links mobile transactions to backend traces in the Sentry waterfall view.
 | Source context not showing in Sentry | Enable `includeSourceContext = true` in `sentry {}` block (Gradle plugin required) |
 | BOM version conflict | Use `implementation(platform("io.sentry:sentry-bom:8.33.0"))` and omit versions from all other `io.sentry:*` entries |
 | Version catalog alias unresolved | After editing `gradle/libs.versions.toml`, sync Gradle; alias names use `-` in TOML and `.` in build files (e.g., `sentry-android` → `libs.sentry.android`) |
-| Duplicate Sentry version in catalog | Reuse the existing `[versions] sentry = "..."` entry; don't add a second key, and don't hardcode the version in `build.gradle` when the catalog is in use |
+| Duplicate Sentry version in catalog | Reuse the existing `[versions] sentry = "..."` entry; don’t add a second key, and don’t hardcode the version in `build.gradle` when the catalog is in use |
 | `SENTRY_AUTH_TOKEN` exposed | Auth token is build-time only — never pass it to `SentryAndroid.init()` or embed in the APK |

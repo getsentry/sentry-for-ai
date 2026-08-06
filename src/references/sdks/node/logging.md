@@ -1,17 +1,18 @@
 # Logging — Sentry Node.js SDK
 
-> Minimum SDK: `@sentry/node` ≥9.41.0 (stable GA)  
-> First experimental: ≥9.10.0 (via `_experiments.enableLogs`)  
-> Console multi-arg parsing: ≥10.13.0  
-> Consola reporter: ≥10.12.0  
-> Scope attributes on logs: ≥10.32.0  
+> Minimum SDK: `@sentry/node` ≥9.41.0 (stable GA)\
+> First experimental: ≥9.10.0 (via `_experiments.enableLogs`)\
+> Console multi-arg parsing: ≥10.13.0\
+> Consola reporter: ≥10.12.0\
+> Scope attributes on logs: ≥10.32.0\
 > Status: ✅ **Generally Available**
 
----
+* * *
 
 ## Overview
 
-Sentry Logs are high-cardinality structured log entries that link directly to traces and errors. They let you answer *why* something broke, not just *what* broke.
+Sentry Logs are high-cardinality structured log entries that link directly to traces and
+errors. They let you answer *why* something broke, not just *what* broke.
 
 Key characteristics:
 - Sent as structured data — each attribute is individually searchable in Sentry UI
@@ -19,7 +20,7 @@ Key characteristics:
 - Buffered and batched (max 100 per buffer) — no per-log network overhead
 - NOT a replacement for a logging library; designed to complement one
 
----
+* * *
 
 ## Initialization
 
@@ -39,7 +40,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Logger API
 
@@ -54,14 +55,14 @@ Sentry.logger.error(message, attributes?, options?)
 Sentry.logger.fatal(message, attributes?, options?)
 ```
 
-| Method  | Severity # | When to Use                             |
-|---------|------------|-----------------------------------------|
-| `trace` | 1          | Fine-grained debugging, hot paths       |
-| `debug` | 5          | Development diagnostics, variable dumps |
-| `info`  | 9          | Normal operations, milestones, events   |
-| `warn`  | 13         | Potential issues, degraded state        |
-| `error` | 17         | Failures that need attention            |
-| `fatal` | 21         | Critical failures, service down         |
+| Method | Severity # | When to Use |
+| --- | --- | --- |
+| `trace` | 1 | Fine-grained debugging, hot paths |
+| `debug` | 5 | Development diagnostics, variable dumps |
+| `info` | 9 | Normal operations, milestones, events |
+| `warn` | 13 | Potential issues, degraded state |
+| `error` | 17 | Failures that need attention |
+| `fatal` | 21 | Critical failures, service down |
 
 **Full TypeScript signature** (same shape for all six methods):
 
@@ -73,7 +74,7 @@ function info(
 ): void;
 ```
 
----
+* * *
 
 ## Basic Usage
 
@@ -86,11 +87,12 @@ Sentry.logger.error("Payment failed", { reason: "card_declined", userId: 42 });
 Sentry.logger.fatal("Database unavailable", { host: "primary-db", port: 5432 });
 ```
 
----
+* * *
 
 ## Parameterized Messages — `Sentry.logger.fmt`
 
-Use the `fmt` tagged template literal to create parameterized messages. Interpolated values are extracted as **individually searchable attributes** in Sentry.
+Use the `fmt` tagged template literal to create parameterized messages.
+Interpolated values are extracted as **individually searchable attributes** in Sentry.
 
 ```typescript
 const userId = "user_123";
@@ -115,13 +117,16 @@ Sentry.logger.info(
 );
 ```
 
-`fmt` is an alias for `Sentry.parameterize()` internally. The returned string carries hidden `__sentry_template_string__` and `__sentry_template_values__` properties used by the SDK for serialization.
+`fmt` is an alias for `Sentry.parameterize()` internally.
+The returned string carries hidden `__sentry_template_string__` and
+`__sentry_template_values__` properties used by the SDK for serialization.
 
----
+* * *
 
 ## Structured Attributes
 
-The second argument is a plain object. Values must be `string`, `number`, or `boolean`.
+The second argument is a plain object.
+Values must be `string`, `number`, or `boolean`.
 
 ```typescript
 Sentry.logger.info("API request completed", {
@@ -139,11 +144,12 @@ Sentry.logger.info("API request completed", {
 
 Attributes become filterable columns in the Sentry Logs view.
 
----
+* * *
 
 ## Scope-Based Attributes (SDK ≥10.32.0)
 
-Set attributes on a scope once and they are automatically attached to every log emitted within that scope.
+Set attributes on a scope once and they are automatically attached to every log emitted
+within that scope.
 
 ```typescript
 // Global scope — applies to all logs for the app's lifetime
@@ -170,26 +176,26 @@ Sentry.withScope((scope) => {
 });
 ```
 
----
+* * *
 
 ## Auto-Attached Attributes
 
 The SDK automatically attaches these to every log:
 
-| Attribute Key                | Value                                  |
-|------------------------------|----------------------------------------|
-| `sentry.environment`         | `environment` from `Sentry.init()`     |
-| `sentry.release`             | `release` from `Sentry.init()`         |
-| `sentry.sdk.name`            | e.g., `"sentry.javascript.node"`       |
-| `sentry.sdk.version`         | e.g., `"10.42.0"`                      |
-| `server.address`             | Server hostname / `server_name`        |
-| `user.id`                    | Current scope user ID (if set)         |
-| `user.name`                  | Current scope username (if set)        |
-| `user.email`                 | Current scope user email (if set)      |
-| `sentry.message.template`    | Parameterized template (when using `fmt`) |
-| `sentry.message.parameter.N` | Positional interpolated values         |
+| Attribute Key | Value |
+| --- | --- |
+| `sentry.environment` | `environment` from `Sentry.init()` |
+| `sentry.release` | `release` from `Sentry.init()` |
+| `sentry.sdk.name` | e.g., `"sentry.javascript.node"` |
+| `sentry.sdk.version` | e.g., `"10.42.0"` |
+| `server.address` | Server hostname / `server_name` |
+| `user.id` | Current scope user ID (if set) |
+| `user.name` | Current scope username (if set) |
+| `user.email` | Current scope user email (if set) |
+| `sentry.message.template` | Parameterized template (when using `fmt`) |
+| `sentry.message.parameter.N` | Positional interpolated values |
 
----
+* * *
 
 ## Console Integration
 
@@ -213,9 +219,10 @@ console.warn("Memory pressure");           // → severity: warn
 console.error("Unhandled rejection");      // → severity: error
 ```
 
-Multi-argument parsing (args become `message.parameter.N` attributes) requires SDK ≥10.13.0.
+Multi-argument parsing (args become `message.parameter.N` attributes) requires SDK
+≥10.13.0.
 
----
+* * *
 
 ## Consola Integration (SDK ≥10.12.0)
 
@@ -230,11 +237,12 @@ logger.info("This goes to Sentry Logs");
 logger.error("This too");
 ```
 
----
+* * *
 
 ## `beforeSendLog` Hook
 
-Filter or transform logs before they are sent. Return `null` to drop:
+Filter or transform logs before they are sent.
+Return `null` to drop:
 
 ```typescript
 Sentry.init({
@@ -264,11 +272,12 @@ Sentry.init({
 
 The `log` object shape: `{ level, message, attributes, severityNumber }`.
 
----
+* * *
 
 ## Third-Party Logger Bridges
 
-Sentry does **not** provide official first-party transports for Winston, Pino, Bunyan, or Morgan. Use the patterns below to forward logs to `Sentry.logger.*`.
+Sentry does **not** provide official first-party transports for Winston, Pino, Bunyan,
+or Morgan. Use the patterns below to forward logs to `Sentry.logger.*`.
 
 **Winston:**
 
@@ -320,17 +329,21 @@ const dest = pino.destination({
 const logger = pino({ level: "trace" }, dest);
 ```
 
----
+* * *
 
 ## Trace Linking
 
-Logs emitted during an active span automatically include `sentry.trace.parent_span_id`, linking them to the active trace. From a log in Sentry you can navigate to its parent trace; from a trace you can see all logs emitted during that request.
+Logs emitted during an active span automatically include `sentry.trace.parent_span_id`,
+linking them to the active trace.
+From a log in Sentry you can navigate to its parent trace; from a trace you can see all
+logs emitted during that request.
 
----
+* * *
 
 ## Log Buffering and Flushing
 
-Logs are buffered in memory (max 100 per buffer: `MAX_LOG_BUFFER_SIZE = 100`). The buffer flushes automatically when full or on `client.close()`.
+Logs are buffered in memory (max 100 per buffer: `MAX_LOG_BUFFER_SIZE = 100`). The
+buffer flushes automatically when full or on `client.close()`.
 
 For **serverless or short-lived processes**, flush explicitly before exit:
 
@@ -339,18 +352,18 @@ await Sentry.flush(2000);  // flush with 2s timeout
 await Sentry.close(2000);  // flush + close all transports
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Problem | Likely Cause | Fix |
-|---------|-------------|-----|
+| --- | --- | --- |
 | Logs not appearing in Sentry | `enableLogs` not set | Add `enableLogs: true` to `Sentry.init()` |
 | `Sentry.logger` is undefined | SDK < 9.41.0 | Upgrade to ≥9.41.0 |
 | Attributes not searchable | Using complex objects | Use only `string`, `number`, `boolean` values |
 | Console logs not captured | Missing integration | Add `consoleLoggingIntegration()` to `integrations` |
 | Logs cut off in serverless | Buffer not flushed | Call `await Sentry.flush(2000)` before function returns |
-| `fmt` values not parameterized | Using string interpolation | Use tagged template: `` fmt`msg ${val}` `` not `"msg " + val` |
+| `fmt` values not parameterized | Using string interpolation | Use `fmt` as a tagged template literal, not `"msg " + val` |
 | Logs missing trace link | No active span | Enable tracing with `tracesSampleRate` |
 | `beforeSendLog` not firing | `enableLogs: false` | Logs are dropped before the hook if logging is disabled |
 | Scope attributes missing from logs | SDK < 10.32.0 | Upgrade to ≥10.32.0 for scope attribute inheritance |

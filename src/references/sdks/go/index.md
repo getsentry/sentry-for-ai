@@ -1,12 +1,16 @@
 # Sentry Go SDK
 
-Opinionated wizard that scans your Go project and guides you through complete Sentry setup.
+Opinionated wizard that scans your Go project and guides you through complete Sentry
+setup.
 
-> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing (sentry-go v0.43.0+).
-> As of v0.33.0+, the SDK requires **Go 1.25 or later** (supports the two most recent Go major versions).
-> Always verify against [docs.sentry.io/platforms/go/](https://docs.sentry.io/platforms/go/) before implementing.
+> **Note:** SDK versions and APIs below reflect Sentry docs at time of writing
+> (sentry-go v0.43.0+). As of v0.33.0+, the SDK requires **Go 1.25 or later** (supports
+> the two most recent Go major versions).
+> Always verify against
+> [docs.sentry.io/platforms/go/](https://docs.sentry.io/platforms/go/) before
+> implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -37,16 +41,21 @@ ls frontend/ web/ client/ ui/ 2>/dev/null
 
 **What to note:**
 - Is `sentry-go` already in `go.mod`? If yes, skip to Phase 2 (configure features).
-- Which framework is used? (Determines which sub-package and middleware to install.)
-- Which logging library? (Enables automatic log capture.)
-- Are cron/scheduler patterns present? (Triggers Crons recommendation.)
-- Is there a companion frontend directory? (Triggers Phase 4 cross-link.)
+- Which framework is used?
+  (Determines which sub-package and middleware to install.)
+- Which logging library?
+  (Enables automatic log capture.)
+- Are cron/scheduler patterns present?
+  (Triggers Crons recommendation.)
+- Is there a companion frontend directory?
+  (Triggers Phase 4 cross-link.)
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Based on what you found, present a concrete recommendation. Don't ask open-ended questions — lead with a proposal:
+Based on what you found, present a concrete recommendation.
+Don’t ask open-ended questions — lead with a proposal:
 
 **Recommended (core coverage):**
 - ✅ **Error Monitoring** — always; captures panics and unhandled errors
@@ -60,8 +69,8 @@ Based on what you found, present a concrete recommendation. Don't ask open-ended
 
 **Recommendation logic:**
 
-| Feature | Recommend when... |
-|---------|------------------|
+| Feature | Recommend when … |
+| --- | --- |
 | Error Monitoring | **Always** — non-negotiable baseline |
 | Tracing | `net/http`, gin, echo, fiber, gRPC, or DB calls detected |
 | Logging | logrus, zap, zerolog, or `log/slog` imports detected |
@@ -69,9 +78,10 @@ Based on what you found, present a concrete recommendation. Don't ask open-ended
 | Crons | `robfig/cron`, `gocron`, or scheduled job patterns detected |
 | Profiling | ⚠️ **Removed in v0.31.0** — do not recommend; see `./profiling.md` |
 
-Propose: *"I recommend setting up Error Monitoring + Tracing [+ Logging if applicable]. Want me to also add Metrics or Crons?"*
+Propose: *“I recommend setting up Error Monitoring + Tracing [+ Logging if applicable].
+Want me to also add Metrics or Crons?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
@@ -103,7 +113,8 @@ go get github.com/getsentry/sentry-go/otel
 
 ### Quick Start — Recommended Init
 
-Add to `main()` before any other code. This config enables the most features with sensible defaults:
+Add to `main()` before any other code.
+This config enables the most features with sensible defaults:
 
 ```go
 import (
@@ -145,7 +156,7 @@ var release string // set by -ldflags
 After `sentry.Init`, register the Sentry middleware for your framework:
 
 | Framework | Import path | Middleware call | `Repanic` | `WaitForDelivery` |
-|-----------|------------|----------------|-----------|-------------------|
+| --- | --- | --- | --- | --- |
 | `net/http` | `.../sentry-go/http` | `sentryhttp.New(opts).Handle(h)` | `true` | `false` |
 | Gin | `.../sentry-go/gin` | `router.Use(sentrygin.New(opts))` | `true` | `false` |
 | Echo | `.../sentry-go/echo` | `e.Use(sentryecho.New(opts))` | `true` | `false` |
@@ -154,7 +165,8 @@ After `sentry.Init`, register the Sentry middleware for your framework:
 | Iris | `.../sentry-go/iris` | `app.Use(sentryiris.New(opts))` | `true` | `false` |
 | Negroni | `.../sentry-go/negroni` | `n.Use(sentrynegroni.New(opts))` | `true` | `false` |
 
-> **Note:** Fiber and FastHTTP are built on `valyala/fasthttp` which has no built-in recovery. Use `Repanic: false, WaitForDelivery: true` for those.
+> **Note:** Fiber and FastHTTP are built on `valyala/fasthttp` which has no built-in
+> recovery. Use `Repanic: false, WaitForDelivery: true` for those.
 
 **Hub access in handlers:**
 ```go
@@ -197,10 +209,12 @@ hub := sentry.GetHubFromContext(ctx)
 
 ### For Each Agreed Feature
 
-Walk through features one at a time. Load the reference file for each, follow its steps, and verify before moving to the next:
+Walk through features one at a time.
+Load the reference file for each, follow its steps, and verify before moving to the
+next:
 
-| Feature | Reference file | Load when... |
-|---------|---------------|-------------|
+| Feature | Reference file | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always (baseline) |
 | Tracing | `./tracing.md` | HTTP handlers / distributed tracing |
 | Profiling | `./profiling.md` | ⚠️ Not available — removed in v0.31.0; do not set up. Read the file only for pprof / third-party alternatives |
@@ -210,14 +224,14 @@ Walk through features one at a time. Load the reference file for each, follow it
 
 For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Key `ClientOptions` Fields
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `Dsn` | `string` | `""` | SDK disabled if empty; env: `SENTRY_DSN` |
 | `Environment` | `string` | `""` | e.g., `"production"`; env: `SENTRY_ENVIRONMENT` |
 | `Release` | `string` | `""` | e.g., `"my-app@1.0.0"`; env: `SENTRY_RELEASE` |
@@ -239,7 +253,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Environment Variables
 
 | Variable | Maps to | Purpose |
-|----------|---------|---------|
+| --- | --- | --- |
 | `SENTRY_DSN` | `Dsn` | Data Source Name |
 | `SENTRY_RELEASE` | `Release` | App version (e.g., `my-app@1.0.0`) |
 | `SENTRY_ENVIRONMENT` | `Environment` | Deployment environment |
@@ -247,7 +261,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
 Options set in `ClientOptions` **override** environment variables.
 
----
+* * *
 
 ## Verification
 
@@ -261,12 +275,13 @@ sentry.CaptureMessage("Sentry Go SDK test")
 panic("sentry test panic")
 ```
 
-Check the Sentry dashboard within a few seconds. If nothing appears:
+Check the Sentry dashboard within a few seconds.
+If nothing appears:
 1. Set `Debug: true` in `ClientOptions` — prints SDK internals to stdout
 2. Verify the DSN is correct and the project exists
 3. Ensure `sentry.Flush(2 * time.Second)` is called (events are async by default)
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
@@ -280,18 +295,18 @@ cat frontend/package.json web/package.json 2>/dev/null | grep -E '"react"|"svelt
 If a frontend directory exists without Sentry configured, suggest the matching skill:
 
 | Frontend detected | Suggest skill |
-|-------------------|--------------|
+| --- | --- |
 | React / Next.js | [`react`](../react/index.md) |
 | Svelte / SvelteKit | [`svelte`](../svelte/index.md) |
 | Vue | Use `@sentry/vue` — see [docs.sentry.io/platforms/javascript/guides/vue/](https://docs.sentry.io/platforms/javascript/guides/vue/) |
 | Other JS/TS | [`react`](../react/index.md) (covers generic browser JS patterns) |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing | Set `Debug: true`, check DSN, verify `sentry.Flush()` is called |
 | `sentry.Init` returns error | Malformed DSN — check format: `https://<key>@o<org>.ingest.sentry.io/<project>` |
 | Panics not captured | Ensure framework middleware is registered before handlers |

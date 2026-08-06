@@ -1,36 +1,40 @@
 # Session Replay — Sentry Android SDK
 
-> **Minimum SDK:** `io.sentry:sentry-android:8.33.0`  
-> **Minimum Android API: 26 (Oreo)** — silently disabled on API 21-25  
-> **Status:** Production-ready  
+> **Minimum SDK:** `io.sentry:sentry-android:8.33.0`\
+> **Minimum Android API: 26 (Oreo)** — silently disabled on API 21-25\
+> **Status:** Production-ready\
 > **Docs:** https://docs.sentry.io/platforms/android/session-replay/
 
----
+* * *
 
 ## ⚠️ API Level Requirement
 
-Session Replay requires **Android API 26 (Oreo)** or higher. On devices running API 21–25, replay is silently skipped with an `INFO` log — no crash, no error, no recording. Apps with `minSdk = 21` (covering ~4–5% of devices) have zero replay coverage on those devices.
+Session Replay requires **Android API 26 (Oreo)** or higher.
+On devices running API 21–25, replay is silently skipped with an `INFO` log — no crash,
+no error, no recording.
+Apps with `minSdk = 21` (covering ~4–5% of devices) have zero replay coverage on those
+devices.
 
 ```kotlin
 // Guard in ReplayIntegration.kt (line 128):
 // if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) { return }
 ```
 
----
+* * *
 
 ## How Android Replay Works
 
 Android Session Replay is **screenshot-based**, not DOM-based:
 
 | Dimension | Web Replay | Android Replay |
-|-----------|-----------|----------------|
+| --- | --- | --- |
 | Recording method | DOM serialization | Native view hierarchy screenshots |
 | Frame rate | Variable / mutation-driven | ~1 frame per second |
 | Privacy mechanism | CSS-based DOM masking | **Native pixel masking** over screenshots |
 | Touch recording | Full pointer events | Tap breadcrumbs only |
 | Text in replay | Selectable, searchable | Pixel-only — text is in screenshots |
 
----
+* * *
 
 ## Installation
 
@@ -59,7 +63,7 @@ dependencies {
 }
 ```
 
----
+* * *
 
 ## Basic Setup
 
@@ -86,14 +90,14 @@ SentryAndroid.init(this) { options ->
 <meta-data android:name="io.sentry.session-replay.on-error-sample-rate" android:value="1.0" />
 ```
 
----
+* * *
 
 ## Configuration Reference
 
 Accessed via `options.sessionReplay` (Kotlin) or `options.getSessionReplay()` (Java).
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `sessionSampleRate` | `Double?` | `0.0` | Fraction of all sessions recorded continuously (0.0–1.0) |
 | `onErrorSampleRate` | `Double?` | `0.0` | Fraction captured when an error occurs; buffers 30s prior |
 | `quality` | `SentryReplayQuality` | `MEDIUM` | Video encoding quality preset |
@@ -112,7 +116,7 @@ Accessed via `options.sessionReplay` (Kotlin) or `options.getSessionReplay()` (J
 | `debug` | `Boolean` | `false` | Enable verbose replay diagnostic logging |
 | `trackConfiguration` | `Boolean` | `true` | Track device orientation and configuration changes |
 
----
+* * *
 
 ## Code Examples
 
@@ -139,7 +143,10 @@ SentryAndroid.init(this) { options ->
 }
 ```
 
-> **Canvas strategy warning:** When `CANVAS` is active, `addMaskViewClass()`, XML tags, Kotlin extensions, and Compose modifiers are **completely ignored**. Canvas always masks all text and images. Use only when total masking is acceptable.
+> **Canvas strategy warning:** When `CANVAS` is active, `addMaskViewClass()`, XML tags,
+> Kotlin extensions, and Compose modifiers are **completely ignored**. Canvas always
+> masks all text and images.
+> Use only when total masking is acceptable.
 
 ### Development Configuration
 
@@ -155,7 +162,7 @@ SentryAndroid.init(this) { options ->
 }
 ```
 
----
+* * *
 
 ## Privacy Masking
 
@@ -174,7 +181,8 @@ com.google.android.exoplayer2.ui.PlayerView
 com.google.android.exoplayer2.ui.StyledPlayerView
 ```
 
-> **Masking is hierarchical.** Masking `TextView` also masks every subclass automatically.
+> **Masking is hierarchical.** Masking `TextView` also masks every subclass
+> automatically.
 
 ### Disabling Default Masking
 
@@ -222,8 +230,9 @@ productTitleLabel.sentryReplayUnmask()
 
 ### Jetpack Compose Masking
 
-> **Requires:** `io.sentry:sentry-compose-android:8.33.0`  
-> **Compose 1.8+ note:** A masking regression for Compose 1.8+ was fixed in SDK 8.32.x — use SDK ≥ 8.33.0 with Compose 1.8.
+> **Requires:** `io.sentry:sentry-compose-android:8.33.0`\
+> **Compose 1.8+ note:** A masking regression for Compose 1.8+ was fixed in SDK 8.32.x —
+> use SDK ≥ 8.33.0 with Compose 1.8.
 
 ```kotlin
 // Mask an entire composable subtree
@@ -258,22 +267,30 @@ Text(
 )
 ```
 
-> **Compose + view flattening:** Compose can optimize away wrapper composables. If masking is unexpectedly dropped, verify the composable is not being flattened by the Compose compiler.
+> **Compose + view flattening:** Compose can optimize away wrapper composables.
+> If masking is unexpectedly dropped, verify the composable is not being flattened by
+> the Compose compiler.
 
 ### Masking Priority Order (first match wins)
 
-1. **View-level unmask** — `sentry-unmask` tag / `.sentryReplayUnmask()` / Compose `.sentryReplayUnmask()`
-2. **View-level mask** — `sentry-mask` tag / `.sentryReplayMask()` / Compose `.sentryReplayMask()`
+1. **View-level unmask** — `sentry-unmask` tag / `.sentryReplayUnmask()` / Compose
+   `.sentryReplayUnmask()`
+2. **View-level mask** — `sentry-mask` tag / `.sentryReplayMask()` / Compose
+   `.sentryReplayMask()`
 3. **Class-level unmask** — `addUnmaskViewClass(className)`
-4. **Class-level mask** — `addMaskViewClass(className)` / `maskAllText` / `maskAllImages`
+4. **Class-level mask** — `addMaskViewClass(className)` / `maskAllText` /
+   `maskAllImages`
 
-> **ViewGroup inheritance:** A masked parent does NOT automatically mask its children. Each child must be independently masked. An unmasked parent does NOT override class-level masks on children.
+> **ViewGroup inheritance:** A masked parent does NOT automatically mask its children.
+> Each child must be independently masked.
+> An unmasked parent does NOT override class-level masks on children.
 
----
+* * *
 
 ## Network Capture
 
-Requires `SentryOkHttpInterceptor` or `SentryOkHttpEventListener` from `sentry-android-okhttp` (or `sentry-okhttp`):
+Requires `SentryOkHttpInterceptor` or `SentryOkHttpEventListener` from
+`sentry-android-okhttp` (or `sentry-okhttp`):
 
 ```kotlin
 SentryAndroid.init(this) { options ->
@@ -290,9 +307,10 @@ SentryAndroid.init(this) { options ->
 }
 ```
 
-> Retrofit and `HttpURLConnection` apps have no network capture in replay — only OkHttp is supported.
+> Retrofit and `HttpURLConnection` apps have no network capture in replay — only OkHttp
+> is supported.
 
----
+* * *
 
 ## Session Lifecycle
 
@@ -317,11 +335,12 @@ SDK init → ReplayIntegration.start()
                    └─► last 30s of buffered frames are uploaded
 ```
 
----
+* * *
 
 ## Debug Masking Overlay
 
-During development, enable a colored overlay to visually inspect which regions are masked:
+During development, enable a colored overlay to visually inspect which regions are
+masked:
 
 ```kotlin
 // Get the ReplayIntegration instance
@@ -333,26 +352,35 @@ replay?.enableDebugMaskingOverlay()   // shows colored rectangles over masked re
 replay?.disableDebugMaskingOverlay()
 ```
 
----
+* * *
 
 ## Best Practices
 
-1. **Always set both sample rates for production** — `sessionSampleRate` for baseline coverage, `onErrorSampleRate = 1.0` for debugging every error
-2. **Start with `MEDIUM` quality** — then adjust down to `LOW` if bandwidth or battery becomes a concern
-3. **Use `maskAllText = true` (default)** — erring on the side of more masking is always safer for user privacy
-4. **Use XML `sentry_privacy` tag over `android:tag`** — the dedicated tag doesn't conflict with other usages of `android:tag`
-5. **Use Compose `Modifier.sentryReplayMask()` at the layout level** — mask entire sections (payment forms, PII screens) rather than individual fields
-6. **Never enable Canvas strategy in production without testing** — it ignores all custom masking rules
-7. **Set `debug = true` during development** — helps verify masking is applied correctly before releasing
-8. **Test on an API 26 device** — replay silently does nothing on API 21-25; don't test exclusively on newer devices and assume all users have coverage
-9. **Exclude auth and payment URLs from network capture** — `networkDetailDenyUrls` prevents tokens and card data from appearing in replay
+1. **Always set both sample rates for production** — `sessionSampleRate` for baseline
+   coverage, `onErrorSampleRate = 1.0` for debugging every error
+2. **Start with `MEDIUM` quality** — then adjust down to `LOW` if bandwidth or battery
+   becomes a concern
+3. **Use `maskAllText = true` (default)** — erring on the side of more masking is always
+   safer for user privacy
+4. **Use XML `sentry_privacy` tag over `android:tag`** — the dedicated tag doesn’t
+   conflict with other usages of `android:tag`
+5. **Use Compose `Modifier.sentryReplayMask()` at the layout level** — mask entire
+   sections (payment forms, PII screens) rather than individual fields
+6. **Never enable Canvas strategy in production without testing** — it ignores all
+   custom masking rules
+7. **Set `debug = true` during development** — helps verify masking is applied correctly
+   before releasing
+8. **Test on an API 26 device** — replay silently does nothing on API 21-25; don’t test
+   exclusively on newer devices and assume all users have coverage
+9. **Exclude auth and payment URLs from network capture** — `networkDetailDenyUrls`
+   prevents tokens and card data from appearing in replay
 
----
+* * *
 
 ## Known Limitations
 
 | Limitation | Details |
-|------------|---------|
+| --- | --- |
 | API 26+ hard requirement | Silent no-op on API 21-25; no fallback or warning unless `debug = true` |
 | Canvas strategy ignores all masking | `addMaskViewClass`, XML tags, Kotlin extensions, and Compose modifiers have zero effect with `CANVAS` |
 | PixelCopy masking misalignment | Mask overlay can misalign on views with `setTranslationX/Y`, `setScaleX/Y`, or inside `RecyclerView` with `ItemAnimator` |
@@ -362,12 +390,12 @@ replay?.disableDebugMaskingOverlay()
 | Trailing frame loss on crash | In-memory frames from the current segment are lost if the app is killed mid-segment; completed segments are persisted to disk |
 | No Retrofit/HttpURLConnection network capture | Only OkHttp-based networking is captured in replay |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No replays appearing in Sentry | Check `sessionSampleRate` or `onErrorSampleRate` > 0; verify device is API 26+ (enable `debug = true` to see skip log on API 21-25) |
 | Masking not applied to custom view | Add class to `addMaskViewClass("com.example.MyView")` or apply `sentry-mask` tag |
 | Masking applied but view content still visible | Check masking priority order; a view-level unmask overrides class-level masks |

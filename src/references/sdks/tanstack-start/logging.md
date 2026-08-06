@@ -1,9 +1,9 @@
 # Logs — Sentry TanStack Start React SDK
 
-> Minimum SDK: `@sentry/tanstackstart-react` with Logs support  
+> Minimum SDK: `@sentry/tanstackstart-react` with Logs support\
 > Framework target: TanStack Start React `1.0 RC`
 
----
+* * *
 
 ## Enable Logs
 
@@ -20,7 +20,7 @@ Configure this in:
 - `src/router.tsx` (browser runtime)
 - `instrument.server.mjs` (server runtime)
 
----
+* * *
 
 ## Logging APIs
 
@@ -40,7 +40,7 @@ Sentry.logger.error("Validation failed", {
 });
 ```
 
----
+* * *
 
 ## Correlating Logs with Traces and Errors
 
@@ -52,7 +52,7 @@ For best analysis value:
 
 This allows filtering by request context and linking logs to traces/issues.
 
----
+* * *
 
 ## Verification
 
@@ -61,12 +61,12 @@ This allows filtering by request context and linking logs to traces/issues.
 3. Filter by message or metadata fields to confirm ingestion.
 4. Open a related issue or trace and verify shared context fields.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not visible | Confirm `enableLogs: true` in active runtime init |
 | Missing metadata fields | Pass structured objects as second argument to logger methods |
 | Too much log volume | Reduce noisy log calls or gate debug/info logs by environment |

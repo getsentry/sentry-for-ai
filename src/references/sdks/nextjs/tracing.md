@@ -1,25 +1,28 @@
 # Tracing — Sentry Next.js SDK
 
-> Minimum SDK: `@sentry/nextjs` ≥8.0.0  
-> `withServerActionInstrumentation`: ≥8.0.0  
-> `enableLongAnimationFrame`: ≥8.18.0  
+> Minimum SDK: `@sentry/nextjs` ≥8.0.0\
+> `withServerActionInstrumentation`: ≥8.0.0\
+> `enableLongAnimationFrame`: ≥8.18.0\
 > `ignoreSpans`: ≥10.2.0
 
----
+* * *
 
 ## How Tracing Is Activated
 
-Tracing is enabled by setting **`tracesSampleRate`** or **`tracesSampler`** in all three runtime config files. Without one of these, no spans are created.
+Tracing is enabled by setting **`tracesSampleRate`** or **`tracesSampler`** in all three
+runtime config files.
+Without one of these, no spans are created.
 
 | Config file | Runtime | What it traces |
-|---|---|---|
+| --- | --- | --- |
 | `instrumentation-client.ts` | Browser | Page loads, navigations, fetch/XHR, Web Vitals, INP |
 | `sentry.server.config.ts` | Node.js | API routes, RSC renders, `getServerSideProps`, background work |
 | `sentry.edge.config.ts` | Edge | Next.js middleware |
 
-> ⚠️ **All three must have tracing configured.** Missing one means that runtime produces no spans.
+> ⚠️ **All three must have tracing configured.** Missing one means that runtime produces
+> no spans.
 
----
+* * *
 
 ## `tracesSampleRate` — Uniform Sampling
 
@@ -30,13 +33,16 @@ A number between `0.0` and `1.0`. Set the same option in all three configs:
 tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
 ```
 
-> **To disable tracing entirely:** omit both `tracesSampleRate` and `tracesSampler`. Setting `tracesSampleRate: 0` is not the same — it still activates instrumentation but sends nothing.
+> **To disable tracing entirely:** omit both `tracesSampleRate` and `tracesSampler`.
+> Setting `tracesSampleRate: 0` is not the same — it still activates instrumentation but
+> sends nothing.
 
----
+* * *
 
 ## `tracesSampler` — Dynamic Per-Request Sampling
 
-When defined, `tracesSampler` takes **precedence** over `tracesSampleRate`. Receives a `SamplingContext` and returns a number (0–1) or boolean.
+When defined, `tracesSampler` takes **precedence** over `tracesSampleRate`. Receives a
+`SamplingContext` and returns a number (0–1) or boolean.
 
 ```typescript
 // TypeScript: SamplingContext shape
@@ -82,23 +88,24 @@ Sentry.init({
 });
 ```
 
-**Why use `inheritOrSampleWith` instead of checking `parentSampled` directly?**  
-It ensures consistent rates flow through distributed traces, enables accurate metric extrapolation, and sets the correct `sentry-sampled` value in downstream `baggage`.
+**Why use `inheritOrSampleWith` instead of checking `parentSampled` directly?**\
+It ensures consistent rates flow through distributed traces, enables accurate metric
+extrapolation, and sets the correct `sentry-sampled` value in downstream `baggage`.
 
 ### Sampling Precedence
 
 1. `tracesSampler` function (if defined) — evaluated first
-2. Parent's sampling decision (propagated via `sentry-trace` header)
+2. Parent’s sampling decision (propagated via `sentry-trace` header)
 3. `tracesSampleRate` (uniform fallback)
 
----
+* * *
 
 ## Auto-Instrumented Operations
 
 ### Client-Side (Browser)
 
-| Operation | Op | What's captured |
-|---|---|---|
+| Operation | Op | What’s captured |
+| --- | --- | --- |
 | Initial page load | `pageload` | LCP, CLS, FCP, TTFB Web Vitals; resource load child spans |
 | Client-side navigation | `navigation` | Route change duration; child fetch/XHR spans |
 | `fetch()` requests | `http.client` | URL, method, status code, duration, HTTP timings |
@@ -110,16 +117,17 @@ It ensures consistent rates flow through distributed traces, enables accurate me
 ### Server-Side (Node.js)
 
 | Operation | Op | Notes |
-|---|---|---|
+| --- | --- | --- |
 | API route handlers (App Router) | `http.server` | `app/api/*/route.ts` — auto-instrumented |
 | API route handlers (Pages Router) | `http.server` | `pages/api/*.ts` — auto-instrumented |
 | React Server Components | `http.server` | RSC render times |
 | `getServerSideProps` | `http.server` | Pages Router SSR data fetching |
 | Edge Middleware | `http.server` | Via `sentry.edge.config.ts` |
 
-> ⚠️ **Server Actions are NOT auto-instrumented.** Wrap each with `withServerActionInstrumentation()` — see below.
+> ⚠️ **Server Actions are NOT auto-instrumented.** Wrap each with
+> `withServerActionInstrumentation()` — see below.
 
----
+* * *
 
 ## `browserTracingIntegration` Options
 
@@ -161,13 +169,15 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Custom Spans
 
 ### `Sentry.startSpan()` — Active, Auto-Ending (Recommended)
 
-Wraps a block of work. The span becomes active (children nest under it) and ends automatically when the callback returns or resolves:
+Wraps a block of work.
+The span becomes active (children nest under it) and ends automatically when the
+callback returns or resolves:
 
 ```typescript
 // Async
@@ -227,7 +237,8 @@ function authMiddleware(req: Request, res: Response, next: NextFunction) {
 
 ### `Sentry.startInactiveSpan()` — Not Active, Manual End
 
-Creates a span that is **never** automatically made active. Use for parallel work or event-based tracking:
+Creates a span that is **never** automatically made active.
+Use for parallel work or event-based tracking:
 
 ```typescript
 // Parallel independent operations
@@ -248,7 +259,8 @@ parent.end();
 
 ### Browser: `setActiveSpanInBrowser()` — Persistent Active Span
 
-When a callback-based API isn't practical (e.g., UI event handlers), keep a span active across event calls. Available since SDK v10.15.0:
+When a callback-based API isn’t practical (e.g., UI event handlers), keep a span active
+across event calls. Available since SDK v10.15.0:
 
 ```typescript
 let checkoutSpan: Sentry.Span | undefined;
@@ -265,7 +277,7 @@ onCheckoutComplete(() => {
 
 > ⚠️ `setActiveSpanInBrowser` is **browser-only**.
 
----
+* * *
 
 ## Span Options Reference
 
@@ -284,7 +296,7 @@ interface StartSpanOptions {
 **Common `op` values:**
 
 | `op` | Use for |
-|------|---------|
+| --- | --- |
 | `http.client` | Outgoing HTTP requests (fetch, XHR) |
 | `http.server` | Incoming HTTP requests (API routes, SSR) |
 | `db` / `db.query` | Database queries |
@@ -296,7 +308,7 @@ interface StartSpanOptions {
 | `queue.publish` / `queue.process` | Message queue operations |
 | `task` | Background / scheduled work |
 
----
+* * *
 
 ## Span Enrichment
 
@@ -332,11 +344,12 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Server Actions — `withServerActionInstrumentation()`
 
-Server Actions are not auto-instrumented. Wrap each with `withServerActionInstrumentation()`:
+Server Actions are not auto-instrumented.
+Wrap each with `withServerActionInstrumentation()`:
 
 ```typescript
 // app/actions/order.ts
@@ -365,12 +378,12 @@ export async function createOrder(formData: FormData) {
 **Options:**
 
 | Option | Type | Description |
-|--------|------|-------------|
+| --- | --- | --- |
 | `formData` | `FormData` | Logged with the span |
 | `headers` | `Headers` | Required for distributed trace continuation — always pass `await headers()` |
 | `recordResponse` | `boolean` | Whether to capture the return value as span data |
 
----
+* * *
 
 ## Distributed Tracing
 
@@ -379,7 +392,7 @@ export async function createOrder(formData: FormData) {
 Sentry injects two HTTP headers into outgoing requests:
 
 | Header | Format | Purpose |
-|--------|--------|---------|
+| --- | --- | --- |
 | `sentry-trace` | `{traceId}-{spanId}-{sampled}` | Carries trace context |
 | `baggage` | W3C Baggage with `sentry-*` keys | Carries sampling decision + metadata |
 
@@ -390,7 +403,8 @@ Access-Control-Allow-Headers: sentry-trace, baggage
 
 ### `tracePropagationTargets`
 
-Controls which outgoing requests get trace headers. Accepts strings (substring match) and/or RegExp:
+Controls which outgoing requests get trace headers.
+Accepts strings (substring match) and/or RegExp:
 
 ```typescript
 // instrumentation-client.ts
@@ -404,14 +418,16 @@ Sentry.init({
 });
 ```
 
-**Default:** `['localhost', /^\//]` — only localhost and same-origin requests.  
+**Default:** `['localhost', /^\//]` — only localhost and same-origin requests.\
 **Disable entirely:** `tracePropagationTargets: []`
 
-> ⚠️ If your API is at `http://localhost:3001`, use `"localhost:3001"` or a regex matching the port — `"localhost"` alone won't match.
+> ⚠️ If your API is at `http://localhost:3001`, use `"localhost:3001"` or a regex
+> matching the port — `"localhost"` alone won’t match.
 
 ### Automatic SSR → Client Trace Continuation
 
-When Next.js server-renders a page, Sentry emits trace context as `<meta>` tags in `<head>`. The browser SDK reads them automatically to continue the same trace:
+When Next.js server-renders a page, Sentry emits trace context as `<meta>` tags in
+`<head>`. The browser SDK reads them automatically to continue the same trace:
 
 ```html
 <!-- Auto-injected by Next.js SDK — no configuration needed -->
@@ -419,7 +435,8 @@ When Next.js server-renders a page, Sentry emits trace context as `<meta>` tags 
 <meta name="baggage" content="sentry-trace_id=12345678...,sentry-sample_rate=0.1,..." />
 ```
 
-This means a single distributed trace spans the server render **and** subsequent client-side activity.
+This means a single distributed trace spans the server render **and** subsequent
+client-side activity.
 
 ### Manual Trace Propagation (Non-HTTP Channels)
 
@@ -450,9 +467,11 @@ Sentry.continueTrace({ sentryTrace, baggage }, () => {
 
 ### Head-Based Sampling
 
-The originating (head) service makes the sampling decision. That decision propagates to all downstream services via `sentry-trace`. All services either all sample or all drop the trace — ensuring complete traces, never partial ones.
+The originating (head) service makes the sampling decision.
+That decision propagates to all downstream services via `sentry-trace`. All services
+either all sample or all drop the trace — ensuring complete traces, never partial ones.
 
----
+* * *
 
 ## Advanced Span APIs
 
@@ -533,7 +552,9 @@ Sentry.startSpan(
 
 ### Browser Flat Span Hierarchy
 
-In browsers, all child spans are attached flat to the root span by default. To opt into true nesting (use with care — can produce incorrect data with concurrent async operations):
+In browsers, all child spans are attached flat to the root span by default.
+To opt into true nesting (use with care — can produce incorrect data with concurrent
+async operations):
 
 ```typescript
 Sentry.init({
@@ -541,7 +562,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Complete Config Example (All Three Runtimes)
 
@@ -597,20 +618,20 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
-| No transactions in Performance dashboard | Verify `tracesSampleRate` or `tracesSampler` is set; confirm it's set in all three runtime configs |
-| Server Actions not traced | Wrap each with `withServerActionInstrumentation()`; it's not auto-instrumented |
+| --- | --- |
+| No transactions in Performance dashboard | Verify `tracesSampleRate` or `tracesSampler` is set; confirm it’s set in all three runtime configs |
+| Server Actions not traced | Wrap each with `withServerActionInstrumentation()`; it’s not auto-instrumented |
 | Distributed trace not linking frontend → backend | Add backend URL to `tracePropagationTargets`; verify `Access-Control-Allow-Headers: sentry-trace, baggage` on the backend |
 | SSR page load not linked to server trace | This is automatic — verify both client and server use the same DSN |
 | API requests missing `sentry-trace` header | Check CORS preflight — backend must allow `sentry-trace` and `baggage` |
 | Transaction names show raw URLs (`/users/42`) | Use `beforeStartSpan` to parameterize: replace `/\d+/g` with `/<id>` |
 | `tracesSampler` not working | When both `tracesSampler` and `tracesSampleRate` are set, `tracesSampler` wins — expected behavior |
 | Spans missing after async gap (browser) | Browser uses flat hierarchy; use `startInactiveSpan` with explicit `parentSpan` across async boundaries |
-| `tracePropagationTargets` port not matching | `"localhost"` won't match `localhost:3001` — use `"localhost:3001"` or a regex |
+| `tracePropagationTargets` port not matching | `"localhost"` won’t match `localhost:3001` — use `"localhost:3001"` or a regex |
 | High transaction volume | Use `tracesSampler` to return `0` for health checks; lower default rate with `inheritOrSampleWith(0.02)` |
 | Server-only spans not appearing | Verify `instrumentation.ts` exports `onRequestError = Sentry.captureRequestError` and loads the server config |

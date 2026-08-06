@@ -1,12 +1,12 @@
 # Logging — Sentry Cocoa SDK
 
-> Minimum SDK (experimental): `sentry-cocoa` v8.55.0+
-> Minimum SDK (stable): `sentry-cocoa` v9.0.0+
+> Minimum SDK (experimental): `sentry-cocoa` v8.55.0+ Minimum SDK (stable):
+> `sentry-cocoa` v9.0.0+
 
 ## Configuration
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `enableLogs` | `Bool` | `false` | Enable structured logging (v9.0.0+, stable) |
 | `experimental.enableLogs` | `Bool` | `false` | Enable structured logging (v8.55.0–8.x, experimental) |
 | `beforeSendLog` | `((SentryLog) -> SentryLog?)?` | `nil` | Filter or modify logs before sending; return `nil` to drop |
@@ -59,12 +59,13 @@ logger.error("Payment failed",            attributes: ["amount": 99.99])
 logger.fatal("Connection pool exhausted", attributes: ["activeConnections": 100])
 ```
 
-Supported Swift attribute value types include `String`, `Bool`, `Int`, `Double`, `Float`, arrays, and sets; other values are converted to strings.
+Supported Swift attribute value types include `String`, `Bool`, `Int`, `Double`,
+`Float`, arrays, and sets; other values are converted to strings.
 
 ### Log levels (severity order)
 
 | Level | Method | Typical Use |
-|-------|--------|-------------|
+| --- | --- | --- |
 | 1 — Trace | `logger.trace(...)` | Very fine-grained diagnostic events |
 | 2 — Debug | `logger.debug(...)` | Debugging information |
 | 3 — Info | `logger.info(...)` | General informational messages |
@@ -74,7 +75,9 @@ Supported Swift attribute value types include `String`, `Bool`, `Int`, `Double`,
 
 ### Swift string interpolation as structured attributes
 
-When you use Swift string interpolation in the message, the SDK automatically extracts the interpolated values as named attributes using the key pattern `sentry.message.parameter.{index}`:
+When you use Swift string interpolation in the message, the SDK automatically extracts
+the interpolated values as named attributes using the key pattern
+`sentry.message.parameter.{index}`:
 
 ```swift
 let userId = "user_123"
@@ -88,7 +91,8 @@ logger.info("User \(userId) placed \(orderCount) orders")
 //   sentry.message.parameter.1 = 5
 ```
 
-This preserves the ability to search and filter by the template while retaining the individual values as queryable attributes.
+This preserves the ability to search and filter by the template while retaining the
+individual values as queryable attributes.
 
 ### beforeSendLog filter hook
 
@@ -112,7 +116,8 @@ SentrySDK.start { options in
 ```
 
 Available on `SentryLog`:
-- `log.level` — `SentryLog.Level` (`.trace`, `.debug`, `.info`, `.warn`, `.error`, `.fatal`)
+- `log.level` — `SentryLog.Level` (`.trace`, `.debug`, `.info`, `.warn`, `.error`,
+  `.fatal`)
 - `log.body` — `String`
 - `log.timestamp` — `Date`
 - `log.attributes` — `[String: SentryAttribute]`
@@ -129,7 +134,8 @@ The SDK automatically attaches the following to every log entry:
 
 ### Using alongside Apple os.log
 
-`SentrySDK.logger` is a standalone Sentry telemetry system — it is **not** a bridge to `os.log` / `Logger`. To write to both:
+`SentrySDK.logger` is a standalone Sentry telemetry system — it is **not** a bridge to
+`os.log` / `Logger`. To write to both:
 
 ```swift
 import OSLog
@@ -169,22 +175,30 @@ SentrySDK.logger.info("User signed in",
 
 ## Known Limitations
 
-- Logs can be **lost in crash scenarios** if the SDK cannot flush the buffer before the app terminates — this is a known limitation of the current implementation
-- Logs are a **separate pipeline** from error events — they are not attached to breadcrumbs or spans automatically
-- Attribute values are limited to `String`, `Int`, `Double`, and `Bool` — other types must be converted
+- Logs can be **lost in crash scenarios** if the SDK cannot flush the buffer before the
+  app terminates — this is a known limitation of the current implementation
+- Logs are a **separate pipeline** from error events — they are not attached to
+  breadcrumbs or spans automatically
+- Attribute values are limited to `String`, `Int`, `Double`, and `Bool` — other types
+  must be converted
 
 ## Best Practices
 
-- Prefer `logger.error(...)` or `logger.fatal(...)` over `SentrySDK.capture(message:)` for application-level log lines — structured logs are easier to search and filter in Sentry
-- Use structured attributes instead of embedding values in the message string directly; attributes are indexed and queryable
+- Prefer `logger.error(...)` or `logger.fatal(...)` over `SentrySDK.capture(message:)`
+  for application-level log lines — structured logs are easier to search and filter in
+  Sentry
+- Use structured attributes instead of embedding values in the message string directly;
+  attributes are indexed and queryable
 - Use Swift string interpolation to let the SDK extract attribute values automatically
-- Set `beforeSendLog` to drop `trace` and `debug` in production to reduce noise and volume
-- Set the user via `SentrySDK.setUser(...)` before logging to automatically correlate logs with user identities
+- Set `beforeSendLog` to drop `trace` and `debug` in production to reduce noise and
+  volume
+- Set the user via `SentrySDK.setUser(...)` before logging to automatically correlate
+  logs with user identities
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not appearing in Sentry | Verify `options.enableLogs = true` (v9+) or `options.experimental.enableLogs = true` (v8.55+) |
 | Logs only partially appearing | Logs may be lost during crashes; this is a known SDK limitation |
 | `SentrySDK.logger` not found | Requires v8.55.0+; check SPM/CocoaPods version |

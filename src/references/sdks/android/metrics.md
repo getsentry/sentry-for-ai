@@ -1,22 +1,27 @@
 # Metrics — Sentry Android SDK
 
-> **Minimum SDK:** `io.sentry:sentry-android:8.30.0`  
-> **Enabled by default:** Yes — no opt-in required  
+> **Minimum SDK:** `io.sentry:sentry-android:8.30.0`\
+> **Enabled by default:** Yes — no opt-in required\
 > **Docs:** https://docs.sentry.io/platforms/android/metrics/
 
----
+* * *
 
 ## Overview
 
-Sentry Metrics lets you track counters, distributions, and gauges from your Android app. Metrics are sent to Sentry and appear in the **Metrics** tab where you can create charts and alerts.
+Sentry Metrics lets you track counters, distributions, and gauges from your Android app.
+Metrics are sent to Sentry and appear in the **Metrics** tab where you can create charts
+and alerts.
 
-> **No Set metric type.** Unlike some observability platforms, this SDK does **not** have a `set()` method for tracking unique values. Only **Counter**, **Distribution**, and **Gauge** are available.
+> **No Set metric type.** Unlike some observability platforms, this SDK does **not**
+> have a `set()` method for tracking unique values.
+> Only **Counter**, **Distribution**, and **Gauge** are available.
 
----
+* * *
 
 ## Configuration
 
-Metrics is enabled by default. To disable or add filtering:
+Metrics is enabled by default.
+To disable or add filtering:
 
 ```kotlin
 SentryAndroid.init(this) { options ->
@@ -43,17 +48,18 @@ SentryAndroid.init(this) { options ->
 ### Configuration Reference
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `metrics.isEnabled` | `Boolean` | `true` | Master switch — metrics are ON by default |
 | `metrics.setBeforeSend` | `BeforeSendMetricCallback?` | `null` | Filter or mutate metrics before transmission. Return `null` to drop. |
 
----
+* * *
 
 ## Code Examples
 
 ### Counter
 
-Track how many times something happens. Default increment is `1.0`.
+Track how many times something happens.
+Default increment is `1.0`.
 
 ```kotlin
 import io.sentry.Sentry
@@ -87,7 +93,8 @@ Sentry.metrics().count(
 
 ### Distribution
 
-Record individual measurements — each call adds one data point to a histogram. Use for durations, sizes, and similar measurements.
+Record individual measurements — each call adds one data point to a histogram.
+Use for durations, sizes, and similar measurements.
 
 ```kotlin
 // Response time
@@ -113,7 +120,8 @@ Sentry.metrics().distribution(
 
 ### Gauge
 
-Capture a point-in-time snapshot of a value that can go up or down. Use for current levels, queue depths, and resource utilization.
+Capture a point-in-time snapshot of a value that can go up or down.
+Use for current levels, queue depths, and resource utilization.
 
 ```kotlin
 // Active downloads
@@ -188,13 +196,16 @@ class CheckoutViewModel : ViewModel() {
 }
 ```
 
----
+* * *
 
 ## Units Reference — `MetricsUnit`
 
-Use `MetricsUnit` constants for well-known units. Pass `null` for dimensionless values.
+Use `MetricsUnit` constants for well-known units.
+Pass `null` for dimensionless values.
 
-> **Custom unit strings are not supported.** Only `MetricsUnit.*` constants produce correct rendering in the Sentry UI. Passing an arbitrary string (e.g., `"frames"`) is accepted but displays incorrectly.
+> **Custom unit strings are not supported.** Only `MetricsUnit.*` constants produce
+> correct rendering in the Sentry UI. Passing an arbitrary string (e.g., `"frames"`) is
+> accepted but displays incorrectly.
 
 **Duration:**
 
@@ -229,38 +240,45 @@ MetricsUnit.Fraction.RATIO    // 0.0 to 1.0
 MetricsUnit.Fraction.PERCENT  // 0.0 to 100.0
 ```
 
----
+* * *
 
 ## Batch Processing
 
 Metrics are batched and sent asynchronously:
 
 | Parameter | Value |
-|-----------|-------|
+| --- | --- |
 | Flush delay | 5 seconds after the first queued event |
 | Max batch size | 1,000 metrics per HTTP envelope |
 | Max queue size | 10,000 metrics (above this, new metrics are silently dropped) |
 | Background flush | Yes — `AndroidMetricsBatchProcessor` flushes immediately on app background |
 
----
+* * *
 
 ## Best Practices
 
-1. **Use consistent key names** — metric names should be `snake_case.namespaced`, e.g. `checkout.duration` not `checkoutDuration`
+1. **Use consistent key names** — metric names should be `snake_case.namespaced`, e.g.
+   `checkout.duration` not `checkoutDuration`
 2. **Use `MetricsUnit.*` constants** — custom strings render incorrectly in the UI
-3. **Pass `null` unit for dimensionless metrics** — don't leave unit as an empty string
-4. **Use attributes for dimensions** — prefer `Sentry.metrics().count("api.call", 1.0, null, paramsWithEndpointAttr)` over separate metric keys per endpoint
-5. **Use `beforeSend` to drop debug metrics in production** — avoids quota usage and noise
-6. **Counter vs. Distribution** — use Counter for event occurrences (how many times), Distribution for measurements (how long, how large)
-7. **Gauge for instantaneous state** — gauges are best for values that fluctuate: queue depth, connection pool size, active sessions
-8. **Avoid high-cardinality attribute values** — user IDs, UUIDs, or timestamps as attribute values create unbounded series in the Sentry backend
+3. **Pass `null` unit for dimensionless metrics** — don’t leave unit as an empty string
+4. **Use attributes for dimensions** — prefer
+   `Sentry.metrics().count("api.call", 1.0, null, paramsWithEndpointAttr)` over separate
+   metric keys per endpoint
+5. **Use `beforeSend` to drop debug metrics in production** — avoids quota usage and
+   noise
+6. **Counter vs. Distribution** — use Counter for event occurrences (how many times),
+   Distribution for measurements (how long, how large)
+7. **Gauge for instantaneous state** — gauges are best for values that fluctuate: queue
+   depth, connection pool size, active sessions
+8. **Avoid high-cardinality attribute values** — user IDs, UUIDs, or timestamps as
+   attribute values create unbounded series in the Sentry backend
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Metrics not appearing in Sentry | Verify SDK ≥ 8.30.0; check that metrics were not disabled via `options.metrics.setEnabled(false)` or manifest `io.sentry.metrics.enabled = false` |
 | `set()` method not found | The Set type does not exist in this SDK — only Counter, Distribution, and Gauge are available |
 | Metrics silently dropped | Queue is capped at 10,000 events; use `beforeSend` to filter high-volume metrics |

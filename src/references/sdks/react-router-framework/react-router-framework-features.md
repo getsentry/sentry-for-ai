@@ -2,7 +2,7 @@
 
 > Framework mode package: `@sentry/react-router`
 
----
+* * *
 
 ## Wizard path
 
@@ -19,7 +19,7 @@ The wizard can:
 - configure source maps in Vite/React Router config
 - add example verification files/routes
 
----
+* * *
 
 ## Manual framework file checklist
 
@@ -32,7 +32,7 @@ The wizard can:
    - `createSentryHandleError`
 4. Runtime startup with `NODE_OPTIONS='--import ./instrument.server.mjs'`
 
----
+* * *
 
 ## Source maps for framework builds
 
@@ -64,7 +64,7 @@ export default {
 
 Use `SENTRY_AUTH_TOKEN` via environment variables (or `.env.sentry-build-plugin`).
 
----
+* * *
 
 ## Runtime startup strategies
 
@@ -81,7 +81,8 @@ Use `SENTRY_AUTH_TOKEN` via environment variables (or `.env.sentry-build-plugin`
 
 ### Fallback (direct import)
 
-If runtime flags are unavailable, import server instrumentation at the top of `entry.server.tsx`:
+If runtime flags are unavailable, import server instrumentation at the top of
+`entry.server.tsx`:
 
 ```tsx
 import "./instrument.server.mjs";
@@ -89,18 +90,19 @@ import "./instrument.server.mjs";
 
 This fallback may have incomplete automatic instrumentation compared to `--import`.
 
----
+* * *
 
 ## Non-framework handoff
 
-If project uses React Router in data/declarative mode without framework entry wrappers, route setup to [`react`](../react/index.md) (`@sentry/react`) for v5/v6/v7 integrations.
+If project uses React Router in data/declarative mode without framework entry wrappers,
+route setup to [`react`](../react/index.md) (`@sentry/react`) for v5/v6/v7 integrations.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Entry files not present | Run `npx react-router reveal` |
 | Source maps still minified | Confirm both `sentryReactRouter` plugin and `sentryOnBuildEnd` hook are configured |
 | Server startup misses instrumentation | Ensure `NODE_OPTIONS --import` is actually applied in deployed runtime |

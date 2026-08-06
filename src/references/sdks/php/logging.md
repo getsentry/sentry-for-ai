@@ -1,10 +1,13 @@
 # Logging — Sentry PHP SDK
 
-> Minimum SDK versions: `sentry/sentry` ≥ 4.12.0 · `sentry/sentry-laravel` ≥ 4.15.0 · `sentry/sentry-symfony` ≥ 5.4.0
+> Minimum SDK versions: `sentry/sentry` ≥ 4.12.0 · `sentry/sentry-laravel` ≥ 4.15.0 ·
+> `sentry/sentry-symfony` ≥ 5.4.0
 
 ## Overview
 
-Sentry PHP structured logs are **separate from error reporting**. They produce searchable log records in the Sentry Logs UI. The feature must be explicitly enabled with `enable_logs: true`.
+Sentry PHP structured logs are **separate from error reporting**. They produce
+searchable log records in the Sentry Logs UI. The feature must be explicitly enabled
+with `enable_logs: true`.
 
 ## Configuration
 
@@ -33,7 +36,8 @@ SENTRY_LOG_LEVEL=warning    # optional: Sentry-specific threshold
 'logs_channel_level' => env('SENTRY_LOG_LEVEL', env('LOG_LEVEL', 'debug')),
 ```
 
-> For SDK versions ≤ 4.16.0, also add `sentry_logs` to `config/logging.php` channels manually. Versions > 4.16.0 auto-register it.
+> For SDK versions ≤ 4.16.0, also add `sentry_logs` to `config/logging.php` channels
+> manually. Versions > 4.16.0 auto-register it.
 
 ### Symfony (`config/packages/sentry.yaml` + `monolog.yaml`)
 
@@ -178,7 +182,7 @@ public function getBeforeSendLog(): callable
 ## Two Log Channel Types in Laravel
 
 | Channel | Driver | Purpose |
-|---------|--------|---------|
+| --- | --- | --- |
 | `sentry` | `sentry` | Sends log messages as Sentry **error events/breadcrumbs** |
 | `sentry_logs` | `sentry_logs` | Sends **structured logs** to the Sentry Logs product |
 
@@ -187,7 +191,7 @@ These are independent — use `sentry_logs` for the structured logs feature.
 ## Log Levels
 
 | Method | PSR Level |
-|--------|-----------|
+| --- | --- |
 | `trace()` | debug |
 | `debug()` | debug |
 | `info()` | info |
@@ -200,7 +204,7 @@ These are independent — use `sentry_logs` for the structured logs feature.
 Every log record receives these automatically:
 
 | Attribute | Description |
-|-----------|-------------|
+| --- | --- |
 | `sentry.environment` | Environment from SDK config |
 | `sentry.release` | Release from SDK config |
 | `sentry.sdk.name` / `sentry.sdk.version` | SDK metadata |
@@ -215,18 +219,19 @@ Every log record receives these automatically:
 Logs are buffered and must be flushed to be sent:
 
 | Context | Behavior |
-|---------|----------|
+| --- | --- |
 | PHP (CLI/scripts) | Call `\Sentry\logger()->flush()` manually at end of execution |
 | Laravel | Auto-flushed via `app->terminating()` callback |
 | Symfony (HTTP) | Auto-flushed on `kernel.terminate` by `LogRequestListener` |
 | Symfony (console) | Auto-flushed on `console.terminate` by `ConsoleListener` |
 
-**Long-running CLI tasks:** Call `\Sentry\logger()->flush()` periodically to avoid memory buildup.
+**Long-running CLI tasks:** Call `\Sentry\logger()->flush()` periodically to avoid
+memory buildup.
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not appearing | Verify `enable_logs: true` and that `\Sentry\logger()->flush()` is called |
 | Laravel logs missing | Check `LOG_STACK` includes `sentry_logs` and `LOG_LEVEL` permits expected messages |
 | Symfony logs missing | Verify `LogsHandler` is registered in `monolog.yaml` and `enable_logs: true` is set |

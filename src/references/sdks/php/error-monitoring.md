@@ -1,13 +1,14 @@
 # Error Monitoring — Sentry PHP SDK
 
-> Minimum SDK: `sentry/sentry` ^4.0 · `sentry/sentry-laravel` ^4.0 · `sentry/sentry-symfony` ^5.0
+> Minimum SDK: `sentry/sentry` ^4.0 · `sentry/sentry-laravel` ^4.0 ·
+> `sentry/sentry-symfony` ^5.0
 
 ## Configuration
 
 Key `\Sentry\init()` options for error monitoring:
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `dsn` | `string` | env `SENTRY_DSN` | Data Source Name; SDK disabled if empty |
 | `environment` | `string` | `"production"` | Deployment environment tag |
 | `release` | `string` | `null` | App version string |
@@ -182,7 +183,7 @@ public function register(): void
 Three scope types control where data persists:
 
 | Scope API | Lifetime | Use for |
-|-----------|----------|---------|
+| --- | --- | --- |
 | `configureScope()` | Current scope (persists) | Per-request user identity, session tags |
 | `withScope()` | Isolated child scope | Data for a single capture call |
 | `pushScope()`/`popScope()` | Manually isolated scope | Long-running processes (Octane, queues) |
@@ -228,7 +229,8 @@ try {
 
 #### Tags
 
-Tags are **indexed** — searchable and filterable in the Sentry UI. Max key 32 chars, value 200 chars.
+Tags are **indexed** — searchable and filterable in the Sentry UI. Max key 32 chars,
+value 200 chars.
 
 ```php
 \Sentry\configureScope(function (\Sentry\State\Scope $scope): void {
@@ -529,26 +531,40 @@ $event->setMessage('Grouped event');
 
 ### Plain PHP
 
-- `default_integrations: true` (default) auto-installs `set_error_handler()`, `set_exception_handler()`, and `register_shutdown_function()` — no manual handlers needed
+- `default_integrations: true` (default) auto-installs `set_error_handler()`,
+  `set_exception_handler()`, and `register_shutdown_function()` — no manual handlers
+  needed
 - Always call `\Sentry\flush()` before process exit in CLI scripts
-- In long-running workers (e.g., RoadRunner, Swoole), use `pushScope()`/`popScope()` per request to prevent cross-request scope contamination
+- In long-running workers (e.g., RoadRunner, Swoole), use `pushScope()`/`popScope()` per
+  request to prevent cross-request scope contamination
 
 ### Laravel
 
 - **Laravel 11+**: use `Integration::handles($exceptions)` in `bootstrap/app.php`
-- **Laravel 10 and below**: use `Integration::captureUnhandledException($e)` in `Handler::register()`
-- `Integration::captureUnhandledException()` inspects the call stack to guess whether the exception was truly unhandled and sets the `ExceptionMechanism::$handled` flag accordingly
-- Laravel auto-sets user context from `Auth::user()` on the `Authenticated` event (reads `id`, `email`, `username`)
-- **Octane**: scope is automatically isolated per request via `pushScope()`/`popScope()` in the Octane event handlers — no manual action needed
+- **Laravel 10 and below**: use `Integration::captureUnhandledException($e)` in
+  `Handler::register()`
+- `Integration::captureUnhandledException()` inspects the call stack to guess whether
+  the exception was truly unhandled and sets the `ExceptionMechanism::$handled` flag
+  accordingly
+- Laravel auto-sets user context from `Auth::user()` on the `Authenticated` event (reads
+  `id`, `email`, `username`)
+- **Octane**: scope is automatically isolated per request via `pushScope()`/`popScope()`
+  in the Octane event handlers — no manual action needed
 - `SENTRY_SEND_DEFAULT_PII=true` is required to capture user email and IP
-- Log levels map to breadcrumb levels: `critical`/`alert`/`emergency` → `LEVEL_FATAL`, `warning` → `LEVEL_WARNING`, `error` → `LEVEL_ERROR`, `info`/`notice` → `LEVEL_INFO`, `debug` → `LEVEL_DEBUG`
+- Log levels map to breadcrumb levels: `critical`/`alert`/`emergency` → `LEVEL_FATAL`,
+  `warning` → `LEVEL_WARNING`, `error` → `LEVEL_ERROR`, `info`/`notice` → `LEVEL_INFO`,
+  `debug` → `LEVEL_DEBUG`
 
 ### Symfony
 
-- Errors are captured by `ErrorListener` on the `kernel.exception` event — controlled by `register_error_listener: true` (default)
-- User context requires `send_default_pii: true`; populated by `LoginListener` on `LoginSuccessEvent` / `AuthenticationSuccessEvent`
-- Inject `HubInterface` via DI rather than using global `\Sentry\*` functions in services
-- `before_send` in Symfony must be a **service ID**, not a closure — closures cannot be serialized and break config caching:
+- Errors are captured by `ErrorListener` on the `kernel.exception` event — controlled by
+  `register_error_listener: true` (default)
+- User context requires `send_default_pii: true`; populated by `LoginListener` on
+  `LoginSuccessEvent` / `AuthenticationSuccessEvent`
+- Inject `HubInterface` via DI rather than using global `\Sentry\*` functions in
+  services
+- `before_send` in Symfony must be a **service ID**, not a closure — closures cannot be
+  serialized and break config caching:
 
 ```php
 // src/Sentry/BeforeSendHandler.php
@@ -574,28 +590,37 @@ sentry:
         before_send: 'App\Sentry\BeforeSendHandler'
 ```
 
-- `MessengerListener` captures exceptions from failed Messenger messages — inject it if using the Messenger component
+- `MessengerListener` captures exceptions from failed Messenger messages — inject it if
+  using the Messenger component
 
 ## Best Practices
 
-- Set `send_default_pii: false` (default) — add explicit scrubbing in `before_send` for any sensitive fields
-- Use `configureScope()` for per-request data (user identity) and `withScope()` for per-capture isolation
-- Prefer `setContext()` for structured detail data; use `setTag()` only for fields you want to filter/search on
-- Use `ignore_exceptions: [...]` for exceptions that should never be reported (e.g., `NotFoundHttpException`)
-- In PHP-FPM (one process per request), global scope is safe. In long-running servers (Octane, RoadRunner), always isolate scope per request/task
-- `ignore_exceptions` runs **before** `before_send` — matching classes are silently dropped and `before_send` is never called
-- `EventHint` received in `before_send` is the same object passed to `captureException()` — use it to access the original `Throwable` and any `extra` context
+- Set `send_default_pii: false` (default) — add explicit scrubbing in `before_send` for
+  any sensitive fields
+- Use `configureScope()` for per-request data (user identity) and `withScope()` for
+  per-capture isolation
+- Prefer `setContext()` for structured detail data; use `setTag()` only for fields you
+  want to filter/search on
+- Use `ignore_exceptions: [...]` for exceptions that should never be reported (e.g.,
+  `NotFoundHttpException`)
+- In PHP-FPM (one process per request), global scope is safe.
+  In long-running servers (Octane, RoadRunner), always isolate scope per request/task
+- `ignore_exceptions` runs **before** `before_send` — matching classes are silently
+  dropped and `before_send` is never called
+- `EventHint` received in `before_send` is the same object passed to
+  `captureException()` — use it to access the original `Throwable` and any `extra`
+  context
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing in Sentry | Verify DSN, call `\Sentry\init()` before all other code, try `'debug' => true` to log to `error_log()` |
 | User/tag data missing from events | Set scope data **before** the exception occurs; in Laravel, check `SENTRY_SEND_DEFAULT_PII` |
 | PII appearing in events | Ensure `send_default_pii: false` (default), add `before_send` scrubber for headers/cookies |
-| `captureException()` sends no event | Check `ignore_exceptions` — class may match by `instanceof`; verify `before_send` isn't returning `null` |
-| Duplicate events in Laravel | `Integration::handles()` (L11) already calls `captureUnhandledException()` — don't also add a manual `reportable()` |
+| `captureException()` sends no event | Check `ignore_exceptions` — class may match by `instanceof`; verify `before_send` isn’t returning `null` |
+| Duplicate events in Laravel | `Integration::handles()` (L11) already calls `captureUnhandledException()` — don’t also add a manual `reportable()` |
 | Cross-request scope contamination in Octane | Enable Octane breadcrumb events (already in default config); use `pushScope()`/`popScope()` in queue workers |
-| `before_send` option ignored in Symfony | Must be a service ID string, not a closure — closures can't be serialized for config caching |
+| `before_send` option ignored in Symfony | Must be a service ID string, not a closure — closures can’t be serialized for config caching |
 | Breadcrumbs missing | Check `max_breadcrumbs` setting and `before_breadcrumb` hook; in Laravel verify `breadcrumbs.*` config flags |
 | Fatal errors not captured | Ensure `default_integrations: true` (default) or manually call `register_shutdown_function()` with `captureLastError()` + `flush()` |

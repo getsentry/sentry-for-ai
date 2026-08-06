@@ -1,12 +1,14 @@
 # Logging — Sentry Browser SDK
 
-> Minimum SDK: `@sentry/browser` ≥9.41.0 for `Sentry.logger` API and `enableLogs`  
-> `consoleLoggingIntegration()`: requires ≥10.13.0+  
+> Minimum SDK: `@sentry/browser` ≥9.41.0 for `Sentry.logger` API and `enableLogs`\
+> `consoleLoggingIntegration()`: requires ≥10.13.0+\
 > Scope-based attributes (`getGlobalScope`, `getIsolationScope`): requires ≥10.32.0+
 
-> ⚠️ **NPM or CDN logs bundle required** — Sentry logging is **not available** via the Loader Script. Use npm/yarn/pnpm (`@sentry/browser`) or a CDN bundle with `.logs.` in its name (e.g., `bundle.logs.metrics.min.js`).
+> ⚠️ **NPM or CDN logs bundle required** — Sentry logging is **not available** via the
+> Loader Script. Use npm/yarn/pnpm (`@sentry/browser`) or a CDN bundle with `.logs.` in
+> its name (e.g., `bundle.logs.metrics.min.js`).
 
----
+* * *
 
 ## Enabling Logs
 
@@ -21,9 +23,10 @@ Sentry.init({
 });
 ```
 
-Without `enableLogs: true`, all `Sentry.logger.*` calls are silently no-ops and nothing is sent to Sentry.
+Without `enableLogs: true`, all `Sentry.logger.*` calls are silently no-ops and nothing
+is sent to Sentry.
 
----
+* * *
 
 ## Logger API — Six Levels
 
@@ -39,7 +42,7 @@ Sentry.logger.fatal("Database unavailable", { host: "db-primary" });
 ```
 
 | Level | Method | Typical Use |
-|-------|--------|-------------|
+| --- | --- | --- |
 | `trace` | `Sentry.logger.trace()` | Ultra-granular function entry/exit; high-volume — filter aggressively in production |
 | `debug` | `Sentry.logger.debug()` | Development diagnostics, cache hits/misses, local state changes |
 | `info` | `Sentry.logger.info()` | Normal business milestones, confirmations |
@@ -47,13 +50,15 @@ Sentry.logger.fatal("Database unavailable", { host: "db-primary" });
 | `error` | `Sentry.logger.error()` | Failures requiring attention |
 | `fatal` | `Sentry.logger.fatal()` | Critical failures, system unavailable |
 
-**Attribute value types:** `string`, `number`, `boolean` only — `undefined`, arrays, and objects are not accepted.
+**Attribute value types:** `string`, `number`, `boolean` only — `undefined`, arrays, and
+objects are not accepted.
 
----
+* * *
 
 ## Parameterized Messages — `Sentry.logger.fmt`
 
-The `fmt` tagged template literal binds each interpolated variable as a **structured, searchable attribute** in Sentry:
+The `fmt` tagged template literal binds each interpolated variable as a **structured,
+searchable attribute** in Sentry:
 
 ```javascript
 const userId = "user_123";
@@ -73,22 +78,26 @@ message.parameter.1:  "Widget Pro"
 message.parameter.2:  49.99
 ```
 
-Each parameter is independently searchable in Sentry's log explorer. You can filter by `message.parameter.0 = "user_123"` without matching the full message string.
+Each parameter is independently searchable in Sentry’s log explorer.
+You can filter by `message.parameter.0 = "user_123"` without matching the full message
+string.
 
-> ⚠️ `logger.fmt` must be used as a **tagged template literal** — not as a function call. `Sentry.logger.fmt("text")` will not produce structured parameters.
+> ⚠️ `logger.fmt` must be used as a **tagged template literal** — not as a function
+> call. `Sentry.logger.fmt("text")` will not produce structured parameters.
 
 ### When to use `fmt` vs plain attributes
 
 | Approach | Use When |
-|----------|----------|
+| --- | --- |
 | `Sentry.logger.info(msg, { key: val })` | Variables belong as separate searchable attributes |
-| `` Sentry.logger.info(Sentry.logger.fmt`...${var}`) `` | Variable is a meaningful part of the message text itself |
+| `Sentry.logger.info` with a `Sentry.logger.fmt` tagged template | Variable is a meaningful part of the message text itself |
 
----
+* * *
 
 ## Console Integration (`consoleLoggingIntegration`) — SDK ≥10.13.0
 
-Capture `console.log`, `console.warn`, `console.error`, and other console calls as Sentry logs automatically:
+Capture `console.log`, `console.warn`, `console.error`, and other console calls as
+Sentry logs automatically:
 
 ```javascript
 import * as Sentry from "@sentry/browser";
@@ -107,11 +116,12 @@ console.warn("Slow network detected");
 console.error("API request failed");
 ```
 
-The integration intercepts `console.*` calls and converts them to structured Sentry logs. Interpolated values are extracted as `message.parameter.N` attributes.
+The integration intercepts `console.*` calls and converts them to structured Sentry
+logs. Interpolated values are extracted as `message.parameter.N` attributes.
 
 **Available levels:** `"log"`, `"info"`, `"warn"`, `"error"`, `"debug"`, `"trace"`.
 
----
+* * *
 
 ## Filtering Logs (`beforeSendLog`)
 
@@ -144,15 +154,16 @@ Sentry.init({
 ### The `log` object shape
 
 | Field | Type | Description |
-|-------|------|-------------|
+| --- | --- | --- |
 | `level` | `string` | `"trace"` \| `"debug"` \| `"info"` \| `"warn"` \| `"error"` \| `"fatal"` |
 | `message` | `string` | The log message text |
 | `timestamp` | `number` | Unix timestamp |
 | `attributes` | `object` | Key/value pairs attached to this log |
 
-Return `null` to drop the log. Return the (optionally modified) `log` object to send it.
+Return `null` to drop the log.
+Return the (optionally modified) `log` object to send it.
 
----
+* * *
 
 ## Structured Attributes
 
@@ -168,9 +179,10 @@ Sentry.logger.info("Checkout completed", {
 });
 ```
 
-Attributes become **searchable and filterable** in Sentry's log explorer. Prefer one comprehensive log with all relevant context over many small scattered logs.
+Attributes become **searchable and filterable** in Sentry’s log explorer.
+Prefer one comprehensive log with all relevant context over many small scattered logs.
 
----
+* * *
 
 ## Scope-Based Automatic Attributes (SDK ≥10.32.0)
 
@@ -209,14 +221,14 @@ Sentry.withScope((scope) => {
 
 **Constraint:** Scope attributes accept only `string`, `number`, and `boolean` values.
 
----
+* * *
 
 ## Auto-Generated Attributes
 
 These are added by the SDK to every log without any developer configuration:
 
 | Attribute | Source | Notes |
-|-----------|--------|-------|
+| --- | --- | --- |
 | `sentry.environment` | `environment` in `Sentry.init()` | — |
 | `sentry.release` | `release` in `Sentry.init()` | — |
 | `sentry.sdk.name` | SDK internals | `"sentry.javascript.browser"` |
@@ -229,7 +241,7 @@ These are added by the SDK to every log without any developer configuration:
 | `message.template` | `logger.fmt` usage | The template string |
 | `message.parameter.N` | `logger.fmt` usage | Each interpolated value |
 
----
+* * *
 
 ## Log-to-Trace Correlation
 
@@ -255,29 +267,30 @@ await Sentry.startSpan({ name: "checkout-flow", op: "ui.action" }, async () => {
 
 In the Sentry UI:
 - **From a log** → click the trace link to jump to the parent span and full trace
-- **From a trace span** → click "Logs" to see all logs emitted during that span
+- **From a trace span** → click “Logs” to see all logs emitted during that span
 - **From a replay** → logs are shown inline with the user session recording
 
----
+* * *
 
 ## When to Use Each API
 
 | Scenario | Recommended API |
-|----------|----------------|
+| --- | --- |
 | Business event with structured data | `Sentry.logger.info(msg, { ...attrs })` |
-| Message with embedded variables | `` Sentry.logger.info(Sentry.logger.fmt`...`) `` |
+| Message with embedded variables | `Sentry.logger.info` with a `Sentry.logger.fmt` tagged template |
 | Capture an unexpected exception | `Sentry.captureException(err)` |
 | Send an informational string event | `Sentry.captureMessage(msg, "info")` |
 | Auto-capture existing `console.*` calls | `consoleLoggingIntegration({ levels: [...] })` |
 
-Use `Sentry.logger.*` for **structured, searchable observability data**. Use `captureException` for actual errors that need issue grouping and stack traces.
+Use `Sentry.logger.*` for **structured, searchable observability data**. Use
+`captureException` for actual errors that need issue grouping and stack traces.
 
----
+* * *
 
 ## Log Level Guide
 
 | Level | When to use | Production volume |
-|-------|-------------|-----------------|
+| --- | --- | --- |
 | `trace` | Function entry/exit, loop iterations | Filter out in production |
 | `debug` | Variable values, code paths taken | Filter out in production |
 | `info` | User actions, business milestones, API calls | Keep — low/medium volume |
@@ -285,15 +298,15 @@ Use `Sentry.logger.*` for **structured, searchable observability data**. Use `ca
 | `error` | Failures that need investigation | Keep — should be rare |
 | `fatal` | System-down, unrecoverable state | Keep — should be very rare |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not appearing in Sentry | Verify `enableLogs: true` in `Sentry.init()`; requires SDK ≥9.41.0 |
-| "Not available via CDN/Loader Script" | Install via npm: `npm install @sentry/browser` — logging requires the npm package |
-| `logger.fmt` not creating `message.parameter.*` | Use as tagged template: `` Sentry.logger.fmt`text ${var}` `` — not `Sentry.logger.fmt("text", var)` |
+| “Not available via CDN/Loader Script” | Install via npm: `npm install @sentry/browser` — logging requires the npm package |
+| `logger.fmt` not creating `message.parameter.*` | Use it as a tagged template literal — not as the function call `Sentry.logger.fmt("text", var)` |
 | Logs not linked to traces | Ensure `browserTracingIntegration()` is added and `tracesSampleRate > 0`; logs must be emitted inside an active span |
 | `consoleLoggingIntegration` not available | Upgrade to `@sentry/browser` ≥10.13.0 |
 | Scope attributes not appearing on logs | Upgrade to `@sentry/browser` ≥10.32.0 for `getGlobalScope`/`getIsolationScope` APIs |

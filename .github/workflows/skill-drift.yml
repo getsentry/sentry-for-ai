@@ -700,4 +700,3 @@ jobs:
 
           echo "::notice::Done. PRs=$PRS_OPENED issues=$ISSUES_OPENED no_drift=$NO_DRIFT failed=$FAILED"
         id: apply
-

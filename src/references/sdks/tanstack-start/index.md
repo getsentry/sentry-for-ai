@@ -1,11 +1,14 @@
 # Sentry TanStack Start React SDK
 
-Opinionated wizard that scans your TanStack Start React project and guides you through complete Sentry setup for browser and server runtimes.
+Opinionated wizard that scans your TanStack Start React project and guides you through
+complete Sentry setup for browser and server runtimes.
 
-> **Note:** This SDK is currently alpha and documented as compatible with TanStack Start `1.0 RC`.
-> Always verify against [docs.sentry.io/platforms/javascript/guides/tanstackstart-react/](https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/) before implementing.
+> **Note:** This SDK is currently alpha and documented as compatible with TanStack Start
+> `1.0 RC`. Always verify against
+> [docs.sentry.io/platforms/javascript/guides/tanstackstart-react/](https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/)
+> before implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -38,7 +41,7 @@ cat ../go.mod ../requirements.txt ../Gemfile ../pom.xml 2>/dev/null | head -3
 **What to determine:**
 
 | Question | Impact |
-|----------|--------|
+| --- | --- |
 | `@tanstack/react-start` present? | Confirms this skill is the right setup path |
 | `@sentry/tanstackstart-react` already installed? | Skip install and go to feature tuning |
 | `src/router.tsx` exists? | Client-side `Sentry.init` placement |
@@ -49,11 +52,12 @@ cat ../go.mod ../requirements.txt ../Gemfile ../pom.xml 2>/dev/null | head -3
 | `SENTRY_AUTH_TOKEN` configured? | Source map upload readiness |
 | Backend directory found? | Trigger Phase 4 cross-link suggestion |
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Present a concrete recommendation based on what you found. Do not ask open-ended questions — lead with a proposal:
+Present a concrete recommendation based on what you found.
+Do not ask open-ended questions — lead with a proposal:
 
 **Recommended (core coverage):**
 - ✅ **Error Monitoring** — always; captures unhandled client and server errors
@@ -61,22 +65,24 @@ Present a concrete recommendation based on what you found. Do not ask open-ended
 - ✅ **Session Replay** — recommended for user-facing apps
 
 **Optional (enhanced observability):**
-- ⚡ **Logs** — recommend when structured log search and log-to-trace correlation are needed
+- ⚡ **Logs** — recommend when structured log search and log-to-trace correlation are
+  needed
 - ⚡ **User Feedback** — recommend when product teams want in-app issue reports
 
 **Recommendation logic:**
 
-| Feature | Recommend when... |
-|---------|------------------|
+| Feature | Recommend when … |
+| --- | --- |
 | Error Monitoring | **Always** — non-negotiable baseline |
 | Tracing | **Usually yes** for TanStack Start; route + fetch instrumentation gives immediate value |
 | Session Replay | User-facing app, login flows, checkout flows, or hard-to-reproduce UX bugs |
 | Logs | Existing logging strategy, support workflow, or trace/log correlation needs |
 | User Feedback | Team wants direct user reports without leaving the app |
 
-Propose: *"I recommend Error Monitoring + Tracing + Session Replay. Want me to also enable Logs and User Feedback?"*
+Propose: *“I recommend Error Monitoring + Tracing + Session Replay.
+Want me to also enable Logs and User Feedback?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
@@ -167,7 +173,8 @@ export default defineConfig({
 });
 ```
 
-If the token is stored in `.env`, load it with `loadEnv` in the Vite config before passing it to the plugin.
+If the token is stored in `.env`, load it with `loadEnv` in the Vite config before
+passing it to the plugin.
 
 ### Instrument Server Entry Point in `src/server.ts`
 
@@ -211,8 +218,8 @@ Sentry middleware should be first in each array.
 
 Choose one runtime method:
 
-| Runtime pattern | Use when... | Notes |
-|---|---|---|
+| Runtime pattern | Use when … | Notes |
+| --- | --- | --- |
 | `--import` flag | You can control Node startup flags | Preferred for production monitoring |
 | Direct import in `src/server.ts` | Host restricts startup flags (for example serverless hosts) | Limits instrumentation to native Node APIs |
 
@@ -236,10 +243,11 @@ import "../instrument.server.mjs";
 
 ### For Each Agreed Feature
 
-Walk through features one at a time. Load the reference file, follow steps exactly, and verify before moving on:
+Walk through features one at a time.
+Load the reference file, follow steps exactly, and verify before moving on:
 
-| Feature | Reference | Load when... |
-|---------|-----------|-------------|
+| Feature | Reference | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always |
 | Tracing | `./tracing.md` | Route/API performance visibility needed |
 | Session Replay | `./session-replay.md` | User-facing app |
@@ -249,14 +257,14 @@ Walk through features one at a time. Load the reference file, follow steps exact
 
 For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Key `Sentry.init()` Options
 
 | Option | Type | Default | Notes |
-|--------|------|---------|-------|
+| --- | --- | --- | --- |
 | `dsn` | `string` | — | Required; SDK is disabled when empty |
 | `sendDefaultPii` | `boolean` | `false` | **Deprecated** (use `dataCollection`) — sends default PII such as request headers and IP-derived user context; equivalent to enabling all `dataCollection` categories |
 | `dataCollection` | `DataCollection` | SDK defaults | Recommended replacement for `sendDefaultPii`; granular control over which categories are collected (`userInfo`, `cookies`, `httpHeaders`, `httpBodies`, `queryParams`, `genAI`, …) |
@@ -271,14 +279,14 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### TanStack Start-Specific APIs
 
 | API | Purpose |
-|-----|---------|
+| --- | --- |
 | `tanstackRouterBrowserTracingIntegration(router)` | Browser navigation tracing |
 | `wrapFetchWithSentry(...)` | Server request tracing + error capture on fetch handler |
 | `sentryGlobalRequestMiddleware` | Captures request-level server errors |
 | `sentryGlobalFunctionMiddleware` | Captures server function errors |
 | `sentryTanstackStart({...})` | Vite plugin for source maps and middleware instrumentation |
 
----
+* * *
 
 ## Verification
 
@@ -330,11 +338,12 @@ Confirm in Sentry:
 - **Logs**: log lines appear when `enableLogs: true`
 - **User Feedback**: submissions appear when feedback integration is enabled
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
-After completing TanStack Start setup, check whether a companion backend exists without Sentry:
+After completing TanStack Start setup, check whether a companion backend exists without
+Sentry:
 
 ```bash
 ls ../backend ../server ../api ../go ../python 2>/dev/null
@@ -344,19 +353,19 @@ cat ../go.mod ../requirements.txt ../pyproject.toml ../Gemfile ../pom.xml 2>/dev
 If a backend exists without Sentry configured, suggest the matching skill:
 
 | Backend detected | Suggest skill |
-|------------------|--------------|
+| --- | --- |
 | Go (`go.mod`) | [`go`](../go/index.md) |
 | Python (`requirements.txt`, `pyproject.toml`) | [`python`](../python/index.md) |
 | Ruby (`Gemfile`) | [`ruby`](../ruby/index.md) |
 | Java (`pom.xml`, `build.gradle`) | Use `@sentry/java` docs |
 | Node.js backend services | [`node`](../node/index.md) |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing | Set `debug: true`, verify DSN, and ensure client/server init files both run |
 | No server traces | Confirm `src/server.ts` uses `wrapFetchWithSentry` and runtime loads `instrument.server.mjs` |
 | Server errors missing from route handlers | Ensure `sentryGlobalRequestMiddleware` and `sentryGlobalFunctionMiddleware` are first in arrays |

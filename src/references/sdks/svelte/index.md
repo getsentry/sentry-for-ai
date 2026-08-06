@@ -1,11 +1,14 @@
 # Sentry Svelte SDK
 
-Opinionated wizard that scans your project and guides you through complete Sentry setup for Svelte and SvelteKit.
+Opinionated wizard that scans your project and guides you through complete Sentry setup
+for Svelte and SvelteKit.
 
-> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing (`@sentry/sveltekit` ≥10.8.0, SvelteKit ≥2.31.0).
-> Always verify against [docs.sentry.io/platforms/javascript/guides/sveltekit/](https://docs.sentry.io/platforms/javascript/guides/sveltekit/) before implementing.
+> **Note:** SDK versions and APIs below reflect current Sentry docs at time of writing
+> (`@sentry/sveltekit` ≥10.8.0, SvelteKit ≥2.31.0). Always verify against
+> [docs.sentry.io/platforms/javascript/guides/sveltekit/](https://docs.sentry.io/platforms/javascript/guides/sveltekit/)
+> before implementing.
 
----
+* * *
 
 ## Phase 1: Detect
 
@@ -39,64 +42,71 @@ cat ../go.mod ../requirements.txt ../Gemfile 2>/dev/null | head -3
 **What to determine:**
 
 | Question | Impact |
-|----------|--------|
+| --- | --- |
 | `@sveltejs/kit` in `package.json`? | SvelteKit path vs. plain Svelte path |
 | SvelteKit ≥2.31.0? | Modern (`instrumentation.server.ts`) vs. legacy setup |
 | `@sentry/sveltekit` already present? | Skip install, go straight to feature config |
 | `vite.config.ts` present? | Source map upload via Vite plugin available |
 | Backend directory found? | Trigger Phase 4 cross-link suggestion |
 
----
+* * *
 
 ## Phase 2: Recommend
 
-Present a concrete recommendation based on what you found. Don't ask open-ended questions — lead with a proposal:
+Present a concrete recommendation based on what you found.
+Don’t ask open-ended questions — lead with a proposal:
 
 **Recommended (core coverage):**
 - ✅ **Error Monitoring** — always; auto-captures unhandled errors on client and server
-- ✅ **Tracing** — SvelteKit has both client-side navigation spans and server-side request spans; always recommend
+- ✅ **Tracing** — SvelteKit has both client-side navigation spans and server-side
+  request spans; always recommend
 - ✅ **Session Replay** — recommended for user-facing SvelteKit apps (client-side only)
 
 **Optional (enhanced observability):**
-- ⚡ **Logging** — structured logs via `Sentry.logger.*`; recommend when app uses server-side logging or needs log-to-trace correlation
+- ⚡ **Logging** — structured logs via `Sentry.logger.*`; recommend when app uses
+  server-side logging or needs log-to-trace correlation
 
 **Recommendation logic:**
 
-| Feature | Recommend when... |
-|---------|------------------|
+| Feature | Recommend when … |
+| --- | --- |
 | Error Monitoring | **Always** — non-negotiable baseline |
 | Tracing | **Always for SvelteKit** (client + server); for plain Svelte when calling APIs |
 | Session Replay | User-facing app, login flows, or checkout pages present |
 | Logging | App already uses server-side logging, or structured log search is needed |
 
-Propose: *"I recommend setting up Error Monitoring + Tracing + Session Replay. Want me to also add structured Logging?"*
+Propose: *“I recommend setting up Error Monitoring + Tracing + Session Replay.
+Want me to also add structured Logging?”*
 
----
+* * *
 
 ## Phase 3: Guide
 
 ### Determine Setup Path
 
 | Your project | Package | Setup complexity |
-|-------------|---------|-----------------|
+| --- | --- | --- |
 | SvelteKit (≥2.31.0) | `@sentry/sveltekit` | 5 files to create/modify |
 | SvelteKit (<2.31.0) | `@sentry/sveltekit` | 3 files (init in hooks.server.ts) |
 | Plain Svelte (no `@sveltejs/kit`) | `@sentry/svelte` | Single entry point |
 
----
+* * *
 
 ### Path A: SvelteKit (Recommended — Modern, ≥2.31.0)
 
 #### Option 1: Wizard (Recommended)
 
-> **You need to run this yourself** — the wizard opens a browser for login and requires interactive input that the agent can't handle. Copy-paste into your terminal:
->
+> **You need to run this yourself** — the wizard opens a browser for login and requires
+> interactive input that the agent can’t handle.
+> Copy-paste into your terminal:
+> 
 > ```
 > npx @sentry/wizard@latest -i sveltekit
 > ```
->
-> It handles login, org/project selection, SDK installation, client/server hooks, Vite plugin config, source map upload, and adds a `/sentry-example-page`.
->
+> 
+> It handles login, org/project selection, SDK installation, client/server hooks, Vite
+> plugin config, source map upload, and adds a `/sentry-example-page`.
+> 
 > **Once it finishes, come back and skip to [Verification](#verification).**
 
 If the user skips the wizard, proceed with Option 2 (Manual Setup) below.
@@ -222,11 +232,12 @@ SENTRY_ORG=my-org-slug
 SENTRY_PROJECT=my-project-slug
 ```
 
----
+* * *
 
 ### Path B: SvelteKit Legacy (<2.31.0 or `@sentry/sveltekit` <10.8.0)
 
-Skip `instrumentation.server.ts` and `svelte.config.js` changes. Instead, put `Sentry.init()` directly in `hooks.server.ts`:
+Skip `instrumentation.server.ts` and `svelte.config.js` changes.
+Instead, put `Sentry.init()` directly in `hooks.server.ts`:
 
 ```typescript
 // src/hooks.server.ts (legacy — init goes here)
@@ -244,7 +255,7 @@ export const handle = Sentry.sentryHandle();
 
 `hooks.client.ts` and `vite.config.ts` are identical to the modern path.
 
----
+* * *
 
 ### Path C: Plain Svelte (no SvelteKit)
 
@@ -254,7 +265,8 @@ export const handle = Sentry.sentryHandle();
 npm install @sentry/svelte --save
 ```
 
-**Configure in entry point** (`src/main.ts` or `src/main.js`) **before** mounting the app:
+**Configure in entry point** (`src/main.ts` or `src/main.js`) **before** mounting the
+app:
 
 ```typescript
 import * as Sentry from "@sentry/svelte";
@@ -302,14 +314,15 @@ export default withSentryConfig(
 );
 ```
 
----
+* * *
 
 ### For Each Agreed Feature
 
-Walk through features one at a time. Load the reference file, follow its steps, then verify before moving on:
+Walk through features one at a time.
+Load the reference file, follow its steps, then verify before moving on:
 
-| Feature | Reference | Load when... |
-|---------|-----------|-------------|
+| Feature | Reference | Load when … |
+| --- | --- | --- |
 | Error Monitoring | `./error-monitoring.md` | Always (baseline) |
 | Tracing | `./tracing.md` | API calls / distributed tracing needed |
 | Session Replay | `./session-replay.md` | User-facing app |
@@ -317,14 +330,14 @@ Walk through features one at a time. Load the reference file, follow its steps, 
 
 For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 
----
+* * *
 
 ## Configuration Reference
 
 ### Key `Sentry.init()` Options
 
 | Option | Type | Default | Notes |
-|--------|------|---------|-------|
+| --- | --- | --- | --- |
 | `dsn` | `string` | — | **Required.** Use env var; SDK is disabled when empty |
 | `environment` | `string` | `"production"` | e.g., `"staging"`, `"development"` |
 | `release` | `string` | — | e.g., `"my-app@1.2.3"` or git SHA |
@@ -346,7 +359,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Server-Only Options (`instrumentation.server.ts` / `hooks.server.ts`)
 
 | Option | Type | Notes |
-|--------|------|-------|
+| --- | --- | --- |
 | `serverName` | `string` | Hostname tag on server events |
 | `includeLocalVariables` | `boolean` | Attach local vars to stack frames |
 | `shutdownTimeout` | `number` | ms to flush events before process exit (default: 2000) |
@@ -354,7 +367,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### Adapter Compatibility
 
 | Adapter | Support |
-|---------|---------|
+| --- | --- |
 | `@sveltejs/adapter-auto` / adapter-vercel (Node) | ✅ Full |
 | `@sveltejs/adapter-node` | ✅ Full |
 | `@sveltejs/adapter-cloudflare` | ⚠️ Partial — requires extra setup |
@@ -363,7 +376,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 ### SvelteKit File Summary
 
 | File | Purpose | Modern | Legacy |
-|------|---------|--------|--------|
+| --- | --- | --- | --- |
 | `src/instrumentation.server.ts` | Server `Sentry.init()` — runs once at startup | ✅ Required | ❌ |
 | `src/hooks.client.ts` | Client `Sentry.init()` + `handleError` | ✅ Required | ✅ Required |
 | `src/hooks.server.ts` | `handleError` + `sentryHandle()` (no init) | ✅ Required | ✅ Init goes here |
@@ -371,7 +384,7 @@ For each feature: `Read ./<feature>.md`, follow steps exactly, verify it works.
 | `vite.config.ts` | `sentrySvelteKit()` plugin for source maps | ✅ Recommended | ✅ Recommended |
 | `.env` | `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | ✅ For source maps | ✅ For source maps |
 
----
+* * *
 
 ## Verification
 
@@ -405,13 +418,15 @@ Check the Sentry dashboard:
 - **Replays** → session recording visible after page interaction
 - **Logs** → structured log entries (if logging enabled)
 
-If nothing appears, set `debug: true` in `Sentry.init()` and check the browser/server console for SDK output.
+If nothing appears, set `debug: true` in `Sentry.init()` and check the browser/server
+console for SDK output.
 
----
+* * *
 
 ## Phase 4: Cross-Link
 
-After completing Svelte/SvelteKit setup, check for a companion backend missing Sentry coverage:
+After completing Svelte/SvelteKit setup, check for a companion backend missing Sentry
+coverage:
 
 ```bash
 # Look for backend in adjacent directories
@@ -424,18 +439,18 @@ cat ../Gemfile 2>/dev/null | head -3
 If a backend exists without Sentry configured, suggest the matching skill:
 
 | Backend detected | Suggest skill |
-|-----------------|--------------|
+| --- | --- |
 | Go (`go.mod`) | [`go`](../go/index.md) |
 | Python (`requirements.txt`, `pyproject.toml`) | [`python`](../python/index.md) |
 | Ruby (`Gemfile`) | [`ruby`](../ruby/index.md) |
 | Node.js (Express, Fastify, etc.) | Use `@sentry/node` — see [docs.sentry.io/platforms/javascript/guides/express/](https://docs.sentry.io/platforms/javascript/guides/express/) |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing | Set `debug: true`, check DSN, open browser console for SDK errors |
 | Source maps not working | Run `npm run build` (not `dev`), verify `SENTRY_AUTH_TOKEN` is set |
 | Server errors not captured | Ensure `handleErrorWithSentry()` is exported from `hooks.server.ts` |

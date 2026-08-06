@@ -7,7 +7,7 @@
 Key `sentry_sdk.init()` options for error monitoring:
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `dsn` | `str` | env `SENTRY_DSN` | Data Source Name; SDK disabled if empty |
 | `environment` | `str` | `"production"` | Deployment environment tag |
 | `release` | `str` | env `SENTRY_RELEASE` | App version string |
@@ -72,7 +72,8 @@ sentry_sdk.capture_event({
 
 ### Automatic capture by framework
 
-Framework integrations are **auto-enabled** when installed — no `integrations=[...]` needed for most:
+Framework integrations are **auto-enabled** when installed — no `integrations=[...]`
+needed for most:
 
 ```python
 # Django — unhandled view exceptions auto-captured
@@ -99,7 +100,7 @@ sentry_sdk.init(dsn="...")   # CeleryIntegration auto-enabled
 Three scope layers merge when sending events:
 
 | Scope | Lifetime | Use for |
-|-------|----------|---------|
+| --- | --- | --- |
 | **Global** | Process lifetime | App-wide tags, server metadata |
 | **Isolation** | One request / task | Per-request user, tags |
 | **Current** | One span | Per-span metadata |
@@ -267,17 +268,22 @@ def set_sentry_user():
 
 ## Best Practices
 
-- Set `send_default_pii=False` (default) — add explicit PII scrubbing via `before_send` or `EventScrubber`
-- Use `get_isolation_scope()` for per-request data; use `new_scope()` for temporary isolated context
+- Set `send_default_pii=False` (default) — add explicit PII scrubbing via `before_send`
+  or `EventScrubber`
+- Use `get_isolation_scope()` for per-request data; use `new_scope()` for temporary
+  isolated context
 - Avoid `set_extra()` (deprecated) — use `set_context()` for structured data
-- Prefer `set_tag()` for data you want to filter on; `set_context()` for detail-only data
-- Use `ignore_errors=[...]` for exceptions you never want reported (e.g., `KeyboardInterrupt`)
-- Set `in_app_include=["my_package"]` to correctly mark your frames as in-app in tracebacks
+- Prefer `set_tag()` for data you want to filter on; `set_context()` for detail-only
+  data
+- Use `ignore_errors=[...]` for exceptions you never want reported (e.g.,
+  `KeyboardInterrupt`)
+- Set `in_app_include=["my_package"]` to correctly mark your frames as in-app in
+  tracebacks
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing in Sentry | Verify DSN, check `debug=True` output, ensure `sentry_sdk.init()` is called before app startup |
 | User/tag data missing from events | Set scope data before the exception occurs; check isolation vs current scope |
 | PII appearing in events | Set `send_default_pii=False` and add `EventScrubber` with your denylist |

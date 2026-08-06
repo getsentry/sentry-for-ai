@@ -1,11 +1,12 @@
 # Profiling — Sentry Python SDK
 
-> Minimum SDK: `sentry-sdk` 1.18.0+ (transaction-based); 2.24.1+ (continuous / session-based)
+> Minimum SDK: `sentry-sdk` 1.18.0+ (transaction-based); 2.24.1+ (continuous /
+> session-based)
 
 ## Configuration
 
 | Option | API | Min SDK | Purpose |
-|--------|-----|---------|---------|
+| --- | --- | --- | --- |
 | `profiles_sample_rate` | Transaction-based (legacy) | 1.18.0 | Fraction of transactions to profile; relative to `traces_sample_rate` |
 | `profile_session_sample_rate` | Continuous (new) | 2.24.1 | Fraction of sessions to profile; evaluated once per process start |
 | `profile_lifecycle` | Continuous (new) | 2.24.1 | `"trace"` = SDK auto-manages; `"manual"` = explicit start/stop |
@@ -14,8 +15,8 @@ Profiling requires `traces_sample_rate > 0` (or `traces_sampler`) to be set.
 
 ## API Comparison
 
-| | `profiles_sample_rate` (transaction-based) | `profile_session_sample_rate` (continuous) |
-|--|---------------------------------------------|---------------------------------------------|
+|  | `profiles_sample_rate` (transaction-based) | `profile_session_sample_rate` (continuous) |
+| --- | --- | --- |
 | **Min SDK** | 1.18.0 | 2.24.1 |
 | **Evaluated** | Per transaction | Once per process/deployment start |
 | **Max duration** | 30 seconds per transaction | Unlimited |
@@ -37,7 +38,8 @@ sentry_sdk.init(
 )
 ```
 
-Profiles start when the transaction starts and stop when it ends or after **30 seconds**, whichever is first.
+Profiles start when the transaction starts and stop when it ends or after **30
+seconds**, whichever is first.
 
 ### Continuous profiling — auto-managed (`profile_lifecycle="trace"`)
 
@@ -95,17 +97,22 @@ sentry_sdk.init(
 
 ## Best Practices
 
-- Use continuous profiling (`profile_session_sample_rate` + `profile_lifecycle`) for long-running services and production workloads
-- Use transaction-based (`profiles_sample_rate`) for simple setups or short-lived scripts
-- `profile_session_sample_rate` is evaluated **once at process start** — changing it requires a restart
+- Use continuous profiling (`profile_session_sample_rate` + `profile_lifecycle`) for
+  long-running services and production workloads
+- Use transaction-based (`profiles_sample_rate`) for simple setups or short-lived
+  scripts
+- `profile_session_sample_rate` is evaluated **once at process start** — changing it
+  requires a restart
 - `"trace"` and `"manual"` profile lifecycles are mutually exclusive; do not mix them
-- Reduce `traces_sample_rate` in production (e.g., `0.1`) — profiling overhead is low but not zero
-- Python's GIL means the profiler captures the thread holding the GIL; async I/O wait time appears as near-zero CPU — this is expected
+- Reduce `traces_sample_rate` in production (e.g., `0.1`) — profiling overhead is low
+  but not zero
+- Python’s GIL means the profiler captures the thread holding the GIL; async I/O wait
+  time appears as near-zero CPU — this is expected
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No profiles appearing | Verify `traces_sample_rate > 0` and profiling options are set correctly |
 | Profiles cut off at 30s | Switch to continuous profiling (`profile_session_sample_rate`) |
 | `profile_session_sample_rate` has no effect | Check SDK version is ≥ 2.24.1; ensure `profile_lifecycle` is also set |

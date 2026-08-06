@@ -7,7 +7,7 @@
 Key `ClientOptions` fields for error monitoring:
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `Dsn` | `string` | `""` | SDK disabled if empty |
 | `AttachStacktrace` | `bool` | `false` | Stack traces on `CaptureMessage` calls |
 | `SendDefaultPII` | `bool` | `false` | Include IP, request headers |
@@ -163,7 +163,8 @@ sentry.AddBreadcrumb(&sentry.Breadcrumb{
 
 ### Error wrapping and chains
 
-The SDK automatically traverses the full error chain from `CaptureException`. Each error becomes a separate exception entry in Sentry.
+The SDK automatically traverses the full error chain from `CaptureException`. Each error
+becomes a separate exception entry in Sentry.
 
 ```go
 // %w wrapping — both errors captured; dbErr shown as root cause
@@ -177,7 +178,7 @@ sentry.CaptureException(combined)
 ```
 
 | Wrapping pattern | Interface | Mechanism |
-|-----------------|-----------|-----------|
+| --- | --- | --- |
 | `fmt.Errorf("%w", err)` | `Unwrap() error` | `"unwrap"` |
 | `errors.Join(...)` | `Unwrap() []error` | `"chained"` |
 | `pkg/errors` | `Cause() error` | `"cause"` |
@@ -333,18 +334,23 @@ scope.RemoveAttribute("key.string") // replaces RemoveExtra
 
 - Call `sentry.Init()` once in `main()`, before any goroutines or handlers start
 - Always check the error returned by `sentry.Init()`
-- Always `defer sentry.Flush(2 * time.Second)` in `main()`; call it explicitly before `os.Exit()`
+- Always `defer sentry.Flush(2 * time.Second)` in `main()`; call it explicitly before
+  `os.Exit()`
 - Clone the hub before passing it to goroutines: `hub := sentry.CurrentHub().Clone()`
-- Use `WithScope` for one-off context; use `ConfigureScope` for persistent session context
-- Use `SetTag` or `SetContext` for error event data — `SetExtra`/`SetExtras`/`RemoveExtra` were **removed in v0.34.0** and no longer compile
-- Use `SetAttributes` / `RemoveAttribute` to attach typed key-value pairs to logs and metrics (attributes do not appear on error events)
-- Use `BeforeSend` to strip PII — never send raw email/IP unless `SendDefaultPII: true` is intentional
+- Use `WithScope` for one-off context; use `ConfigureScope` for persistent session
+  context
+- Use `SetTag` or `SetContext` for error event data —
+  `SetExtra`/`SetExtras`/`RemoveExtra` were **removed in v0.34.0** and no longer compile
+- Use `SetAttributes` / `RemoveAttribute` to attach typed key-value pairs to logs and
+  metrics (attributes do not appear on error events)
+- Use `BeforeSend` to strip PII — never send raw email/IP unless `SendDefaultPII: true`
+  is intentional
 - Set `MaxErrorDepth` to a sensible value (5–10) for deeply wrapped error chains
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Events not appearing | Set `Debug: true`; verify DSN; ensure `sentry.Flush()` is called |
 | Missing stack traces on messages | Set `AttachStacktrace: true` in `ClientOptions` |
 | Goroutine events missing scope data | Clone hub before goroutine: `sentry.CurrentHub().Clone()` |

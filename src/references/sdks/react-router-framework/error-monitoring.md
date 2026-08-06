@@ -2,19 +2,19 @@
 
 > Minimum SDK: `@sentry/react-router` (beta)
 
----
+* * *
 
 ## Automatic and Manual Capture
 
 | Area | Auto Captured? | Mechanism |
-|------|----------------|-----------|
+| --- | --- | --- |
 | Client-side framework errors | ✅ Yes | `HydratedRouter onError={Sentry.sentryOnError}` |
 | Unhandled client exceptions | ✅ Yes | Browser global handlers from SDK init |
 | Server request/render errors | ✅ Yes | `createSentryHandleRequest` + `createSentryHandleError` |
 | Custom handled server errors | ❌ Not always | Call `Sentry.captureException` manually |
 | Custom loader/action failures | ⚠️ Depends | Use `wrapServerLoader` / `wrapServerAction` or manual capture |
 
----
+* * *
 
 ## Client setup requirement
 
@@ -33,7 +33,7 @@ hydrateRoot(document, <HydratedRouter onError={Sentry.sentryOnError} />);
 
 Without `sentryOnError`, framework-level client errors may be missed.
 
----
+* * *
 
 ## Server setup requirement
 
@@ -58,7 +58,7 @@ export const handleError = Sentry.createSentryHandleError({
 });
 ```
 
----
+* * *
 
 ## Manual capture in custom handlers
 
@@ -79,7 +79,7 @@ import { wrapSentryHandleRequest } from "@sentry/react-router";
 export default wrapSentryHandleRequest(customHandleRequest);
 ```
 
----
+* * *
 
 ## Loader/action wrappers
 
@@ -101,7 +101,7 @@ export const action = Sentry.wrapServerAction(
 );
 ```
 
----
+* * *
 
 ## Verification
 
@@ -115,12 +115,12 @@ export async function loader() {
 
 Open the route and verify the event appears in **Issues**.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Client framework errors missing | Ensure `HydratedRouter` uses `onError={Sentry.sentryOnError}` |
 | Server render/request errors missing | Verify both `createSentryHandleRequest` and `createSentryHandleError` are exported |
 | Custom handlers not captured | Add explicit `captureException` calls |

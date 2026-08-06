@@ -1,27 +1,30 @@
 # Metrics — Sentry Node.js SDK
 
-> Minimum SDK: `@sentry/node` ≥10.25.0 (stable `Sentry.metrics.*` API)  
-> `enableMetrics` top-level option: ≥10.24.0 (default: `true`)  
-> `beforeSendMetric` hook: ≥10.24.0  
+> Minimum SDK: `@sentry/node` ≥10.25.0 (stable `Sentry.metrics.*` API)\
+> `enableMetrics` top-level option: ≥10.24.0 (default: `true`)\
+> `beforeSendMetric` hook: ≥10.24.0\
 > Scope attributes on metrics: ≥10.33.0
 
----
+* * *
 
 ## Overview
 
-Sentry Metrics let you track counters, current values, and value distributions. They appear in Sentry alongside related errors and can be correlated with traces.
+Sentry Metrics let you track counters, current values, and value distributions.
+They appear in Sentry alongside related errors and can be correlated with traces.
 
 Key characteristics:
 - Metrics are **enabled by default** — no configuration required for basic use
 - Buffered in memory (max 1000 entries) and sent periodically
-- High-cardinality attributes **degrade backend performance** — keep attribute cardinality low
+- High-cardinality attributes **degrade backend performance** — keep attribute
+  cardinality low
 - Use `Sentry.logger.*` (not metrics) when you need per-user or per-request detail
 
----
+* * *
 
 ## Initialization
 
-Metrics are on by default. Opt out if needed:
+Metrics are on by default.
+Opt out if needed:
 
 ```typescript
 import * as Sentry from "@sentry/node";
@@ -40,7 +43,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Metrics API
 
@@ -69,15 +72,15 @@ function gauge(name: string, value: number, options?: MetricOptions): void;
 function distribution(name: string, value: number, options?: MetricOptions): void;
 ```
 
----
+* * *
 
 ## Metric Types
 
-| Method         | Underlying Type | Use For                                          |
-|----------------|-----------------|--------------------------------------------------|
-| `count`        | counter         | Event frequency — requests, errors, signups      |
-| `gauge`        | gauge           | Current snapshot value — queue depth, CPU %      |
-| `distribution` | distribution    | Value histograms/ranges — latencies, file sizes  |
+| Method | Underlying Type | Use For |
+| --- | --- | --- |
+| `count` | counter | Event frequency — requests, errors, signups |
+| `gauge` | gauge | Current snapshot value — queue depth, CPU % |
+| `distribution` | distribution | Value histograms/ranges — latencies, file sizes |
 
 ```typescript
 // count — how many times something happened
@@ -93,18 +96,18 @@ Sentry.metrics.distribution("api.latency", 187.5, { unit: "millisecond" });
 Sentry.metrics.distribution("payload.size", 1024, { unit: "byte" });
 ```
 
----
+* * *
 
 ## Units
 
 Pass a `unit` string in `MetricOptions`. Used for display formatting in Sentry.
 
-| Category  | Unit Values                                                        |
-|-----------|--------------------------------------------------------------------|
-| Time      | `millisecond`, `second`, `minute`, `hour`, `day`, `week`           |
-| Storage   | `bit`, `byte`, `kilobyte`, `megabyte`, `gigabyte`, `terabyte`, `petabyte` |
-| Fractions | `ratio`, `percent`                                                 |
-| None      | `none` (or omit `unit`)                                            |
+| Category | Unit Values |
+| --- | --- |
+| Time | `millisecond`, `second`, `minute`, `hour`, `day`, `week` |
+| Storage | `bit`, `byte`, `kilobyte`, `megabyte`, `gigabyte`, `terabyte`, `petabyte` |
+| Fractions | `ratio`, `percent` |
+| None | `none` (or omit `unit`) |
 
 ```typescript
 Sentry.metrics.distribution("api.latency", 187.5, { unit: "millisecond" });
@@ -115,13 +118,14 @@ Sentry.metrics.gauge("disk.usage_pct", 72.4,       { unit: "percent" });
 Sentry.metrics.count("user.logins");               // omit unit for plain counts
 ```
 
----
+* * *
 
 ## Attributes (Tags)
 
 Use `attributes` in `MetricOptions` to add filterable/groupable dimensions.
 
-**Size limit:** 2 KB per metric envelope. Metrics exceeding this are **dropped**.
+**Size limit:** 2 KB per metric envelope.
+Metrics exceeding this are **dropped**.
 
 ```typescript
 Sentry.metrics.count("api.requests", 1, {
@@ -146,11 +150,13 @@ Sentry.metrics.distribution("db.query_time", 45.3, {
 });
 ```
 
----
+* * *
 
 ## Cardinality
 
-Keep attribute values bounded. High-cardinality attributes (per-user IDs, request UUIDs) cause performance issues in Sentry's metrics backend.
+Keep attribute values bounded.
+High-cardinality attributes (per-user IDs, request UUIDs) cause performance issues in
+Sentry’s metrics backend.
 
 ```typescript
 // ❌ HIGH CARDINALITY — avoid as metric attributes
@@ -169,9 +175,10 @@ Sentry.metrics.count("page.view", 1, {
 });
 ```
 
-Use `Sentry.logger.*` for per-user or per-request data — logs handle high cardinality gracefully.
+Use `Sentry.logger.*` for per-user or per-request data — logs handle high cardinality
+gracefully.
 
----
+* * *
 
 ## Scope-Based Attributes (SDK ≥10.33.0)
 
@@ -195,24 +202,25 @@ Sentry.withScope((scope) => {
 });
 ```
 
----
+* * *
 
 ## Auto-Attached Default Attributes
 
-| Attribute                            | Value                               | Context     |
-|--------------------------------------|-------------------------------------|-------------|
-| `sentry.environment`                 | From `Sentry.init({ environment })` | Always      |
-| `sentry.release`                     | From `Sentry.init({ release })`     | Always      |
-| `sentry.sdk.name`                    | SDK identifier                      | Always      |
-| `sentry.sdk.version`                 | e.g., `"10.42.0"`                   | Always      |
-| `user.id`, `user.name`, `user.email` | If user is set in scope             | When set    |
-| `server.address`                     | Server hostname                     | Server-side |
+| Attribute | Value | Context |
+| --- | --- | --- |
+| `sentry.environment` | From `Sentry.init({ environment })` | Always |
+| `sentry.release` | From `Sentry.init({ release })` | Always |
+| `sentry.sdk.name` | SDK identifier | Always |
+| `sentry.sdk.version` | e.g., `"10.42.0"` | Always |
+| `user.id`, `user.name`, `user.email` | If user is set in scope | When set |
+| `server.address` | Server hostname | Server-side |
 
----
+* * *
 
 ## `beforeSendMetric` Hook
 
-Filter or modify metrics before transmission. Return `null` to drop:
+Filter or modify metrics before transmission.
+Return `null` to drop:
 
 ```typescript
 Sentry.init({
@@ -240,23 +248,24 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Flushing
 
-Metrics are buffered (max `MAX_METRIC_BUFFER_SIZE = 1000`) and flushed periodically. For serverless or short-lived scripts, flush explicitly:
+Metrics are buffered (max `MAX_METRIC_BUFFER_SIZE = 1000`) and flushed periodically.
+For serverless or short-lived scripts, flush explicitly:
 
 ```typescript
 await Sentry.flush(2000);  // flush + 2s timeout
 await Sentry.close(2000);  // flush + close all transports
 ```
 
----
+* * *
 
 ## Troubleshooting
 
 | Problem | Likely Cause | Fix |
-|---------|-------------|-----|
+| --- | --- | --- |
 | Metrics not appearing | SDK < 10.24.0 | Upgrade to ≥10.24.0 |
 | `Sentry.metrics` is undefined | SDK < 10.25.0 | Upgrade to ≥10.25.0 |
 | Metrics silently dropped | Attribute envelope > 2 KB | Reduce number or size of `attributes` |

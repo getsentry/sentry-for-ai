@@ -1,30 +1,35 @@
 # Metrics — Sentry Next.js SDK
 
-> Minimum SDK: `@sentry/nextjs` ≥10.25.0 (stable `Sentry.metrics.*` API)  
-> `enableMetrics` top-level option: ≥10.24.0 (default: `true`)  
-> `beforeSendMetric` hook: ≥10.24.0  
+> Minimum SDK: `@sentry/nextjs` ≥10.25.0 (stable `Sentry.metrics.*` API)\
+> `enableMetrics` top-level option: ≥10.24.0 (default: `true`)\
+> `beforeSendMetric` hook: ≥10.24.0\
 > Scope attributes on metrics: ≥10.33.0
->
+> 
 > Available in **all three runtimes**: browser, Node.js server, and Edge.
 
----
+* * *
 
 ## Overview
 
-Sentry Metrics let you track counters, current values, and value distributions. They appear in Sentry alongside related errors and can be correlated with traces.
+Sentry Metrics let you track counters, current values, and value distributions.
+They appear in Sentry alongside related errors and can be correlated with traces.
 
 Key characteristics:
 - Metrics are **enabled by default** — no configuration required for basic use
 - Work across all three Next.js runtimes: browser, Node.js server, and Edge
 - Buffered in memory (max 1000 entries) and sent periodically
-- High-cardinality attributes **degrade backend performance** — keep attribute cardinality low
+- High-cardinality attributes **degrade backend performance** — keep attribute
+  cardinality low
 - Use `Sentry.logger.*` (not metrics) when you need per-user or per-request detail
 
----
+* * *
 
 ## Initialization
 
-Metrics are on by default in all three runtime config files. No additional configuration is needed. `enableMetrics`, `beforeSendMetric`, and all `Sentry.metrics.*` calls work identically in every runtime.
+Metrics are on by default in all three runtime config files.
+No additional configuration is needed.
+`enableMetrics`, `beforeSendMetric`, and all `Sentry.metrics.*` calls work identically
+in every runtime.
 
 **`instrumentation-client.ts` (browser runtime):**
 
@@ -69,7 +74,7 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Metrics API
 
@@ -98,15 +103,15 @@ function gauge(name: string, value: number, options?: MetricOptions): void;
 function distribution(name: string, value: number, options?: MetricOptions): void;
 ```
 
----
+* * *
 
 ## Metric Types
 
-| Method         | Underlying Type | Use For                                          |
-|----------------|-----------------|--------------------------------------------------|
-| `count`        | counter         | Event frequency — requests, errors, signups      |
-| `gauge`        | gauge           | Current snapshot value — queue depth, CPU %       |
-| `distribution` | distribution    | Value histograms/ranges — latencies, file sizes  |
+| Method | Underlying Type | Use For |
+| --- | --- | --- |
+| `count` | counter | Event frequency — requests, errors, signups |
+| `gauge` | gauge | Current snapshot value — queue depth, CPU % |
+| `distribution` | distribution | Value histograms/ranges — latencies, file sizes |
 
 ```typescript
 // count — how many times something happened
@@ -122,7 +127,7 @@ Sentry.metrics.distribution("api.latency", 187.5, { unit: "millisecond" });
 Sentry.metrics.distribution("payload.size", 1024, { unit: "byte" });
 ```
 
----
+* * *
 
 ## Next.js Patterns
 
@@ -186,7 +191,9 @@ export async function submitCheckout(formData: FormData) {
 
 ### Proxy / Middleware
 
-Track request patterns at the edge. Next.js 16+ uses `proxy.ts`, while earlier versions use `middleware.ts`. The pattern is the same:
+Track request patterns at the edge.
+Next.js 16+ uses `proxy.ts`, while earlier versions use `middleware.ts`. The pattern is
+the same:
 
 **`proxy.ts`**
 
@@ -210,18 +217,18 @@ export function proxy(request: NextRequest) {
 }
 ```
 
----
+* * *
 
 ## Units
 
 Pass a `unit` string in `MetricOptions`. Used for display formatting in Sentry.
 
-| Category  | Unit Values                                                                       |
-|-----------|-----------------------------------------------------------------------------------|
-| Time      | `millisecond`, `second`, `minute`, `hour`, `day`, `week`                          |
-| Storage   | `bit`, `byte`, `kilobyte`, `megabyte`, `gigabyte`, `terabyte`, `petabyte`         |
-| Fractions | `ratio`, `percent`                                                                |
-| None      | `none` (or omit `unit`)                                                           |
+| Category | Unit Values |
+| --- | --- |
+| Time | `millisecond`, `second`, `minute`, `hour`, `day`, `week` |
+| Storage | `bit`, `byte`, `kilobyte`, `megabyte`, `gigabyte`, `terabyte`, `petabyte` |
+| Fractions | `ratio`, `percent` |
+| None | `none` (or omit `unit`) |
 
 ```typescript
 Sentry.metrics.distribution("api.latency", 187.5, { unit: "millisecond" });
@@ -232,13 +239,14 @@ Sentry.metrics.gauge("disk.usage_pct", 72.4,       { unit: "percent" });
 Sentry.metrics.count("user.logins");               // omit unit for plain counts
 ```
 
----
+* * *
 
 ## Attributes (Tags)
 
 Use `attributes` in `MetricOptions` to add filterable/groupable dimensions.
 
-**Size limit:** 2 KB per metric envelope. Metrics exceeding this are **dropped**.
+**Size limit:** 2 KB per metric envelope.
+Metrics exceeding this are **dropped**.
 
 ```typescript
 Sentry.metrics.count("api.requests", 1, {
@@ -263,11 +271,14 @@ Sentry.metrics.distribution("db.query_time", 45.3, {
 });
 ```
 
----
+* * *
 
 ## Cardinality
 
-Sentry's Application Metrics are **trace-connected and high-cardinality by design**. Unlike tags, metric `attributes` have no per-value restrictions, so high-cardinality values such as per-user IDs or request UUIDs are valid attribute values — you do not need to bucket them into bounded enums first.
+Sentry’s Application Metrics are **trace-connected and high-cardinality by design**.
+Unlike tags, metric `attributes` have no per-value restrictions, so high-cardinality
+values such as per-user IDs or request UUIDs are valid attribute values — you do not
+need to bucket them into bounded enums first.
 
 ```typescript
 Sentry.metrics.count("page.view", 1, {
@@ -280,9 +291,10 @@ Sentry.metrics.count("page.view", 1, {
 });
 ```
 
-The practical limit is the **2 KB per-metric envelope size** (metrics exceeding it are dropped — see above), not the cardinality of individual attribute values.
+The practical limit is the **2 KB per-metric envelope size** (metrics exceeding it are
+dropped — see above), not the cardinality of individual attribute values.
 
----
+* * *
 
 ## Scope-Based Attributes (SDK ≥10.33.0)
 
@@ -306,26 +318,29 @@ Sentry.withScope((scope) => {
 });
 ```
 
----
+* * *
 
 ## Auto-Attached Default Attributes
 
-| Attribute                            | Value                               | Context     |
-|--------------------------------------|-------------------------------------|-------------|
-| `sentry.environment`                 | From `Sentry.init({ environment })` | Always      |
-| `sentry.release`                     | From `Sentry.init({ release })`     | Always      |
-| `sentry.sdk.name`                    | SDK identifier                      | Always      |
-| `sentry.sdk.version`                 | e.g., `"10.42.0"`                   | Always      |
-| `user.id`, `user.name`, `user.email` | If user is set in scope             | When set    |
-| `browser.name`, `browser.version`    | Browser info                        | Client-side |
-| `sentry.replay_id`                   | Session replay ID                   | Client-side |
-| `server.address`                     | Server hostname                     | Server-side |
+| Attribute | Value | Context |
+| --- | --- | --- |
+| `sentry.environment` | From `Sentry.init({ environment })` | Always |
+| `sentry.release` | From `Sentry.init({ release })` | Always |
+| `sentry.sdk.name` | SDK identifier | Always |
+| `sentry.sdk.version` | e.g., `"10.42.0"` | Always |
+| `user.id`, `user.name`, `user.email` | If user is set in scope | When set |
+| `browser.name`, `browser.version` | Browser info | Client-side |
+| `sentry.replay_id` | Session replay ID | Client-side |
+| `server.address` | Server hostname | Server-side |
 
----
+* * *
 
 ## `beforeSendMetric` Hook
 
-Filter or modify metrics before transmission. Return `null` to drop. Configure in any runtime config file (`instrumentation-client.ts`, `sentry.server.config.ts`, or `sentry.edge.config.ts`):
+Filter or modify metrics before transmission.
+Return `null` to drop.
+Configure in any runtime config file (`instrumentation-client.ts`,
+`sentry.server.config.ts`, or `sentry.edge.config.ts`):
 
 **`sentry.server.config.ts`**
 
@@ -354,11 +369,15 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Flushing
 
-Metrics are buffered (up to 1000 entries) and flushed periodically. In serverless or edge environments, the function may terminate before the buffer flushes automatically. Use `flush()` to send pending metrics while keeping the client alive (suitable for reusable function instances), or `close()` to flush and permanently shut down the client:
+Metrics are buffered (up to 1000 entries) and flushed periodically.
+In serverless or edge environments, the function may terminate before the buffer flushes
+automatically. Use `flush()` to send pending metrics while keeping the client alive
+(suitable for reusable function instances), or `close()` to flush and permanently shut
+down the client:
 
 ```typescript
 await Sentry.flush(2000);  // send pending data, keep client alive (use in serverless)
@@ -366,15 +385,17 @@ await Sentry.close(2000);  // send pending data + tear down client (use on perma
 ```
 
 This is especially important for:
-- **Serverless / Vercel API routes** — function instances may terminate or freeze before the buffer auto-flushes
-- **Edge runtime handlers** — short-lived execution contexts with no background flush opportunity
+- **Serverless / Vercel API routes** — function instances may terminate or freeze before
+  the buffer auto-flushes
+- **Edge runtime handlers** — short-lived execution contexts with no background flush
+  opportunity
 
----
+* * *
 
 ## Troubleshooting
 
 | Problem | Likely Cause | Fix |
-|---------|-------------|-----|
+| --- | --- | --- |
 | Metrics not appearing | SDK < 10.24.0 | Upgrade to ≥10.24.0 |
 | `Sentry.metrics` is undefined | SDK < 10.25.0 | Upgrade to ≥10.25.0 |
 | Metrics silently dropped | Attribute envelope > 2 KB | Reduce number or size of `attributes` |

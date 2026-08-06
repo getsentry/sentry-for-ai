@@ -1,14 +1,14 @@
 # Logging — Sentry Cloudflare SDK
 
-> Minimum SDK: `@sentry/cloudflare` v9.41.0+ (stable GA)
-> First experimental: v9.10.0+ (via `_experiments.enableLogs`)
-> Status: ✅ **Generally Available**
+> Minimum SDK: `@sentry/cloudflare` v9.41.0+ (stable GA) First experimental: v9.10.0+
+> (via `_experiments.enableLogs`) Status: ✅ **Generally Available**
 
----
+* * *
 
 ## Overview
 
-Sentry Logs are high-cardinality structured log entries that link directly to traces and errors. They let you answer *why* something broke, not just *what* broke.
+Sentry Logs are high-cardinality structured log entries that link directly to traces and
+errors. They let you answer *why* something broke, not just *what* broke.
 
 Key characteristics:
 - Sent as structured data — each attribute is individually searchable in Sentry UI
@@ -16,7 +16,7 @@ Key characteristics:
 - Buffered and batched — no per-log network overhead
 - NOT a replacement for a logging library; designed to complement one
 
----
+* * *
 
 ## Initialization
 
@@ -39,7 +39,7 @@ export default Sentry.withSentry(
 );
 ```
 
----
+* * *
 
 ## Logger API
 
@@ -60,7 +60,8 @@ Sentry.logger.fatal("Worker initialization failed: %s", [error.message]);
 Sentry.logger.<level>(message: string, params?: unknown[], attributes?: Record<string, unknown>)
 ```
 
-- **`message`** — format string with `%s`, `%d`, `%f`, `%o`, `%O` placeholders (printf-style)
+- **`message`** — format string with `%s`, `%d`, `%f`, `%o`, `%O` placeholders
+  (printf-style)
 - **`params`** — parameter values substituted into the format string
 - **`attributes`** — structured key-value data attached to the log entry
 
@@ -75,11 +76,13 @@ Sentry.logger.info("Request processed", [], {
 });
 ```
 
----
+* * *
 
 ## Console Integration
 
-The `consoleIntegration` (enabled by default) captures `console.log`, `console.warn`, `console.error`, etc. as **breadcrumbs** — not as Sentry Logs.
+The `consoleIntegration` (enabled by default) captures `console.log`, `console.warn`,
+`console.error`, etc.
+as **breadcrumbs** — not as Sentry Logs.
 
 For actual Sentry Logs that appear in the Logs product, use `Sentry.logger.*`.
 
@@ -100,13 +103,16 @@ export default Sentry.withSentry(
 );
 ```
 
-This captures `console.warn()` and `console.error()` calls as Sentry Logs in addition to their normal breadcrumb behavior.
+This captures `console.warn()` and `console.error()` calls as Sentry Logs in addition to
+their normal breadcrumb behavior.
 
----
+* * *
 
 ## Log-to-Trace Correlation
 
-When tracing is enabled, logs are automatically linked to the active trace. In the Sentry UI, you can navigate from a log entry to the trace timeline and vice versa.
+When tracing is enabled, logs are automatically linked to the active trace.
+In the Sentry UI, you can navigate from a log entry to the trace timeline and vice
+versa.
 
 ```typescript
 await Sentry.startSpan(
@@ -124,35 +130,43 @@ await Sentry.startSpan(
 // All three log entries are linked to the "processOrder" span
 ```
 
----
+* * *
 
 ## Configuration
 
 | Option | Type | Default | Notes |
-|--------|------|---------|-------|
+| --- | --- | --- | --- |
 | `enableLogs` | `boolean` | `false` | Must be `true` to enable Sentry Logs |
 | `beforeSendLog` | `(log) => log \| null` | — | Filter or modify logs; return `null` to drop |
 
----
+* * *
 
 ## Best Practices
 
-1. **Use structured attributes** — put searchable data in the `attributes` parameter, not in the message string. This makes logs filterable in the Sentry UI.
+1. **Use structured attributes** — put searchable data in the `attributes` parameter,
+   not in the message string.
+   This makes logs filterable in the Sentry UI.
 
-2. **Use format strings with parameters** — `Sentry.logger.info("User %s did %s", [userId, action])` is better than template literals because Sentry can group similar logs.
+2. **Use format strings with parameters** —
+   `Sentry.logger.info("User %s did %s", [userId, action])` is better than template
+   literals because Sentry can group similar logs.
 
-3. **Don't log everything** — Sentry Logs are for observability, not a firehose. Focus on key events: authentication, payment, external API calls, errors.
+3. **Don’t log everything** — Sentry Logs are for observability, not a firehose.
+   Focus on key events: authentication, payment, external API calls, errors.
 
-4. **Combine with `console.log` for local dev** — `Sentry.logger.*` sends to Sentry only. Keep `console.log` for local development output and `Sentry.logger.*` for production observability.
+4. **Combine with `console.log` for local dev** — `Sentry.logger.*` sends to Sentry
+   only. Keep `console.log` for local development output and `Sentry.logger.*` for
+   production observability.
 
-5. **Filter noisy logs** — use `beforeSendLog` to drop debug/trace level logs in production if they generate too much volume.
+5. **Filter noisy logs** — use `beforeSendLog` to drop debug/trace level logs in
+   production if they generate too much volume.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Logs not appearing in Sentry | Verify `enableLogs: true` is set in init options |
 | Logs not linked to traces | Ensure tracing is enabled (`tracesSampleRate` or `tracesSampler` set) |
 | `console.log` not in Sentry Logs | `console.*` creates breadcrumbs, not Logs. Use `consoleLoggingIntegration` to also forward to Sentry Logs |

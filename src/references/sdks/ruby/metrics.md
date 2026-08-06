@@ -1,7 +1,8 @@
 # Metrics — Sentry Ruby SDK
 
-> Minimum SDK: `sentry-ruby` v6.3.0+
-> Metrics are enabled by default (`config.enable_metrics = true`). The v6.3.0 release replaced the beta `increment` API with `count`.
+> Minimum SDK: `sentry-ruby` v6.3.0+ Metrics are enabled by default
+> (`config.enable_metrics = true`). The v6.3.0 release replaced the beta `increment` API
+> with `count`.
 
 ## Contents
 
@@ -56,7 +57,7 @@ Sentry.metrics.distribution("db.query_time", query_ms, unit: "millisecond",
 ## Unit Reference
 
 | Category | Values |
-|----------|--------|
+| --- | --- |
 | Duration | `"nanosecond"`, `"microsecond"`, `"millisecond"`, `"second"`, `"minute"`, `"hour"` |
 | Data | `"byte"`, `"kilobyte"`, `"megabyte"`, `"gigabyte"` |
 | Fractions | `"ratio"`, `"percent"` |
@@ -68,7 +69,8 @@ Two complementary approaches cover different aspects of Sidekiq observability:
 
 ### Option A — Server middleware (per-job metrics)
 
-A Sidekiq server middleware fires for every job execution — the right tool for job duration, throughput, and error rate broken down by queue and worker class.
+A Sidekiq server middleware fires for every job execution — the right tool for job
+duration, throughput, and error rate broken down by queue and worker class.
 
 ```ruby
 # lib/sentry_job_metrics.rb
@@ -95,13 +97,16 @@ Sidekiq.configure_server do |config|
 end
 ```
 
-**What this gives you:** `sidekiq.job.duration` (p50/p95/p99 per queue + worker), `sidekiq.job.success` and `sidekiq.job.failure` counters.
+**What this gives you:** `sidekiq.job.duration` (p50/p95/p99 per queue + worker),
+`sidekiq.job.success` and `sidekiq.job.failure` counters.
 
-**What it cannot give you:** queue depth, queue latency (oldest job age), retry/dead queue sizes — these are aggregate stats that require polling `Sidekiq::Stats`.
+**What it cannot give you:** queue depth, queue latency (oldest job age), retry/dead
+queue sizes — these are aggregate stats that require polling `Sidekiq::Stats`.
 
 ### Option B — Aggregate queue stats (periodic sampling)
 
-For queue depth and latency, poll `Sidekiq::Stats` on a schedule. A lightweight background thread or a recurring Sidekiq job both work:
+For queue depth and latency, poll `Sidekiq::Stats` on a schedule.
+A lightweight background thread or a recurring Sidekiq job both work:
 
 ```ruby
 # config/initializers/sentry_sidekiq_stats.rb
@@ -127,13 +132,18 @@ Thread.new do
 end
 ```
 
-> **Production note:** In forking servers (Puma, Unicorn), start the polling thread in `on_worker_boot` / `after_fork` — threads don't survive `fork()`. Consider using a Sidekiq periodic job instead of a bare thread for better reliability and error visibility.
+> **Production note:** In forking servers (Puma, Unicorn), start the polling thread in
+> `on_worker_boot` / `after_fork` — threads don’t survive `fork()`. Consider using a
+> Sidekiq periodic job instead of a bare thread for better reliability and error
+> visibility.
 
-**Use both together** for complete Sidekiq visibility: the middleware captures per-job detail, the poller captures queue health over time.
+**Use both together** for complete Sidekiq visibility: the middleware captures per-job
+detail, the poller captures queue health over time.
 
 ## Detecting Existing Metric Patterns
 
-Before adding Sentry metrics, scan for existing instrumentation to migrate or complement:
+Before adding Sentry metrics, scan for existing instrumentation to migrate or
+complement:
 
 ```bash
 # StatsD / Datadog / Prometheus calls
@@ -157,7 +167,7 @@ end
 `MetricEvent` properties:
 
 | Property | Type | Description |
-|----------|------|-------------|
+| --- | --- | --- |
 | `name` | `String` | Metric identifier |
 | `type` | `Symbol` | `:counter`, `:gauge`, or `:distribution` |
 | `value` | `Numeric` | Measurement value |
@@ -169,14 +179,16 @@ end
 
 - Use `count` for events, `gauge` for current state, `distribution` for latency/sizes
 - Always set `unit:` on distributions — enables proper chart rendering
-- Use `attributes:` to slice by queue name, route, status code — these become filter dimensions
-- Use `before_send_metric` to strip PII (user IDs, email addresses) from attribute values
+- Use `attributes:` to slice by queue name, route, status code — these become filter
+  dimensions
+- Use `before_send_metric` to strip PII (user IDs, email addresses) from attribute
+  values
 - Metrics emitted inside a Sentry transaction are trace-linked automatically
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Metrics not in Sentry | Verify `enable_metrics` is not `false`; check DSN |
 | `count` values look wrong | Sentry diffs lifetime counters — reporting deltas directly avoids confusion |
 | `before_send_metric` not filtering | Return `nil`, not `false`, to drop a metric |

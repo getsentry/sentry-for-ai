@@ -5,7 +5,7 @@
 ## Two Logging Systems
 
 | System | Produces | Requires |
-|--------|----------|---------|
+| --- | --- | --- |
 | **Sentry Structured Logs** | Searchable log records in Sentry Logs UI | `enableLogs: true` + `Sentry.logger.*` |
 | **Framework integrations** | Bridge NestJS/Pino/Winston logs to Sentry Logs | Integration-specific setup |
 
@@ -40,7 +40,8 @@ Sentry.logger.fatal("Database {database} connection pool exhausted", { database:
 
 ### Tagged template for parameterized messages
 
-Use `Sentry.logger.fmt` to create structured, searchable messages where each placeholder becomes an individually queryable attribute in the Sentry Logs UI:
+Use `Sentry.logger.fmt` to create structured, searchable messages where each placeholder
+becomes an individually queryable attribute in the Sentry Logs UI:
 
 ```typescript
 import * as Sentry from "@sentry/nestjs";
@@ -53,7 +54,8 @@ Sentry.logger.info(Sentry.logger.fmt`User ${"userId"} signed in from ${"region"}
 
 ### NestJS ConsoleLogger integration
 
-To route NestJS's built-in `ConsoleLogger` output to Sentry Logs, use `consoleLoggingIntegration` with `forceConsole: true`:
+To route NestJS’s built-in `ConsoleLogger` output to Sentry Logs, use
+`consoleLoggingIntegration` with `forceConsole: true`:
 
 ```typescript
 import * as Sentry from "@sentry/nestjs";
@@ -68,7 +70,7 @@ Sentry.init({
 });
 ```
 
-Then use NestJS's built-in logger as usual — all output is captured:
+Then use NestJS’s built-in logger as usual — all output is captured:
 
 ```typescript
 import { Injectable, Logger } from "@nestjs/common";
@@ -123,7 +125,8 @@ const logger = winston.createLogger({
 });
 ```
 
-> **Bunyan is not supported.** Use Pino or Winston if you need a framework logger bridge.
+> **Bunyan is not supported.** Use Pino or Winston if you need a framework logger
+> bridge.
 
 ### `beforeSendLog` hook — filter and sanitize
 
@@ -149,12 +152,14 @@ Sentry.init({
 
 ## Log-to-Trace Correlation
 
-Log entries are automatically correlated to the active trace — no configuration required. When a log is emitted inside an instrumented request or span, Sentry links it to the corresponding transaction in the Traces UI.
+Log entries are automatically correlated to the active trace — no configuration
+required. When a log is emitted inside an instrumented request or span, Sentry links it
+to the corresponding transaction in the Traces UI.
 
 ## Decision Table
 
 | Goal | Tool |
-|------|------|
+| --- | --- |
 | Searchable structured records in Sentry Logs UI | `Sentry.logger.*` + `enableLogs: true` |
 | Bridge NestJS `ConsoleLogger` to Sentry Logs | `consoleLoggingIntegration({ forceConsole: true })` |
 | Bridge Pino to Sentry Logs | `pinoIntegration()` (SDK 10.18.0+) |
@@ -164,7 +169,7 @@ Log entries are automatically correlated to the active trace — no configuratio
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | `Sentry.logger.*` calls have no effect | Ensure `enableLogs: true` is set in `Sentry.init()` |
 | NestJS `ConsoleLogger` output not appearing | Add `consoleLoggingIntegration({ forceConsole: true })` |
 | Pino logs not appearing | Requires `@sentry/nestjs` 10.18.0+; add `pinoIntegration()` |

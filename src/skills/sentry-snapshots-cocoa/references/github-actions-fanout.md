@@ -1,14 +1,24 @@
 # Fan-out GitHub Actions Workflow for SnapshotPreviews
 
-Use this when a SnapshotPreviews project needs multiple simulator destinations or device families, parallel rendering, matrix execution, or selective/large-suite CI. This is the maintained multi-simulator pattern: build once, render each simulator in parallel with `test-without-building`, export each simulator to its own subdirectory, aggregate artifacts, then upload once.
+Use this when a SnapshotPreviews project needs multiple simulator destinations or device
+families, parallel rendering, matrix execution, or selective/large-suite CI. This is the
+maintained multi-simulator pattern: build once, render each simulator in parallel with
+`test-without-building`, export each simulator to its own subdirectory, aggregate
+artifacts, then upload once.
 
-Do not replace this with a sequential loop of multiple `xcodebuild test` invocations in the simple workflow. Sequential multi-simulator rendering is slower and not the recommended path.
+Do not replace this with a sequential loop of multiple `xcodebuild test` invocations in
+the simple workflow.
+Sequential multi-simulator rendering is slower and not the recommended path.
 
-Do not use this template for Point-Free `swift-snapshot-testing` or another existing generator. For `swift-snapshot-testing`, use `github-actions-swift-snapshot-testing.md`; for other generators, preserve the generator and adapt its existing CI/upload path.
+Do not use this template for Point-Free `swift-snapshot-testing` or another existing
+generator. For `swift-snapshot-testing`, use `github-actions-swift-snapshot-testing.md`;
+for other generators, preserve the generator and adapt its existing CI/upload path.
 
-This pattern follows the public [EmergeTools HackerNews SnapshotPreviews workflow](https://github.com/EmergeTools/hackernews/blob/main/.github/workflows/ios_sentry_upload_snapshots.yml).
+This pattern follows the public
+[EmergeTools HackerNews SnapshotPreviews workflow](https://github.com/EmergeTools/hackernews/blob/main/.github/workflows/ios_sentry_upload_snapshots.yml).
 
-Adapt target names, paths, Xcode version, simulator list, package setup, and Fastlane/CLI upload to the project.
+Adapt target names, paths, Xcode version, simulator list, package setup, and
+Fastlane/CLI upload to the project.
 
 ```yaml
 name: Upload iOS snapshots to Sentry
@@ -190,4 +200,7 @@ jobs:
             --app-id "${SENTRY_APP_ID}"
 ```
 
-For selective PR rendering, add a separate manifest job with `TEST_RUNNER_SNAPSHOTS_ALL_IMAGE_NAMES_FILE`, aggregate all shard manifests with `sort -u`, and pass `--all-image-file-names-file` only for pull-request uploads. Do not add this complexity unless selective testing is actually required.
+For selective PR rendering, add a separate manifest job with
+`TEST_RUNNER_SNAPSHOTS_ALL_IMAGE_NAMES_FILE`, aggregate all shard manifests with
+`sort -u`, and pass `--all-image-file-names-file` only for pull-request uploads.
+Do not add this complexity unless selective testing is actually required.

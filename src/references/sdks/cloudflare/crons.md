@@ -1,28 +1,31 @@
 # Crons / Job Monitoring — Sentry Cloudflare SDK
 
 > Minimum SDK: `@sentry/cloudflare` v8.0.0+ (`captureCheckIn`, `withMonitor`)
-> Auto-instrumented `scheduled` handler: v10.x+
-> Status: ✅ **Generally Available**
+> Auto-instrumented `scheduled` handler: v10.x+ Status: ✅ **Generally Available**
 
----
+* * *
 
 ## Overview
 
-Sentry Crons tracks whether scheduled tasks run on time, succeed, and complete within expected durations. Sentry alerts when a job:
+Sentry Crons tracks whether scheduled tasks run on time, succeed, and complete within
+expected durations. Sentry alerts when a job:
 - Misses its scheduled start time (checkin margin exceeded)
 - Takes too long to complete (maxRuntime exceeded)
 - Fails (status `"error"`)
 
-Cloudflare Workers support cron triggers via the `scheduled` handler. When wrapped with `withSentry`, the scheduled handler is automatically instrumented with a `faas.cron` span that includes:
+Cloudflare Workers support cron triggers via the `scheduled` handler.
+When wrapped with `withSentry`, the scheduled handler is automatically instrumented with
+a `faas.cron` span that includes:
 - `faas.cron` — the cron expression
 - `faas.time` — the scheduled time (ISO 8601)
 - `faas.trigger` — `"timer"`
 
----
+* * *
 
 ## Automatic Scheduled Handler Instrumentation
 
-When you use `withSentry`, the `scheduled` handler is automatically wrapped. Errors are captured and the span records duration:
+When you use `withSentry`, the `scheduled` handler is automatically wrapped.
+Errors are captured and the span records duration:
 
 ```typescript
 import * as Sentry from "@sentry/cloudflare";
@@ -52,7 +55,7 @@ Configure the cron trigger in `wrangler.toml`:
 crons = ["*/5 * * * *"]  # Every 5 minutes
 ```
 
----
+* * *
 
 ## `Sentry.withMonitor` — Named Monitor Tracking
 
@@ -96,7 +99,7 @@ async scheduled(controller, env, ctx) {
 },
 ```
 
----
+* * *
 
 ## `Sentry.captureCheckIn` — Manual Check-Ins
 
@@ -155,12 +158,12 @@ const checkInId = Sentry.captureCheckIn(
 );
 ```
 
----
+* * *
 
 ## Schedule Types
 
 | Type | Format | Example |
-|------|--------|---------|
+| --- | --- | --- |
 | `crontab` | Standard cron expression | `"*/5 * * * *"` (every 5 min) |
 | `interval` | Repeated interval | `{ value: 10, unit: "minute" }` |
 
@@ -178,12 +181,12 @@ const monitorConfig = {
 };
 ```
 
----
+* * *
 
 ## Monitor Config Options
 
 | Option | Type | Default | Notes |
-|--------|------|---------|-------|
+| --- | --- | --- | --- |
 | `schedule.type` | `"crontab" \| "interval"` | — | Required |
 | `schedule.value` | `string \| number` | — | Cron expression or interval value |
 | `schedule.unit` | `string` | — | Required for `interval` type |
@@ -193,28 +196,34 @@ const monitorConfig = {
 | `failureIssueThreshold` | `number` | — | Number of consecutive failures before creating an issue |
 | `recoveryThreshold` | `number` | — | Number of consecutive successes before resolving an issue |
 
----
+* * *
 
 ## Best Practices
 
-1. **Use `withMonitor` for most cases** — it handles the check-in lifecycle automatically and records duration.
+1. **Use `withMonitor` for most cases** — it handles the check-in lifecycle
+   automatically and records duration.
 
-2. **Use `ctx.waitUntil`** — wrap `withMonitor` in `ctx.waitUntil()` to ensure the check-in is flushed before the worker terminates.
+2. **Use `ctx.waitUntil`** — wrap `withMonitor` in `ctx.waitUntil()` to ensure the
+   check-in is flushed before the worker terminates.
 
-3. **Use upsert configs** — supply `monitorConfig` to auto-create monitors. This avoids manual configuration in the Sentry UI.
+3. **Use upsert configs** — supply `monitorConfig` to auto-create monitors.
+   This avoids manual configuration in the Sentry UI.
 
-4. **Name monitors clearly** — use descriptive slugs like `"daily-cleanup"` or `"hourly-sync"`, not `"cron-1"`.
+4. **Name monitors clearly** — use descriptive slugs like `"daily-cleanup"` or
+   `"hourly-sync"`, not `"cron-1"`.
 
-5. **Set reasonable thresholds** — `checkinMargin` should be slightly larger than typical scheduling jitter. `maxRuntime` should be longer than the 99th percentile duration.
+5. **Set reasonable thresholds** — `checkinMargin` should be slightly larger than
+   typical scheduling jitter.
+   `maxRuntime` should be longer than the 99th percentile duration.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Monitor not appearing in Crons dashboard | Ensure `captureCheckIn` or `withMonitor` is called at least once with a valid `monitorSlug` |
-| Check-in always shows "missed" | Verify `checkinMargin` is large enough for scheduling jitter |
-| Check-in shows "timed out" | Verify `maxRuntime` exceeds expected job duration |
+| Check-in always shows “missed” | Verify `checkinMargin` is large enough for scheduling jitter |
+| Check-in shows “timed out” | Verify `maxRuntime` exceeds expected job duration |
 | In-progress check-in never completes | Ensure both `in_progress` and `ok`/`error` check-ins use the same `checkInId` |
 | Schedule mismatch | Ensure `schedule.value` in config matches the actual cron expression in `wrangler.toml` |

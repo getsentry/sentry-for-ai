@@ -7,7 +7,7 @@
 Key config options for error monitoring:
 
 | Option | Type | Default | Purpose |
-|--------|------|---------|---------|
+| --- | --- | --- | --- |
 | `:dsn` | `string \| nil` | `nil` | SDK disabled if nil |
 | `:sample_rate` | `float` | `1.0` | Error event sample rate (0.0–1.0) |
 | `:before_send` | `(event -> event \| nil \| false) \| {m, f}` | `nil` | Mutate or drop error events before sending |
@@ -18,7 +18,7 @@ Key config options for error monitoring:
 | `:tags` | `map` | `%{}` | Global tags sent with every event |
 | `:enable_source_code_context` | `boolean` | `false` | Include source lines around errors |
 | `:root_source_code_paths` | `[path]` | `[]` | Required when source context is enabled |
-| `:in_app_otp_apps` | `[atom]` | `[]` | OTP apps whose modules appear as "in-app" in stacktraces |
+| `:in_app_otp_apps` | `[atom]` | `[]` | OTP apps whose modules appear as “in-app” in stacktraces |
 
 ## Code Examples
 
@@ -36,7 +36,8 @@ config :sentry,
 
 ### Capturing exceptions
 
-Always pass `stacktrace: __STACKTRACE__` in rescue blocks — Elixir only populates `__STACKTRACE__` inside a `rescue` or `catch` clause:
+Always pass `stacktrace: __STACKTRACE__` in rescue blocks — Elixir only populates
+`__STACKTRACE__` inside a `rescue` or `catch` clause:
 
 ```elixir
 try do
@@ -85,7 +86,8 @@ Sentry.capture_message("Failed to process user %s after %d attempts",
 
 ### Context enrichment with `Sentry.Context`
 
-Context is stored per-process (in Logger metadata). Set it early in request handling — in a Plug, LiveView mount, or GenServer handler:
+Context is stored per-process (in Logger metadata).
+Set it early in request handling — in a Plug, LiveView mount, or GenServer handler:
 
 ```elixir
 # Set user identity
@@ -124,7 +126,9 @@ Sentry.Context.add_breadcrumb(%{
 })
 ```
 
-> **Important:** `Sentry.Context` data is scoped to the current process only. It is NOT automatically propagated to spawned `Task` or `GenServer` processes. For async work, pass context values explicitly.
+> **Important:** `Sentry.Context` data is scoped to the current process only.
+> It is NOT automatically propagated to spawned `Task` or `GenServer` processes.
+> For async work, pass context values explicitly.
 
 ### Context in a Phoenix controller (via Plug)
 
@@ -211,7 +215,8 @@ config :sentry,
 
 ### Custom event filter
 
-`Sentry.EventFilter` is called before `before_send` and before sampling. Returning `true` from `exclude_exception?/2` silently drops the event:
+`Sentry.EventFilter` is called before `before_send` and before sampling.
+Returning `true` from `exclude_exception?/2` silently drops the event:
 
 ```elixir
 defmodule MyApp.SentryFilter do
@@ -233,11 +238,12 @@ config :sentry, filter: MyApp.SentryFilter
 `Sentry.DefaultEventFilter` already excludes common Phoenix/Plug noise:
 - `Ecto.NoResultsError`
 - `Phoenix.Router.NoRouteError`
-- `Plug.Parsers.BadEncodingError`, `ParseError`, `RequestTooLargeError`, `UnsupportedMediaTypeError`
+- `Plug.Parsers.BadEncodingError`, `ParseError`, `RequestTooLargeError`,
+  `UnsupportedMediaTypeError`
 
 ### Fingerprinting and custom grouping
 
-Override Sentry's default grouping algorithm via `before_send`:
+Override Sentry’s default grouping algorithm via `before_send`:
 
 ```elixir
 def before_send(%{exception: [%{type: "MyApp.DatabaseError"} | _]} = event) do
@@ -278,7 +284,8 @@ Sentry.flush(timeout: 10_000)
 
 ## Source Code Context in Production
 
-Without packaging, production releases strip source code — Sentry cannot show the lines around an error. Package your source before building:
+Without packaging, production releases strip source code — Sentry cannot show the lines
+around an error. Package your source before building:
 
 ```bash
 # Run before mix release
@@ -296,7 +303,7 @@ config :sentry,
 ## `send_result` Types
 
 | Value | Description |
-|-------|-------------|
+| --- | --- |
 | `{:ok, event_id}` | Event sent successfully (`:send_result: :sync` only) |
 | `:ignored` | Not sent (no DSN, filtered, sampled out) |
 | `:excluded` | Dropped by `EventFilter` |
@@ -304,19 +311,24 @@ config :sentry,
 
 ## Best Practices
 
-- Always pass `stacktrace: __STACKTRACE__` in rescue blocks — stacktraces are not automatically captured in Elixir
-- Set `in_app_otp_apps: [:my_app]` to distinguish your code from library code in Sentry's issue grouping
-- Use `Sentry.Context.set_user_context/1` early in the request lifecycle (e.g., in a Plug) so every event from that process includes user identity
-- Use `Sentry.EventFilter` for structural filtering (known non-errors), and `before_send` for event mutation or conditional dropping
-- Run `mix sentry.package_source_code` as part of your release build process so production stacktraces show source lines
+- Always pass `stacktrace: __STACKTRACE__` in rescue blocks — stacktraces are not
+  automatically captured in Elixir
+- Set `in_app_otp_apps: [:my_app]` to distinguish your code from library code in
+  Sentry’s issue grouping
+- Use `Sentry.Context.set_user_context/1` early in the request lifecycle (e.g., in a
+  Plug) so every event from that process includes user identity
+- Use `Sentry.EventFilter` for structural filtering (known non-errors), and
+  `before_send` for event mutation or conditional dropping
+- Run `mix sentry.package_source_code` as part of your release build process so
+  production stacktraces show source lines
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No stack trace on captured exception | Add `stacktrace: __STACKTRACE__` to `capture_exception/2` inside the rescue block |
 | Events not appearing | Set `log_level: :debug`; check DSN; call `Sentry.flush/1` before process exit |
-| All events showing "in-app: false" | Set `in_app_otp_apps: [:my_app]` in config to mark your app's modules as in-app |
+| All events showing “in-app: false” | Set `in_app_otp_apps: [:my_app]` in config to mark your app’s modules as in-app |
 | Context missing from async events | `Sentry.Context` is process-scoped — pass data explicitly to spawned tasks/GenServers |
 | `before_send` not dropping events | Ensure function returns `nil` or `false` (not an empty map) to drop the event |
 | Duplicate events (Cowboy + LoggerHandler) | Set `excluded_domains: [:cowboy]` in `LoggerHandler` config (default behavior) |

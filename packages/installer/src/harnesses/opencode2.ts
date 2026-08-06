@@ -1,4 +1,4 @@
-import { realSystem, type SystemDeps } from "../system";
+import type { SystemDeps } from "../system";
 import type { Harness } from "./types";
 import { createOpenCodeHarness } from "./opencode-common";
 
@@ -15,5 +15,3 @@ export function createOpenCode2(system: SystemDeps): Harness {
     incompatibleMarker: ".sentry-opencode-v1",
   });
 }
-
-export const opencode2 = createOpenCode2(realSystem);

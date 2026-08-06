@@ -1,4 +1,4 @@
-import { realSystem, type SystemDeps } from "../system";
+import type { SystemDeps } from "../system";
 import type { Harness } from "./types";
 import { createOpenCodeHarness } from "./opencode-common";
 
@@ -16,5 +16,3 @@ export function createOpenCode(system: SystemDeps): Harness {
     supersededBy: "opencode2",
   });
 }
-
-export const opencode = createOpenCode(realSystem);

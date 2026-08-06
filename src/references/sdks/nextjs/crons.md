@@ -1,21 +1,22 @@
 # Crons — Sentry Next.js SDK
 
-> Minimum SDK: `@sentry/nextjs` ≥7.51.1+ for `captureCheckIn`  
-> `Sentry.withMonitor()`: ≥7.76.0+  
+> Minimum SDK: `@sentry/nextjs` ≥7.51.1+ for `captureCheckIn`\
+> `Sentry.withMonitor()`: ≥7.76.0+\
 > Cron library auto-instrumentation: ≥7.92.0+
 
-> ⚠️ **Server and Edge runtimes only.** Cron monitoring is not available in the browser runtime.
+> ⚠️ **Server and Edge runtimes only.** Cron monitoring is not available in the browser
+> runtime.
 
----
+* * *
 
 ## Overview
 
 Sentry Cron Monitoring detects:
-- **Missed check-ins** — job didn't run at the expected time
+- **Missed check-ins** — job didn’t run at the expected time
 - **Runtime failures** — job ran but encountered an error
 - **Timeouts** — job exceeded `maxRuntime` without completing
 
----
+* * *
 
 ## Option A: Automatic Vercel Cron Integration
 
@@ -30,9 +31,12 @@ module.exports = withSentryConfig(nextConfig, {
 });
 ```
 
-> ⚠️ **Critical limitation:** `automaticVercelMonitors` only works with the **Pages Router**. **App Router route handlers are NOT yet supported** for automatic instrumentation. Use `captureCheckIn` or `withMonitor` manually for App Router cron routes.
+> ⚠️ **Critical limitation:** `automaticVercelMonitors` only works with the **Pages
+> Router**. **App Router route handlers are NOT yet supported** for automatic
+> instrumentation. Use `captureCheckIn` or `withMonitor` manually for App Router cron
+> routes.
 
----
+* * *
 
 ## Option B: Auto-Instrumentation of Cron Libraries (SDK ≥7.92.0)
 
@@ -89,9 +93,10 @@ scheduleWithCheckIn.scheduleJob(
 );
 ```
 
-> ⚠️ `node-schedule` instrumentation only supports **cron string format**. Date objects and RecurrenceRule objects are not supported.
+> ⚠️ `node-schedule` instrumentation only supports **cron string format**. Date objects
+> and RecurrenceRule objects are not supported.
 
----
+* * *
 
 ## Option C: `Sentry.withMonitor()` Wrapper (SDK ≥7.76.0)
 
@@ -146,7 +151,7 @@ await Sentry.withMonitor(
 );
 ```
 
----
+* * *
 
 ## Option D: Manual `Sentry.captureCheckIn()` (SDK ≥7.51.1)
 
@@ -203,7 +208,8 @@ const checkInId = Sentry.captureCheckIn(
 
 ### Heartbeat Check-In (Detects Missed Jobs Only)
 
-If you only need to know whether the job ran (not runtime failures), send a single check-in at completion:
+If you only need to know whether the job ran (not runtime failures), send a single
+check-in at completion:
 
 ```typescript
 try {
@@ -214,7 +220,7 @@ try {
 }
 ```
 
----
+* * *
 
 ## Using Crons with Next.js Route Handlers
 
@@ -295,7 +301,7 @@ export async function GET() {
 }
 ```
 
----
+* * *
 
 ## Monitor Configuration Reference
 
@@ -319,34 +325,37 @@ interface MonitorConfig {
 }
 ```
 
----
+* * *
 
 ## Cron Status Values
 
 | Status | When to use |
-|--------|------------|
+| --- | --- |
 | `in_progress` | Job has started, work is underway |
 | `ok` | Job completed successfully |
 | `error` | Job failed — an error occurred |
 
----
+* * *
 
 ## Rate Limits
 
-Cron check-ins are rate-limited to **6 check-ins per minute per monitor environment**. Each environment (production, staging, etc.) is tracked independently.
+Cron check-ins are rate-limited to **6 check-ins per minute per monitor environment**.
+Each environment (production, staging, etc.)
+is tracked independently.
 
----
+* * *
 
 ## Alerting
 
-Create issue alerts filtered by the tag **`monitor.slug`** equals `[your-monitor-slug]` in Sentry's Alerts sidebar.
+Create issue alerts filtered by the tag **`monitor.slug`** equals `[your-monitor-slug]`
+in Sentry’s Alerts sidebar.
 
----
+* * *
 
 ## SDK Version Matrix
 
 | Feature | Min SDK Version |
-|---------|----------------|
+| --- | --- |
 | `Sentry.captureCheckIn()` | **7.51.1** |
 | `Sentry.withMonitor()` | **7.76.0** |
 | `cron` library auto-instrumentation | **7.92.0** |
@@ -354,16 +363,16 @@ Create issue alerts filtered by the tag **`monitor.slug`** equals `[your-monitor
 | `node-schedule` auto-instrumentation | **7.93.0** |
 | `failureIssueThreshold` / `recoveryThreshold` | **8.7.0** |
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Check-ins not appearing in Sentry | Verify `monitorSlug` matches the slug configured in Sentry; check DSN is correct |
-| Monitor shows "missed" despite job running | Adjust `checkinMargin` to allow more grace time; check clock skew |
-| Monitor shows "timeout" | Increase `maxRuntime`; investigate why the job is taking longer than expected |
-| `automaticVercelMonitors` not working | Confirm you're using Pages Router — App Router is NOT supported for automatic instrumentation |
+| Monitor shows “missed” despite job running | Adjust `checkinMargin` to allow more grace time; check clock skew |
+| Monitor shows “timeout” | Increase `maxRuntime`; investigate why the job is taking longer than expected |
+| `automaticVercelMonitors` not working | Confirm you’re using Pages Router — App Router is NOT supported for automatic instrumentation |
 | `withMonitor` not creating the monitor | First check-in with upsert config creates the monitor; ensure config is passed |
 | Edge runtime check-ins failing | Ensure `sentry.edge.config.ts` is configured; crons work in Edge runtime |
 | Client-side cron calls failing | Move cron monitoring to server/edge code — browser runtime is not supported |

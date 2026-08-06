@@ -1,6 +1,7 @@
 # AI Monitoring — Sentry Python SDK
 
-> Minimum SDK: `sentry-sdk` >=2.64.0 (Gen AI span streaming is on by default at this version; the `stream_gen_ai_spans` option is available since 2.60.0).
+> Minimum SDK: `sentry-sdk` >=2.64.0 (Gen AI span streaming is on by default at this
+> version; the `stream_gen_ai_spans` option is available since 2.60.0).
 
 ## Prerequisites
 
@@ -18,7 +19,7 @@ sentry_sdk.init(
 ## Integration Matrix
 
 | Integration | Package | Min Library | Auto-Enabled | Status |
-|-------------|---------|-------------|-------------|--------|
+| --- | --- | --- | --- | --- |
 | OpenAI | `sentry-sdk` | openai 1.0+ | ✅ Yes | Stable |
 | Anthropic | `sentry-sdk` | anthropic 0.16.0+ | ✅ Yes | Stable |
 | LangChain | `sentry-sdk` | langchain 0.1.0+ | ✅ Yes | Stable |
@@ -37,12 +38,13 @@ sentry_sdk.init(
 Every integration follows the same two-layer control:
 
 | `send_default_pii` | `include_prompts` | Prompts/outputs sent? |
-|--------------------|-------------------|----------------------|
+| --- | --- | --- |
 | `False` (default) | `True` (default) | ❌ No |
 | `True` | `True` (default) | ✅ Yes |
 | `True` | `False` | ❌ No |
 
-Set `send_default_pii=True` in `sentry_sdk.init()` and leave `include_prompts` at its default `True`. Use `include_prompts=False` per integration only to opt out.
+Set `send_default_pii=True` in `sentry_sdk.init()` and leave `include_prompts` at its
+default `True`. Use `include_prompts=False` per integration only to opt out.
 
 ## Configuration Examples
 
@@ -130,7 +132,7 @@ with sentry_sdk.start_transaction(name="claude-request"):
 
 ## Manual Instrumentation — `gen_ai.*` Spans
 
-Use when the library isn't supported, or for wrapping custom AI logic.
+Use when the library isn’t supported, or for wrapping custom AI logic.
 
 ### `gen_ai.request` — Raw LLM call
 
@@ -202,7 +204,7 @@ with sentry_sdk.start_span(op="gen_ai.handoff",
 ### Common attributes
 
 | Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `gen_ai.request.model` | string | ✅ | Model identifier (e.g., `gpt-4o`, `claude-opus-4-5`) |
 | `gen_ai.operation.name` | string | No | Human-readable operation label |
 | `gen_ai.agent.name` | string | No | Agent name (for agent spans) |
@@ -210,7 +212,7 @@ with sentry_sdk.start_span(op="gen_ai.handoff",
 ### Model config attributes
 
 | Attribute | Type |
-|-----------|------|
+| --- | --- |
 | `gen_ai.request.temperature` | float |
 | `gen_ai.request.max_tokens` | int |
 | `gen_ai.request.top_p` | float |
@@ -221,18 +223,19 @@ with sentry_sdk.start_span(op="gen_ai.handoff",
 ### Content attributes (PII-gated — only when `send_default_pii=True` + `include_prompts=True`)
 
 | Attribute | Type | Description |
-|-----------|------|-------------|
+| --- | --- | --- |
 | `gen_ai.request.messages` | string | **JSON-stringified** message array |
 | `gen_ai.request.available_tools` | string | **JSON-stringified** tool definitions |
 | `gen_ai.response.text` | string | **JSON-stringified** response array |
 | `gen_ai.response.tool_calls` | string | **JSON-stringified** tool call array |
 
-> ⚠️ Span attributes only accept primitives — arrays/objects must be JSON-stringified before calling `span.set_data()`.
+> ⚠️ Span attributes only accept primitives — arrays/objects must be JSON-stringified
+> before calling `span.set_data()`.
 
 ### Token usage attributes
 
 | Attribute | Type | Description |
-|-----------|------|-------------|
+| --- | --- | --- |
 | `gen_ai.usage.input_tokens` | int | Total input tokens (including cached) |
 | `gen_ai.usage.input_tokens.cached` | int | Subset served from cache |
 | `gen_ai.usage.input_tokens.cache_write` | int | Tokens written to cache (Anthropic) |
@@ -240,7 +243,8 @@ with sentry_sdk.start_span(op="gen_ai.handoff",
 | `gen_ai.usage.output_tokens.reasoning` | int | Subset for chain-of-thought reasoning |
 | `gen_ai.usage.total_tokens` | int | Sum of input + output |
 
-> ⚠️ Cached and reasoning tokens are **subsets** of totals, not additive. Incorrect reporting produces wrong cost calculations in the dashboard.
+> ⚠️ Cached and reasoning tokens are **subsets** of totals, not additive.
+> Incorrect reporting produces wrong cost calculations in the dashboard.
 
 ## Agent Workflow Hierarchy
 
@@ -256,13 +260,19 @@ Transaction
             └── gen_ai.execute_tool "format_report"
 ```
 
-This populates the **AI Agents Dashboard** in Sentry with per-agent latency, tool call rates, token consumption, and model cost attribution.
+This populates the **AI Agents Dashboard** in Sentry with per-agent latency, tool call
+rates, token consumption, and model cost attribution.
 
 ### Conversation Tracking
 
-Link AI spans across turns in a multi-turn conversation. Sentry groups spans by `gen_ai.conversation.id` into a chat-style timeline at **Explore > Conversations**.
+Link AI spans across turns in a multi-turn conversation.
+Sentry groups spans by `gen_ai.conversation.id` into a chat-style timeline at **Explore
+\> Conversations**.
 
-**Prerequisites:** SDK >=2.64.0 (where `stream_gen_ai_spans` defaults to `True`, so AI spans stream as standalone items) and `send_default_pii=True` — Conversations reconstructs the chat from input/output attributes, so without PII capture the view will be empty.
+**Prerequisites:** SDK >=2.64.0 (where `stream_gen_ai_spans` defaults to `True`, so AI
+spans stream as standalone items) and `send_default_pii=True` — Conversations
+reconstructs the chat from input/output attributes, so without PII capture the view will
+be empty.
 
 ```python
 import sentry_sdk.ai
@@ -272,7 +282,9 @@ sentry_sdk.ai.set_conversation_id("conv_abc123")
 # All subsequent AI spans carry gen_ai.conversation.id = "conv_abc123"
 ```
 
-Some integrations infer the conversation ID automatically. For example, the OpenAI integration picks it up when you use the `conversation` parameter:
+Some integrations infer the conversation ID automatically.
+For example, the OpenAI integration picks it up when you use the `conversation`
+parameter:
 
 ```python
 import openai
@@ -288,11 +300,13 @@ response = openai.responses.create(
 )
 ```
 
-A single conversation can span multiple traces, and a single trace can contain multiple conversations.
+A single conversation can span multiple traces, and a single trace can contain multiple
+conversations.
 
 ### User Attribution
 
-To populate the **User** column in Conversations, call `set_user` once per request or session before any AI calls:
+To populate the **User** column in Conversations, call `set_user` once per request or
+session before any AI calls:
 
 ```python
 sentry_sdk.set_user({"id": "user_123", "email": "jane@example.com", "username": "jane"})
@@ -301,7 +315,7 @@ sentry_sdk.set_user({"id": "user_123", "email": "jane@example.com", "username": 
 ## Streaming
 
 | Integration | Streaming | Token counts in streams |
-|-------------|-----------|------------------------|
+| --- | --- | --- |
 | OpenAI | ✅ | Requires `tiktoken>=0.3.0`; set `tiktoken_encoding_name` |
 | Anthropic | ✅ | Automatic |
 | LangChain | ✅ | Tracked |
@@ -311,7 +325,7 @@ sentry_sdk.set_user({"id": "user_123", "email": "jane@example.com", "username": 
 ## Unsupported Providers
 
 | Provider | Workaround |
-|----------|-----------|
+| --- | --- |
 | Cohere | Use `LiteLLMIntegration` or manual `gen_ai.*` spans |
 | AWS Bedrock | Manual instrumentation |
 | Mistral | `LiteLLMIntegration` |
@@ -320,16 +334,18 @@ sentry_sdk.set_user({"id": "user_123", "email": "jane@example.com", "username": 
 
 ## Sampling Strategy
 
-If your `traces_sample_rate` is below 1.0, you may be losing entire agent runs. Use a `traces_sampler` that keeps 100% of gen_ai-related transactions while sampling other traffic at a lower rate.
+If your `traces_sample_rate` is below 1.0, you may be losing entire agent runs.
+Use a `traces_sampler` that keeps 100% of gen_ai-related transactions while sampling
+other traffic at a lower rate.
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No AI spans appearing | Verify `traces_sample_rate > 0`; wrap calls in a transaction |
 | Prompts not captured | Set `send_default_pii=True` and verify `include_prompts=True` (default) |
 | LiteLLM not tracked | LiteLLM is NOT auto-enabled — add `LiteLLMIntegration` to `integrations=[]` explicitly |
 | Token counts missing for OpenAI streaming | Install `tiktoken>=0.3.0` and set `tiktoken_encoding_name` |
 | AI Agents Dashboard empty | Wrap agent runs in `gen_ai.invoke_agent` spans |
-| User column shows "Unknown" | Call `sentry_sdk.set_user()` once per request or session |
+| User column shows “Unknown” | Call `sentry_sdk.set_user()` once per request or session |
 | Wrong cost calculations | Ensure cached/reasoning token counts are subsets of totals, not additions |

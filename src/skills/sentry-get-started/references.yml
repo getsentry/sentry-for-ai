@@ -5,8 +5,16 @@ needs:
   - sdks/*/index.md
   - sdks/*/error-monitoring.md
   - sdks/*/tracing.md
-  - concepts/errors.md
-  - concepts/tracing.md
+  # Readable production stack traces, flagged during first-error setup.
+  - debug-artifacts/*.md
+  - auth-token.md
+  # Whole concepts dir + the query grammar so the docs' cross-links resolve;
+  # errors.md and tracing.md are the two this scope actually reads.
+  - concepts/*.md
+  - search-query-language.md
   - first-error-setup.md
   - new-project.md
+  # Releases — the `release`/`environment` tag belongs in any setup headed for
+  # production; the CI half is available here too when the user wants it.
+  - releases/*.md
   - setup-verification.md

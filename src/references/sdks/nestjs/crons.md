@@ -1,13 +1,15 @@
 # Crons — Sentry NestJS SDK
 
-> Minimum SDK: `@sentry/nestjs` 8.16.0+ for `@SentryCron` decorator; `@sentry/node` 7.76.0+ for `withMonitor()`
+> Minimum SDK: `@sentry/nestjs` 8.16.0+ for `@SentryCron` decorator; `@sentry/node`
+> 7.76.0+ for `withMonitor()`
 
 ## Overview
 
-Sentry Crons monitors scheduled jobs by receiving check-ins at job start, success, and failure. Three approaches:
+Sentry Crons monitors scheduled jobs by receiving check-ins at job start, success, and
+failure. Three approaches:
 
 | Approach | Use when |
-|----------|---------|
+| --- | --- |
 | `@SentryCron` decorator | NestJS `@Cron` scheduled tasks — zero boilerplate |
 | `Sentry.withMonitor()` | Manual wrapping — Bull/BullMQ processors, arbitrary functions |
 | `Sentry.captureCheckIn()` | Full control — heartbeats, conditional status, or two-step patterns |
@@ -39,7 +41,8 @@ export class AppModule {}
 
 ### `@SentryCron` decorator with `@Cron`
 
-`@SentryCron` must be placed **after** `@Cron` in the decorator stack (closer to the method).
+`@SentryCron` must be placed **after** `@Cron` in the decorator stack (closer to the
+method).
 
 ```typescript
 import { Injectable, Logger } from "@nestjs/common";
@@ -62,7 +65,8 @@ export class TasksService {
 
 ### `@SentryCron` with `MonitorConfig` — upsert monitor definition (SDK 8.16.0+)
 
-Supply `monitorConfig` to create or update the monitor automatically on first execution — no Sentry UI setup needed.
+Supply `monitorConfig` to create or update the monitor automatically on first execution
+— no Sentry UI setup needed.
 
 ```typescript
 import { Injectable } from "@nestjs/common";
@@ -230,7 +234,7 @@ async function runBatchJob(batches: Batch[]) {
 ## `MonitorConfig` Fields
 
 | Field | Type | Required | Description |
-|-------|------|----------|-------------|
+| --- | --- | --- | --- |
 | `schedule` | `object` | ✅ | `{ type: "crontab", value: "* * * * *" }` or `{ type: "interval", value: N, unit: "..." }` |
 | `timezone` | `string` | No | IANA timezone name, default `"UTC"` |
 | `checkinMargin` | `number` | No | Minutes late before MISSED alert |
@@ -240,17 +244,22 @@ async function runBatchJob(batches: Batch[]) {
 
 ## Best Practices
 
-- Supply `monitorConfig` in `@SentryCron` or `withMonitor()` so monitors are created automatically — no Sentry UI setup needed
-- Decorator order matters: `@Cron` must come **before** `@SentryCron` (farther from the method)
-- For Bull/BullMQ processors, auto-instrumentation is not supported — use `withMonitor()` instead
+- Supply `monitorConfig` in `@SentryCron` or `withMonitor()` so monitors are created
+  automatically — no Sentry UI setup needed
+- Decorator order matters: `@Cron` must come **before** `@SentryCron` (farther from the
+  method)
+- For Bull/BullMQ processors, auto-instrumentation is not supported — use
+  `withMonitor()` instead
 - Send `in_progress` before starting work so TIMEOUT detection begins immediately
-- For jobs longer than `maxRuntime`, send periodic `in_progress` heartbeats to reset the timer
-- Sentry enforces a rate limit of **6 check-ins/minute per monitor-environment** — excess are dropped silently
+- For jobs longer than `maxRuntime`, send periodic `in_progress` heartbeats to reset the
+  timer
+- Sentry enforces a rate limit of **6 check-ins/minute per monitor-environment** —
+  excess are dropped silently
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Monitor not created in Sentry | Provide `monitorConfig` — monitors are not auto-created without it |
 | Decorator has no effect | Ensure `@SentryCron` is **below** `@Cron` in the decorator stack |
 | MISSED alerts firing too early | Increase `checkinMargin` to allow for startup latency |

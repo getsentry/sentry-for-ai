@@ -1,22 +1,24 @@
 # Crons / Job Monitoring — Sentry Node.js SDK
 
-> Minimum SDK: `@sentry/node` ≥7.51.1 (`captureCheckIn`, `withMonitor`)  
-> `instrumentNodeCron` / `instrumentCron`: ≥7.92.0  
-> `instrumentNodeSchedule`: ≥7.93.0  
-> `failureIssueThreshold` / `recoveryThreshold`: ≥8.7.0  
-> `isolateTrace` in `MonitorConfig`: ≥10.28.0  
+> Minimum SDK: `@sentry/node` ≥7.51.1 (`captureCheckIn`, `withMonitor`)\
+> `instrumentNodeCron` / `instrumentCron`: ≥7.92.0\
+> `instrumentNodeSchedule`: ≥7.93.0\
+> `failureIssueThreshold` / `recoveryThreshold`: ≥8.7.0\
+> `isolateTrace` in `MonitorConfig`: ≥10.28.0\
 > Status: ✅ **Generally Available**
 
----
+* * *
 
 ## Overview
 
-Sentry Crons (job monitoring) tracks whether scheduled tasks run on time, succeed, and complete within expected durations. Sentry will alert when a job:
+Sentry Crons (job monitoring) tracks whether scheduled tasks run on time, succeed, and
+complete within expected durations.
+Sentry will alert when a job:
 - Misses its scheduled start time (checkin margin exceeded)
 - Takes too long to complete (maxRuntime exceeded)
 - Fails (status `"error"`)
 
----
+* * *
 
 ## Core API
 
@@ -46,7 +48,9 @@ Sentry.captureCheckIn({
 
 ### `Sentry.withMonitor(slug, callback, monitorConfig?)` → `T`
 
-Wraps a sync or async function. Automatically sends `in_progress`, then `ok` on success or `error` on throw. Records duration automatically.
+Wraps a sync or async function.
+Automatically sends `in_progress`, then `ok` on success or `error` on throw.
+Records duration automatically.
 
 ```typescript
 // Simple form
@@ -65,17 +69,17 @@ await Sentry.withMonitor("my-job", async () => {
 });
 ```
 
----
+* * *
 
 ## Check-In Status Values
 
-| Status        | Meaning                                           |
-|---------------|---------------------------------------------------|
-| `"in_progress"` | Job has started; Sentry waiting for completion  |
-| `"ok"`          | Job completed successfully                      |
-| `"error"`       | Job failed; triggers incident in Sentry         |
+| Status | Meaning |
+| --- | --- |
+| `"in_progress"` | Job has started; Sentry waiting for completion |
+| `"ok"` | Job completed successfully |
+| `"error"` | Job failed; triggers incident in Sentry |
 
----
+* * *
 
 ## Usage Patterns
 
@@ -128,11 +132,12 @@ await Sentry.withMonitor("my-cron-job", async () => {
 });
 ```
 
----
+* * *
 
 ## Monitor Configuration (Upsert)
 
-Pass a `MonitorConfig` to create or update the monitor from code — no manual setup in Sentry UI needed. On first check-in the monitor is created; subsequent calls update it.
+Pass a `MonitorConfig` to create or update the monitor from code — no manual setup in
+Sentry UI needed. On first check-in the monitor is created; subsequent calls update it.
 
 ```typescript
 interface MonitorConfig {
@@ -146,9 +151,10 @@ interface MonitorConfig {
 }
 ```
 
-Pass as the **second argument** to `captureCheckIn()` or **third argument** to `withMonitor()`.
+Pass as the **second argument** to `captureCheckIn()` or **third argument** to
+`withMonitor()`.
 
----
+* * *
 
 ## Schedule Types
 
@@ -173,7 +179,7 @@ Pass as the **second argument** to `captureCheckIn()` or **third argument** to `
 // unit: "year" | "month" | "week" | "day" | "hour" | "minute"
 ```
 
----
+* * *
 
 ## Full Upsert Example
 
@@ -194,7 +200,7 @@ const monitorConfig: Sentry.MonitorConfig = {
 await Sentry.withMonitor("daily-report-job", generateDailyReport, monitorConfig);
 ```
 
----
+* * *
 
 ## Scheduler Library Integrations
 
@@ -289,7 +295,7 @@ const worker = new Worker("report-queue", async (job) => {
 });
 ```
 
----
+* * *
 
 ## Library Integration Signatures
 
@@ -312,11 +318,12 @@ function instrumentNodeSchedule<T>(
 ): T;
 ```
 
----
+* * *
 
 ## Serverless / Lambda
 
-Check-ins are lost if the process terminates before flush. Always flush explicitly:
+Check-ins are lost if the process terminates before flush.
+Always flush explicitly:
 
 ```typescript
 export const handler = async (event: any) => {
@@ -348,11 +355,12 @@ export const handler = async (event: any) => {
 
 For AWS Lambda, prefer `@sentry/aws-serverless` — it handles flushing automatically.
 
----
+* * *
 
 ## Deno: Native Cron Integration
 
-Deno provides a built-in `Deno.cron()` API. Use `denoCronIntegration` to automatically monitor all native Deno crons:
+Deno provides a built-in `Deno.cron()` API. Use `denoCronIntegration` to automatically
+monitor all native Deno crons:
 
 ```typescript
 import * as Sentry from "@sentry/deno";
@@ -374,29 +382,34 @@ Deno.cron("hourly-sync", "0 * * * *", async () => {
 });
 ```
 
-The integration intercepts `Deno.cron()` calls and wraps them with automatic `in_progress` → `ok`/`error` check-ins. The monitor slug is the first argument to `Deno.cron()`.
+The integration intercepts `Deno.cron()` calls and wraps them with automatic
+`in_progress` → `ok`/`error` check-ins.
+The monitor slug is the first argument to `Deno.cron()`.
 
-> **Deno Deploy:** `Deno.cron()` runs natively on Deno Deploy. The integration works in both local Deno and Deno Deploy environments.
+> **Deno Deploy:** `Deno.cron()` runs natively on Deno Deploy.
+> The integration works in both local Deno and Deno Deploy environments.
 
-> **Node.js and Bun:** `denoCronIntegration` is only available in `@sentry/deno`. For Node.js, use the `node-cron`, `cron`, or `node-schedule` library helpers above.
+> **Node.js and Bun:** `denoCronIntegration` is only available in `@sentry/deno`. For
+> Node.js, use the `node-cron`, `cron`, or `node-schedule` library helpers above.
 
----
+* * *
 
 ## Rate Limits
 
 - Maximum **6 check-ins per minute** per monitor + environment combination
-- Each environment (production, staging, etc.) counts separately
-- Dropped check-ins appear in Sentry's Usage Stats page
+- Each environment (production, staging, etc.)
+  counts separately
+- Dropped check-ins appear in Sentry’s Usage Stats page
 
----
+* * *
 
 ## Troubleshooting
 
 | Problem | Likely Cause | Fix |
-|---------|-------------|-----|
+| --- | --- | --- |
 | Monitor not created in Sentry | No `MonitorConfig` passed | Pass `schedule` in `monitorConfig` (upsert) |
 | Check-ins not arriving | Process exits before flush | Add `await Sentry.flush(2000)` before exit |
-| `withMonitor` status wrong | Callback doesn't throw on failure | Ensure your job throws on error |
+| `withMonitor` status wrong | Callback doesn’t throw on failure | Ensure your job throws on error |
 | `node-cron` job not tracked | Missing `name` option | Add `{ name: "slug" }` to `cron.schedule()` options |
 | `instrumentNodeSchedule` slug not set | First arg is cron expression | First arg to `scheduleJob()` must be the job name |
 | `instrumentCron` tracking wrong job | Multiple jobs from one constructor | Each constructor call is for one slug; create multiple if needed |

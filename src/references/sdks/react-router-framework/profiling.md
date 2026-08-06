@@ -2,7 +2,7 @@
 
 > Minimum SDK: `@sentry/react-router` with `@sentry/profiling-node` for server profiling
 
----
+* * *
 
 ## Profiling setup (server)
 
@@ -26,18 +26,18 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Sampling strategy
 
 | Setting | Purpose |
-|---------|---------|
+| --- | --- |
 | `tracesSampleRate` | How many transactions are captured |
 | `profileSessionSampleRate` | What fraction of traced transactions get profiles |
 
 Start high in development, then lower for production cost control.
 
----
+* * *
 
 ## Verification
 
@@ -45,12 +45,12 @@ Start high in development, then lower for production cost control.
 2. Open **Profiles** in Sentry.
 3. Confirm profile entries appear and are linked to transactions.
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | No profiles visible | Ensure `@sentry/profiling-node` is installed and integration is active |
 | Traces visible but no profiles | Increase `profileSessionSampleRate` |
 | Profile volume too high | Lower `profileSessionSampleRate` and/or `tracesSampleRate` |

@@ -1,12 +1,12 @@
 # Session Replay — Sentry Browser SDK
 
-> Minimum SDK: `@sentry/browser` ≥7.27.0  
-> `replayCanvasIntegration` available since SDK ≥7.50.0  
-> `beforeAddRecordingEvent` available since SDK ≥7.53.0  
-> `beforeErrorSampling` available since SDK ≥7.56.0  
+> Minimum SDK: `@sentry/browser` ≥7.27.0\
+> `replayCanvasIntegration` available since SDK ≥7.50.0\
+> `beforeAddRecordingEvent` available since SDK ≥7.53.0\
+> `beforeErrorSampling` available since SDK ≥7.56.0\
 > Node 12+ required; browsers newer than IE11
 
----
+* * *
 
 ## Basic Setup
 
@@ -21,22 +21,24 @@ Sentry.init({
 });
 ```
 
----
+* * *
 
 ## Sampling Rates
 
 ### `replaysSessionSampleRate` vs. `replaysOnErrorSampleRate`
 
 | Option | Default | Behavior |
-|--------|---------|----------|
+| --- | --- | --- |
 | `replaysSessionSampleRate` | `0` | Percentage of sessions to record **in full** from start to end. `1.0` = 100%, `0` = none. |
 | `replaysOnErrorSampleRate` | `0` | Percentage of sessions to record **when an error occurs**. Buffers up to 60 seconds before the error, then continues until the session ends. |
 
 ### How Sampling Works
 
 1. `replaysSessionSampleRate` is checked first at session start.
-   - If sampled → full session recording starts immediately, sent to Sentry in real-time chunks (**Session mode**).
-   - If not sampled → recording is buffered in memory (last 60 seconds only) (**Buffer mode**).
+   - If sampled → full session recording starts immediately, sent to Sentry in real-time
+     chunks (**Session mode**).
+   - If not sampled → recording is buffered in memory (last 60 seconds only) (**Buffer
+     mode**).
 2. If an error occurs in a buffered session:
    - `replaysOnErrorSampleRate` is checked.
    - If sampled → 60-second buffer + rest of session is sent to Sentry.
@@ -45,7 +47,7 @@ Sentry.init({
 **When data leaves the browser:**
 
 | Scenario | Data Sent |
-|----------|-----------|
+| --- | --- |
 | Selected for session sampling | Immediately (real-time chunks) |
 | Not selected, no error | Never (buffer discarded) |
 | Not selected, error occurs and sampled | After error (60s buffer + everything after) |
@@ -53,22 +55,24 @@ Sentry.init({
 **Recommended rates by traffic volume:**
 
 | Traffic | `replaysSessionSampleRate` | `replaysOnErrorSampleRate` |
-|---------|---------------------------|---------------------------|
+| --- | --- | --- |
 | High (100k+/day) | `0.01` (1%) | `1.0` |
 | Medium (10k–100k/day) | `0.1` (10%) | `1.0` |
 | Low (<10k/day) | `0.25` (25%) | `1.0` |
 
-> **Tip:** Keep `replaysOnErrorSampleRate` at `1.0` — error sessions provide the most debugging value.  
-> **Dev tip:** Set `replaysSessionSampleRate: 1.0` during development to capture every session.
+> **Tip:** Keep `replaysOnErrorSampleRate` at `1.0` — error sessions provide the most
+> debugging value.\
+> **Dev tip:** Set `replaysSessionSampleRate: 1.0` during development to capture every
+> session.
 
----
+* * *
 
 ## `replayIntegration()` — Configuration Reference
 
 ### General Options
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `stickySession` | `boolean` | `true` | Track the user across page refreshes. Closing a tab ends the session; multiple tabs = multiple sessions. |
 | `mutationLimit` | `number` | `10000` | Upper bound of DOM mutations before replay stops recording (protects performance). |
 | `mutationBreadcrumbLimit` | `number` | `750` | Threshold at which a breadcrumb warning is emitted for large mutations. |
@@ -82,7 +86,7 @@ Sentry.init({
 ### Privacy Options
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `maskAllText` | `boolean` | `true` | Mask all text content (replaced with `*` characters). |
 | `maskAllInputs` | `boolean` | `true` | Mask all `<input>` element values. |
 | `blockAllMedia` | `boolean` | `true` | Block all media: `img`, `svg`, `video`, `object`, `picture`, `embed`, `map`, `audio`. |
@@ -96,21 +100,21 @@ Sentry.init({
 ### Network Options
 
 | Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| --- | --- | --- | --- |
 | `networkDetailAllowUrls` | `(string \| RegExp)[]` | `[]` | URLs/patterns for which request/response details are captured (opt-in, SDK ≥7.50.0). |
 | `networkDetailDenyUrls` | `(string \| RegExp)[]` | `[]` | URLs/patterns to exclude from network capture. Takes precedence over `networkDetailAllowUrls`. |
 | `networkCaptureBodies` | `boolean` | `true` | Whether to capture request/response bodies for allowed URLs. |
 | `networkRequestHeaders` | `string[]` | `[]` | Additional request headers to capture. Default captured: `Content-Type`, `Content-Length`, `Accept`. |
 | `networkResponseHeaders` | `string[]` | `[]` | Additional response headers to capture. |
 
----
+* * *
 
 ## Privacy & Masking
 
 ### Three Privacy Methods
 
 | Method | Effect | Default Trigger |
-|--------|--------|-----------------|
+| --- | --- | --- |
 | **Mask** | Replaces text with `*` characters (preserving length) | `.sentry-mask`, `[data-sentry-mask]` |
 | **Block** | Replaces entire element with same-size empty placeholder | `.sentry-block`, `[data-sentry-block]` |
 | **Ignore** | Stops recording input events on matched fields | `.sentry-ignore`, `[data-sentry-ignore]` |
@@ -195,13 +199,15 @@ Sentry.replayIntegration({
 });
 ```
 
----
+* * *
 
 ## Network Capture
 
-By default, Session Replay captures basic information about all outgoing fetch and XHR requests (URL, size, method, status code).
+By default, Session Replay captures basic information about all outgoing fetch and XHR
+requests (URL, size, method, status code).
 
-Request/response **bodies and additional headers require explicit opt-in** (SDK ≥7.50.0):
+Request/response **bodies and additional headers require explicit opt-in** (SDK
+≥7.50.0):
 
 ```javascript
 Sentry.replayIntegration({
@@ -229,11 +235,12 @@ Sentry.replayIntegration({
 - `networkDetailDenyUrls` takes precedence over `networkDetailAllowUrls`
 - Set `networkCaptureBodies: false` to keep header capture while disabling body capture
 
----
+* * *
 
 ## Canvas Recording
 
-Canvas elements are not captured by default. Add `replayCanvasIntegration()` to enable:
+Canvas elements are not captured by default.
+Add `replayCanvasIntegration()` to enable:
 
 ```javascript
 import * as Sentry from "@sentry/browser";
@@ -249,7 +256,8 @@ Sentry.init({
 });
 ```
 
-> ⚠️ **There is currently no PII scrubbing in canvas recordings.** Review canvas content carefully before enabling.
+> ⚠️ **There is currently no PII scrubbing in canvas recordings.** Review canvas content
+> carefully before enabling.
 
 ### 3D / WebGL Canvases — Manual Snapshot Mode
 
@@ -287,7 +295,7 @@ function paint() {
 }
 ```
 
----
+* * *
 
 ## Lazy Loading
 
@@ -325,23 +333,26 @@ window.sentryOnLoad = function () {
 };
 ```
 
----
+* * *
 
 ## Session Modes & Manual Control
 
 ### Session Initialization Modes
 
 | Configuration | Mode | Behavior |
-|---------------|------|----------|
+| --- | --- | --- |
 | `replaysSessionSampleRate > 0` and sampled | **Session mode** | Records continuously; uploads data in real time |
 | Not sampled, `replaysOnErrorSampleRate > 0` | **Buffer mode** | Records but keeps only last 60 seconds in memory (~2–5 MB) |
 | Both rates = `0`, or integration added without rates | **Inactive** | Nothing recorded until manually started |
 
-**Session mode:** sessions end after **15 minutes of inactivity** or **60 minutes maximum duration**, then reinitialize.
+**Session mode:** sessions end after **15 minutes of inactivity** or **60 minutes
+maximum duration**, then reinitialize.
 
-**Buffer mode:** stores ~2–5 MB in memory (lightweight DOM event logs: clicks, scrolls, mutations — not video files). On sampled error, the 60-second buffer + subsequent recording are uploaded.
+**Buffer mode:** stores ~2–5 MB in memory (lightweight DOM event logs: clicks, scrolls,
+mutations — not video files).
+On sampled error, the 60-second buffer + subsequent recording are uploaded.
 
----
+* * *
 
 ### Manual Session Control API
 
@@ -364,11 +375,12 @@ await replay.stop();      // Flush data and end session permanently
 const replayId = replay.getReplayId(); // Get current replay ID for external linking
 ```
 
----
+* * *
 
 ### Deferred Initialization (External Sampling Service)
 
-Use when you want to determine sampling rates via an external feature flag service before starting the SDK:
+Use when you want to determine sampling rates via an external feature flag service
+before starting the SDK:
 
 ```javascript
 async function initReplay(sessionSampleRate, errorSampleRate) {
@@ -391,13 +403,19 @@ fetchFeatureFlags().then((flags) => {
 });
 ```
 
----
+* * *
 
 ### Custom Sampling Patterns
 
 **Employee-only recordings:**
 
-Force a full recording for a specific cohort (e.g. internal employees) after they authenticate. Because `flush()` only uploads *already-active* recording data, guard on `replay.getReplayId()`: if a replay is already active (session mode, or buffer mode when `replaysOnErrorSampleRate > 0`) flush it to send immediately and keep recording; otherwise call `replay.start()` to begin a new session-mode recording. `replay.start()` records regardless of sample rate and is a safe no-op if a session is already running.
+Force a full recording for a specific cohort (e.g. internal employees) after they
+authenticate. Because `flush()` only uploads *already-active* recording data, guard on
+`replay.getReplayId()`: if a replay is already active (session mode, or buffer mode when
+`replaysOnErrorSampleRate > 0`) flush it to send immediately and keep recording;
+otherwise call `replay.start()` to begin a new session-mode recording.
+`replay.start()` records regardless of sample rate and is a safe no-op if a session is
+already running.
 
 ```javascript
 Sentry.init({
@@ -454,7 +472,7 @@ Sentry.replayIntegration({
 });
 ```
 
----
+* * *
 
 ### Support Widget Integration
 
@@ -479,13 +497,15 @@ MySupportWidget.on("open", async () => {
 });
 ```
 
----
+* * *
 
 ## Performance Impact
 
 ### Buffer Mode is Lightweight
 
-Buffer mode stores ~2–5 MB in memory — these are DOM event logs (clicks, scrolls, mutations), not video files. The real-time encoding is handled by a WebWorker.
+Buffer mode stores ~2–5 MB in memory — these are DOM event logs (clicks, scrolls,
+mutations), not video files.
+The real-time encoding is handled by a WebWorker.
 
 ### Mutation Limits
 
@@ -520,7 +540,8 @@ sentryVitePlugin({
 
 ### Content Security Policy
 
-Session Replay uses a WebWorker for compression. Add to your CSP:
+Session Replay uses a WebWorker for compression.
+Add to your CSP:
 
 ```
 worker-src 'self' blob:;
@@ -529,25 +550,33 @@ child-src 'self' blob:;
 
 > Safari ≤15.4 requires `child-src`. Use a self-hosted `workerUrl` as an alternative.
 
----
+* * *
 
 ## Best Practices
 
-- **Keep `replaysOnErrorSampleRate` at `1.0`** — error sessions are the highest value for debugging.
-- **Use `maskAllText: true` in production** — default behavior, protects PII. Only disable for internal tools.
-- **Opt-in to network details explicitly** — set `networkDetailAllowUrls` only for your own API origins, not third-party services.
-- **Never enable `replayCanvasIntegration` without reviewing canvas content** — there is no automatic PII scrubbing for canvas.
-- **Test masking before deploying** — use `replaysSessionSampleRate: 1.0` in staging and review replays to verify PII is hidden.
-- **Use `workerUrl` to self-host the compression worker** if you have strict CSP or want to reduce bundle size.
-- **Use `beforeAddRecordingEvent`** to filter out high-frequency recording events that don't add debugging value.
-- **Set `minReplayDuration`** to avoid sending trivially short sessions (default: 5s is usually fine).
+- **Keep `replaysOnErrorSampleRate` at `1.0`** — error sessions are the highest value
+  for debugging.
+- **Use `maskAllText: true` in production** — default behavior, protects PII. Only
+  disable for internal tools.
+- **Opt-in to network details explicitly** — set `networkDetailAllowUrls` only for your
+  own API origins, not third-party services.
+- **Never enable `replayCanvasIntegration` without reviewing canvas content** — there is
+  no automatic PII scrubbing for canvas.
+- **Test masking before deploying** — use `replaysSessionSampleRate: 1.0` in staging and
+  review replays to verify PII is hidden.
+- **Use `workerUrl` to self-host the compression worker** if you have strict CSP or want
+  to reduce bundle size.
+- **Use `beforeAddRecordingEvent`** to filter out high-frequency recording events that
+  don’t add debugging value.
+- **Set `minReplayDuration`** to avoid sending trivially short sessions (default: 5s is
+  usually fine).
 
----
+* * *
 
 ## Troubleshooting
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Replay not recording | Check that `replaysSessionSampleRate` or `replaysOnErrorSampleRate` is > 0. Confirm `replayIntegration()` is in the `integrations` array. |
 | CSP errors blocking worker | Add `worker-src 'self' blob:; child-src 'self' blob:;` to your CSP, or use `workerUrl` to self-host the worker. |
 | Replay stops after mutation spike | The `mutationLimit` (default: 10000) was hit. Increase it or reduce DOM mutation frequency in your app. |
