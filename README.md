@@ -2,8 +2,9 @@
 
 > [!IMPORTANT]
 > **This is a skill *source* repository — not something you install directly.** The
-> skills here are built from this source into installable plugins for
-> [Claude Code](https://github.com/getsentry/plugin-claude),
+> skills here are built from this source into a portable
+> [Agent Plugin](https://github.com/getsentry/agent-plugin) and installable
+> client-specific plugins for [Claude Code](https://github.com/getsentry/plugin-claude),
 > [Cursor](https://github.com/getsentry/plugin-cursor),
 > [Codex](https://github.com/getsentry/plugin-codex), and
 > [Grok](https://github.com/getsentry/plugin-grok) — install one of those, not this
@@ -20,7 +21,8 @@ Whether you’re adding Sentry to a new project, debugging a spike in errors, or
 configuring alerts, just ask.
 The plugin gives your assistant the context it needs to do it right.
 
-Supports [**Claude Code**](https://github.com/getsentry/plugin-claude),
+Supports the [**Agent Plugins standard**](https://agent-plugins.org/),
+[**Claude Code**](https://github.com/getsentry/plugin-claude),
 [**Cursor**](https://github.com/getsentry/plugin-cursor),
 [**Codex**](https://github.com/getsentry/plugin-codex), and
 [**Grok**](https://github.com/getsentry/plugin-grok).
@@ -73,6 +75,7 @@ its own **distribution repository**, whose root is exactly that agent’s plugin
 
 | Agent | Distribution repository |
 | --- | --- |
+| Agent Plugins 1.0.0 | [`getsentry/agent-plugin`](https://github.com/getsentry/agent-plugin) |
 | Claude Code | [`getsentry/plugin-claude`](https://github.com/getsentry/plugin-claude) |
 | Cursor | [`getsentry/plugin-cursor`](https://github.com/getsentry/plugin-cursor) |
 | Codex | [`getsentry/plugin-codex`](https://github.com/getsentry/plugin-codex) |
@@ -94,11 +97,11 @@ skill tree’s `disable-model-invocation` flags for Codex’s `agents/openai.yam
 ```bash
 git clone https://github.com/getsentry/sentry-for-ai.git
 cd sentry-for-ai
-src/plugins/codex/build.sh /tmp/sentry-codex   # or src/plugins/{claude,cursor,grok}
+src/plugins/agent-plugin/build.sh /tmp/sentry-agent-plugin
 ```
 
-To build any target locally, run `src/plugins/<agent>/build.sh <output-dir>` (`claude`,
-`cursor`, `codex`, or `grok`).
+To build any target locally, run `src/plugins/<agent>/build.sh <output-dir>`
+(`agent-plugin`, `claude`, `cursor`, `codex`, or `grok`).
 
 ## Skills
 

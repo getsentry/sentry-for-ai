@@ -50,7 +50,7 @@ copy_skill_tree() {
 
 # Write an agent's plugin manifest to its built location with the release version
 # stamped over the `0.0.0` placeholder the source manifests carry.
-# src/plugins/version.json holds the single value, so the four plugins version in
+# src/plugins/version.json holds the single value, so all distributions version in
 # lockstep and a release bumps one file.
 #
 # Set PLUGIN_VERSION to stamp something else. The develop deploy uses it to label
