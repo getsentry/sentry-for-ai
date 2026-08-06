@@ -55,7 +55,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm --filter @sentry/ai build
+        run: pnpm --filter @sentry/agent-plugin build
 
       - name: Install Claude Code, Codex, and Grok CLIs
         run: npm install -g @anthropic-ai/claude-code @openai/codex @xai-official/grok

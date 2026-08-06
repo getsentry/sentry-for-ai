@@ -10,7 +10,7 @@ When plugin-distributed MCP configs connect to
 `app.utm_source:plugin`. Query the `sentry/mcp-server` project to measure plugin-driven
 adoption, tool usage, and error rates.
 
-The installer package (`npx @sentry/ai`) reports to a separate Sentry project
+The installer package (`npx @sentry/agent-plugin`) reports to a separate Sentry project
 (`sentry/sentry-for-ai-installer`). That surface is diagnostic only — it captures
 crashes and uncaught errors, not install counts or per-agent outcomes.
 
@@ -202,8 +202,8 @@ Attributes: `gen_ai.tool.name`, `mcp.tool.name`, `mcp.session.id`, `user.id`,
 
 ### Installer CLI
 
-The `npx @sentry/ai install` CLI reports to `sentry/sentry-for-ai-installer`. Currently
-only default `@sentry/node` auto-instrumentation is active.
+The `npx @sentry/agent-plugin install` CLI reports to `sentry/sentry-for-ai-installer`.
+Currently only default `@sentry/node` auto-instrumentation is active.
 
 Use for: diagnosing installer crashes and unhandled errors.
 

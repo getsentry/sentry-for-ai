@@ -92,7 +92,7 @@ const remove = defineCommand({
 
 const main = defineCommand({
   meta: {
-    name: "sentry-ai",
+    name: "sentry-agent-plugin",
     version,
     description,
   },
@@ -108,7 +108,7 @@ const main = defineCommand({
 const SUBCOMMANDS = new Set(["install", "remove", "uninstall"]);
 const PASSTHROUGH = new Set(["--help", "-h", "--version"]);
 
-// citty has no concept of a default subcommand, so `npx @sentry/ai` with no
+// citty has no concept of a default subcommand, so `npx @sentry/agent-plugin` with no
 // arguments would just print the help menu. Default to `install` instead unless
 // the user gave an explicit subcommand or asked for help/version.
 function withDefaultCommand(argv: string[]): string[] {

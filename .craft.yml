@@ -1,4 +1,4 @@
-# Releases packages/installer to npm as @sentry/ai via craft.
+# Releases packages/installer to npm as @sentry/agent-plugin via craft.
 minVersion: "2.21.0"
 # Single segment only -- craft splits the branch name on the first "/".
 releaseBranchPrefix: release-installer
@@ -12,9 +12,9 @@ changelog:
 # No github target, so no git tags or GitHub releases.
 targets:
   - name: npm
-    id: "@sentry/ai"
+    id: "@sentry/agent-plugin"
     access: public
-    includeNames: /^sentry-ai-\d.*\.tgz$/
+    includeNames: /^sentry-agent-plugin-\d.*\.tgz$/
 
 requireNames:
-  - /^sentry-ai-\d.*\.tgz$/
+  - /^sentry-agent-plugin-\d.*\.tgz$/

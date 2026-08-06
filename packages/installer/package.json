@@ -1,5 +1,5 @@
 {
-  "name": "@sentry/ai",
+  "name": "@sentry/agent-plugin",
   "version": "0.1.0",
   "description": "Install the Sentry plugin for your AI coding assistants",
   "repository": {
@@ -21,7 +21,7 @@
     "node": ">=18.0.0"
   },
   "bin": {
-    "sentry-ai": "dist/index.js"
+    "sentry-agent-plugin": "dist/index.js"
   },
   "scripts": {
     "build": "rolldown --config rolldown.config.mjs",
