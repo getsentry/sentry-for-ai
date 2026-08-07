@@ -1,4 +1,4 @@
-# @sentry/ai
+# @sentry/agent-plugin
 
 Install the [Sentry plugin](https://github.com/getsentry/sentry-for-ai) into your AI
 coding assistants.
@@ -11,11 +11,11 @@ one for you.
 Supports **Claude Code**, **Codex**, **Cursor**, and **Grok**.
 
 ```bash
-npx @sentry/ai install
+npx @sentry/agent-plugin install
 ```
 
 <picture> <source media="(prefers-color-scheme: dark)" srcset="assets/demo-dark.gif">
-<img src="assets/demo-light.gif" alt="Installing the Sentry plugin with npx @sentry/ai install">
+<img src="assets/demo-light.gif" alt="Installing the Sentry plugin with npx @sentry/agent-plugin install">
 </picture>
 
 This detects the AI coding tools on your machine, lets you choose which ones to set up,
@@ -28,9 +28,9 @@ Restart your AI tools afterward to load the plugin.
 ## Options
 
 ```bash
-npx @sentry/ai install                         # interactive — pick which agents to set up
-npx @sentry/ai install "Setup logging"         # copy a custom prompt after installation
-npx @sentry/ai install --no-interactive        # install into every detected agent
+npx @sentry/agent-plugin install                   # interactive — pick which agents to set up
+npx @sentry/agent-plugin install "Setup logging"   # copy a custom prompt after installation
+npx @sentry/agent-plugin install --no-interactive  # install into every detected agent
 ```
 
 When an instruction follows `install`, the installer offers to copy a prompt such as
@@ -56,8 +56,8 @@ source of truth for all skills.
 ## Removing the plugin
 
 ```bash
-npx @sentry/ai remove                  # interactive — pick which agents to remove from
-npx @sentry/ai remove --no-interactive # remove from every agent that has it
+npx @sentry/agent-plugin remove                  # interactive — pick which agents to remove from
+npx @sentry/agent-plugin remove --no-interactive # remove from every agent that has it
 ```
 
 `uninstall` is an alias for `remove`. This only offers agents that currently have the
