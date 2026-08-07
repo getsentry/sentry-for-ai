@@ -15,7 +15,7 @@ configure application monitoring.
 ## Install
 
 Install `getsentry/agent-plugin` using an
-[Agent Plugins-compatible client](https://agent-plugins.org/clients).
+[Agent Plugins-compatible client](https://agent-plugins.org/compatible-clients).
 
 ## What’s included
 
