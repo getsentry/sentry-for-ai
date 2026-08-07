@@ -1,7 +1,7 @@
 # Cut a plugin release: bump the shared version, tag it here, then publish the
 # tagged tree onto each plugin repository's `main` and tag it there too.
 #
-# The four agent plugins version in lockstep from src/plugins/version.json, which
+# The five plugin distributions version in lockstep from src/plugins/version.json, which
 # the builds stamp into every manifest, so a release is one bump commit and one
 # tag. Tags here are named `plugin/v*` to keep them clear of the installer's npm
 # releases, which craft owns separately via .craft.yml.

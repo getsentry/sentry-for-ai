@@ -5,10 +5,11 @@
 # shape, so this workflow builds each one and deploys it to a dedicated
 # repository whose ROOT is exactly that agent's plugin:
 #
-#   claude -> getsentry/plugin-claude
-#   cursor -> getsentry/plugin-cursor
-#   codex  -> getsentry/plugin-codex
-#   grok   -> getsentry/plugin-grok
+#   agent-plugin -> getsentry/agent-plugin
+#   claude       -> getsentry/plugin-claude
+#   cursor       -> getsentry/plugin-cursor
+#   codex        -> getsentry/plugin-codex
+#   grok         -> getsentry/plugin-grok
 #
 # Each plugin repository carries two rolling branches, and which one a run writes
 # is the whole difference between a deploy and a release:
@@ -25,9 +26,9 @@
 # A release also tags the plugin repository (`v<version>`), giving each shipped
 # version an addressable ref for pinning and rollback.
 #
-# Marketplaces consume `getsentry/plugin-<agent>` by git ref. Each job builds its
-# agent's tree from this repo, then commits it onto the target branch of the
-# target repo, replacing the previous contents. The four jobs target four
+# Consumers install a distribution repository by git ref. Each job builds its
+# distribution tree from this repo, then commits it onto the target branch of the
+# target repo, replacing the previous contents. The five jobs target five
 # different repos, so they run in parallel without contention.
 #
 # Cross-repo writes use a GitHub App token scoped per-job to a single plugin
@@ -83,9 +84,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        agent: [claude, cursor, codex, grok]
+        include:
+          - distribution: agent-plugin
+            repository: agent-plugin
+          - distribution: claude
+            repository: plugin-claude
+          - distribution: cursor
+            repository: plugin-cursor
+          - distribution: codex
+            repository: plugin-codex
+          - distribution: grok
+            repository: plugin-grok
     concurrency:
-      group: deploy-plugin-${{ matrix.agent }}-${{ inputs.target_branch || 'develop' }}
+      group: deploy-${{ matrix.repository }}-${{ inputs.target_branch || 'develop' }}
       cancel-in-progress: false
     steps:
       - name: Checkout source
@@ -103,21 +114,21 @@ jobs:
           app-id: ${{ vars.PLUGIN_DEPLOY_APP_ID }}
           private-key: ${{ secrets.PLUGIN_DEPLOY_KEY }}
           owner: getsentry
-          repositories: plugin-${{ matrix.agent }}
+          repositories: ${{ matrix.repository }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
 
-      - name: Build and deploy plugin-${{ matrix.agent }}
+      - name: Build and deploy ${{ matrix.repository }}
         env:
-          AGENT: ${{ matrix.agent }}
+          DISTRIBUTION: ${{ matrix.distribution }}
+          TARGET_REPO: ${{ matrix.repository }}
           TARGET_BRANCH: ${{ inputs.target_branch || 'develop' }}
           DIST_TAG: ${{ inputs.dist_tag || '' }}
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
           set -euo pipefail
 
-          TARGET_REPO="plugin-${AGENT}"
           WORKTREE="$(mktemp -d)/dist"
 
           # Read the built commit out of the checkout rather than github.sha,
@@ -149,11 +160,11 @@ jobs:
           # Rewrite the whole tree: clear tracked content (preserve the .git
           # dir), then repopulate from source via the agent's build script.
           git -C "$WORKTREE" rm -rfq --ignore-unmatch .
-          "src/plugins/${AGENT}/build.sh" "$WORKTREE"
+          "src/plugins/${DISTRIBUTION}/build.sh" "$WORKTREE"
 
           # Validate the built tree against the agent's schema/validator before
           # it can be deployed.
-          "src/plugins/${AGENT}/validate.sh" "$WORKTREE"
+          "src/plugins/${DISTRIBUTION}/validate.sh" "$WORKTREE"
 
           # Commit only if something changed.
           git -C "$WORKTREE" add -A
