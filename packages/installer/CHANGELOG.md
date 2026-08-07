@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0
+
+- Rename the package to `@sentry/agent-plugin`. Install with
+  `npx @sentry/agent-plugin install`. `@sentry/ai` stays on npm at 0.2.0 and no longer
+  receives updates.
+- Remove the Claude plugin left behind by our own marketplace, so a hand-added copy and
+  the installer-managed one no longer both resolve to the same skills.
+
 ## 0.2.0
 
 - Accept an optional install instruction and include it in the prompt offered for
