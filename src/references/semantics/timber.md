@@ -1,7 +1,6 @@
-# timber attributes
+# Timber attributes
 
-Stable Sentry semantic convention attributes for `timber`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Timber logging framework attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

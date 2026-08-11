@@ -1,7 +1,6 @@
-# event attributes
+# Event attributes
 
-Stable Sentry semantic convention attributes for `event`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Event identity attributes for discrete application events.
 
 | Key | Type | Brief |
 | --- | --- | --- |

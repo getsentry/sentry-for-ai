@@ -1,7 +1,6 @@
-# grpc attributes
+# gRPC attributes
 
-Stable Sentry semantic convention attributes for `grpc`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+gRPC method, status, and service attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

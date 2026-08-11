@@ -1,7 +1,6 @@
-# exception attributes
+# Exception attributes
 
-Stable Sentry semantic convention attributes for `exception`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Exception type, message, and stack details on error spans.
 
 | Key | Type | Brief |
 | --- | --- | --- |

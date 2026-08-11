@@ -1,7 +1,6 @@
-# params attributes
+# Params attributes
 
-Stable Sentry semantic convention attributes for `params`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Request or route parameter attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

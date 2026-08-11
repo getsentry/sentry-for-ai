@@ -1,7 +1,6 @@
-# resource attributes
+# Resource attributes
 
-Stable Sentry semantic convention attributes for `resource`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Browser resource-load attributes (script, css, image, etc.).
 
 | Key | Type | Brief |
 | --- | --- | --- |

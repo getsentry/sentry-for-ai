@@ -1,7 +1,6 @@
-# gcp attributes
+# GCP attributes
 
-Stable Sentry semantic convention attributes for `gcp`. Generated — do not edit by hand.
-Re-run `scripts/gen-semantics.py`.
+Google Cloud Platform service and resource attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

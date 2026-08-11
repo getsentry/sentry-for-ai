@@ -1,7 +1,6 @@
-# graphql attributes
+# GraphQL attributes
 
-Stable Sentry semantic convention attributes for `graphql`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+GraphQL operation name, type, and document attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

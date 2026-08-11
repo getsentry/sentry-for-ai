@@ -1,7 +1,6 @@
-# koa attributes
+# Koa attributes
 
-Stable Sentry semantic convention attributes for `koa`. Generated — do not edit by hand.
-Re-run `scripts/gen-semantics.py`.
+Koa framework middleware and request attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

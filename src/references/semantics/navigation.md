@@ -1,7 +1,6 @@
-# navigation attributes
+# Navigation attributes
 
-Stable Sentry semantic convention attributes for `navigation`. Generated — do not edit
-by hand. Re-run `scripts/gen-semantics.py`.
+Client-side navigation and route-change attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

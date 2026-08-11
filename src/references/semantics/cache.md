@@ -1,7 +1,6 @@
-# cache attributes
+# Cache attributes
 
-Stable Sentry semantic convention attributes for `cache`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Cache read/write attributes — key, hit/miss, item size.
 
 | Key | Type | Brief |
 | --- | --- | --- |

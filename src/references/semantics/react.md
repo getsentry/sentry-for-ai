@@ -1,7 +1,6 @@
-# react attributes
+# React attributes
 
-Stable Sentry semantic convention attributes for `react`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+React component and rendering attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

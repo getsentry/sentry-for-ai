@@ -1,7 +1,6 @@
-# jsonrpc attributes
+# JSON-RPC attributes
 
-Stable Sentry semantic convention attributes for `jsonrpc`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+JSON-RPC method and request identity attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

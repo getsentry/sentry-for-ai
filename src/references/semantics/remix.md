@@ -1,7 +1,6 @@
-# remix attributes
+# Remix attributes
 
-Stable Sentry semantic convention attributes for `remix`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Remix framework route and loader attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

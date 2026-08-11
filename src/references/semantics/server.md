@@ -1,7 +1,6 @@
-# server attributes
+# Server attributes
 
-Stable Sentry semantic convention attributes for `server`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Server address and port for the receiving side of a connection.
 
 | Key | Type | Brief |
 | --- | --- | --- |

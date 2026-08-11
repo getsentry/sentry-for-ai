@@ -1,7 +1,6 @@
-# cloud attributes
+# Cloud attributes
 
-Stable Sentry semantic convention attributes for `cloud`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Generic cloud provider attributes shared across AWS, GCP, and others.
 
 | Key | Type | Brief |
 | --- | --- | --- |

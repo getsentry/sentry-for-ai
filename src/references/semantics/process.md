@@ -1,7 +1,6 @@
-# process attributes
+# Process attributes
 
-Stable Sentry semantic convention attributes for `process`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Process identity and runtime attributes (pid, executable, command).
 
 | Key | Type | Brief |
 | --- | --- | --- |

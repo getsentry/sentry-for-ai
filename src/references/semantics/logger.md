@@ -1,7 +1,6 @@
-# logger attributes
+# Logger attributes
 
-Stable Sentry semantic convention attributes for `logger`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Logger name and logging-context attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

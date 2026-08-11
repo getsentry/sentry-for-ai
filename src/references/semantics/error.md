@@ -1,7 +1,6 @@
-# error attributes
+# Error attributes
 
-Stable Sentry semantic convention attributes for `error`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Error classification attributes attached to failures.
 
 | Key | Type | Brief |
 | --- | --- | --- |

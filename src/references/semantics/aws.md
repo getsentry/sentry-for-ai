@@ -1,7 +1,6 @@
-# aws attributes
+# AWS attributes
 
-Stable Sentry semantic convention attributes for `aws`. Generated — do not edit by hand.
-Re-run `scripts/gen-semantics.py`.
+AWS service, region, and request attributes for cloud instrumentation.
 
 | Key | Type | Brief |
 | --- | --- | --- |

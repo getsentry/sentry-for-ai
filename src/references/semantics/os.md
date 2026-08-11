@@ -1,7 +1,6 @@
-# os attributes
+# OS attributes
 
-Stable Sentry semantic convention attributes for `os`. Generated — do not edit by hand.
-Re-run `scripts/gen-semantics.py`.
+Operating system name, version, and type attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

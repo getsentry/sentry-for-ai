@@ -1,7 +1,6 @@
-# cloudflare attributes
+# Cloudflare attributes
 
-Stable Sentry semantic convention attributes for `cloudflare`. Generated — do not edit
-by hand. Re-run `scripts/gen-semantics.py`.
+Cloudflare Workers, bindings, and edge platform attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

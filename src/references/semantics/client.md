@@ -1,7 +1,6 @@
-# client attributes
+# Client attributes
 
-Stable Sentry semantic convention attributes for `client`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Client address and port for the side that initiated a connection.
 
 | Key | Type | Brief |
 | --- | --- | --- |

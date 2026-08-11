@@ -1,7 +1,6 @@
-# rpc attributes
+# Rpc attributes
 
-Stable Sentry semantic convention attributes for `rpc`. Generated — do not edit by hand.
-Re-run `scripts/gen-semantics.py`.
+Generic RPC system attributes outside gRPC-specific keys.
 
 | Key | Type | Brief |
 | --- | --- | --- |

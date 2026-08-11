@@ -1,7 +1,6 @@
-# jvm attributes
+# JVM attributes
 
-Stable Sentry semantic convention attributes for `jvm`. Generated — do not edit by hand.
-Re-run `scripts/gen-semantics.py`.
+JVM runtime and memory attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

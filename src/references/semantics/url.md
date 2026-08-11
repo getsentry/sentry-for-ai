@@ -1,7 +1,6 @@
-# url attributes
+# Url attributes
 
-Stable Sentry semantic convention attributes for `url`. Generated — do not edit by hand.
-Re-run `scripts/gen-semantics.py`.
+URL components — full, path, query, fragment, template.
 
 | Key | Type | Brief |
 | --- | --- | --- |

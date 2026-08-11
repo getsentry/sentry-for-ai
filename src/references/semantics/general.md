@@ -1,7 +1,6 @@
-# general attributes
+# General attributes
 
-Stable Sentry semantic convention attributes for `general`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Uncategorized stable attributes that do not belong to a named domain.
 
 | Key | Type | Brief |
 | --- | --- | --- |

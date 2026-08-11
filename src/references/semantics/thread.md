@@ -1,7 +1,6 @@
-# thread attributes
+# Thread attributes
 
-Stable Sentry semantic convention attributes for `thread`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Thread id and name attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

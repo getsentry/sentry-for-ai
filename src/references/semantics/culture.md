@@ -1,7 +1,6 @@
-# culture attributes
+# Culture attributes
 
-Stable Sentry semantic convention attributes for `culture`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Locale and cultural preference attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

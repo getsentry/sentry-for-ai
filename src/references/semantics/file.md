@@ -1,7 +1,6 @@
-# file attributes
+# File attributes
 
-Stable Sentry semantic convention attributes for `file`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+File path and I/O operation attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

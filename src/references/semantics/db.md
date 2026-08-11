@@ -1,7 +1,6 @@
-# db attributes
+# Database attributes
 
-Stable Sentry semantic convention attributes for `db`. Generated — do not edit by hand.
-Re-run `scripts/gen-semantics.py`.
+Database query attributes — system, operation, statement summary, and collection.
 
 | Key | Type | Brief |
 | --- | --- | --- |

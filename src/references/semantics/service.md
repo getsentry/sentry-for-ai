@@ -1,7 +1,6 @@
-# service attributes
+# Service attributes
 
-Stable Sentry semantic convention attributes for `service`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Service name and version attributes for the instrumented unit.
 
 | Key | Type | Brief |
 | --- | --- | --- |

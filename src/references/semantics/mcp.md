@@ -1,7 +1,6 @@
-# mcp attributes
+# MCP attributes
 
-Stable Sentry semantic convention attributes for `mcp`. Generated — do not edit by hand.
-Re-run `scripts/gen-semantics.py`.
+Model Context Protocol attributes for MCP client/server spans.
 
 | Key | Type | Brief |
 | --- | --- | --- |

@@ -1,7 +1,6 @@
-# app attributes
+# App attributes
 
-Stable Sentry semantic convention attributes for `app`. Generated — do not edit by hand.
-Re-run `scripts/gen-semantics.py`.
+Application identity and lifecycle attributes for mobile and desktop apps.
 
 | Key | Type | Brief |
 | --- | --- | --- |

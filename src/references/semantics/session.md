@@ -1,7 +1,6 @@
-# session attributes
+# Session attributes
 
-Stable Sentry semantic convention attributes for `session`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Session identity attributes for user sessions.
 
 | Key | Type | Brief |
 | --- | --- | --- |

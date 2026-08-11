@@ -1,17 +1,16 @@
-# browser attributes
+# Browser attributes
 
-Stable Sentry semantic convention attributes for `browser`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Browser environment and web-vital attributes on client spans.
 
 | Key | Type | Brief |
 | --- | --- | --- |
-| `browser.bfcache.frame` | `string` | Which frame in the page’s frame tree a back/forward cache not-restored reason originated from: the top document or a child frame. |
+| `browser.bfcache.frame` | `string` | Which frame in the page's frame tree a back/forward cache not-restored reason originated from: the top document or a child frame. |
 | `browser.bfcache.not_restored_reason_count` | `integer` | The number of reported reasons a page was not restored from the back/forward cache on a back/forward navigation. 0 when the browser reported no reasons (e.g. non-Chromium browsers). |
-| `browser.bfcache.outcome` | `string` | Whether a back/forward navigation was restored from the browser’s back/forward cache (bfcache). ‘hit’ means the page was restored; ‘miss’ means it was reloaded. |
+| `browser.bfcache.outcome` | `string` | Whether a back/forward navigation was restored from the browser's back/forward cache (bfcache). 'hit' means the page was restored; 'miss' means it was reloaded. |
 | `browser.bfcache.reason` | `string` | A browser-reported reason a page was not restored from the back/forward cache on a back/forward navigation, taken from the notRestoredReasons API. Reported per reason (a single miss can have several). Currently Chromium-only. |
 | `browser.name` | `string` | The name of the browser. |
 | `browser.performance.navigation.activation_start` | `double` | The time between initiating a navigation to a page and the browser activating the page |
-| `browser.performance.time_origin` | `double` | The browser’s performance.timeOrigin timestamp representing the time when the pageload was initiated |
+| `browser.performance.time_origin` | `double` | The browser's performance.timeOrigin timestamp representing the time when the pageload was initiated |
 | `browser.report.type` | `string` | A browser report sent via reporting API.. |
 | `browser.script.invoker` | `string` | How a script was called in the browser. |
 | `browser.script.invoker_type` | `string` | Browser script entry point type. |
@@ -31,5 +30,5 @@ hand. Re-run `scripts/gen-semantics.py`.
 | `browser.web_vital.lcp.size` | `integer` | The size of the largest contentful paint element |
 | `browser.web_vital.lcp.url` | `string` | The url of the dom element responsible for the largest contentful paint |
 | `browser.web_vital.lcp.value` | `double` | The value of the recorded Largest Contentful Paint (LCP) web vital |
-| `browser.web_vital.ttfb.request_time` | `double` | The time it takes for the server to process the initial request and send the first byte of a response to the user’s browser |
+| `browser.web_vital.ttfb.request_time` | `double` | The time it takes for the server to process the initial request and send the first byte of a response to the user's browser |
 | `browser.web_vital.ttfb.value` | `double` | The value of the recorded Time To First Byte (TTFB) web vital in Milliseconds |

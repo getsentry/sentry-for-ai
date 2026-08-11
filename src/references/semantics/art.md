@@ -1,7 +1,6 @@
-# art attributes
+# ART attributes
 
-Stable Sentry semantic convention attributes for `art`. Generated — do not edit by hand.
-Re-run `scripts/gen-semantics.py`.
+Android Runtime (ART) profiling and runtime attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

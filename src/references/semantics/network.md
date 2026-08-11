@@ -1,7 +1,6 @@
-# network attributes
+# Network attributes
 
-Stable Sentry semantic convention attributes for `network`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Network transport attributes — protocol, connection type, carrier.
 
 | Key | Type | Brief |
 | --- | --- | --- |

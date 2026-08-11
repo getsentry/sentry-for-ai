@@ -1,7 +1,6 @@
-# angular attributes
+# Angular attributes
 
-Stable Sentry semantic convention attributes for `angular`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Attributes from Angular framework instrumentation.
 
 | Key | Type | Brief |
 | --- | --- | --- |

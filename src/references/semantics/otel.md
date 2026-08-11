@@ -1,7 +1,6 @@
-# otel attributes
+# OpenTelemetry attributes
 
-Stable Sentry semantic convention attributes for `otel`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+OpenTelemetry bridge attributes carried into Sentry.
 
 | Key | Type | Brief |
 | --- | --- | --- |

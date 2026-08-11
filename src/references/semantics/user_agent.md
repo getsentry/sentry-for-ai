@@ -1,7 +1,6 @@
-# user_agent attributes
+# User agent attributes
 
-Stable Sentry semantic convention attributes for `user_agent`. Generated — do not edit
-by hand. Re-run `scripts/gen-semantics.py`.
+User-agent string and parsed client attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

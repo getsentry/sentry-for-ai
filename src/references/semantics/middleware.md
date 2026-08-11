@@ -1,7 +1,6 @@
-# middleware attributes
+# Middleware attributes
 
-Stable Sentry semantic convention attributes for `middleware`. Generated — do not edit
-by hand. Re-run `scripts/gen-semantics.py`.
+Middleware layer name and ordering attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |

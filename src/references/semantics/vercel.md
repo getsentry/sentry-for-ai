@@ -1,7 +1,6 @@
-# vercel attributes
+# Vercel attributes
 
-Stable Sentry semantic convention attributes for `vercel`. Generated — do not edit by
-hand. Re-run `scripts/gen-semantics.py`.
+Vercel platform and deployment attributes.
 
 | Key | Type | Brief |
 | --- | --- | --- |
