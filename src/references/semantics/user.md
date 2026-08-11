@@ -5,7 +5,7 @@ End-user identity attributes (id, email, username, geo).
 | Key | Type | Brief |
 | --- | --- | --- |
 | `user.email` | `string` | User email address. |
-| `user.full_name` | `string` | User's full name. |
+| `user.full_name` | `string` | User’s full name. |
 | `user.geo.city` | `string` | Human readable city name. |
 | `user.geo.country_code` | `string` | Two-letter country code (ISO 3166-1 alpha-2). |
 | `user.geo.region` | `string` | Human readable region name or code. |

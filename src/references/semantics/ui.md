@@ -11,7 +11,7 @@ UI component and rendering attributes for client interfaces.
 | `ui.element.id` | `string` | The id of the UI element |
 | `ui.element.identifier` | `string` | The identifier used to measure the UI element timing |
 | `ui.element.load_time` | `double` | The loading time of a UI element (from time origin to finished loading) |
-| `ui.element.paint_type` | `string` | The type of element paint. Can either be 'image-paint' or 'text-paint' |
+| `ui.element.paint_type` | `string` | The type of element paint. Can either be ‘image-paint’ or ‘text-paint’ |
 | `ui.element.render_time` | `double` | The rendering time of the UI element (from time origin to finished rendering) |
 | `ui.element.type` | `string` | type of the UI element |
 | `ui.element.url` | `string` | The URL of the UI element (e.g. an img src) |

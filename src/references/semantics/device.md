@@ -29,8 +29,8 @@ Device hardware and form-factor attributes for mobile and desktop.
 | `device.model_id` | `string` | An internal hardware revision to identify the device exactly. |
 | `device.name` | `string` | The name of the device. On mobile, this is the user-assigned device name. On servers and desktops, this is typically the hostname. |
 | `device.online` | `boolean` | Whether the device was online or not. |
-| `device.orientation` | `string` | The orientation of the device, either "portrait" or "landscape". |
-| `device.processor_count` | `integer` | Number of "logical processors". |
+| `device.orientation` | `string` | The orientation of the device, either “portrait” or “landscape”. |
+| `device.processor_count` | `integer` | Number of “logical processors”. |
 | `device.processor_frequency` | `double` | Processor frequency in MHz. |
 | `device.screen_density` | `double` | The screen density of the device. |
 | `device.screen_dpi` | `integer` | The screen density in dots-per-inch (DPI) of the device. |
@@ -38,6 +38,6 @@ Device hardware and form-factor attributes for mobile and desktop.
 | `device.screen_width_pixels` | `integer` | The width of the device screen in pixels. |
 | `device.simulator` | `boolean` | Whether the device is a simulator or an actual device. |
 | `device.storage_size` | `integer` | Total device storage in bytes. |
-| `device.thermal_state` | `string` | The thermal state of the device. Based on Apple's `ProcessInfo.ThermalState` enum: `nominal`, `fair`, `serious`, or `critical`. |
+| `device.thermal_state` | `string` | The thermal state of the device. Based on Apple’s `ProcessInfo.ThermalState` enum: `nominal`, `fair`, `serious`, or `critical`. |
 | `device.timezone` | `string` | The timezone of the device. |
 | `device.usable_memory` | `integer` | Memory usable for the app in bytes. |
