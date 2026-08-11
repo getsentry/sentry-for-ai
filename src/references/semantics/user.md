@@ -1,12 +1,12 @@
 # user attributes
 
-Stable Sentry semantic convention attributes for `user`.
-Generated — do not edit by hand. Re-run `scripts/gen-semantics.py`.
+Stable Sentry semantic convention attributes for `user`. Generated — do not edit by
+hand. Re-run `scripts/gen-semantics.py`.
 
 | Key | Type | Brief |
 | --- | --- | --- |
 | `user.email` | `string` | User email address. |
-| `user.full_name` | `string` | User's full name. |
+| `user.full_name` | `string` | User’s full name. |
 | `user.geo.city` | `string` | Human readable city name. |
 | `user.geo.country_code` | `string` | Two-letter country code (ISO 3166-1 alpha-2). |
 | `user.geo.region` | `string` | Human readable region name or code. |

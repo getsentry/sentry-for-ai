@@ -1,7 +1,7 @@
 # client attributes
 
-Stable Sentry semantic convention attributes for `client`.
-Generated — do not edit by hand. Re-run `scripts/gen-semantics.py`.
+Stable Sentry semantic convention attributes for `client`. Generated — do not edit by
+hand. Re-run `scripts/gen-semantics.py`.
 
 | Key | Type | Brief |
 | --- | --- | --- |

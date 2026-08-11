@@ -35,10 +35,11 @@ The span `op` is `gen_ai.{operation}` — `chat`, `embeddings`, `generate_conten
 **name** repeats the operation with its subject: `chat gpt-4o`,
 `invoke_agent Weather Agent`, `execute_tool get_weather`,
 `handoff from triage to billing`. Attributes accept primitives only; arrays/objects are
-JSON-stringified. The canonical attribute set lives under `references/semantics/gen_ai.md` in
-skills that hydrate semantic conventions (see the instrument skill’s Semantic
-conventions list). The SDK docs can lag, and deprecated attributes are omitted
-from that reference on purpose.
+JSON-stringified. The canonical attribute set lives under
+`references/semantics/gen_ai.md` in skills that hydrate semantic conventions (see the
+instrument skill’s Semantic conventions list).
+The SDK docs can lag, and deprecated attributes are omitted from that reference on
+purpose.
 
 ## Conversations
 

@@ -98,7 +98,8 @@ AI/LLM monitoring.
 ### Semantic conventions
 
 When naming custom span or log attributes, open **only** the matching domain reference
-below. Prefer these stable keys over invented names. Deprecated attributes are omitted.
+below. Prefer these stable keys over invented names.
+Deprecated attributes are omitted.
 
 - [`angular`](references/semantics/angular.md)
 - [`app`](references/semantics/app.md)

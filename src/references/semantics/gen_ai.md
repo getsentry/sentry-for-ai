@@ -1,7 +1,7 @@
 # gen_ai attributes
 
-Stable Sentry semantic convention attributes for `gen_ai`.
-Generated — do not edit by hand. Re-run `scripts/gen-semantics.py`.
+Stable Sentry semantic convention attributes for `gen_ai`. Generated — do not edit by
+hand. Re-run `scripts/gen-semantics.py`.
 
 | Key | Type | Brief |
 | --- | --- | --- |
@@ -18,9 +18,9 @@ Generated — do not edit by hand. Re-run `scripts/gen-semantics.py`.
 | `gen_ai.embeddings.input` | `string` | The input to the embeddings model. |
 | `gen_ai.function_id` | `string` | Framework-specific tracing label for the execution of a function or other unit of execution in a generative AI system. |
 | `gen_ai.input.messages` | `string` | The messages passed to the model. It has to be a stringified version of an array of objects. The `role` attribute of each object must be `"user"`, `"assistant"`, `"tool"`, or `"system"`. For messages of the role `"tool"`, the `content` can be a string or an arbitrary object with information about the tool call. For other messages the `content` can be either a string or a list of objects in the format `{type: "text", text:"..."}`. |
-| `gen_ai.operation.name` | `string` | The name of the operation being performed. It has the following list of well-known values: 'chat', 'create_agent', 'embeddings', 'execute_tool', 'generate_content', 'invoke_agent', 'text_completion'. If one of them applies, then that value MUST be used. Otherwise a custom value MAY be used. |
-| `gen_ai.operation.type` | `string` | The type of AI operation. Must be one of 'agent' (invoke_agent and create_agent spans), 'ai_client' (any LLM call), 'tool' (execute_tool spans), 'handoff' (handoff spans), 'other' (input and output processors, skill loading, guardrails etc.) . Added during ingestion based on span.op and gen_ai.operation.type. Used to filter and aggregate data in the UI |
-| `gen_ai.output.messages` | `string` | The model's response messages. It has to be a stringified version of an array of message objects, which can include text responses and tool calls. |
+| `gen_ai.operation.name` | `string` | The name of the operation being performed. It has the following list of well-known values: ‘chat’, ‘create_agent’, ‘embeddings’, ‘execute_tool’, ‘generate_content’, ‘invoke_agent’, ‘text_completion’. If one of them applies, then that value MUST be used. Otherwise a custom value MAY be used. |
+| `gen_ai.operation.type` | `string` | The type of AI operation. Must be one of ‘agent’ (invoke_agent and create_agent spans), ‘ai_client’ (any LLM call), ‘tool’ (execute_tool spans), ‘handoff’ (handoff spans), ‘other’ (input and output processors, skill loading, guardrails etc.) . Added during ingestion based on span.op and gen_ai.operation.type. Used to filter and aggregate data in the UI |
+| `gen_ai.output.messages` | `string` | The model’s response messages. It has to be a stringified version of an array of message objects, which can include text responses and tool calls. |
 | `gen_ai.pipeline.name` | `string` | Name of the AI pipeline or chain being executed. |
 | `gen_ai.prompt.name` | `string` | The name of the prompt that uniquely identifies it. |
 | `gen_ai.provider.name` | `string` | The Generative AI provider as identified by the client or server instrumentation. |
@@ -37,7 +37,7 @@ Generated — do not edit by hand. Re-run `scripts/gen-semantics.py`.
 | `gen_ai.response.finish_reasons` | `string` | The reason why the model stopped generating. |
 | `gen_ai.response.id` | `string` | Unique identifier for the completion. |
 | `gen_ai.response.model` | `string` | The vendor-specific ID of the model used. |
-| `gen_ai.response.streaming` | `boolean` | Whether or not the AI model call's response was streamed back asynchronously |
+| `gen_ai.response.streaming` | `boolean` | Whether or not the AI model call’s response was streamed back asynchronously |
 | `gen_ai.response.time_to_first_chunk` | `double` | Time in seconds when the first response content chunk arrived in streaming responses. |
 | `gen_ai.response.tokens_per_second` | `double` | The total output tokens per seconds throughput |
 | `gen_ai.system_instructions` | `string` | The system instructions passed to the model. |

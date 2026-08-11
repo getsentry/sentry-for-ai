@@ -1,7 +1,7 @@
 # http attributes
 
-Stable Sentry semantic convention attributes for `http`.
-Generated — do not edit by hand. Re-run `scripts/gen-semantics.py`.
+Stable Sentry semantic convention attributes for `http`. Generated — do not edit by
+hand. Re-run `scripts/gen-semantics.py`.
 
 | Key | Type | Brief |
 | --- | --- | --- |
@@ -22,9 +22,9 @@ Generated — do not edit by hand. Re-run `scripts/gen-semantics.py`.
 | `http.request.resend_count` | `integer` | The ordinal number of request resending attempt (for any reason, including redirects). |
 | `http.request.response_end` | `double` | The UNIX timestamp representing the time immediately after the browser receives the last byte of the resource or immediately before the transport connection is closed, whichever comes first. |
 | `http.request.response_start` | `double` | The UNIX timestamp representing the time immediately before the browser starts requesting the resource from the server, cache, or local resource. If the transport connection fails and the browser retires the request, the value returned will be the start of the retry request. |
-| `http.request.same_origin` | `boolean` | Indicates that a URL has the same origin as the current page's origin in the browser. |
+| `http.request.same_origin` | `boolean` | Indicates that a URL has the same origin as the current page’s origin in the browser. |
 | `http.request.secure_connection_start` | `double` | The UNIX timestamp representing the time immediately before the browser starts the handshake process to secure the current connection. If a secure connection is not used, the property returns zero. |
-| `http.request.time_to_first_byte` | `double` | The time in seconds from the browser's timeorigin to when the first byte of the request's response was received. See https://web.dev/articles/ttfb#measure-resource-requests |
+| `http.request.time_to_first_byte` | `double` | The time in seconds from the browser’s timeorigin to when the first byte of the request’s response was received. See https://web.dev/articles/ttfb#measure-resource-requests |
 | `http.request.worker_start` | `double` | The UNIX timestamp representing the timestamp immediately before dispatching the FetchEvent if a Service Worker thread is already running, or immediately before starting the Service Worker thread if it is not already running. |
 | `http.response.body.size` | `integer` | The encoded body size of the response (in bytes). |
 | `http.response.header.<key>` | `string[]` | HTTP response headers, <key> being the normalized HTTP Header name (lowercase), the value being the header values. |
