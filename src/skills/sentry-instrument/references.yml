@@ -9,6 +9,8 @@ needs:
   # hydration only places files on disk, so presence is free and links resolve.
   # What the skill actually *reads* is decided by SKILL.md, not by this list.
   - concepts/*.md
+  # Stable semantic-convention attribute keys, split by domain.
+  - semantics/*.md
   - search-query-language.md
   - first-error-setup.md
   - new-project.md

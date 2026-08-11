@@ -42,8 +42,9 @@ A span also carries its profile, the bridge down to the function level.
   auto-instrumented), add custom spans for meaningful business operations, and keep span
   names **low-cardinality and templated** (`GET /users/:id`, not `/users/12345`) with
   searchable attributes rather than baking values into the name.
-  Follow Sentry’s semantic conventions (aligned with OpenTelemetry) for span and
-  attribute names so they match what the product expects.
+  Follow Sentry’s semantic conventions for span and attribute names.
+  The instrument skill lists the domain references under Semantic conventions; open only
+  the one you need (for example `references/semantics/http.md`).
 
 ## Related
 

@@ -95,6 +95,71 @@ Signals this skill wires up: error monitoring, tracing/performance, profiling (r
 tracing), logging, metrics, cron check-in code, session replay, user feedback, and
 AI/LLM monitoring.
 
+### Semantic conventions
+
+When naming custom span or log attributes, open **only** the matching domain reference
+below. Prefer these stable keys over invented names.
+Deprecated attributes are omitted.
+
+- [`angular`](references/semantics/angular.md)
+- [`app`](references/semantics/app.md)
+- [`art`](references/semantics/art.md)
+- [`aws`](references/semantics/aws.md)
+- [`browser`](references/semantics/browser.md)
+- [`cache`](references/semantics/cache.md)
+- [`client`](references/semantics/client.md)
+- [`cloud`](references/semantics/cloud.md)
+- [`cloudflare`](references/semantics/cloudflare.md)
+- [`code`](references/semantics/code.md)
+- [`culture`](references/semantics/culture.md)
+- [`db`](references/semantics/db.md)
+- [`device`](references/semantics/device.md)
+- [`error`](references/semantics/error.md)
+- [`event`](references/semantics/event.md)
+- [`exception`](references/semantics/exception.md)
+- [`faas`](references/semantics/faas.md)
+- [`file`](references/semantics/file.md)
+- [`flag`](references/semantics/flag.md)
+- [`gcp`](references/semantics/gcp.md)
+- [`gen_ai`](references/semantics/gen_ai.md)
+- [`general`](references/semantics/general.md)
+- [`graphql`](references/semantics/graphql.md)
+- [`grpc`](references/semantics/grpc.md)
+- [`http`](references/semantics/http.md)
+- [`jsonrpc`](references/semantics/jsonrpc.md)
+- [`jvm`](references/semantics/jvm.md)
+- [`koa`](references/semantics/koa.md)
+- [`logger`](references/semantics/logger.md)
+- [`mcp`](references/semantics/mcp.md)
+- [`mdc`](references/semantics/mdc.md)
+- [`messaging`](references/semantics/messaging.md)
+- [`middleware`](references/semantics/middleware.md)
+- [`navigation`](references/semantics/navigation.md)
+- [`nel`](references/semantics/nel.md)
+- [`network`](references/semantics/network.md)
+- [`os`](references/semantics/os.md)
+- [`otel`](references/semantics/otel.md)
+- [`params`](references/semantics/params.md)
+- [`process`](references/semantics/process.md)
+- [`react`](references/semantics/react.md)
+- [`remix`](references/semantics/remix.md)
+- [`resource`](references/semantics/resource.md)
+- [`rpc`](references/semantics/rpc.md)
+- [`score`](references/semantics/score.md)
+- [`sentry`](references/semantics/sentry.md)
+- [`server`](references/semantics/server.md)
+- [`service`](references/semantics/service.md)
+- [`session`](references/semantics/session.md)
+- [`state`](references/semantics/state.md)
+- [`thread`](references/semantics/thread.md)
+- [`timber`](references/semantics/timber.md)
+- [`trpc`](references/semantics/trpc.md)
+- [`ui`](references/semantics/ui.md)
+- [`url`](references/semantics/url.md)
+- [`user`](references/semantics/user.md)
+- [`user_agent`](references/semantics/user_agent.md)
+- [`vercel`](references/semantics/vercel.md)
+
 ## Step 4 — Verify it landed
 
 For a fresh install the spine already verified the first error.
