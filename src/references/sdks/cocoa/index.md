@@ -168,7 +168,7 @@ platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '9.15.0'
+  pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '9.27.0'
 end
 ```
 
