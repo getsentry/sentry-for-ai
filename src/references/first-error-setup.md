@@ -70,7 +70,7 @@ project.
 > [!NOTE]
 > If you are sending onboarding status updates,
 > [`setup-verification.md`](setup-verification.md) covers three unskippable stages:
->
+> 
 > - `plan_test_error`: choose a representative test error and plan how to trigger it
 >   safely. Report `active` while planning, `waiting` for required input or permission,
 >   and `completed` when the path is ready.
