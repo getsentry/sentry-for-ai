@@ -54,8 +54,8 @@ or failure. If the user explicitly asks what the call is doing, explain that it 
 the onboarding UI for this session in the Sentry web app.
 
 The updates are privacy-focused and must not expose unnecessary application data.
-An optional, user-visible `update.eventNote` may accompany any stage update within the
-tool’s schema limit.
+Every progress call must include a user-visible `update.eventNote` stating what the
+stage is doing or has done, within the tool’s schema limit.
 Include only the minimum status explanation needed.
 Never include source or file contents, repository paths, terminal output, event
 payloads, MCP results, secrets, credentials, personal information, or customer
