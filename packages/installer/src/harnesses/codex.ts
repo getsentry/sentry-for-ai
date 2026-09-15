@@ -1,6 +1,6 @@
 import type { OutputSink, SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
-import { detectOnPath, runCommand, runJson } from "./shell";
+import { detectOnPath, runCommand, runLoginCommand, runJson } from "./shell";
 
 // TODO: Codex is the only agent we install from our OWN marketplace
 // (getsentry/plugin-codex) rather than the agent vendor's official marketplace
@@ -13,6 +13,7 @@ const MARKETPLACE_SOURCE = "getsentry/plugin-codex";
 const PLUGIN_ID = `sentry@${MARKETPLACE}`;
 const INSTALL_COMMAND = `codex plugin add ${PLUGIN_ID}`;
 const UNINSTALL_COMMAND = `codex plugin remove ${PLUGIN_ID}`;
+const AUTHENTICATE_COMMAND = "codex mcp login sentry";
 
 // Codex ships an "official" Sentry plugin from its own curated marketplace. It
 // shadows ours, so remove it before installing. Drop this once we publish to
@@ -94,6 +95,11 @@ export function createCodex(system: SystemDeps): Harness {
     install: async (output) => addPlugin(system, output),
 
     update: async (output) => addPlugin(system, output),
+
+    authenticate: async (output) => {
+      await runLoginCommand(system, AUTHENTICATE_COMMAND, output);
+      return { command: AUTHENTICATE_COMMAND };
+    },
 
     remove: async (output): Promise<InstallOutcome> => {
       await runCommand(system, UNINSTALL_COMMAND, output);
