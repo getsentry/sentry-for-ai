@@ -62,6 +62,12 @@ export interface Harness {
    */
   update(output?: OutputSink): Promise<InstallOutcome>;
   /**
+   * Authenticate the plugin-provided Sentry MCP server. This is optional
+   * because some harnesses do not expose a non-embedded OAuth command.
+   * The subprocess runs in a PTY while its output is rendered by the UI.
+   */
+  authenticate?(output?: OutputSink): Promise<{ command: string }>;
+  /**
    * Remove the plugin, assuming it is present. Streams command output to
    * `output` when provided. Only our own plugin is taken out — any marketplace
    * we registered is left in place (it may be a shared/official one), and

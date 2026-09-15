@@ -2,6 +2,7 @@ import { exec, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { promisify } from "node:util";
+import { runInTerminal } from "./terminal";
 
 const execAsync = promisify(exec);
 
@@ -20,18 +21,18 @@ export interface ShellResult {
 export interface SystemDeps {
   // Async so the event loop stays free while a command runs — this is what lets
   // the spinner animate and concurrent installs actually overlap. When `output`
-  // is given, stdout/stderr are streamed to it as they arrive (and still
-  // captured in the result); without it, output is simply buffered.
+  // is given, stdout/stderr stream to it and failures retain stderr. Without
+  // a sink, stdout and errors are buffered in the result.
   run(command: string, output?: OutputSink): Promise<ShellResult>;
+  // Login commands run in a PTY with terminal input forwarded and output captured.
+  runInteractive(command: string, output?: OutputSink): Promise<ShellResult>;
   exists(path: string): boolean;
   platform: NodeJS.Platform;
   homedir: string;
 }
 
-// Pipe a command's stdout/stderr straight into `output` and resolve ok/message
-// from the exit code. The live stream already shows the real output (including
-// any error text), so there is no need to buffer it for the result. `end: false`
-// keeps the shared sink open for the next command in the sequence.
+// `end: false` keeps the UI sink open across install commands; stderr is also
+// buffered for the task error.
 function runStreaming(command: string, output: OutputSink): Promise<ShellResult> {
   return new Promise((resolve) => {
     const child = spawn(command, { shell: true });
@@ -54,7 +55,7 @@ function runStreaming(command: string, output: OutputSink): Promise<ShellResult>
           ? { ok: true }
           : {
               ok: false,
-              stderr: stderr.trim(),
+              stderr: stderr.trim() || undefined,
               message: `Command failed with exit code ${code}: ${command}`,
             },
       ),
@@ -80,6 +81,7 @@ export const realSystem: SystemDeps = {
       };
     }
   },
+  runInteractive: runInTerminal,
   exists: existsSync,
   platform: process.platform,
   homedir: homedir(),

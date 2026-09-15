@@ -14,6 +14,7 @@ export function fakeSystem(options: FakeSystemOptions = {}): SystemDeps {
 
   return {
     run: vi.fn(async (command: string) => run(command)),
+    runInteractive: vi.fn(async (command: string) => run(command)),
     exists: vi.fn((path: string) => existing.has(path)),
     platform: options.platform ?? "linux",
     homedir: options.homedir ?? "/home/user",

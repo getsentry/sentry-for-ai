@@ -54,6 +54,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Test terminal integration
+        run: pnpm --filter @sentry/agent-plugin test
+
       - name: Build
         run: pnpm --filter @sentry/agent-plugin build
 
@@ -83,15 +86,15 @@ jobs:
 
           echo "== claude =="
           claude plugin list
-          claude plugin list | grep -iq sentry || { echo "claude: sentry plugin missing"; exit 1; }
+          claude plugin list | grep -i sentry > /dev/null || { echo "claude: sentry plugin missing"; exit 1; }
 
           echo "== codex =="
           codex plugin list
-          codex plugin list | grep -iq sentry || { echo "codex: sentry plugin missing"; exit 1; }
+          codex plugin list | grep -i sentry > /dev/null || { echo "codex: sentry plugin missing"; exit 1; }
 
           echo "== grok =="
           grok plugin list
-          grok plugin list | grep -iq sentry || { echo "grok: sentry plugin missing"; exit 1; }
+          grok plugin list | grep -i sentry > /dev/null || { echo "grok: sentry plugin missing"; exit 1; }
 
           echo "== cursor =="
           node -e "const p=require('path').join(require('os').homedir(),'.cursor','plugins','local','sentry'); if(!require('fs').existsSync(p)){console.error('cursor: plugin dir missing at '+p);process.exit(1)} console.log(p)"
