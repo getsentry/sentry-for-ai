@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0
+
+- Offer to authenticate the Sentry MCP for Codex and Claude Code after installation.
+- Upgrade terminal rendering to reduce redraw flicker and screen tearing.
+- Require Node.js 22.13.0 or newer.
+
 ## 0.3.0
 
 - Rename the package to `@sentry/agent-plugin`. Install with
