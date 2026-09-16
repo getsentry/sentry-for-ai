@@ -366,6 +366,18 @@ const INSTALLED_PROMPT_PREFIX = "The Sentry plugin has just been installed.";
 
 export function getStartedPrompt(instruction?: string): string {
   const trimmed = instruction?.trim();
+  const onboarding = trimmed?.match(/^([a-z0-9_-]+)#([A-Za-z0-9]{10})$/);
+
+  if (onboarding) {
+    const [, orgSlug, onboardingCode] = onboarding;
+
+    return [
+      "Please help me get started with sentry.",
+      "",
+      `org slug: ${orgSlug}`,
+      `run code: ${onboardingCode}`,
+    ].join("\n");
+  }
 
   return trimmed ? `${INSTALLED_PROMPT_PREFIX} ${trimmed}` : DEFAULT_GET_STARTED_PROMPT;
 }

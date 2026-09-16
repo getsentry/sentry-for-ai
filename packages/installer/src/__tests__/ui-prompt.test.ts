@@ -33,6 +33,17 @@ describe("runInstaller interactive prompts", () => {
     );
   });
 
+  it("copies the onboarding prompt with the organization and run code", async () => {
+    const claude = fakeHarness({ id: "claude", detected: true });
+
+    const ok = await runInstaller([claude], { instruction: "acme-widgets#abcde12345" });
+
+    expect(ok).toBe(true);
+    expect(copyToClipboard).toHaveBeenCalledWith(
+      "Please help me get started with sentry.\n\norg slug: acme-widgets\nrun code: abcde12345",
+    );
+  });
+
   it("disables app-configured authentication choices for successful installs", async () => {
     vi.mocked(checkbox)
       .mockResolvedValueOnce(["claude", "grok", "cursor"])
