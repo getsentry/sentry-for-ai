@@ -37,9 +37,9 @@ npx @sentry/agent-plugin install --no-interactive  # install into every detected
 When an instruction follows `install`, the installer offers to copy a prompt such as
 `The Sentry plugin has just been installed. Setup logging` after installation.
 Without an instruction, it offers the default get-started prompt.
-An argument in the form `org-slug#onboarding-code` generates the getting started
-prompt with the organization slug and 10-character alphanumeric run code supplied
-by Sentry’s onboarding page, so the agent can report setup progress to that run.
+An argument in the form `org-slug#onboarding-code` generates the getting started prompt
+with the organization slug and 10-character alphanumeric run code supplied by Sentry’s
+onboarding page, so the agent can report setup progress to that run.
 The non-interactive mode is intended for CI and unattended runs and skips this prompt.
 
 ## What it installs
