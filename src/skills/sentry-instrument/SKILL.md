@@ -133,6 +133,8 @@ When naming custom span or log attributes, open **only** the matching domain ref
 below. Prefer these stable keys over invented names.
 Deprecated attributes are omitted.
 
+<!-- semantics-toc:start -->
+
 - [`angular`](references/semantics/angular.md)
 - [`app`](references/semantics/app.md)
 - [`art`](references/semantics/art.md)
@@ -191,6 +193,8 @@ Deprecated attributes are omitted.
 - [`user`](references/semantics/user.md)
 - [`user_agent`](references/semantics/user_agent.md)
 - [`vercel`](references/semantics/vercel.md)
+
+<!-- semantics-toc:end -->
 
 ## Step 4 — Verify it landed
 
