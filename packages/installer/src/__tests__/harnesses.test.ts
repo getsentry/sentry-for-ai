@@ -94,6 +94,33 @@ describe("claude harness", () => {
       command: "claude plugin update sentry@claude-plugins-official",
     });
     expect(system.run).toHaveBeenCalledWith("claude plugin update sentry@claude-plugins-official");
+    expect(system.run).toHaveBeenCalledWith("claude plugin enable sentry@claude-plugins-official");
+  });
+
+  it("accepts an already-enabled plugin when updating", async () => {
+    const system = fakeSystem({
+      run: (cmd) =>
+        cmd === "claude plugin enable sentry@claude-plugins-official"
+          ? {
+              ok: false,
+              stderr:
+                'Failed to enable plugin "sentry@claude-plugins-official": Plugin "sentry@claude-plugins-official" is already enabled',
+            }
+          : ok,
+    });
+
+    await expect(createClaude(system).update()).resolves.toMatchObject({ kind: "done" });
+  });
+
+  it("surfaces other failures when enabling after an update", async () => {
+    const system = fakeSystem({
+      run: (cmd) =>
+        cmd === "claude plugin enable sentry@claude-plugins-official"
+          ? { ok: false, stderr: "permission denied" }
+          : ok,
+    });
+
+    await expect(createClaude(system).update()).rejects.toThrow("permission denied");
   });
 
   it("adds the official marketplace when it is not registered", async () => {
