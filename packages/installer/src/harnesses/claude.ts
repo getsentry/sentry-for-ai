@@ -1,6 +1,6 @@
 import type { OutputSink, SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
-import { detectOnPath, runCommand, runJson } from "./shell";
+import { detectOnPath, runCommand, runLoginCommand, runJson } from "./shell";
 
 const MARKETPLACE = "claude-plugins-official";
 const MARKETPLACE_SOURCE = "anthropics/claude-plugins-official";
@@ -8,6 +8,7 @@ const PLUGIN_ID = `sentry@${MARKETPLACE}`;
 const INSTALL_COMMAND = `claude plugin install ${PLUGIN_ID}`;
 const UPDATE_COMMAND = `claude plugin update ${PLUGIN_ID}`;
 const UNINSTALL_COMMAND = `claude plugin uninstall ${PLUGIN_ID}`;
+const AUTHENTICATE_COMMAND = "claude mcp login plugin:sentry:sentry";
 
 // Our plugin reaches Claude two ways: Anthropic's official catalog above, which is
 // what the installer uses, and our own catalog under the marketplace name it
@@ -82,6 +83,11 @@ export function createClaude(system: SystemDeps): Harness {
       await ensureMarketplace(system, output);
       await runCommand(system, UPDATE_COMMAND, output);
       return { kind: "done", command: UPDATE_COMMAND };
+    },
+
+    authenticate: async (output) => {
+      await runLoginCommand(system, AUTHENTICATE_COMMAND, output);
+      return { command: AUTHENTICATE_COMMAND };
     },
 
     remove: async (output): Promise<InstallOutcome> => {

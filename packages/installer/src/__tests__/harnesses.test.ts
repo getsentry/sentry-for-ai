@@ -96,6 +96,20 @@ describe("claude harness", () => {
     expect(system.run).toHaveBeenCalledWith("claude plugin update sentry@claude-plugins-official");
   });
 
+  it("authenticates the plugin-provided MCP with terminal input", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const sink = {} as NodeJS.WritableStream;
+    const outcome = await createClaude(system).authenticate!(sink);
+
+    expect(outcome).toEqual({
+      command: "claude mcp login plugin:sentry:sentry",
+    });
+    expect(system.runInteractive).toHaveBeenCalledWith(
+      "claude mcp login plugin:sentry:sentry",
+      sink,
+    );
+  });
+
   it("adds the official marketplace when it is not registered", async () => {
     const system = fakeSystem({
       run: (cmd) => (cmd.includes("marketplace list") ? claudeMarketplaces([]) : ok),
