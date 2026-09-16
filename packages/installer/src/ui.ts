@@ -190,22 +190,28 @@ function isCancel(err: unknown): boolean {
   return err instanceof Error && err.name === "ExitPromptError";
 }
 
-// Only eligible agents are offered: acting on an agent the flow cannot touch
-// just runs shell commands that fail with confusing errors. Everything is
-// pre-checked since the whole list is actionable; the user deselects to skip.
+// Actionable agents are pre-checked; informational choices remain disabled.
 async function promptForAgents(
   eligible: Detection[],
   message: string,
   label: (detection: Detection) => string,
   task: TaskWrapper,
+  disabled: (detection: Detection) => boolean | string = () => false,
 ): Promise<Detection[]> {
   const selectedIds = await task.prompt(ListrInquirerPromptAdapter).run(checkbox, {
     message,
-    choices: eligible.map((detection) => ({
-      name: label(detection),
-      value: detection.harness.id,
-      checked: true,
-    })),
+    choices: eligible
+      .map((detection) => {
+        const reason = disabled(detection);
+
+        return {
+          name: label(detection),
+          value: detection.harness.id,
+          checked: !reason,
+          disabled: reason,
+        };
+      })
+      .sort((a, b) => Number(!!a.disabled) - Number(!!b.disabled)),
     // The cursor must stay one column wide: inquirer pads inactive rows with a
     // single hardcoded space, so a wider cursor would shift the active row's
     // checkbox out of alignment. Put the gap after the arrow on the checkbox
@@ -217,18 +223,20 @@ async function promptForAgents(
         cursor: "→",
         checked: ` ${color.green("◉")}`,
         unchecked: " ◯",
+        disabledUnchecked: " ◯",
       },
     },
   });
 
-  return eligible.filter((detection) => selectedIds.includes(detection.harness.id));
+  return eligible.filter(
+    (detection) => !disabled(detection) && selectedIds.includes(detection.harness.id),
+  );
 }
 
 function authenticationCandidates(ctx: Ctx): Detection[] {
   return ctx.actions
     .filter(({ result }) => result.kind === "done")
-    .map(({ detection }) => detection)
-    .filter(({ harness }) => !!harness.authenticate);
+    .map(({ detection }) => detection);
 }
 
 function affectedNames(ctx: Ctx): string[] {
@@ -500,7 +508,7 @@ async function runFlow(
         interactive &&
         !ctx.cancelled &&
         !!mode.authenticate &&
-        authenticationCandidates(ctx).length > 0,
+        authenticationCandidates(ctx).some(({ harness }) => !!harness.authenticate),
       task: async (ctx, task) => {
         const eligible = authenticationCandidates(ctx);
         try {
@@ -509,6 +517,7 @@ async function runFlow(
             "Select agents to authenticate the Sentry MCP for",
             (detection) => detection.harness.name,
             task,
+            ({ harness }) => (harness.authenticate ? false : "(Configure in app)"),
           );
 
           if (selected.length === 0) {

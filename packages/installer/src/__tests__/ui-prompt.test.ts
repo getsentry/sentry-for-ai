@@ -33,12 +33,15 @@ describe("runInstaller interactive prompts", () => {
     );
   });
 
-  it("offers successful installs with authentication support", async () => {
-    vi.mocked(checkbox).mockResolvedValueOnce(["claude", "grok"]).mockResolvedValueOnce(["claude"]);
+  it("disables app-configured authentication choices for successful installs", async () => {
+    vi.mocked(checkbox)
+      .mockResolvedValueOnce(["claude", "grok", "cursor"])
+      .mockResolvedValueOnce(["claude", "grok", "cursor"]);
     const claude = fakeHarness({ id: "claude", detected: true, authenticates: true });
     const grok = fakeHarness({ id: "grok", detected: true });
+    const cursor = fakeHarness({ id: "cursor", detected: true });
 
-    const ok = await runInstaller([claude, grok]);
+    const ok = await runInstaller([grok, claude, cursor]);
 
     expect(ok).toBe(true);
     expect(claude.authenticate).toHaveBeenCalledOnce();
@@ -48,7 +51,22 @@ describe("runInstaller interactive prompts", () => {
     expect(checkbox).toHaveBeenCalledWith(
       expect.objectContaining({
         message: "Select agents to authenticate the Sentry MCP for",
-        choices: [expect.objectContaining({ value: "claude" })],
+        theme: expect.objectContaining({
+          icon: expect.objectContaining({ unchecked: " ◯", disabledUnchecked: " ◯" }),
+        }),
+        choices: [
+          expect.objectContaining({ value: "claude", checked: true, disabled: false }),
+          expect.objectContaining({
+            value: "grok",
+            checked: false,
+            disabled: "(Configure in app)",
+          }),
+          expect.objectContaining({
+            value: "cursor",
+            checked: false,
+            disabled: "(Configure in app)",
+          }),
+        ],
       }),
       expect.anything(),
     );
@@ -86,7 +104,12 @@ describe("runInstaller interactive prompts", () => {
   });
 
   it("omits authentication when installed harnesses lack the capability", async () => {
-    await runInstaller([fakeHarness({ id: "claude", detected: true })]);
+    vi.mocked(checkbox).mockResolvedValue(["cursor", "grok"]);
+
+    await runInstaller([
+      fakeHarness({ id: "cursor", detected: true }),
+      fakeHarness({ id: "grok", detected: true }),
+    ]);
 
     expect(checkbox).toHaveBeenCalledOnce();
   });
