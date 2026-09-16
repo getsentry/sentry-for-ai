@@ -15,6 +15,9 @@ export interface FakeHarnessOptions {
   // tests can assert it runs (and that it runs before install/update). Pass an
   // empty string to model a cleanup that found nothing.
   cleaned?: string;
+  authenticates?: boolean;
+  authenticationError?: Error;
+  authenticationOutput?: string;
 }
 
 export function fakeHarness(options: FakeHarnessOptions): Harness {
@@ -46,6 +49,22 @@ export function fakeHarness(options: FakeHarnessOptions): Harness {
 
   if (options.cleaned !== undefined) {
     harness.cleanup = vi.fn(async () => options.cleaned || null);
+  }
+
+  if (options.authenticates) {
+    harness.authenticate = vi.fn(async (output) => {
+      if (options.authenticationOutput) {
+        output?.write(options.authenticationOutput);
+      }
+
+      if (options.authenticationError) {
+        throw options.authenticationError;
+      }
+
+      return {
+        command: `${options.id} mcp login`,
+      };
+    });
   }
 
   return harness;

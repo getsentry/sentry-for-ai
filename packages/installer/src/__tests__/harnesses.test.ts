@@ -432,7 +432,7 @@ describe("cursor harness", () => {
   });
 
   it("reports installed when the plugin directory exists", async () => {
-    const target = "/home/user/.cursor/plugins/local/sentry";
+    const target = join("/home/user", ".cursor", "plugins", "local", "sentry");
     const harness = createCursor(fakeSystem({ homedir: "/home/user", existing: [target] }));
     expect(await harness.isInstalled()).toBe(true);
   });
@@ -463,12 +463,12 @@ describe("cursor harness", () => {
 
     expect(outcome.kind).toBe("done");
     expect(system.run).toHaveBeenCalledWith(
-      'git clone https://github.com/getsentry/plugin-cursor.git "/home/user/.cursor/plugins/local/sentry"',
+      `git clone https://github.com/getsentry/plugin-cursor.git "${join("/home/user", ".cursor", "plugins", "local", "sentry")}"`,
     );
   });
 
   it("pulls the existing checkout on update", async () => {
-    const target = "/home/user/.cursor/plugins/local/sentry";
+    const target = join("/home/user", ".cursor", "plugins", "local", "sentry");
     const system = fakeSystem({ homedir: "/home/user", existing: [target] });
     const outcome = await createCursor(system).update();
 
@@ -477,7 +477,7 @@ describe("cursor harness", () => {
   });
 
   it("deletes the plugin directory on remove", async () => {
-    const target = "/home/user/.cursor/plugins/local/sentry";
+    const target = join("/home/user", ".cursor", "plugins", "local", "sentry");
     const system = fakeSystem({ homedir: "/home/user", existing: [target] });
     const outcome = await createCursor(system).remove();
 

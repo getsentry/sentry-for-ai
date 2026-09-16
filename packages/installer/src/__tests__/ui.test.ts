@@ -129,6 +129,15 @@ describe("runInstaller (non-interactive)", () => {
     expect(ok).toBe(true);
     expect(peak).toBeGreaterThan(1);
   });
+
+  it("does not authenticate during a non-interactive install", async () => {
+    const claude = fakeHarness({ id: "claude", detected: true, authenticates: true });
+
+    const ok = await runInstaller([claude], { interactive: false });
+
+    expect(ok).toBe(true);
+    expect(claude.authenticate).not.toHaveBeenCalled();
+  });
 });
 
 describe("runRemover (non-interactive)", () => {
