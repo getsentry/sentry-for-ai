@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1
+
+- Accept `org-slug#onboarding-code` after `install` to generate a getting started prompt
+  with the organization and run code from Sentry’s onboarding page, allowing the agent
+  to report setup progress to that run.
+
 ## 0.4.0
 
 - Offer to authenticate the Sentry MCP for Codex and Claude Code after installation.
