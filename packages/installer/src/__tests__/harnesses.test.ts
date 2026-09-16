@@ -239,6 +239,15 @@ describe("codex harness", () => {
     });
   });
 
+  it("authenticates the plugin-provided MCP with terminal input", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const sink = {} as NodeJS.WritableStream;
+    const outcome = await createCodex(system).authenticate!(sink);
+
+    expect(outcome).toEqual({ command: "codex mcp login sentry" });
+    expect(system.runInteractive).toHaveBeenCalledWith("codex mcp login sentry", sink);
+  });
+
   it("adds the marketplace when it is not registered", async () => {
     const system = fakeSystem({
       run: (cmd) => (cmd.includes("marketplace list") ? codexMarketplaces([]) : ok),
