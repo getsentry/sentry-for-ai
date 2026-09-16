@@ -7,6 +7,7 @@ const MARKETPLACE_SOURCE = "anthropics/claude-plugins-official";
 const PLUGIN_ID = `sentry@${MARKETPLACE}`;
 const INSTALL_COMMAND = `claude plugin install ${PLUGIN_ID}`;
 const UPDATE_COMMAND = `claude plugin update ${PLUGIN_ID}`;
+const ENABLE_COMMAND = `claude plugin enable ${PLUGIN_ID}`;
 const UNINSTALL_COMMAND = `claude plugin uninstall ${PLUGIN_ID}`;
 
 // Our plugin reaches Claude two ways: Anthropic's official catalog above, which is
@@ -81,6 +82,16 @@ export function createClaude(system: SystemDeps): Harness {
     update: async (output): Promise<InstallOutcome> => {
       await ensureMarketplace(system, output);
       await runCommand(system, UPDATE_COMMAND, output);
+      try {
+        await runCommand(system, ENABLE_COMMAND);
+      } catch (err) {
+        if (
+          !(err instanceof Error) ||
+          !err.message.includes(`Plugin "${PLUGIN_ID}" is already enabled`)
+        ) {
+          throw err;
+        }
+      }
       return { kind: "done", command: UPDATE_COMMAND };
     },
 
