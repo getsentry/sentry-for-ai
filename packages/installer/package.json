@@ -18,7 +18,7 @@
     "CHANGELOG.md"
   ],
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.13.0"
   },
   "bin": {
     "sentry-agent-plugin": "dist/index.js"
@@ -32,10 +32,10 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^8.5.2",
-    "@listr2/prompt-adapter-inquirer": "^4.2.4",
+    "@listr2/prompt-adapter-inquirer": "^4.2.7",
     "@sentry/node": "^10.57.0",
     "citty": "^0.1.6",
-    "listr2": "^10.2.1"
+    "listr2": "^11.1.0"
   },
   "devDependencies": {
     "@types/node": "^25.9.3",

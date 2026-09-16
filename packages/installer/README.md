@@ -66,7 +66,7 @@ registered. Restart your AI tools afterward to drop the plugin.
 
 ## Requirements
 
-- Node.js 18 or newer
+- Node.js 22.13 or newer
 - The assistant CLI you want to set up must already be installed and on your `PATH`
 - `git` is required for the Cursor install
 
