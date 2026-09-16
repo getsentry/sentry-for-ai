@@ -53,7 +53,8 @@ const install = defineCommand({
   args: {
     instruction: {
       type: "positional",
-      description: "Instruction to include in the prompt copied after installation",
+      description:
+        "Instruction or org-slug#onboarding-code for the prompt copied after installation",
       required: false,
     },
     ...agentSelectionArgs,
