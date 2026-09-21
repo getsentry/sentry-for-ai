@@ -1,130 +1,102 @@
 # AI / Agent Monitoring — What & Why
 
-## What it is
+The Sentry docs are the source of truth for Agent Tracing setup, span attributes,
+provider support, Conversations, privacy, and cost behavior.
+Use this file to choose the docs page to follow; do not duplicate the docs here.
 
-Tracing specialized for LLM apps.
-LLM calls, agent runs, tool calls, and agent-to-agent handoffs are captured as
-`gen_ai.*` spans carrying model, token usage, cost, and latency.
-It is built on [tracing](tracing.md), so tracing must be on
-(`tracesSampleRate`/`traces_sample_rate` > 0) — without spans there is nothing to attach
-`gen_ai` data to.
+## Product docs
 
-Sentry supports provider integrations and framework-provided telemetry exporters.
-Provider integrations observe model clients directly.
-Some agent frameworks emit their own OpenTelemetry `gen_ai.*` spans instead; use the
-framework’s Sentry integration rather than adding a second span producer, or spans,
-tokens, and cost can be counted twice.
-The platform `index.md` says which path is supported.
+Read these when the user needs the why, UI behavior, or data model:
 
-**Auto-instrumentation is runtime-dependent, not just language-dependent.** It patches
-the AI client at require/import time, so it only applies on a patchable runtime.
-On workerd (Cloudflare Workers) and in browser/client-side code there is nothing to
-patch — those need build-time instrumentation (the Cloudflare Vite plugin) or a manual
-client wrapper (`Sentry.instrumentOpenAiClient` and friends).
-Check the platform’s `ai-monitoring.md` before assuming “it’s JavaScript, so it’s
-automatic”.
-
-## What the artifact shows
-
-A trace *is* the agent run: a `gen_ai.invoke_agent` span parents the `gen_ai.chat` (LLM
-call), `gen_ai.execute_tool`, and `gen_ai.handoff` children it triggered.
-Read cost and latency off the child spans’ token attributes.
-Two views surface it: the **AI Agents** dashboard and **Explore > Conversations**.
-
-The span `op` is `gen_ai.{operation}` — `chat`, `embeddings`, `generate_content`,
-`text_completion` for calls, plus `invoke_agent`, `execute_tool`, `handoff`. The span
-**name** repeats the operation with its subject: `chat gpt-4o`,
-`invoke_agent Weather Agent`, `execute_tool get_weather`,
-`handoff from triage to billing`. Attributes accept primitives only; arrays/objects are
-JSON-stringified. The canonical attribute set lives under
-`references/semantics/gen_ai.md` in skills that hydrate semantic conventions (see the
-instrument skill’s Semantic conventions list).
-The SDK docs can lag, and deprecated attributes are omitted from that reference on
-purpose.
+| Topic | Follow |
+| --- | --- |
+| Agent Tracing overview | [Agent Tracing](https://docs.sentry.io/product/agents/) |
+| Multi-turn transcript grouping | [Conversations](https://docs.sentry.io/product/agents/conversations/) |
+| Token and model spend | [Costs](https://docs.sentry.io/product/agents/costs/) |
+| Prompt, response, and tool-data privacy | [Privacy](https://docs.sentry.io/product/agents/privacy/) and [`data-scrubbing.md`](data-scrubbing.md) |
 
 ## Conversations
 
-Conversations groups spans by `gen_ai.conversation.id` into a chat-style timeline.
-A conversation can span multiple traces (a page refresh mid-chat), and one trace can
-hold spans from multiple conversations — the two are independent.
+Conversations group spans into a chat-style timeline; follow the
+[conversation ID docs](https://docs.sentry.io/product/agents/conversations/#conversation-id)
+for grouping requirements.
 
-**Conversation ID format matters:** use a short, opaque identifier — alphanumeric with
-dashes or underscores only (a UUID, or a prefixed id like `conv_5j66Up…`). Never use a
-URL, email, or other free-form text: Sentry uses the id as a URL path segment, so a
-value containing a slash breaks Conversations for that session.
-Some integrations infer the id automatically; others require it explicitly.
-Check the platform’s `ai-monitoring.md` before setting one manually.
-The view also needs input/output capture and gen_ai span streaming (both on by default
-on recent JS/Python SDKs; Laravel AI spans are emitted directly) or it renders empty,
-and a `setUser`/`set_user` call to populate the User column where supported.
+## Platform docs
 
-## Token accounting (avoid negative costs)
+Open the platform docs before changing code:
 
-Sentry computes cost from token attributes, and cached/reasoning counts are **subsets**
-of the totals, not separate buckets: `gen_ai.usage.input_tokens` already includes
-`.input_tokens.cached`, and `gen_ai.usage.output_tokens` already includes
-`.output_tokens.reasoning`. Reporting a subset larger than its total makes Sentry
-subtract past zero and show a negative cost.
+| Platform or runtime | Follow |
+| --- | --- |
+| Node.js, Bun, or Deno | [Node Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/) |
+| Next.js | [Next.js Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/nextjs/agent-tracing/) |
+| NestJS | [NestJS Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/nestjs/agent-tracing/) |
+| Cloudflare Workers / Pages | [Cloudflare Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/cloudflare/agent-tracing/) |
+| Python | [Python Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/) |
+| Laravel / PHP | [Laravel Agent Tracing](https://docs.sentry.io/platforms/php/guides/laravel/agent-tracing/) |
+| React Native | [React Native Agent Tracing](https://docs.sentry.io/platforms/react-native/agent-tracing/) |
+| Custom spans | [Sentry GenAI conventions](https://github.com/getsentry/sentry-conventions/) |
 
-## Input/output message shape
+## Integration docs
 
-`gen_ai.input.messages` and `gen_ai.output.messages` are JSON-stringified arrays of
-`{role, parts}`, where each part is `{type, content}` — part types include `text`,
-`reasoning`, `tool_call`, and `tool_call_response`.
+Follow the matching integration docs after the platform is known:
 
-Extended thinking (Anthropic `thinking`, Gemini `thought`, DeepSeek `reasoning_content`)
-belongs in a **`reasoning` part, never folded into a `text` part**: Sentry surfaces
-reasoning separately and filters it out of the user-facing Conversations view, so
-thinking passed as `text` shows up as if the model said it.
-When prior thinking is fed back into a multi-turn request, keep those same `reasoning`
-parts in the assistant messages inside `gen_ai.input.messages`.
+| AI stack | Follow |
+| --- | --- |
+| Vercel AI SDK | [Vercel AI SDK Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/vercelai/) |
+| OpenAI (JavaScript) | [OpenAI Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/openai/) |
+| Anthropic (JavaScript) | [Anthropic Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/anthropic/) |
+| Google Gen AI SDK (JavaScript) | [Google Gen AI Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/google-genai/) |
+| LangChain (JavaScript) | [LangChain Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/langchain/) |
+| LangGraph (JavaScript) | [LangGraph Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/langgraph/) |
+| Mastra | [Mastra Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/mastra/) |
+| Flue on Node.js | [Flue Node Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/flue/) |
+| Flue on Cloudflare | [Flue Cloudflare Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/cloudflare/agent-tracing/flue/) |
+| Workers AI | [Workers AI](https://docs.sentry.io/platforms/javascript/guides/cloudflare/features/workers-ai/) |
+| Cloudflare Agents SDK | [Cloudflare Agents SDK](https://docs.sentry.io/platforms/javascript/guides/cloudflare/features/agents-sdk/) |
+| OpenAI (Python) | [Python OpenAI Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/openai/) |
+| OpenAI Agents SDK (Python) | [OpenAI Agents SDK Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/openai-agents/) |
+| Anthropic (Python) | [Python Anthropic Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/anthropic/) |
+| Google Gen AI SDK (Python) | [Python Google Gen AI Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/google-genai/) |
+| LangChain (Python) | [Python LangChain Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/langchain/) |
+| LangGraph (Python) | [Python LangGraph Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/langgraph/) |
+| LiteLLM | [LiteLLM Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/litellm/) |
+| Pydantic AI | [Pydantic AI Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/pydantic-ai/) |
+| Hugging Face Hub | [Hugging Face Hub Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/huggingface_hub/) |
+| Laravel AI | [Laravel AI integration](https://docs.sentry.io/platforms/php/guides/laravel/integrations/laravel-ai/) |
 
-The system prompt is separate from the messages — it goes in
-`gen_ai.system_instructions` — as is the tool catalog offered to the model,
-`gen_ai.tool.definitions`. Both are model input and carry the same PII weight as the
-messages.
+## Eve
 
-## PII
+For Eve, support the Sentry Node SDK path so it behaves like the other JavaScript AI
+setups. Follow
+[Node Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/)
+and the
+[Vercel AI SDK guide](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/vercelai/).
+This path requires `@sentry/node` v11 or newer.
 
-Prompts and model outputs are user content and are **likely PII**. JavaScript captures
-input/output by default (governed by `dataCollection.genAI`); Python gates it behind
-`send_default_pii=True`; Laravel gates it behind `SENTRY_SEND_DEFAULT_PII=true`. Confirm
-the privacy policy and regulations allow it and **ask the user before enabling capture**
-— see [data-scrubbing.md](data-scrubbing.md).
+Do not install Eve’s OTLP exporter for the same runtime unless the user explicitly asks
+for the trace-only Eve exporter path.
+If an Eve OTLP exporter already exists, ask whether to keep that trace-only setup or
+switch to the Node SDK setup; do not run both.
 
-## Setup essentials
+## Decisions before editing
 
-- Tracing must be on; then detect the AI SDK and let auto-instrumentation handle it
-  (JS/Python/Laravel AI), or instrument `gen_ai.*` spans manually.
-- Sample AI traces at **100%** — see Sampling below.
-- Set a `gen_ai.conversation.id` wherever multi-turn chats need grouping.
+Before making an AI-monitoring change, answer these from the docs and the project state:
 
-## Sampling
+1. **Which runtime owns AI spans?** Use one Sentry SDK, framework exporter, or OTLP path
+   per runtime. Do not create duplicate AI span producers.
+2. **Is tracing enabled and sampled?** AI spans are trace data.
+   If the root trace is dropped, the agent run is dropped.
+3. **Are inputs and outputs captured?** For AI monitoring, prompt, response, tool
+   argument, tool result, and system-instruction capture is what makes Agent Tracing
+   useful. Keep it enabled by default; if the user raises a privacy, security, or
+   compliance concern, follow the docs to disable or scope capture.
+4. **How are conversations grouped?** Use a stable opaque conversation ID when the
+   integration does not infer one.
+5. **Are token counts shaped correctly?** Cached, cache-creation, and reasoning counts
+   are subsets of total input/output counts.
+   Follow the cost docs and GenAI conventions.
 
-An agent run is one span tree and the sampling decision is made at the **root**;
-children inherit it unconditionally.
-Drop the root and every `gen_ai` child goes with it — so at any rate below 1.0 you lose
-whole agent runs, not a fraction of each.
-Which root depends on the app:
-
-- **The `gen_ai` span is itself the root** (cron job, queue consumer, CLI): the sampler
-  function sees the `gen_ai.*` op directly — match on it and return 1.0.
-- **The `gen_ai` spans hang off an HTTP transaction** (most web apps): the sampler never
-  runs for them, because the request was already sampled before any AI code executed.
-  Keep the AI-serving routes at 1.0 instead.
-
-If AI is the core product, skip the sampler and keep tracing at 1.0 outright.
-
-**Read the app’s current rate before changing it, and ask.** If tracing is below 1.0
-with no sampler configured, say what the current rate is and what a dropped root costs,
-then wait for an answer — raising trace volume is the user’s cost decision, the same as
-the PII gate above.
-
-When 100% tracing isn’t affordable, metrics and logs are sampled independently of
-traces: emit token counts and per-call log records on every LLM call to keep full
-cost/usage coverage alongside sampled traces.
-
-## Related
+## Related local references
 
 - [`tracing.md`](tracing.md) — AI monitoring is tracing; spans are the substrate.
 - [`data-scrubbing.md`](data-scrubbing.md) — prompt/output capture is the PII decision.
