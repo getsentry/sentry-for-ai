@@ -109,6 +109,7 @@ Agent Tracing transcript and debugging workflow rely on prompts, responses, tool
 arguments, and tool results.
 If the user raises a privacy, security, compliance, or volume concern, follow the docs
 to disable or scope capture instead.
+Preserve any capture restrictions they have already chosen.
 
 ### Semantic conventions
 
@@ -190,6 +191,18 @@ dashboard.”
 After the first error or a new signal is confirmed, offer concrete follow-ups without
 auto-running them:
 
+- After setting up AI/LLM monitoring with a JavaScript/TypeScript Sentry SDK, ask
+  whether the user wants to control which AI inputs and outputs the SDK sends, unless
+  they have already stated their preference.
+  Link the detected platform’s `dataCollection` options:
+  `https://docs.sentry.io/platforms/javascript/guides/<guide>/configuration/options/#dataCollection`
+  (for example, `cloudflare` for Workers and Pages, `nextjs` for Next.js, or `node` for
+  Node.js). Use the
+  [JavaScript data collection options](https://docs.sentry.io/platforms/javascript/configuration/options/#dataCollection)
+  when no platform-specific guide applies.
+  Keep this optional; change capture only if requested.
+  Do not offer this JavaScript SDK option for Python, PHP, unknown SDKs, or
+  framework-owned OTLP setups without a JavaScript Sentry SDK.
 - Ship it to production.
 - Add a signal — logging, session replay, or profiling are common next steps (tracing is
   already in the base `init`).
