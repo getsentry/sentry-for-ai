@@ -44,8 +44,8 @@ If nothing matches, start from the [platform list](https://docs.sentry.io/platfo
 
 ## Go deeper from the platform page
 
-The platform page covers install and a recommended default `init`.
-Take that default as written for a new project rather than paring it back.
+The platform page covers install and a recommended default `init`. Take that default as
+written for a new project rather than paring it back.
 
 Everything else hangs off the same path — follow the platform page’s links rather than
 guessing a URL:
