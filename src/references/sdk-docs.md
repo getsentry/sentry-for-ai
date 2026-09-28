@@ -5,8 +5,9 @@ Sentry docs, not from this library.
 Every docs page is also served as Markdown: append `.md` to its path.
 
 The complete catalog is the [platform list](https://docs.sentry.io/platforms.md): every
-SDK, and under each one its framework guides (ASP.NET Core, Django, Spring Boot, …). The
-table below is a shortcut for the common platforms, with the files that identify them.
+SDK, and under each one its framework guides (ASP.NET Core, Spring Boot, Sidekiq, …).
+The table below is a shortcut for the common platforms, with the files that identify
+them.
 
 ## Find the platform
 
@@ -16,8 +17,8 @@ platform list.
 
 When more than one row matches, prefer the most specific framework (Next.js over React
 or Node.js, NestJS over Node.js, Cloudflare over Node.js, React Native over React).
-If nothing matches, or a framework guide fits better than the row you found (a Django
-app on Python, say), pick it from the
+If nothing matches, or a framework guide fits better than the row you found (an ASP.NET
+Core app on .NET, say), pick it from the
 [platform list](https://docs.sentry.io/platforms.md).
 
 | Platform | Detect from | Docs |
