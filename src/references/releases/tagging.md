@@ -89,9 +89,8 @@ Two traps in that table:
   You then have to upload source maps manually — using the React Native source map
   procedure. Prefer leaving the defaults alone on React Native unless you have a reason.
 
-The platform’s own [Sentry docs](https://docs.sentry.io/platforms.md) have the
-surrounding `init` and build-plugin configuration if you need to see where these options
-sit.
+The platform’s own Sentry docs ([`../sdk-docs.md`](../sdk-docs.md)) have the surrounding
+`init` and build-plugin configuration if you need to see where these options sit.
 
 ## `dist` — the second half of mobile identity
 

@@ -62,8 +62,8 @@ Don’t invent a source-map step for a language that doesn’t have one.
 ## Where the build-tool config lives
 
 The bundler-plugin options, the Gradle `sentry {}` block, and the wizard invocations are
-documented per platform in that platform’s
-[Sentry docs](https://docs.sentry.io/platforms.md), as ordinary SDK configuration.
+documented per platform in that platform’s Sentry docs
+([`../sdk-docs.md`](../sdk-docs.md)), as ordinary SDK configuration.
 Use them for the config; use this group for what it doesn’t cover — the token, artifact
 matching, native upload mechanics, and CI placement.
 

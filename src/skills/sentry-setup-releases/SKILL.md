@@ -64,11 +64,11 @@ re-running the pipeline won’t fix a mismatch.
 
 ## Step 2 — Identify the platform
 
-Read [`references/sdks/index.md`](references/sdks/index.md) to map the project to a
-platform slug and confirm it with the user.
-The platform’s own `references/sdks/<slug>/index.md` is where the build-tool
-configuration lives — the bundler-plugin block, the Gradle `sentry {}` options — so open
-it when you get to the wiring.
+Read [`references/sdk-docs.md`](references/sdk-docs.md) to map the project to a platform
+and confirm it with the user.
+The platform’s Sentry docs are where the build-tool configuration lives — the
+bundler-plugin block, the Gradle `sentry {}` options — so fetch them when you get to the
+wiring.
 
 ## Step 3 — Wire the half that’s missing
 

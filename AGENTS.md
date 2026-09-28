@@ -41,8 +41,8 @@ that used to live in this section.
 
 The shape to know: every skill is flat and **task-shaped** — one skill, one job a user
 would name, found through its own `description`. Platform coverage is *not* a skill per
-SDK; the per-platform material lives in the reference library and is hydrated into
-whichever skills declare it.
+SDK; per-platform install and signal code comes from the Sentry docs, which the shared
+`sdk-docs.md` reference maps each platform to.
 
 ## MCP Server
 
@@ -127,12 +127,11 @@ pinning once each harness supports it.
 
 ```
 src/references/
-  sdks/<slug>/           # per-platform HOW: install, init, one file per signal
-                         #   STRUCTURE.md is the contract these must follow
   concepts/              # per-signal WHAT/WHY, platform-agnostic, no code
   debug-artifacts/       # source maps + debug files, per artifact family
   releases/              # release tagging, the CI pipeline, suspect commits
   auth-token.md          # the build-time secret, shared by the two groups above
+  sdk-docs.md            # platform detection → the Sentry docs for per-platform HOW
   search-query-language.md, setup-verification.md, first-error-setup.md, new-project.md
 ```
 
@@ -142,11 +141,11 @@ Two rules keep it factored:
   library. Used by exactly one → that skill’s own `references/` dir, shipped alongside
   it.
 - **Group files link siblings and top-level files only** — never across domains
-  (`concepts/` ↔ `sdks/` ↔ `debug-artifacts/` ↔ `releases/`) and never to a skill.
+  (`concepts/` ↔ `debug-artifacts/` ↔ `releases/`) and never to a skill.
   A skill hydrating one group may not have another, so cross-domain navigation is the
   job of the SKILL.md that loads them.
-  Top-level cross-cutting files (`auth-token.md`, `setup-verification.md`, …) are the
-  exception; anything may link those.
+  Top-level cross-cutting files (`auth-token.md`, `sdk-docs.md`, …) are the exception;
+  anything may link those.
 
 **Adding a new skill:**
 1. Create `src/skills/<skill-name>/SKILL.md` with `name`, `description`, and `license`

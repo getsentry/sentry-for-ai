@@ -25,12 +25,11 @@ back. Don’t re-derive what those files already cover.
 > current Sentry setup are understood.
 > This stage is unskippable.
 
-Start from the [Sentry platform list](https://docs.sentry.io/platforms.md) to find the
-platform’s docs. Identify the platform from project files (`package.json`, `go.mod`,
-`requirements.txt`, `Gemfile`, `*.csproj`, `build.gradle`, `pubspec.yaml`, …), **tell
-the user what you found and confirm** — don’t assume from files alone — then fetch that
-platform’s docs page (for example `https://docs.sentry.io/platforms/python.md`) for
-install, `init`, errors, and tracing.
+Use [`sdk-docs.md`](sdk-docs.md) to map the project to a platform and its Sentry docs.
+Identify the platform from project files (`package.json`, `go.mod`, `requirements.txt`,
+`Gemfile`, `*.csproj`, `build.gradle`, `pubspec.yaml`, …), **tell the user what you
+found and confirm** — don’t assume from files alone — then fetch that platform’s docs
+page for install, `init`, errors, and tracing.
 
 ## Step 2 — Provision a project + DSN
 
