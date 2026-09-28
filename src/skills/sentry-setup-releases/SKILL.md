@@ -64,8 +64,10 @@ re-running the pipeline won’t fix a mismatch.
 
 ## Step 2 — Identify the platform
 
-Read [`references/sdk-docs.md`](references/sdk-docs.md) to map the project to a Sentry supported platform and confirm it with the user.
-The platform’s Sentry docs are where all the configuration options live, this includes SDK setup and build-tool configuration.
+Read [`references/sdk-docs.md`](references/sdk-docs.md) to map the project to a Sentry
+supported platform and confirm it with the user.
+The platform’s Sentry docs are where all the configuration options live, this includes
+SDK setup and build-tool configuration.
 
 ## Step 3 — Wire the half that’s missing
 
