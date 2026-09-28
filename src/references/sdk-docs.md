@@ -61,7 +61,9 @@ guessing a URL:
 - **Signals** — `tracing`, `logs`, `metrics`, `profiling`, `session-replay`,
   `user-feedback`, `crons`, and `agent-tracing` (AI monitoring) sit under the platform
   path. A signal the platform page never links is one the SDK doesn’t support.
-- **Integrations** — for popular libraries, some of them will be automatically enabled when using a certain SDK, while others have to be explicitly enabled in the project's init config.
+- **Integrations** — for popular libraries, some of them will be automatically enabled
+  when using a certain SDK, while others have to be explicitly enabled in the project’s
+  init config.
 - **Build-tool configuration** — live on the platform’s source-map, debug-file, or
   configuration pages.
 - **Release options** — `release`, `environment`, and `dist` are on the platform’s
