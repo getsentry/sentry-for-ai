@@ -4,14 +4,21 @@ Per-platform install, `init`, signal code, and build-tool configuration come fro
 Sentry docs, not from this library.
 Every docs page is also served as Markdown: append `.md` to its path.
 
+The complete catalog is the [platform list](https://docs.sentry.io/platforms.md): every
+SDK, and under each one its framework guides (ASP.NET Core, Django, Spring Boot, …). The
+table below is a shortcut for the common platforms, with the files that identify them.
+
 ## Find the platform
 
 Identify the platform from project files, **tell the user what you found and confirm** —
-don’t assume from files alone — then fetch that platform’s page from the table.
+don’t assume from files alone — then fetch that platform’s page from the table or the
+platform list.
 
 When more than one row matches, prefer the most specific framework (Next.js over React
 or Node.js, NestJS over Node.js, Cloudflare over Node.js, React Native over React).
-If nothing matches, start from the [platform list](https://docs.sentry.io/platforms.md).
+If nothing matches, or a framework guide fits better than the row you found (a Django
+app on Python, say), pick it from the
+[platform list](https://docs.sentry.io/platforms.md).
 
 | Platform | Detect from | Docs |
 | --- | --- | --- |
