@@ -51,7 +51,7 @@ Run setup-ownership detection for **every scope**, including add-a-signal:
 - For **add a signal**, detect and confirm the platform from
   [`references/sdk-docs.md`](references/sdk-docs.md) without reinstalling Sentry.
 
-Fetch the platform’s docs page; inspect package manifests and existing Sentry,
+Fetch the platform’s docs pages; inspect package manifests and existing Sentry,
 OpenTelemetry, and framework instrumentation.
 Before a fresh install or any AI-monitoring change, read
 [`references/concepts/ai-monitoring.md`](references/concepts/ai-monitoring.md) and apply
