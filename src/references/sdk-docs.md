@@ -61,8 +61,7 @@ guessing a URL:
 - **Signals** — `tracing`, `logs`, `metrics`, `profiling`, `session-replay`,
   `user-feedback`, `crons`, and `agent-tracing` (AI monitoring) sit under the platform
   path. A signal the platform page never links is one the SDK doesn’t support.
-- **Build-tool configuration** — bundler plugins, the Gradle `sentry {}` block, MSBuild
-  properties, and wizard invocations live on the platform’s source-map, debug-file, or
+- **Build-tool configuration** — live on the platform’s source-map, debug-file, or
   configuration pages.
 - **Release options** — `release`, `environment`, and `dist` are on the platform’s
   `configuration/options` page.
