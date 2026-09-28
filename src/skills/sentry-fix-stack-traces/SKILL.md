@@ -51,7 +51,7 @@ and confirm it with the user.
 The platform’s Sentry docs are where the build-tool configuration lives — bundler plugin
 options, the Gradle `sentry {}` block, the wizard invocation — so fetch them for the
 config side.
-
+The platform’s Sentry docs are where all the configuration options live, this includes SDK setup and build-tool configuration.
 ## Step 3 — Apply the artifact procedure
 
 Route from [`references/debug-artifacts/index.md`](references/debug-artifacts/index.md)
