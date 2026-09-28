@@ -25,11 +25,12 @@ back. Don’t re-derive what those files already cover.
 > current Sentry setup are understood.
 > This stage is unskippable.
 
-Read [`sdks/index.md`](sdks/index.md) for the catalog and detection rules.
-Identify the platform from project files (`package.json`, `go.mod`, `requirements.txt`,
-`Gemfile`, `*.csproj`, `build.gradle`, `pubspec.yaml`, …), **tell the user what you
-found and confirm** — don’t assume from files alone — then open that platform’s
-`sdks/<slug>/index.md`, `sdks/<slug>/error-monitoring.md`, and `sdks/<slug>/tracing.md`.
+Start from the [Sentry platform list](https://docs.sentry.io/platforms.md) to find the
+platform’s docs. Identify the platform from project files (`package.json`, `go.mod`,
+`requirements.txt`, `Gemfile`, `*.csproj`, `build.gradle`, `pubspec.yaml`, …), **tell
+the user what you found and confirm** — don’t assume from files alone — then fetch that
+platform’s docs page (for example `https://docs.sentry.io/platforms/python.md`) for
+install, `init`, errors, and tracing.
 
 ## Step 2 — Provision a project + DSN
 
@@ -58,12 +59,11 @@ Either way you come back with the DSN to use in `init`.
 > installation and initialization finish.
 > This stage is unskippable.
 
-Following the platform references, install the SDK and write `init` using the DSN from
-Step 2. Take the SDK reference’s **recommended default setup** as written — in practice
+Following the platform’s Sentry docs, install the SDK and write `init` using the DSN
+from Step 2. Take the docs’ **recommended default setup** as written — in practice
 errors and tracing.
 Don’t ask the user which signals to enable, and don’t pare it back to
-errors-only; the reference’s default `init` is the best-practice baseline for a new
-project.
+errors-only; the docs’ default `init` is the best-practice baseline for a new project.
 
 ## Step 4 — Verify end to end
 
@@ -135,9 +135,9 @@ deploy actions without their consent:**
 
 Local frames often look fine while production builds mangle them — minified JavaScript,
 stripped native symbols — so an issue from a real user can be unreadable even though the
-verified test error wasn’t. This is per-platform: the platform’s `sdks/<slug>/index.md`
-("Platform considerations") names what *this* stack needs — e.g. **source maps** for
-JavaScript/TypeScript, **debug symbols** (dSYM, ProGuard/R8) for native/mobile.
+verified test error wasn’t. This is per-platform: the platform’s Sentry docs name what
+*this* stack needs — e.g. **source maps** for JavaScript/TypeScript, **debug symbols**
+(dSYM, ProGuard/R8) for native/mobile.
 Frame it proactively, tied to the platform you detected:
 
 > “Now that this is heading to production — since you’re on <platform>, we’ll want

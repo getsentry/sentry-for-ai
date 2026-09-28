@@ -1,7 +1,4 @@
 needs:
-  # Whole SDK tree (platform is chosen at runtime); STRUCTURE.md is excluded.
-  - sdks/index.md
-  - sdks/*/*.md
   # Readable stack traces (source maps / debug files) — shared with fix-stack-traces.
   - debug-artifacts/*.md
   - auth-token.md

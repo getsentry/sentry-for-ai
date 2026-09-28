@@ -32,8 +32,9 @@ config.
 - `UseSentryCLI` (default `true`) disables the bundled CLI outright; if something in the
   build sets it to `false`, nothing uploads regardless of the properties above.
 
-The wider property block — release creation and commit association — lives in
-`sdks/dotnet/index.md` as ordinary SDK config.
+The wider property block — release creation and commit association — lives in the
+[MSBuild setup docs](https://docs.sentry.io/platforms/dotnet/configuration/msbuild.md)
+as ordinary SDK config.
 This file covers the upload itself.
 
 ## Path B — sentry-cli directly
