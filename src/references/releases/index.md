@@ -78,10 +78,10 @@ and promising suspect commits before it is done sets the user up for an empty re
 ## Where the SDK-side config lives
 
 The `release` and `environment` `init` options, the bundler-plugin block, and the Gradle
-`sentry {}` options are documented per platform in that platform’s
-`sdks/<slug>/index.md`, as ordinary SDK configuration.
-Use it for where the options sit; use this group for what it doesn’t cover — naming, the
-CI pipeline, commit association, and the failure modes.
+`sentry {}` options are documented per platform in that platform’s Sentry docs
+([`../sdk-docs.md`](../sdk-docs.md)), as ordinary SDK configuration.
+Use them for where the options sit; use this group for what it doesn’t cover — naming,
+the CI pipeline, commit association, and the failure modes.
 
 ## Confirming it works
 

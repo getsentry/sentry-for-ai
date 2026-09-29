@@ -1,8 +1,8 @@
 # Source maps — JavaScript / TypeScript
 
 Applies to browser, Node, and every JS framework SDK. The per-framework plugin config
-lives in that platform’s `sdks/<slug>/index.md`; this file covers what the build has to
-produce, the CI-friendly fallback, and the traps.
+lives in that platform’s Sentry docs ([`../sdk-docs.md`](../sdk-docs.md)); this file
+covers what the build has to produce, the CI-friendly fallback, and the traps.
 
 ## Two things must both be true
 

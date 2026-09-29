@@ -164,7 +164,7 @@ be readable — for which
 [`references/debug-artifacts/index.md`](references/debug-artifacts/index.md) has the
 per-platform source-map and debug-file procedure, so you can wire it rather than only
 flag it. You’ll also want to immediately read
-[`references/sdks/index.md`](references/sdks/index.md) and
+[`references/sdk-docs.md`](references/sdk-docs.md) and
 [`references/concepts/errors.md`](references/concepts/errors.md) so you have the catalog
 and the baseline-signal context in hand before you start.
 

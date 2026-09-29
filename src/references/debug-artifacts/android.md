@@ -10,8 +10,9 @@ Two independent artifact families, and a release build usually needs both:
 ## Path A — the Sentry Gradle plugin (preferred)
 
 The plugin uploads on release builds, so it can’t be forgotten at release time.
-The plugin id and the dependency wiring live in `sdks/android/index.md`; the
-upload-related options in the `sentry {}` block are:
+The plugin id and the dependency wiring live in the
+[Gradle plugin docs](https://docs.sentry.io/platforms/android/configuration/gradle.md);
+the upload-related options in the `sentry {}` block are:
 
 ```groovy
 sentry {

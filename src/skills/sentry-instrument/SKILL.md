@@ -9,8 +9,8 @@ Get Sentry capturing a signal in an application — from a brand-new install (fi
 to adding any later signal to a project that already has Sentry.
 This is the single playbook for “wire Sentry up to capture X.”
 
-The bulk of the detail lives in references this skill pulls in: per-platform code under
-[`references/sdks/`](references/sdks/index.md), per-signal strategy under
+The bulk of the detail lives elsewhere: per-platform code in the Sentry docs (mapped in
+[`references/sdk-docs.md`](references/sdk-docs.md)), per-signal strategy under
 [`references/concepts/`](references/concepts/choosing-a-signal.md), project provisioning
 in [`references/new-project.md`](references/new-project.md), and the confirm-it-works
 loop in [`references/setup-verification.md`](references/setup-verification.md).
@@ -48,10 +48,10 @@ Run setup-ownership detection for **every scope**, including add-a-signal:
 
 - For **first-error** and **full setup**, run **Step 1 only** of
   [`references/first-error-setup.md`](references/first-error-setup.md).
-- For **add a signal**, read [`references/sdks/index.md`](references/sdks/index.md) and
-  detect and confirm the platform without reinstalling Sentry.
+- For **add a signal**, detect and confirm the platform from
+  [`references/sdk-docs.md`](references/sdk-docs.md) without reinstalling Sentry.
 
-Open the platform `index.md`; inspect package manifests and existing Sentry,
+Fetch the platform’s docs pages; inspect package manifests and existing Sentry,
 OpenTelemetry, and framework instrumentation.
 Before a fresh install or any AI-monitoring change, read
 [`references/concepts/ai-monitoring.md`](references/concepts/ai-monitoring.md) and apply
@@ -81,7 +81,8 @@ mobile.
 
 ## Step 3 — Wire the signal(s)
 
-Use the platform confirmed during Step 2 and its `references/sdks/<slug>/index.md`.
+Use the platform confirmed during Step 2 and its page from
+[`references/sdk-docs.md`](references/sdk-docs.md).
 
 For each signal the scope calls for:
 
@@ -92,13 +93,12 @@ For each signal the scope calls for:
    sample-rate philosophy, naming, and pitfalls — including
    [`references/concepts/ai-monitoring.md`](references/concepts/ai-monitoring.md) for
    the `gen_ai.*` model, conversation-ID rules, token/cost accounting, and the AI
-   sampling and PII strategy (the per-platform code then lives in that platform’s
-   `ai-monitoring.md`). **Skip this when the user already said “add tracing, you pick
-   the defaults”** — go straight to the HOW.
-2. **HOW.** Read the platform’s signal file — `references/sdks/<slug>/<signal>.md` (e.g.
-   `references/sdks/nextjs/tracing.md`) — and apply the code.
-   The platform `index.md` feature catalog links each supported signal and marks
-   unsupported ones.
+   sampling and PII strategy (the per-platform code then lives in that platform’s AI
+   monitoring docs). **Skip this when the user already said “add tracing, you pick the
+   defaults”** — go straight to the HOW.
+2. **HOW.** Fetch the platform’s docs page for the signal — follow its link from the
+   platform page, as [`references/sdk-docs.md`](references/sdk-docs.md) describes — and
+   apply the code.
 
 Signals this skill wires up: error monitoring, tracing/performance, profiling (requires
 tracing), logging, metrics, cron check-in code, session replay, user feedback, and

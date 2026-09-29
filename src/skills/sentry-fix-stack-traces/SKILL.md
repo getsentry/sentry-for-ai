@@ -46,12 +46,12 @@ uploading again won’t help.
 
 ## Step 2 — Identify the platform
 
-Read [`references/sdks/index.md`](references/sdks/index.md) to map the project to a
-platform slug and confirm it with the user.
-The platform’s own `references/sdks/<slug>/index.md` is where the build-tool
-configuration lives — bundler plugin options, the Gradle `sentry {}` block, the wizard
-invocation — so open it for the config side.
-
+Read [`references/sdk-docs.md`](references/sdk-docs.md) to map the project to a platform
+and confirm it with the user.
+The platform’s Sentry docs are where the build-tool configuration lives — bundler plugin
+options, the Gradle `sentry {}` block, the wizard invocation — so fetch them for the
+config side. The platform’s Sentry docs are where all the configuration options live,
+this includes SDK setup and build-tool configuration.
 ## Step 3 — Apply the artifact procedure
 
 Route from [`references/debug-artifacts/index.md`](references/debug-artifacts/index.md)

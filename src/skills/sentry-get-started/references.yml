@@ -1,10 +1,8 @@
 # New-project scope: sane defaults (errors + tracing).
 # Heavier signals (profiling, replay, logs, metrics) route to sentry-instrument.
 needs:
-  - sdks/index.md
-  - sdks/*/index.md
-  - sdks/*/error-monitoring.md
-  - sdks/*/tracing.md
+  # Platform detection + the Sentry docs for install, `init`, errors, and tracing.
+  - sdk-docs.md
   # Readable production stack traces, flagged during first-error setup.
   - debug-artifacts/*.md
   - auth-token.md
