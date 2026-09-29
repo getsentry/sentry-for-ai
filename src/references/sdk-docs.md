@@ -30,7 +30,7 @@ Core app on .NET, say), pick it from the
 | Cloudflare Workers and Pages | `wrangler.toml`, `wrangler.jsonc` | [Cloudflare](https://docs.sentry.io/platforms/javascript/guides/cloudflare.md) |
 | Dart | `pubspec.yaml` without Flutter | [Dart](https://docs.sentry.io/platforms/dart.md) |
 | Deno | `deno.json`, `deno.jsonc` | [Deno](https://docs.sentry.io/platforms/javascript/guides/deno.md) |
-| .NET | `*.csproj`, `*.sln` | [.NET](https://docs.sentry.io/platforms/dotnet.md) |
+| .NET | `*.csproj`, `*.sln`, `*.slnx` | [.NET](https://docs.sentry.io/platforms/dotnet.md) |
 | Elixir | `mix.exs` | [Elixir](https://docs.sentry.io/platforms/elixir.md) |
 | Flutter | `pubspec.yaml` with a `flutter` dependency | [Flutter](https://docs.sentry.io/platforms/dart/guides/flutter.md) |
 | Go | `go.mod` | [Go](https://docs.sentry.io/platforms/go.md) |
