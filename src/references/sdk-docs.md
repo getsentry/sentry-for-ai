@@ -39,7 +39,7 @@ Core app on .NET, say), pick it from the
 | Next.js | `next` | [Next.js](https://docs.sentry.io/platforms/javascript/guides/nextjs.md) |
 | Node.js | `package.json` without a more specific framework | [Node.js](https://docs.sentry.io/platforms/javascript/guides/node.md) |
 | PHP | `composer.json` | [PHP](https://docs.sentry.io/platforms/php.md) |
-| Python | `requirements.txt`, `pyproject.toml`, `Pipfile` | [Python](https://docs.sentry.io/platforms/python.md) |
+| Python | `requirements.txt`, `pyproject.toml`, `Pipfile`, `uv.lock` | [Python](https://docs.sentry.io/platforms/python.md) |
 | Rails | `rails` in `Gemfile` | [Rails](https://docs.sentry.io/platforms/ruby/guides/rails.md) |
 | React | `react` without a more specific framework | [React](https://docs.sentry.io/platforms/javascript/guides/react.md) |
 | React Native and Expo | `react-native`, `expo` | [React Native](https://docs.sentry.io/platforms/react-native.md) |
