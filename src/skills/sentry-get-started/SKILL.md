@@ -102,7 +102,7 @@ Lead with what Sentry is, then transition into orienting:
 > request, and exact line that caused it — so you spend less time reproducing bugs and
 > more time fixing them.
 > Beyond errors it does tracing & performance, logs, metrics, profiling, session replay,
-> cron monitoring, and AI/LLM monitoring — plus Seer, its AI debugging agent.
+> cron and uptime monitoring, and AI/LLM monitoring — plus Seer, its AI debugging agent.
 > Right here in your agent I can set most of this up in your code and confirm it’s
 > actually working end to end — and once it’s running, investigate errors, dig into
 > performance problems, read your logs, and pull whatever Sentry telemetry we need to
