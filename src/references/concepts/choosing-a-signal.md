@@ -15,6 +15,7 @@ Decide by the question you are trying to answer.
 | *What did the user actually see and do?* | **Session Replay** | A video-like reproduction of a frontend/mobile session around an error or UX problem. |
 | *What does the user think went wrong?* | **User Feedback** | A qualitative report from a human, linked to the surrounding context. |
 | *Did my scheduled job run on time?* | **Cron monitor** | Check-ins that detect missed, late, or failed recurring jobs. |
+| *Is my site or API up right now?* | **Uptime monitor** | Sentry requests a public URL on an interval and opens an issue when it stops answering. No SDK code. |
 
 Most of these signals carry the same **trace ID**, so once one surfaces a problem you
 can pivot to the others in the same request — the trace is the connective tissue that
@@ -55,6 +56,8 @@ ties errors, spans, logs, replays, and metrics together for debugging.
 - **Replay:** frontend (and mobile) only; high sampling on errors, low on normal
   sessions.
 - **Crons:** every scheduled job whose silent failure would hurt.
+- **Uptime:** every public endpoint whose downtime users would notice, once it is
+  deployed — usually one monitor per service, on a health route or the site root.
 
 When the user is unsure, ask what question they’re trying to answer and map it with the
 table above. When they say “set it up properly” / “you pick the defaults,” lean on the

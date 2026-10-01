@@ -97,7 +97,7 @@ Use `logicType: "all"`, `"any-short"`, or `"none"`.
 | `assigned_to` | `{"targetType": "Member", "targetIdentifier": 123}` | Issue assigned to target |
 | `level` | `{"level": 40, "match": "gte"}` | Event level (fatal=50, error=40, warning=30) |
 | `age_comparison` | `{"time": "hour", "value": 24, "comparisonType": "older"}` | Issue age |
-| `issue_category` | `{"value": 1}` | Category (1=Error, 6=Feedback) |
+| `issue_category` | `{"value": 1}` | Category (1=Error, 6=Feedback, 10=Outage: uptime and cron) |
 | `issue_occurrences` | `{"value": 100}` | Total occurrence count |
 
 **Interval options:** `"1min"`, `"5min"`, `"15min"`, `"1hr"`, `"1d"`, `"1w"`, `"30d"`

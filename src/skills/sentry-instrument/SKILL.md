@@ -1,6 +1,6 @@
 ---
 name: sentry-instrument
-description: Instrument an application with Sentry — detect the platform, install and initialize the SDK if needed, and wire up any signal — error monitoring, tracing/performance, logging, metrics, profiling, session replay, user feedback, cron check-ins, and AI/LLM monitoring (agent runs, token cost, and conversations for OpenAI, Anthropic, Vercel AI, LangChain, Google GenAI, Pydantic AI, Laravel AI, Eve, Flue, the Cloudflare Agents SDK, and Workers AI). Use to add Sentry to a project or to capture more than errors.
+description: Instrument an application with Sentry — detect the platform, install and initialize the SDK if needed, and wire up any signal — error monitoring, tracing/performance, logging, metrics, profiling, session replay, user feedback, cron check-ins, uptime monitors for the deployed app, and AI/LLM monitoring (agent runs, token cost, and conversations for OpenAI, Anthropic, Vercel AI, LangChain, Google GenAI, Pydantic AI, Laravel AI, Eve, Flue, the Cloudflare Agents SDK, and Workers AI). Use to add Sentry to a project or to capture more than errors.
 license: Apache-2.0
 ---
 # Sentry Instrument
@@ -35,7 +35,7 @@ Decide what you’re actually doing; it gates how much you run.
 | --- | --- | --- |
 | **First error** | Brand-new install, no Sentry yet | Detect setup ownership, then provision and install the selected base. Verify a real error when the path supports it; disclose any trace-only limitation. Defer *additional* signals (logging, profiling, replay, metrics, …). |
 | **Add a signal** | Sentry already installed; user wants one more signal | Preserve the base install, run setup-ownership detection, then wire only that signal. |
-| **Full setup** | “Set it up properly / sensible defaults” | Run the ownership-aware base setup, then propose the rest of a baseline (releases, source maps, and any signals that fit the app) and add what the user accepts. |
+| **Full setup** | “Set it up properly / sensible defaults” | Run the ownership-aware base setup, then propose the rest of a baseline (releases, source maps, an uptime monitor once the app has a production URL, and any signals that fit the app) and add what the user accepts. |
 
 Never over-instrument — wiring up logging, session replay, profiling, metrics, etc.
 upfront when the user only asked to get Sentry working is doing more than they asked
@@ -101,8 +101,12 @@ For each signal the scope calls for:
    apply the code.
 
 Signals this skill wires up: error monitoring, tracing/performance, profiling (requires
-tracing), logging, metrics, cron check-in code, session replay, user feedback, and
-AI/LLM monitoring.
+tracing), logging, metrics, cron check-in code, session replay, user feedback, uptime
+monitors, and AI/LLM monitoring.
+
+**Uptime has no SDK code.** Instead of fetching a docs page, read
+[`references/concepts/uptime.md`](references/concepts/uptime.md), confirm the production
+URL with the user, and create the monitor with the MCP’s `create_uptime_monitor`.
 
 For AI/LLM monitoring, keep input and output capture enabled by default because the
 Agent Tracing transcript and debugging workflow rely on prompts, responses, tool
@@ -204,6 +208,10 @@ auto-running them:
   Do not offer this JavaScript SDK option for Python, PHP, unknown SDKs, or
   framework-owned OTLP setups without a JavaScript Sentry SDK.
 - Ship it to production.
+- If the app already has a production host and no uptime monitor, offer one now so
+  Sentry notices when the app stops answering — don’t wait for a later deploy step.
+  [`references/concepts/uptime.md`](references/concepts/uptime.md) covers finding the
+  real URL (production events in Sentry first) and checking it before creating.
 - Add a signal — logging, session replay, or profiling are common next steps (tracing is
   already in the base `init`).
 - Harden the setup — readable stack traces (source maps for JS, debug symbols for

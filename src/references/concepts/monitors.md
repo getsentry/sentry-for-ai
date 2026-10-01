@@ -30,7 +30,7 @@ monitor can feed several alerts.
     a prior window, or **dynamic anomaly detection**. Often created straight from a
     saved Discover or Metrics-Explorer query.
   - **Cron Monitor** — a scheduled-job watch via check-ins ([`crons.md`](crons.md)).
-  - **Uptime Monitor** — periodic HTTP checks against a URL.
+  - **Uptime Monitor** — periodic HTTP checks against a URL ([`uptime.md`](uptime.md)).
   - **Mobile Builds Monitor** — app-size thresholds across iOS/Android builds.
 
 **Monitor config also sets issue attributes at creation** — priority, auto-resolve, and
@@ -61,18 +61,19 @@ An alert is **sources → triggers → filters → actions**:
 
 ## Coverage honesty
 
-Alert creation is automatable via Sentry’s workflow-engine API; several monitor types
-(uptime, dashboards) are heavier UI/API hand-offs today — be upfront about what the
-agent can do end-to-end vs.
-where it walks the user through the UI. The MCP is **read-only** here: it can inspect
-alert rules (`find_alert_rules`, `get_alert_rule`), cron monitors and their check-ins
-(`find_monitors`, `get_monitor_details`), and dashboards — useful for verifying after
-creation — but there is no create or update path for any of them, and uptime monitors
-have no MCP surface at all.
+Alert creation is automatable via Sentry’s workflow-engine API, and **uptime monitors
+can be created end-to-end through the MCP** (`create_uptime_monitor` and its siblings —
+see [`uptime.md`](uptime.md)). Other monitor types and dashboards are heavier UI/API
+hand-offs today — be upfront about what the agent can do end-to-end vs.
+where it walks the user through the UI. For those the MCP is **read-only**: it can
+inspect alert rules (`find_alert_rules`, `get_alert_rule`), cron monitors and their
+check-ins (`find_monitors`, `get_monitor_details`), and dashboards — useful for
+verifying after creation — but there is no create or update path for them.
 
 ## Related
 
 - [`crons.md`](crons.md)
+- [`uptime.md`](uptime.md)
 - [`metrics.md`](metrics.md)
 - [`releases.md`](releases.md)
 - [`search-query-language.md`](../search-query-language.md)

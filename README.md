@@ -129,8 +129,8 @@ library that the build hydrates into the skill:
 - **`src/references/sdks/<platform>/`** — per-platform install and per-signal code, one
   directory per supported platform.
 - **`src/references/concepts/`** — per-signal strategy: errors, tracing, logging,
-  metrics, profiling, session replay, user feedback, crons, releases, data scrubbing,
-  and choosing-a-signal.
+  metrics, profiling, session replay, user feedback, crons, uptime, releases, data
+  scrubbing, and choosing-a-signal.
 
 > Superseded per-SDK “wizard” skills are frozen under `skills-legacy/`, excluded from
 > the plugin build.
