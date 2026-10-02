@@ -1,8 +1,7 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { defineCommand, runMain } from "citty";
 import { buildHarnesses } from "./harnesses";
 import { captureAndFlush, initTelemetry } from "./instrument";
+import { description, version } from "./package-info";
 import { runInstaller, runRemover } from "./ui";
 
 // Initialize telemetry before citty parses arguments so that any startup errors
@@ -16,10 +15,6 @@ const telemetryEnabled =
   !process.argv.slice(2).includes("--no-telemetry");
 
 initTelemetry(telemetryEnabled);
-
-const { version, description } = JSON.parse(
-  readFileSync(join(__dirname, "../package.json"), "utf8"),
-) as { version: string; description: string };
 
 // Both subcommands take the same agent-selection flags.
 const agentSelectionArgs = {

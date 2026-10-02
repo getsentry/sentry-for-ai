@@ -1,5 +1,7 @@
-# Packs the installer tarball on release branches. Artifact name must be the
-# commit SHA -- that's what craft downloads at publish time.
+# Builds the installer release artifacts on release branches: the npm tarball
+# plus a standalone binary per platform. Craft downloads the artifact named
+# after the commit SHA at publish time, so every job uploads a release-*
+# artifact and the final job merges them under that name.
 name: Release Build
 
 on:
@@ -11,7 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  package:
+    name: npm package
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -36,6 +39,73 @@ jobs:
       - name: Upload release artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ${{ github.sha }}
+          name: release-npm-package
           path: "*.tgz"
           if-no-files-found: error
+
+  binary:
+    name: Binary (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Darwin builds run on macOS so the binaries get an ad-hoc signature
+          # (required to run on Apple Silicon); arm64 also gets fossilize's V8
+          # code cache, which is only generated for the host platform.
+          - { target: darwin-arm64, os: macos-latest, smoke: true }
+          - { target: darwin-x64, os: macos-latest }
+          - { target: linux-x64, os: ubuntu-latest, smoke: true }
+          - { target: linux-arm64, os: ubuntu-latest }
+          - { target: windows-x64, os: ubuntu-latest }
+          - { target: windows-arm64, os: ubuntu-latest }
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: pnpm/action-setup@a15d269cd4658e1107c09f1fabf4cbd7bd1f308a # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        env:
+          RELEASE_BUILD: "1"
+        run: pnpm --filter @sentry/agent-plugin build:binary --target ${{ matrix.target }}
+
+      - name: Smoke test
+        if: matrix.smoke
+        env:
+          SENTRY_DSN: ""
+        run: |
+          expected="$(jq -r .version packages/installer/package.json)"
+          actual="$(packages/installer/dist-bin/sentry-agent-plugin-${{ matrix.target }} --version)"
+          echo "$actual"
+          [[ "$actual" == *"$expected"* ]] || { echo "::error::expected version $expected"; exit 1; }
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-binary-${{ matrix.target }}
+          path: packages/installer/dist-bin/sentry-agent-plugin-*
+          if-no-files-found: error
+          # The .gz copies are already compressed; the raw binaries compress
+          # well but are uploaded once and downloaded once, so favor speed.
+          compression-level: 1
+
+  artifacts:
+    name: Merge release artifacts
+    needs: [package, binary]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/upload-artifact/merge@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ github.sha }}
+          pattern: release-*
+          compression-level: 1
+          delete-merged: true
