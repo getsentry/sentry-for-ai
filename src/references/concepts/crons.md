@@ -30,15 +30,20 @@ a backup — and “it didn’t run” is as bad as “it crashed.”
 
 ## Setup essentials
 
-- **Monitor config is data** (server-side): the schedule (crontab — 5-field only — or
-  interval), the **`timezone`**, **`checkin_margin`** (how late counts as missed), and
-  **`max_runtime`** (how long counts as hung).
+- **Monitor config** describes when the job should run: the schedule (crontab — 5-field
+  only — or interval), the **`timezone`**, **`checkin_margin`** (how late counts as
+  missed), and **`max_runtime`** (how long counts as hung).
   Set the last two to the job’s real timing — tight enough to catch a hang, loose enough
   to avoid false alarms.
+- **Send the config with the check-in** so Sentry creates the monitor on the first run.
+  The SDK check-in APIs, HTTP check-ins, and `sentry-cli` all accept it (the upsert
+  option); use the form on the platform’s crons docs page that sends it.
+  **A check-in for a slug that has no monitor and carries no config is dropped**, so
+  config-less check-ins only work for a monitor someone already created in Sentry.
 - **Check-ins are code** (SDK-side).
-  Paths: the SDK **`withMonitor` / decorator** wrapper (cleanest when an SDK is present
-  — sends both start and outcome), an **HTTP check-in** (any language, ideal for shell
-  crontabs), or **`sentry-cli`** wrapping a shell command.
+  Paths: the SDK **`withMonitor` / decorator** wrapper with the monitor config (cleanest
+  when an SDK is present — sends both start and outcome), an **HTTP check-in** (any
+  language, ideal for shell crontabs), or **`sentry-cli`** wrapping a shell command.
   Wrap the **whole job** so both success and failure report; a bare heartbeat (single
   `ok`/`error`) detects *missed* but not *`max_runtime`* timeouts.
 - **Use a stable, descriptive slug** (`nightly-invoice-sync`, not `job-1`) — it’s the
