@@ -102,7 +102,7 @@ Lead with what Sentry is, then transition into orienting:
 > request, and exact line that caused it — so you spend less time reproducing bugs and
 > more time fixing them.
 > Beyond errors it does tracing & performance, logs, metrics, profiling, session replay,
-> cron monitoring, and AI/LLM monitoring — plus Seer, its AI debugging agent.
+> cron and uptime monitoring, and AI/LLM monitoring — plus Seer, its AI debugging agent.
 > Right here in your agent I can set most of this up in your code and confirm it’s
 > actually working end to end — and once it’s running, investigate errors, dig into
 > performance problems, read your logs, and pull whatever Sentry telemetry we need to
@@ -169,8 +169,8 @@ flag it. You’ll also want to immediately read
 and the baseline-signal context in hand before you start.
 
 When it’s done, surface other options — chiefly the **`sentry-instrument`** skill to add
-more telemetry (logging, profiling, session replay, crons, …), and releases so issues
-tie to the deploy that introduced them.
+more telemetry (logging, profiling, session replay, crons, uptime, …), and releases so
+issues tie to the deploy that introduced them.
 As in the existing-user path, only name a skill you’ve confirmed is available in your
 harness’s skill list; otherwise offer the docs fallback.
 Don’t auto-run them.
@@ -192,8 +192,8 @@ to the honest docs offer below.
 Present the relevant options with your interactive prompt; the user can also just say
 what they want:
 
-- **Add a signal** — tracing, logging, metrics, crons, profiling, session replay, user
-  feedback, AI/LLM monitoring.
+- **Add a signal** — tracing, logging, metrics, crons, uptime, profiling, session
+  replay, user feedback, AI/LLM monitoring.
   → the **`sentry-instrument`** skill.
 - **Set up Sentry properly** (recommended defaults across several signals).
   → the **`sentry-instrument`** skill.

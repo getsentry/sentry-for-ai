@@ -47,6 +47,8 @@ So exercise the real code path, not a standalone script:
   - **Metrics** → exercise the code that emits the metric.
   - **Crons** → find a way to invoke the job so the cron instrumentation triggers (its
     check-in fires).
+  - **Uptime** → nothing to trigger: after creating the monitor, wait for its first
+    check and confirm it passed with `get_uptime_monitor_details`.
 
 **Decide who boots the app — do not assume.** If you can tell how to start it, offer to
 start it and trigger the path yourself.
