@@ -46,9 +46,12 @@ custom tag), and the raw search `example error`.
   `message://^Timeout after \d+ms//`. Negate as `!key://pattern//`. Patterns match
   anywhere unless anchored with `^`/`$`, are case sensitive unless they start with
   `(?i)`, and are limited to 64 characters.
-  Spaces and parentheses inside a pattern need no quotes; it ends at the first `//`
-  followed by a space, `)`, or the end of the query.
-  There’s no list form, so use `|` inside the pattern instead.
+  RE2 has no lookarounds or backreferences, so pair a match with a negated one instead:
+  `message://Timeout// !message://retrying//`. Spaces and parentheses inside a pattern
+  need no quotes; it ends at the first `//` followed by a space, `)`, or the end of the
+  query, so write a literal `//` as `\/\/`. There’s no list form, so use `|` inside the
+  pattern instead. `project`, `release`, and their dotted variants (`project.id`,
+  `release.version`, …) reject patterns.
 - **`has:`** — field/tag exists regardless of value: `has:user`. Negate as `!has:`.
 - **`is:`** — issue **state** (see catalogs below), on both the Issues stream and the
   errors dataset; not usable with value lists.
@@ -237,4 +240,5 @@ rather than overriding it — `search_issues` defaults to 30 days.
 - Expecting `OR`/`AND` in the basic Issues search (only Discover/Dashboards/Monitors).
 - Quoting a regex: `message:"//timeout//"` is a literal string, not a pattern.
   Leave `key://pattern//` unquoted, and only use it on logs — other datasets read it as
-  a literal too.
+  a literal too. The MCP’s rewriter isn’t told about this syntax, so confirm in
+  `## Executed Search` that the pattern ran unquoted and unchanged.
