@@ -41,6 +41,14 @@ custom tag), and the raw search `example error`.
   Not allowed with `is:` — a list desugars to `OR`, which the Issues search rejects.
 - **Wildcards:** `*` matches any characters — `browser:"Safari 11*"`,
   `!message:"*Timeout"`.
+- **Regular expressions (logs only):** `key://pattern//` matches a string attribute
+  against an [RE2](https://github.com/google/re2/wiki/Syntax) pattern —
+  `message://^Timeout after \d+ms//`. Negate as `!key://pattern//`. Patterns match
+  anywhere unless anchored with `^`/`$`, are case sensitive unless they start with
+  `(?i)`, and are limited to 64 characters.
+  Spaces and parentheses inside a pattern need no quotes; it ends at the first `//`
+  followed by a space, `)`, or the end of the query.
+  There’s no list form, so use `|` inside the pattern instead.
 - **`has:`** — field/tag exists regardless of value: `has:user`. Negate as `!has:`.
 - **`is:`** — issue **state** (see catalogs below), on both the Issues stream and the
   errors dataset; not usable with value lists.
@@ -166,7 +174,10 @@ Trace linking: `trace`, `trace.span`, `trace.parent_span`. Time bucketing:
 Logs search on the log `message`, `severity` (`level` is the errors/issues key),
 `timestamp`, the trace it belongs to (`trace`), and any **structured attributes** you
 attached (searched as keys).
-Plus the common context keys (`release`, `environment`, `project`).
+Plus the common context keys (`release`, `environment`, `project`). Reach for a
+[regular expression](#rules) when a wildcard can’t express the match — number shapes,
+alternation, anchoring, or character classes:
+`message://(ConnectionReset|ReadTimeout)Error//`, `!message://^job \d+ completed$//`.
 
 ### Session Replay
 
@@ -224,3 +235,6 @@ rather than overriding it — `search_issues` defaults to 30 days.
   result set isn’t evidence of no data; check `## Executed Search`.
 - Using `:` instead of a comparison operator on a numeric/duration/date field.
 - Expecting `OR`/`AND` in the basic Issues search (only Discover/Dashboards/Monitors).
+- Quoting a regex: `message:"//timeout//"` is a literal string, not a pattern.
+  Leave `key://pattern//` unquoted, and only use it on logs — other datasets read it as
+  a literal too.
