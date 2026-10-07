@@ -16,13 +16,12 @@ machine signals from the human side — and it surfaces as its own issue categor
 
 ## Setup essentials — three mechanisms
 
-- **Feedback widget** (browser only) — an embeddable, auto-injectable button/form with
-  an optional screenshot.
-  The default for web.
-- **`captureFeedback` API** — programmatic; the cross-platform path
-  (mobile/desktop/backend) and when you want control over your own UI.
-- **Crash-report modal** — prompts for detail right after an error fires; the practical
-  option where there’s no persistent UI to host a widget.
+- **Feedback widget** (browser only) — the default for web.
+- **`captureFeedback` API** — the cross-platform path, and for your own UI.
+- **Crash-report modal** — where there is no persistent UI to host a widget.
+
+See [User Feedback](https://docs.sentry.io/product/user-feedback/) and
+[User Feedback setup](https://docs.sentry.io/platforms/javascript/user-feedback/).
 
 Decide required fields and screenshots up front (more fields = fewer but richer
 submissions), **route feedback somewhere actionable** (Slack / Jira / an alert) so it
