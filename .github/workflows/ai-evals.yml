@@ -97,5 +97,5 @@ jobs:
           suite: ${{ matrix.run.suite }}
           marker: ${{ matrix.run.marker }}
           sentry-for-ai-path: sentry-for-ai
-          openrouter-api-key: ${{ secrets.OPENROUTER_API_KEY }}
+          openrouter-api-key: ${{ secrets.AI_EVALS_OPENROUTER_API_KEY }}
           evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
