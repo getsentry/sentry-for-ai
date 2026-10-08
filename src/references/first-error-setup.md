@@ -60,9 +60,10 @@ Either way you come back with the DSN to use in `init`.
 
 Following the platform’s Sentry docs, install the SDK and write `init` using the DSN
 from Step 2. Take the docs’ **recommended default setup** as written — in practice
-errors and tracing.
-Don’t ask the user which signals to enable, and don’t pare it back to
-errors-only; the docs’ default `init` is the best-practice baseline for a new project.
+errors and tracing. When the platform’s row in [`sdk-docs.md`](sdk-docs.md) lists
+**Default products**, set up exactly those.
+Don’t ask the user which signals to enable, and don’t pare it back to errors-only; the
+docs’ default `init` is the best-practice baseline for a new project.
 
 ## Step 4 — Verify end to end
 
