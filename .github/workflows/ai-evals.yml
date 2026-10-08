@@ -2,8 +2,8 @@
 #
 # Label a PR `ai-evals:<suite>` to run a suite, or `ai-evals:<suite>:<marker>` to run
 # only its tests with that pytest marker, e.g. `ai-evals:sentry-get-started:products`.
-# Each label runs once against the skills built at the PR head. A new push reruns every
-# eval label still on the PR.
+# Each label runs against skills built at both the PR base and head, using the same
+# eval harness commit. A new push reruns every eval label still on the PR.
 #
 # sentry-for-ai-evals is internal, so the jobs check it out with the readonly bot's
 # token and use its actions from that path. Fork PRs get no secrets, so they're skipped.
@@ -34,6 +34,7 @@ jobs:
     outputs:
       runs: ${{ steps.plan.outputs.runs }}
       count: ${{ steps.plan.outputs.count }}
+      evals-sha: ${{ steps.evals.outputs.sha }}
     steps:
       - name: Get sentry-for-ai-evals token
         id: token
@@ -54,13 +55,27 @@ jobs:
       - id: plan
         uses: ./sentry-for-ai-evals/.github/actions/plan-evals
 
+      # An older action ignores the revision input and attributes both runs to head.
+      - name: Check baseline support
+        if: steps.plan.outputs.count != '0'
+        shell: bash
+        run: |
+          if ! grep -q '^  revision:' sentry-for-ai-evals/.github/actions/run-evals/action.yml; then
+            echo "::error::Merge the base/head support in sentry-for-ai-evals before running this workflow"
+            exit 1
+          fi
+
+      - id: evals
+        shell: bash
+        run: echo "sha=$(git -C sentry-for-ai-evals rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   eval:
     needs: plan
     if: needs.plan.outputs.count != '0'
-    name: ${{ matrix.run.label }}
-    # Per PR and label, so a push cancels the same run still going.
+    name: ${{ matrix.run.label }} (${{ matrix.revision }})
+    # Per PR, label and revision, so base and head don't cancel each other.
     concurrency:
-      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.run.label }}
+      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.run.label }}-${{ matrix.revision }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -70,6 +85,7 @@ jobs:
       fail-fast: false
       matrix:
         run: ${{ fromJSON(needs.plan.outputs.runs) }}
+        revision: [base, head]
     steps:
       - name: Get sentry-for-ai-evals token
         id: token
@@ -84,13 +100,14 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: getsentry/sentry-for-ai-evals
+          ref: ${{ needs.plan.outputs.evals-sha }}
           token: ${{ steps.token.outputs.token }}
           path: sentry-for-ai-evals
           persist-credentials: false
 
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ matrix.revision == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
           path: sentry-for-ai
           persist-credentials: false
 
@@ -98,7 +115,8 @@ jobs:
         with:
           suite: ${{ matrix.run.suite }}
           marker: ${{ matrix.run.marker }}
+          revision: ${{ matrix.revision }}
           sentry-for-ai-path: sentry-for-ai
-          artifact-name: ai-evals-${{ matrix.run.suite }}-${{ matrix.run.marker || 'all' }}
+          artifact-name: ai-evals-${{ matrix.run.suite }}-${{ matrix.run.marker || 'all' }}-${{ matrix.revision }}
           openrouter-api-key: ${{ secrets.AI_EVALS_OPENROUTER_API_KEY }}
           evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
