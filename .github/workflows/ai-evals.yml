@@ -2,13 +2,15 @@
 #
 # Label a PR `ai-evals:<suite>` to run a suite, or `ai-evals:<suite>:<marker>` to run
 # only its tests with that pytest marker, e.g. `ai-evals:sentry-get-started:products`.
-# Each label runs once against the skills built at the PR head, and the results go to
-# evals.sentry.dev. A new push reruns every eval label still on the PR.
+# Each label runs once against the skills built at the PR head. A new push reruns every
+# eval label still on the PR.
 #
 # sentry-for-ai-evals is internal, so the jobs check it out with the readonly bot's
 # token and use its actions from that path. Fork PRs get no secrets, so they're skipped.
-# The logs leave out eval content, and since this repo is public the jobs keep no
-# artifact; the results are on evals.sentry.dev.
+# The logs and each run's outputs artifact show the eval in full, and since this repo is
+# public anyone can read them. Neither holds a credential: only a proxy in the eval
+# container has the OpenRouter key, and the run fails rather than keep outputs that
+# hold a key. The products tests' results also go to evals.sentry.dev.
 
 name: AI Evals
 
@@ -97,5 +99,6 @@ jobs:
           suite: ${{ matrix.run.suite }}
           marker: ${{ matrix.run.marker }}
           sentry-for-ai-path: sentry-for-ai
+          artifact-name: ai-evals-${{ matrix.run.suite }}-${{ matrix.run.marker || 'all' }}
           openrouter-api-key: ${{ secrets.AI_EVALS_OPENROUTER_API_KEY }}
           evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
