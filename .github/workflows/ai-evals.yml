@@ -1,0 +1,101 @@
+# Runs the getsentry/sentry-for-ai-evals suites against this PR's skills.
+#
+# Label a PR `ai-evals:<suite>` to run a suite, or `ai-evals:<suite>:<marker>` to run
+# only its tests with that pytest marker, e.g. `ai-evals:sentry-get-started:products`.
+# Each label runs once against the skills built at the PR head, and the results go to
+# evals.sentry.dev. A new push reruns every eval label still on the PR.
+#
+# sentry-for-ai-evals is internal, so the jobs check it out with the readonly bot's
+# token and use its actions from that path. Fork PRs get no secrets, so they're skipped.
+# The logs leave out eval content, and since this repo is public the jobs keep no
+# artifact; the results are on evals.sentry.dev.
+
+name: AI Evals
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+
+permissions: {}
+
+jobs:
+  plan:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository && (
+        (github.event.action == 'labeled' && startsWith(github.event.label.name, 'ai-evals:')) ||
+        (github.event.action == 'synchronize' && contains(join(github.event.pull_request.labels.*.name, ','), 'ai-evals:'))
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      runs: ${{ steps.plan.outputs.runs }}
+      count: ${{ steps.plan.outputs.count }}
+    steps:
+      - name: Get sentry-for-ai-evals token
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.SENTRY_READONLY_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.SENTRY_READONLYBOT_PRIVATE_KEY }}
+          repositories: sentry-for-ai-evals
+          permission-contents: read
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: getsentry/sentry-for-ai-evals
+          token: ${{ steps.token.outputs.token }}
+          path: sentry-for-ai-evals
+          persist-credentials: false
+
+      - id: plan
+        uses: ./sentry-for-ai-evals/.github/actions/plan-evals
+
+  eval:
+    needs: plan
+    if: needs.plan.outputs.count != '0'
+    name: ${{ matrix.run.label }}
+    # Per PR and label, so a push cancels the same run still going.
+    concurrency:
+      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.run.label }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        run: ${{ fromJSON(needs.plan.outputs.runs) }}
+    steps:
+      - name: Get sentry-for-ai-evals token
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.SENTRY_READONLY_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.SENTRY_READONLYBOT_PRIVATE_KEY }}
+          repositories: sentry-for-ai-evals
+          permission-contents: read
+
+      # Side by side, so the evals don't copy this repo into their image.
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: getsentry/sentry-for-ai-evals
+          token: ${{ steps.token.outputs.token }}
+          path: sentry-for-ai-evals
+          persist-credentials: false
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: sentry-for-ai
+          persist-credentials: false
+
+      - uses: ./sentry-for-ai-evals/.github/actions/run-evals
+        with:
+          suite: ${{ matrix.run.suite }}
+          marker: ${{ matrix.run.marker }}
+          sentry-for-ai-path: sentry-for-ai
+          openrouter-api-key: ${{ secrets.OPENROUTER_API_KEY }}
+          evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
