@@ -68,6 +68,7 @@ jobs:
           fi
 
       - id: evals
+        if: steps.plan.outputs.count != '0'
         shell: bash
         run: echo "sha=$(git -C sentry-for-ai-evals rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
