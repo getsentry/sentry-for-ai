@@ -2,8 +2,8 @@
 #
 # Label a PR `ai-evals:<suite>` to run a suite, or `ai-evals:<suite>:<marker>` to run
 # only its tests with that pytest marker, e.g. `ai-evals:sentry-get-started:products`.
-# Each label runs against skills built at both the PR base and head, using the same
-# eval harness commit. A new push reruns every eval label still on the PR.
+# Each label runs against skills built at both the PR's merge-base and head, using the
+# same eval harness commit. A new push reruns every eval label still on the PR.
 #
 # sentry-for-ai-evals is internal, so the jobs check it out with the readonly bot's
 # token and use its actions from that path. Fork PRs get no secrets, so they're skipped.
@@ -35,6 +35,7 @@ jobs:
       runs: ${{ steps.plan.outputs.runs }}
       count: ${{ steps.plan.outputs.count }}
       evals-sha: ${{ steps.evals.outputs.sha }}
+      base-sha: ${{ steps.base.outputs.sha }}
     steps:
       - name: Get sentry-for-ai-evals token
         id: token
@@ -55,12 +56,13 @@ jobs:
       - id: plan
         uses: ./sentry-for-ai-evals/.github/actions/plan-evals
 
-      # An older action ignores the revision input and attributes both runs to head.
+      # An older action ignores the revision and base-sha inputs, so it attributes both runs
+      # to head or pairs them by a commit the base side didn't run.
       - name: Check baseline support
         if: steps.plan.outputs.count != '0'
         shell: bash
         run: |
-          if ! grep -q '^  revision:' sentry-for-ai-evals/.github/actions/run-evals/action.yml; then
+          if ! grep -q '^  base-sha:' sentry-for-ai-evals/.github/actions/run-evals/action.yml; then
             echo "::error::Merge the base/head support in sentry-for-ai-evals before running this workflow"
             exit 1
           fi
@@ -68,6 +70,19 @@ jobs:
       - id: evals
         shell: bash
         run: echo "sha=$(git -C sentry-for-ai-evals rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      # The base side runs where the PR branched. The event's base SHA is the base branch's
+      # tip, which can hold commits the head doesn't, and they'd count against the head.
+      - id: base
+        if: steps.plan.outputs.count != '0'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          sha="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE_SHA...$HEAD_SHA" --jq .merge_base_commit.sha)"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
   eval:
     needs: plan
@@ -107,7 +122,7 @@ jobs:
 
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ matrix.revision == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
+          ref: ${{ matrix.revision == 'base' && needs.plan.outputs.base-sha || github.event.pull_request.head.sha }}
           path: sentry-for-ai
           persist-credentials: false
 
@@ -116,6 +131,7 @@ jobs:
           suite: ${{ matrix.run.suite }}
           marker: ${{ matrix.run.marker }}
           revision: ${{ matrix.revision }}
+          base-sha: ${{ needs.plan.outputs.base-sha }}
           sentry-for-ai-path: sentry-for-ai
           artifact-name: ai-evals-${{ matrix.run.suite }}-${{ matrix.run.marker || 'all' }}-${{ matrix.revision }}
           openrouter-api-key: ${{ secrets.AI_EVALS_OPENROUTER_API_KEY }}
