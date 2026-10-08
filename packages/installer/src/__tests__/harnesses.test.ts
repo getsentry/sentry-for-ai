@@ -54,13 +54,20 @@ describe("claude harness", () => {
 
   it("reports installed when the listing includes our plugin id", async () => {
     const harness = createClaude(
-      fakeSystem({ run: () => claudeList(["sentry@claude-plugins-official"]) }),
+      fakeSystem({ run: () => claudeList(["sentry@sentry-plugin-marketplace"]) }),
     );
     expect(await harness.isInstalled()).toBe(true);
   });
 
   it("reports not installed when the listing lacks our plugin id", async () => {
     const harness = createClaude(fakeSystem({ run: () => claudeList(["other@somewhere"]) }));
+    expect(await harness.isInstalled()).toBe(false);
+  });
+
+  it("reports not installed when only the official marketplace copy is present", async () => {
+    const harness = createClaude(
+      fakeSystem({ run: () => claudeList(["sentry@claude-plugins-official"]) }),
+    );
     expect(await harness.isInstalled()).toBe(false);
   });
 
@@ -80,9 +87,11 @@ describe("claude harness", () => {
 
     expect(outcome).toMatchObject({
       kind: "done",
-      command: "claude plugin install sentry@claude-plugins-official",
+      command: "claude plugin install sentry@sentry-plugin-marketplace",
     });
-    expect(system.run).toHaveBeenCalledWith("claude plugin install sentry@claude-plugins-official");
+    expect(system.run).toHaveBeenCalledWith(
+      "claude plugin install sentry@sentry-plugin-marketplace",
+    );
   });
 
   it("updates in place via the update command", async () => {
@@ -91,9 +100,11 @@ describe("claude harness", () => {
 
     expect(outcome).toMatchObject({
       kind: "done",
-      command: "claude plugin update sentry@claude-plugins-official",
+      command: "claude plugin update sentry@sentry-plugin-marketplace",
     });
-    expect(system.run).toHaveBeenCalledWith("claude plugin update sentry@claude-plugins-official");
+    expect(system.run).toHaveBeenCalledWith(
+      "claude plugin update sentry@sentry-plugin-marketplace",
+    );
   });
 
   it("authenticates the plugin-provided MCP with terminal input", async () => {
@@ -110,24 +121,24 @@ describe("claude harness", () => {
     );
   });
 
-  it("adds the official marketplace when it is not registered", async () => {
+  it("adds the Sentry marketplace when it is not registered", async () => {
     const system = fakeSystem({
       run: (cmd) => (cmd.includes("marketplace list") ? claudeMarketplaces([]) : ok),
     });
     await createClaude(system).install();
     expect(system.run).toHaveBeenCalledWith(
-      "claude plugin marketplace add anthropics/claude-plugins-official",
+      "claude plugin marketplace add getsentry/plugin-claude",
     );
   });
 
   it("refreshes the marketplace when it is already registered", async () => {
     const system = fakeSystem({
       run: (cmd) =>
-        cmd.includes("marketplace list") ? claudeMarketplaces(["claude-plugins-official"]) : ok,
+        cmd.includes("marketplace list") ? claudeMarketplaces(["sentry-plugin-marketplace"]) : ok,
     });
     await createClaude(system).update();
     expect(system.run).toHaveBeenCalledWith(
-      "claude plugin marketplace update claude-plugins-official",
+      "claude plugin marketplace update sentry-plugin-marketplace",
     );
   });
 
@@ -136,7 +147,7 @@ describe("claude harness", () => {
     const sink = {} as NodeJS.WritableStream;
     await createClaude(system).install(sink);
     expect(system.run).toHaveBeenCalledWith(
-      "claude plugin install sentry@claude-plugins-official",
+      "claude plugin install sentry@sentry-plugin-marketplace",
       sink,
     );
   });
@@ -147,29 +158,29 @@ describe("claude harness", () => {
 
     expect(outcome).toMatchObject({
       kind: "done",
-      command: "claude plugin uninstall sentry@claude-plugins-official",
+      command: "claude plugin uninstall sentry@sentry-plugin-marketplace",
     });
     expect(system.run).toHaveBeenCalledWith(
-      "claude plugin uninstall sentry@claude-plugins-official",
+      "claude plugin uninstall sentry@sentry-plugin-marketplace",
     );
     expect(system.run).not.toHaveBeenCalledWith(expect.stringContaining("marketplace remove"));
   });
 
-  it("removes the copy installed from our own marketplace", async () => {
+  it("removes the copy installed from the official marketplace", async () => {
     const system = fakeSystem({
-      run: (cmd) => (isList(cmd) ? claudeList(["sentry@sentry-plugin-marketplace"]) : ok),
+      run: (cmd) => (isList(cmd) ? claudeList(["sentry@claude-plugins-official"]) : ok),
     });
     const removed = await createClaude(system).cleanup!();
 
     expect(system.run).toHaveBeenCalledWith(
-      "claude plugin uninstall sentry@sentry-plugin-marketplace",
+      "claude plugin uninstall sentry@claude-plugins-official",
     );
-    expect(removed).toContain("sentry@sentry-plugin-marketplace");
+    expect(removed).toContain("sentry@claude-plugins-official");
   });
 
-  it("leaves cleanup a no-op when only the official plugin is installed", async () => {
+  it("leaves cleanup a no-op when only our plugin is installed", async () => {
     const system = fakeSystem({
-      run: (cmd) => (isList(cmd) ? claudeList(["sentry@claude-plugins-official"]) : ok),
+      run: (cmd) => (isList(cmd) ? claudeList(["sentry@sentry-plugin-marketplace"]) : ok),
     });
 
     expect(await createClaude(system).cleanup!()).toBeNull();

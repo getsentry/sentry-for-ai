@@ -2,20 +2,17 @@ import type { OutputSink, SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
 import { detectOnPath, runCommand, runLoginCommand, runJson } from "./shell";
 
-const MARKETPLACE = "claude-plugins-official";
-const MARKETPLACE_SOURCE = "anthropics/claude-plugins-official";
+const MARKETPLACE = "sentry-plugin-marketplace";
+const MARKETPLACE_SOURCE = "getsentry/plugin-claude";
 const PLUGIN_ID = `sentry@${MARKETPLACE}`;
 const INSTALL_COMMAND = `claude plugin install ${PLUGIN_ID}`;
 const UPDATE_COMMAND = `claude plugin update ${PLUGIN_ID}`;
 const UNINSTALL_COMMAND = `claude plugin uninstall ${PLUGIN_ID}`;
 const AUTHENTICATE_COMMAND = "claude mcp login plugin:sentry:sentry";
 
-// Our plugin reaches Claude two ways: Anthropic's official catalog above, which is
-// what the installer uses, and our own catalog under the marketplace name it
-// declares. Both resolve to the same repository, so a machine carrying both runs
-// two plugins serving the same skills.
-const OUR_MARKETPLACE = "sentry-plugin-marketplace";
-const OUR_PLUGIN_ID = `sentry@${OUR_MARKETPLACE}`;
+// Remove the official catalog's copy so only our marketplace's plugin serves
+// Sentry's skills and MCP server.
+const LEGACY_PLUGIN_ID = "sentry@claude-plugins-official";
 
 // `claude plugin list --json` emits an array of installed plugins. We only care
 // about the marketplace-qualified id of each entry.
@@ -39,9 +36,8 @@ async function isMarketplaceRegistered(system: SystemDeps): Promise<boolean> {
   return Array.isArray(list) && list.some((entry) => entry.name === MARKETPLACE);
 }
 
-// A fresh CLI has no marketplaces registered, so register the official one if it
-// is missing; otherwise refresh its index so the plugin resolves. Required by
-// both install and update.
+// Register Sentry’s marketplace if missing; otherwise refresh its index so the
+// plugin resolves. Required by both install and update.
 async function ensureMarketplace(system: SystemDeps, output?: OutputSink): Promise<void> {
   const registered = await isMarketplaceRegistered(system);
   await runCommand(
@@ -65,12 +61,12 @@ export function createClaude(system: SystemDeps): Harness {
     canInstall: async () => ({ ok: true }),
 
     cleanup: async (output) => {
-      if (!(await hasPlugin(system, OUR_PLUGIN_ID))) {
+      if (!(await hasPlugin(system, LEGACY_PLUGIN_ID))) {
         return null;
       }
 
-      await runCommand(system, `claude plugin uninstall ${OUR_PLUGIN_ID}`, output);
-      return `Removed conflicting plugin ${OUR_PLUGIN_ID}`;
+      await runCommand(system, `claude plugin uninstall ${LEGACY_PLUGIN_ID}`, output);
+      return `Removed conflicting plugin ${LEGACY_PLUGIN_ID}`;
     },
 
     install: async (output): Promise<InstallOutcome> => {
