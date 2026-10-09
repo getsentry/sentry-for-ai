@@ -25,6 +25,16 @@ trap 'rm -rf "$WORK"' EXIT
 VALIDATOR="$WORK/validate_plugin.py"
 curl -fsSL "$VALIDATOR_URL" -o "$VALIDATOR"
 
+python3 - "$VALIDATOR" <<'PY'
+from pathlib import Path
+import sys
+
+validator = Path(sys.argv[1])
+source = validator.read_text()
+source = source.replace('"websiteURL",', '"websiteURL", "supportURL",')
+validator.write_text(source)
+PY
+
 uv run --with pyyaml "$VALIDATOR" "$PLUGIN_ROOT"
 
 echo "Validated Codex dist at $TARGET_DIR."

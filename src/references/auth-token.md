@@ -21,6 +21,12 @@ Say so if you find one in use.
 
 ## Where it goes
 
+Have the user configure the token directly in their local environment or CI secret
+store.
+Check only whether it is present; keep its value out of chat, tool output, command
+arguments, and checked-in files.
+Use the minimum permissions needed for the selected upload or release operation.
+
 Every tool reads the same environment variable, so set it once per environment:
 
 ```bash

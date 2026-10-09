@@ -38,6 +38,14 @@ Two facts that change the answer, worth establishing early:
   files after the fact.
   Source maps have no equivalent.
 
+## Upload scope
+
+Confirm the intended Sentry organization, project, and upload directory before
+uploading. Source maps and debug files can include source code and local paths; explain
+what the selected tool sends and ensure that upload is within the user’s requested
+scope. Restrict uploads to the selected build’s artifacts.
+Keep generated source maps out of publicly served assets.
+
 ## Platform routing
 
 | Platform | Family | Read |

@@ -83,7 +83,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO
 
       - name: Install sentry-cli
-        run: curl -sL https://sentry.io/get-cli/ | bash
+        run: brew install getsentry/tools/sentry-cli
 
       - name: Upload snapshots to Sentry
         run: |

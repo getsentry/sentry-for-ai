@@ -14,12 +14,13 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Sentry",
-    "shortDescription": "Set up Sentry, debug production issues, and configure monitoring.",
-    "longDescription": "Teach your AI coding assistant how to use Sentry: SDK setup wizards for any platform, production issue debugging via the Sentry MCP server, code review with Sentry context, and monitoring configuration.",
+    "shortDescription": "Set up Sentry and debug errors",
+    "longDescription": "Set up Sentry SDKs, debug production errors with Sentry issue and event data, and configure monitoring, alerts, releases, and readable stack traces in your development projects.",
     "developerName": "Sentry",
-    "category": "Productivity",
+    "category": "Developer Tools",
     "capabilities": ["Read", "Write"],
     "websiteURL": "https://sentry.io",
+    "supportURL": "https://sentry.help",
     "privacyPolicyURL": "https://sentry.io/privacy/",
     "termsOfServiceURL": "https://sentry.io/terms/",
     "defaultPrompt": [
