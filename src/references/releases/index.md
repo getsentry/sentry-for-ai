@@ -83,6 +83,12 @@ The `release` and `environment` `init` options, the bundler-plugin block, and th
 Use them for where the options sit; use this group for what it doesn’t cover — naming,
 the CI pipeline, commit association, and the failure modes.
 
+## While debugging
+
+Use the release to pin the exact code that ran when an issue was produced.
+Diff against that revision, not `main`. Suspect commits on the issue are the fastest
+“what changed”.
+
 ## Confirming it works
 
 A release setup is proven by **shipping one**: run the pipeline through CI, then confirm

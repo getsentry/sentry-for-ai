@@ -75,5 +75,5 @@ verifying after creation — but there is no create or update path for them.
 - [`crons.md`](crons.md)
 - [`uptime.md`](uptime.md)
 - [`metrics.md`](metrics.md)
-- [`releases.md`](releases.md)
+- [Releases](https://docs.sentry.io/product/releases/)
 - [`search-query-language.md`](../search-query-language.md)

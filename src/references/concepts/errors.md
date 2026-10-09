@@ -1,23 +1,12 @@
 # Error monitoring
 
-Unhandled exceptions and crashes — plus anything you send explicitly with
-`captureException` — grouped into **issues** with the context needed to fix them: a
-stack trace, breadcrumbs (the events leading up to the error), and request/user/release
-metadata. An issue is the unit you triage, assign, resolve, and link a fix to.
+Unhandled exceptions, crashes, and anything sent with `captureException`, grouped into
+issues. See [Issues](https://docs.sentry.io/product/issues/).
 
-## What an issue actually is
-
-- An **issue is a group of events** sharing a fingerprint (stack trace + exception
-  type/message), not a single occurrence.
-  Sentry surfaces one **representative event** — the one richest in context, which is
-  not necessarily the latest — so you reason about the group and drill into an event for
-  specifics.
-- **The cause isn’t always in the stack trace.** Suspect commits tie the issue to the
-  commit that likely introduced it, and a **trace-related issue** points to a
-  *different* issue in the same request that may be the real origin — the crash you’re
-  looking at can be a downstream symptom.
-- **When one bug shows up as several issues (or several bugs as one), that’s a grouping
-  problem** — the fingerprint is tunable, not something to live with.
+When one bug shows up as several issues (or several bugs as one), that is a grouping
+problem. Tune the fingerprint.
+The cause is not always in the stack trace: check suspect commits and the trace-related
+issue, which can point to the real origin.
 
 ## What makes an error actionable
 
@@ -36,5 +25,5 @@ metadata. An issue is the unit you triage, assign, resolve, and link a fix to.
 ## Related
 
 - [`tracing.md`](tracing.md)
-- [`releases.md`](releases.md)
+- [Releases](https://docs.sentry.io/product/releases/)
 - [`data-scrubbing.md`](data-scrubbing.md)

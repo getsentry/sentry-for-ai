@@ -19,18 +19,12 @@ the rest — for quota *and* for signal-to-noise.
 - **Logs / metrics:** billed by size — trim attribute count and message length, not just
   event count, on top of emitting fewer, higher-signal events.
 
-## Where to sample — head vs. server-side
+## Where to sample
 
-- **Client / head sampling (SDK)** — decide before sending; cheapest, and the decision
-  propagates across a trace so you keep whole traces.
-  The first lever.
-- **Server-side (Sentry)** — a backstop, and for what the SDK can’t cleanly decide:
-  - **Inbound data filters** — browser-extension errors, known crawlers, legacy
-    browsers, `localhost`, specific error messages or releases, by IP. (Some are
-    Business-plan.)
-  - **Per-DSN rate limits** — cap a noisy key.
-    **Spike protection** — an automatic guard against a sudden flood.
-    **Delete & Discard** — stop ingesting a specific high-volume issue entirely.
+Sample in the SDK first (head sampling keeps whole traces).
+Use server-side filters, rate limits, and spike protection as a backstop.
+See
+[Manage Your Error Quota](https://docs.sentry.io/pricing/quotas/manage-event-stream-guide/).
 
 ## A practical workflow
 

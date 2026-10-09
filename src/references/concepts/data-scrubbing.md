@@ -24,11 +24,9 @@ you’ll eventually capture something you didn’t anticipate.
 
 ## AI/LLM attributes (`gen_ai.*`)
 
-**Prompt and completion attributes (`gen_ai.input.messages`, `gen_ai.output.messages`,
-`gen_ai.tool.call.*`, …) are not scrubbed by the default server-side rules.** Their
-capture is itself opt-in (only when PII capture is enabled), but *once captured they
-aren’t redacted* — so if you instrument an LLM app, explicitly scrub them with an
-advanced rule (`$span.data.'<attribute>'`) or disable their capture.
+**Prompt and completion attributes (`gen_ai.*`) are not scrubbed by the default
+server-side rules.** See
+[Data Privacy for AI agents](https://docs.sentry.io/product/agents/privacy/).
 
 ## Verify, don’t assume
 

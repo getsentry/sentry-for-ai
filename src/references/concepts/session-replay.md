@@ -19,9 +19,9 @@ exception behind it.
 
 ## Setup essentials
 
-- **Two sample rates, asymmetric:** keep `replaysOnErrorSampleRate` **high** (often
-  `1.0` — you want a replay for any session that errored) and `replaysSessionSampleRate`
-  **low** (a few percent — capturing every healthy session is expensive).
+- **Two sample rates, asymmetric:** keep `replaysOnErrorSampleRate` **high** and
+  `replaysSessionSampleRate` **low**. See
+  [Session Replay configuration](https://docs.sentry.io/platforms/javascript/session-replay/configuration/).
 - **Privacy.** Defaults **mask all text and block media** — start there; use mask/block
   selectors to redact sensitive fields before unmasking anything globally, and treat
   network request/response **body capture as opt-in**. Mobile redacts more aggressively
