@@ -1,0 +1,139 @@
+# Runs the getsentry/sentry-for-ai-evals suites against this PR's skills.
+#
+# Label a PR `ai-evals:<suite>` to run a suite, or `ai-evals:<suite>:<marker>` to run
+# only its tests with that pytest marker, e.g. `ai-evals:sentry-get-started:products`.
+# Each label runs against skills built at both the PR's merge-base and head, using the
+# same eval harness commit. A new push reruns every eval label still on the PR.
+#
+# sentry-for-ai-evals is internal, so the jobs check it out with the readonly bot's
+# token and use its actions from that path. Fork PRs get no secrets, so they're skipped.
+# The logs and each run's outputs artifact show the eval in full, and since this repo is
+# public anyone can read them. Neither holds a credential: only a proxy in the eval
+# container has the OpenRouter key, and the run fails rather than keep outputs that
+# hold a key. The products tests' results also go to evals.sentry.dev.
+
+name: AI Evals
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+
+permissions: {}
+
+jobs:
+  plan:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository && (
+        (github.event.action == 'labeled' && startsWith(github.event.label.name, 'ai-evals:')) ||
+        (github.event.action == 'synchronize' && contains(join(github.event.pull_request.labels.*.name, ','), 'ai-evals:'))
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      runs: ${{ steps.plan.outputs.runs }}
+      count: ${{ steps.plan.outputs.count }}
+      evals-sha: ${{ steps.evals.outputs.sha }}
+      base-sha: ${{ steps.base.outputs.sha }}
+    steps:
+      - name: Get sentry-for-ai-evals token
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.SENTRY_READONLY_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.SENTRY_READONLYBOT_PRIVATE_KEY }}
+          repositories: sentry-for-ai-evals
+          permission-contents: read
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: getsentry/sentry-for-ai-evals
+          token: ${{ steps.token.outputs.token }}
+          path: sentry-for-ai-evals
+          persist-credentials: false
+
+      - id: plan
+        uses: ./sentry-for-ai-evals/.github/actions/plan-evals
+
+      # An older action ignores the revision and base-sha inputs, so it attributes both runs
+      # to head or pairs them by a commit the base side didn't run.
+      - name: Check baseline support
+        if: steps.plan.outputs.count != '0'
+        shell: bash
+        run: |
+          if ! grep -q '^  base-sha:' sentry-for-ai-evals/.github/actions/run-evals/action.yml; then
+            echo "::error::Merge the base/head support in sentry-for-ai-evals before running this workflow"
+            exit 1
+          fi
+
+      - id: evals
+        if: steps.plan.outputs.count != '0'
+        shell: bash
+        run: echo "sha=$(git -C sentry-for-ai-evals rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      # The base side runs where the PR branched. The event's base SHA is the base branch's
+      # tip, which can hold commits the head doesn't, and they'd count against the head.
+      - id: base
+        if: steps.plan.outputs.count != '0'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          sha="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE_SHA...$HEAD_SHA" --jq .merge_base_commit.sha)"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+  eval:
+    needs: plan
+    if: needs.plan.outputs.count != '0'
+    name: ${{ matrix.run.label }} (${{ matrix.revision }})
+    # Per PR, label and revision, so base and head don't cancel each other.
+    concurrency:
+      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.run.label }}-${{ matrix.revision }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        run: ${{ fromJSON(needs.plan.outputs.runs) }}
+        revision: [base, head]
+    steps:
+      - name: Get sentry-for-ai-evals token
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.SENTRY_READONLY_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.SENTRY_READONLYBOT_PRIVATE_KEY }}
+          repositories: sentry-for-ai-evals
+          permission-contents: read
+
+      # Side by side, so the evals don't copy this repo into their image.
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: getsentry/sentry-for-ai-evals
+          ref: ${{ needs.plan.outputs.evals-sha }}
+          token: ${{ steps.token.outputs.token }}
+          path: sentry-for-ai-evals
+          persist-credentials: false
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ matrix.revision == 'base' && needs.plan.outputs.base-sha || github.event.pull_request.head.sha }}
+          path: sentry-for-ai
+          persist-credentials: false
+
+      - uses: ./sentry-for-ai-evals/.github/actions/run-evals
+        with:
+          suite: ${{ matrix.run.suite }}
+          marker: ${{ matrix.run.marker }}
+          revision: ${{ matrix.revision }}
+          base-sha: ${{ needs.plan.outputs.base-sha }}
+          sentry-for-ai-path: sentry-for-ai
+          artifact-name: ai-evals-${{ matrix.run.suite }}-${{ matrix.run.marker || 'all' }}-${{ matrix.revision }}
+          openrouter-api-key: ${{ secrets.AI_EVALS_OPENROUTER_API_KEY }}
+          evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
