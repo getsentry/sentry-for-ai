@@ -5,6 +5,7 @@ import { createClaude } from "../harnesses/claude";
 import { createCodex } from "../harnesses/codex";
 import { createCursor } from "../harnesses/cursor";
 import { createGrok } from "../harnesses/grok";
+import { powerShellCommand } from "../harnesses/shell";
 import { fakeSystem } from "./fake-system";
 
 const ok: ShellResult = { ok: true };
@@ -190,6 +191,64 @@ describe("claude harness", () => {
 });
 
 describe("codex harness", () => {
+  it("uses PowerShell for Windows commands when PATH detection fails", async () => {
+    const system = fakeSystem({
+      platform: "win32",
+      run: (command) => (command === "where codex" ? notFound : ok),
+    });
+    const harness = createCodex(system);
+
+    expect(await harness.detect()).toBe(true);
+    expect(system.run).toHaveBeenCalledWith(
+      powerShellCommand("Get-Command codex -ErrorAction Stop"),
+      undefined,
+    );
+
+    await harness.install();
+    expect(system.run).toHaveBeenCalledWith(
+      powerShellCommand("codex plugin add sentry@sentry-plugin-marketplace"),
+      undefined,
+    );
+
+    await harness.authenticate();
+    expect(system.runInteractive).toHaveBeenCalledWith(
+      powerShellCommand("codex mcp login sentry"),
+      undefined,
+    );
+  });
+
+  it("uses PowerShell 7 when Windows PowerShell cannot find Codex", async () => {
+    const system = fakeSystem({
+      platform: "win32",
+      run: (command) => (command.startsWith("pwsh.exe ") ? ok : notFound),
+    });
+    const harness = createCodex(system);
+
+    expect(await harness.detect()).toBe(true);
+    await harness.remove();
+    expect(system.run).toHaveBeenCalledWith(
+      powerShellCommand("codex plugin remove sentry@sentry-plugin-marketplace", "pwsh.exe"),
+      undefined,
+    );
+  });
+
+  it("keeps Windows PATH commands in the default shell when detected", async () => {
+    const system = fakeSystem({ platform: "win32", run: () => ok });
+    const harness = createCodex(system);
+
+    expect(await harness.detect()).toBe(true);
+    expect(system.run).toHaveBeenCalledExactlyOnceWith("where codex");
+
+    await harness.install();
+    expect(system.run).toHaveBeenCalledWith("codex plugin add sentry@sentry-plugin-marketplace");
+  });
+
+  it("reports missing on Windows when both shells fail detection", async () => {
+    const system = fakeSystem({ platform: "win32", run: () => notFound });
+    expect(await createCodex(system).detect()).toBe(false);
+    expect(system.run).toHaveBeenCalledTimes(3);
+  });
+
   it("detects via which", async () => {
     const harness = createCodex(fakeSystem({ run: () => ok }));
     expect(await harness.detect()).toBe(true);
