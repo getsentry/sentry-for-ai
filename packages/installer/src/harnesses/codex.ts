@@ -2,12 +2,6 @@ import type { OutputSink, SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
 import { detectOnPath, runCommand, runLoginCommand, runJson } from "./shell";
 
-// TODO: Codex is the only agent we install from our OWN marketplace
-// (getsentry/plugin-codex) rather than the agent vendor's official marketplace
-// like Claude (claude-plugins-official) and Grok (xai-official). That repo
-// vendors a copy of the skill files, so every plugin update means regenerating
-// and republishing the vendored marketplace. Move Codex onto an official
-// marketplace once one is available so updates flow without re-vendoring.
 const MARKETPLACE = "sentry-plugin-marketplace";
 const MARKETPLACE_SOURCE = "getsentry/plugin-codex";
 const PLUGIN_ID = `sentry@${MARKETPLACE}`;

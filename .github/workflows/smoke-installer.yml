@@ -5,7 +5,7 @@
 # without a prompt, and verifies each plugin actually landed.
 #
 # Claude Code, Codex, and Grok ship cross-platform npm CLIs, so they get a real
-# install against their default marketplaces. Cursor has no headless CLI to
+# install from Sentry’s plugin repositories. Cursor has no headless CLI to
 # install in CI, but our Cursor install is only a `git clone` of the public
 # plugin repo into ~/.cursor/plugins/local/sentry — so we put a `cursor` stub on
 # PATH to satisfy detection and verify the real clone (this is what exercises

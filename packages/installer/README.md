@@ -48,7 +48,7 @@ For each detected assistant, the installer runs that tool’s native plugin comm
 
 | Assistant | How it’s installed |
 | --- | --- |
-| Claude Code | `claude plugin install sentry` from the official plugin marketplace |
+| Claude Code | `claude plugin install sentry@sentry-plugin-marketplace` from `getsentry/plugin-claude` |
 | Codex | `codex plugin add sentry` from the Sentry plugin marketplace |
 | Cursor | Clones [`getsentry/plugin-cursor`](https://github.com/getsentry/plugin-cursor) into `~/.cursor/plugins/local/sentry` |
 | Grok | `grok plugin install getsentry/plugin-grok` |
