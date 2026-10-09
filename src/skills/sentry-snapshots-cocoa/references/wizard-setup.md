@@ -14,6 +14,12 @@ wants Sentry’s first-party SnapshotPreviews image source.
 
 ## Run the Wizard
 
+The wizard downloads and executes the published `@sentry/wizard` npm package and changes
+project files. Explain those effects before running it, use an existing pinned version
+when the project has one, and review its diff afterward.
+Let the user complete authentication directly; keep credentials out of chat and command
+output.
+
 Pass the directory that contains the selected `.xcodeproj` and let the wizard
 auto-detect app targets, hosted XCTest targets, and Swift previews:
 
@@ -31,7 +37,7 @@ for `ios/MyApp.xcodeproj`.
 | Outcome | Action |
 | --- | --- |
 | Wizard completes | Continue with the main skill’s completion checks. |
-| Dirty working tree blocks non-interactive mode | Inspect `git status --short`. If dirty files are pre-existing or expected for the user’s scenario, rerun the same command with `--ignore-git-changes`. Do not clean, stash, or revert user files just to satisfy the wizard safety check. |
+| Dirty working tree blocks non-interactive mode | Inspect `git status --short` and explain the files the wizard may change. Ask the user to approve proceeding with `--ignore-git-changes` before rerunning. Preserve existing work. |
 | Wizard asks for app target or hosted XCTest target | Follow [Target Disambiguation](#target-disambiguation). |
 | Wizard reports no hosted XCTest target | Follow [Target Disambiguation](#target-disambiguation) to confirm. If no hosted target exists, stop and ask the user to add or identify one. |
 | Wizard reports no Swift previews | Stop and ask whether to add Swift previews or use another snapshot image source. Do not add, restore, or rewrite previews just to make SnapshotPreviews produce images unless the user explicitly approves that source change. |

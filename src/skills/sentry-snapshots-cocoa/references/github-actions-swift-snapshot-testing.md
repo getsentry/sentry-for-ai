@@ -89,7 +89,7 @@ jobs:
           echo "Total PNG images: $(find "${SNAPSHOT_OUTPUT_DIR}" -type f -name '*.png' | wc -l | tr -d ' ')"
 
       - name: Install sentry-cli
-        run: curl -sL https://sentry.io/get-cli/ | bash
+        run: brew install getsentry/tools/sentry-cli
 
       - name: Upload snapshots to Sentry
         run: |

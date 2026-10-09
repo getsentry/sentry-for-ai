@@ -9,6 +9,7 @@
   "keywords": ["sentry", "debugging", "monitoring", "error-tracking"],
   "license": "MIT",
   "repository": "https://github.com/getsentry/plugin-claude",
+  "supportUrl": "https://sentry.help",
   "mcpServers": {
     "sentry": {
       "type": "http",

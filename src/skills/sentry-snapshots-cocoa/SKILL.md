@@ -17,6 +17,11 @@ license: Apache-2.0
 - Package-only SwiftPM: stop and ask for the host app/test target; standalone
   `swift test` rendering is not supported.
 
+Snapshot uploads send generated images and metadata to Sentry.
+Confirm the target organization/project and export directory, and check whether the
+images contain customer data or other sensitive content before uploading.
+Upload only the selected snapshot output within the user’s requested scope.
+
 ## Detect
 
 Do only enough detection to route before calling the wizard:
