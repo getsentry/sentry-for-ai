@@ -5,6 +5,13 @@ export async function detectOnPath(system: SystemDeps, binary: string): Promise<
   return (await system.run(`${locator} ${binary}`)).ok;
 }
 
+// Encode the script so cmd.exe cannot interpret PowerShell quoting or operators.
+export function powerShellCommand(command: string, executable = "powershell.exe"): string {
+  const script = `$global:LASTEXITCODE = 0; & { ${command} }; if (!$?) { exit 1 }; exit $LASTEXITCODE`;
+  const encoded = Buffer.from(script, "utf16le").toString("base64");
+  return `${executable} -NonInteractive -EncodedCommand ${encoded}`;
+}
+
 // Runs a mutating command (install, update, remove, cleanup), throwing on a
 // non-zero exit so callers can treat failure as an exception. Streams its output
 // to `output` when given. Only the sink is forwarded when present, so
