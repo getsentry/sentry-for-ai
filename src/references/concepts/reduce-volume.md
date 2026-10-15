@@ -11,9 +11,10 @@ the rest — for quota *and* for signal-to-noise.
   The cheapest win is **filtering known noise** (browser-extension errors, bots, a
   specific bogus exception), not blanket down-sampling.
 - **Spans / traces:** sample *aggressively* — the highest-volume signal and biggest
-  lever. A `tracesSampler` that keeps important paths and drops health-check noise beats
-  a flat low rate. (Note `tracesSampleRate: 0` doesn’t disable tracing — see
-  [`tracing.md`](tracing.md).)
+  lever. A `tracesSampler` that keeps important paths and respects the parent’s sampling
+  decision beats a flat low rate.
+  Health checks need no sampler: Sentry’s inbound filters drop them.
+  (Note `tracesSampleRate: 0` doesn’t disable tracing — see [`tracing.md`](tracing.md).)
 - **Replays / profiles:** keep the asymmetric/sampled defaults (high on error, low on
   normal).
 - **Logs / metrics:** billed by size — trim attribute count and message length, not just
@@ -36,7 +37,8 @@ the rest — for quota *and* for signal-to-noise.
 
 1. **Find the top offenders first** (MCP / Explore across errors, spans, and logs) —
    don’t cut blind.
-2. **Filter known noise** — high precision, no fidelity loss on real data.
+2. **Filter known noise** with inbound filters (health checks, crawlers, browser
+   extensions) — high precision, no fidelity loss on real data.
 3. **Tune span sampling** with a `tracesSampler` — the biggest lever.
 4. **Set rate limits / spike protection** as a safety net.
 5. **Re-measure** to confirm you cut noise, not signal.

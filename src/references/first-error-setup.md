@@ -63,6 +63,7 @@ from Step 2. Take the docs’ **recommended default setup** as written — in pr
 errors and tracing.
 Don’t ask the user which signals to enable, and don’t pare it back to
 errors-only; the docs’ default `init` is the best-practice baseline for a new project.
+Adjust its environment-dependent values (see [`sdk-docs.md`](sdk-docs.md)).
 
 ## Step 4 — Verify end to end
 
@@ -109,8 +110,8 @@ deploy actions without their consent:**
   script, a Dockerfile/Procfile, a hosting platform (Vercel, Fly, Render, Heroku, …), or
   a deploy section in `AGENTS.md`/`CLAUDE.md` — use it.
   Walk the user through (or offer to make) the changes to ship the Sentry-instrumented
-  build, making sure the DSN and the `release`/`environment` values are set in the
-  production environment, not just locally.
+  build, making sure the DSN, the `release`/`environment` values, and the production
+  sample rate are set in the production environment, not just locally.
   [`releases/index.md`](releases/index.md) routes to the per-platform way to set those
   two — do it here rather than leaving events tagged “unknown release”; it is a
   one-option change, and every release feature depends on it.

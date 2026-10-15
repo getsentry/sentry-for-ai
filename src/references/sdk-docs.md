@@ -52,8 +52,11 @@ Core app on .NET, say), pick it from the
 
 ## Go deeper from the platform page
 
-The platform page covers install and a recommended default `init`. Take that default as
-written for a new project rather than paring it back.
+The platform page covers install and a recommended default `init`. Keep its signals for
+a new project rather than paring them back.
+Set values that depend on the environment with a check that works where the code runs:
+the framework’s environment or the build’s debug flag.
+For the trace sample rate, see [`concepts/tracing.md`](concepts/tracing.md).
 
 Everything else hangs off the same path — follow the platform page’s links rather than
 guessing a URL:

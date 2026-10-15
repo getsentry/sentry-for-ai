@@ -34,6 +34,10 @@ A span also carries its profile, the bridge down to the function level.
   samples nothing; omit the sampling config entirely to truly disable.
   The head-of-trace sampling decision propagates downstream, so you capture whole
   traces, not fragments.
+- **Set the rate per environment.** Locally, use the full rate, so verification sees a
+  trace. In production, or when you can’t tell where the code runs, keep the project’s
+  existing rate or base it on known traffic; otherwise start low, as the docs recommend.
+  Tell the user which rate you chose.
 - **Cross-service:** add your API domains to `tracePropagationTargets` so the SDK
   attaches trace headers (`sentry-trace`, `baggage`, and the newer `traceparent`) on
   outbound requests, and allow those headers via CORS — or propagation silently fails
