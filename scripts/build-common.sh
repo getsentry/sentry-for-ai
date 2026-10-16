@@ -4,9 +4,9 @@
 #
 # Each src/plugins/<agent>/build.sh sources this for the steps that are identical
 # across agents: resolving the content root and assembling the skill tree (copy +
-# reference hydration) and SKILL_TREE.md. Agent-specific bits — manifest
-# locations, the MCP file, Codex's subdir layout and skill transform — stay
-# inline in each builder.
+# reference hydration), SKILL_TREE.md, and the manifest and MCP config. Agent-specific
+# bits — file locations, Codex's subdir layout and skill transform — stay inline in
+# each builder.
 #
 # Source it after cd-ing to the repo root:
 #   source "$REPO_ROOT/scripts/build-common.sh"
@@ -55,14 +55,28 @@ copy_skill_tree() {
 #
 # Set PLUGIN_VERSION to stamp something else. The develop deploy uses it to label
 # a build that is not a release with scripts/dev-version.sh output.
-#   install_plugin_manifest <src_manifest> <dest_manifest>
+# Inline `mcpServers` (Claude) get the install_mcp_config headers too.
+#   install_plugin_manifest <src_manifest> <dest_manifest> <plugin_name>
 install_plugin_manifest() {
-    python3 - "$1" "$2" "$_PLUGIN_VERSION_FILE" <<'PY'
+    _stamp_plugin_json manifest "$1" "$2" "$3"
+}
+
+# Write an MCP config with the distribution name and plugin version stamped into
+# each server's X-Sentry-Plugin / X-Sentry-Plugin-Version headers, so MCP
+# telemetry can tell plugins and releases apart. Headers rather than the URL: the
+# URL is the OAuth resource, and changing it can force a re-auth.
+#   install_mcp_config <src_mcp_json> <dest_mcp_json> <plugin_name>
+install_mcp_config() {
+    _stamp_plugin_json mcp "$1" "$2" "$3"
+}
+
+_stamp_plugin_json() {
+    python3 - "$1" "$2" "$3" "${4:?plugin name required}" "$_PLUGIN_VERSION_FILE" <<'PY'
 import json
 import os
 import sys
 
-source, dest, version_file = sys.argv[1:4]
+kind, source, dest, plugin_name, version_file = sys.argv[1:6]
 
 version = os.environ.get("PLUGIN_VERSION")
 if not version:
@@ -70,12 +84,23 @@ if not version:
         version = json.load(f)["version"]
 
 with open(source) as f:
-    manifest = json.load(f)
+    data = json.load(f)
 
-manifest["version"] = version
+if kind == "manifest":
+    data["version"] = version
+
+servers = data.get("mcpServers", {})
+if kind == "mcp" and not servers:
+    raise SystemExit(f"{source} declares no mcpServers")
+# Codex's manifest points `mcpServers` at its .mcp.json path instead of inlining.
+if isinstance(servers, dict):
+    for server in servers.values():
+        headers = server.setdefault("headers", {})
+        headers["X-Sentry-Plugin"] = plugin_name
+        headers["X-Sentry-Plugin-Version"] = version
 
 with open(dest, "w") as f:
-    json.dump(manifest, f, indent=2)
+    json.dump(data, f, indent=2)
     f.write("\n")
 PY
 }

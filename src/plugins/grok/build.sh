@@ -29,12 +29,12 @@ resolve_content_root "$REPO_ROOT/src"
 
 mkdir -p "$TARGET_DIR/.grok-plugin"
 
-install_plugin_manifest "$SRC_DIR/plugin.json" "$TARGET_DIR/.grok-plugin/plugin.json"
+install_plugin_manifest "$SRC_DIR/plugin.json" "$TARGET_DIR/.grok-plugin/plugin.json" grok
 cp "$SRC_DIR/marketplace.json" "$TARGET_DIR/.grok-plugin/marketplace.json"
 copy_skills "$CONTENT_ROOT" "$TARGET_DIR/skills"
 copy_skill_tree "$CONTENT_ROOT" "$TARGET_DIR/SKILL_TREE.md"
 rsync -a assets/ "$TARGET_DIR/assets/"
-cp mcp.json "$TARGET_DIR/.mcp.json"
+install_mcp_config mcp.json "$TARGET_DIR/.mcp.json" grok
 cp "$SRC_DIR/README.md" "$TARGET_DIR/README.md"
 cp LICENSE "$TARGET_DIR/LICENSE"
 
