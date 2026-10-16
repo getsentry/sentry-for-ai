@@ -40,6 +40,10 @@ This is a mutating action, so **propose it and create only on a yes — never si
 - `create_project` — mints the project and its DSN. Requires `organizationSlug`,
   `teamSlug`, and `name`; `slug`, `platform`, and `repository` are optional.
   If the org has no team yet, `create_team` first.
+- Name the project after its repository, in lowercase with hyphens (e.g. `my-app`), the
+  same default the Sentry UI uses.
+  If `create_project` rejects that name (a few, like `settings` or `auth`, are
+  reserved), use the platform name instead (e.g. `python`).
 - If the DSN comes back as `unavailable`, the project was still created — call
   `create_dsn` for it.
 - Members can hit `403 … disabled this feature for members`. If so, have the user create
