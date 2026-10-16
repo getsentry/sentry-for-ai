@@ -19,9 +19,9 @@ resolve_content_root "$REPO_ROOT/src"
 
 mkdir -p "$TARGET_DIR"
 
-install_plugin_manifest "$SRC_DIR/plugin.json" "$TARGET_DIR/plugin.json"
+install_plugin_manifest "$SRC_DIR/plugin.json" "$TARGET_DIR/plugin.json" agent-plugin
 copy_skills "$CONTENT_ROOT" "$TARGET_DIR/skills"
-cp "$SRC_DIR/mcp.json" "$TARGET_DIR/mcp.json"
+install_mcp_config "$SRC_DIR/mcp.json" "$TARGET_DIR/mcp.json" agent-plugin
 cp "$SRC_DIR/README.md" "$TARGET_DIR/README.md"
 cp LICENSE "$TARGET_DIR/LICENSE"
 
