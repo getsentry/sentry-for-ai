@@ -3,10 +3,10 @@
 # Label a PR `ai-evals:<suite>` to run a suite, or `ai-evals:<suite>:<marker>` to run
 # only its tests with that pytest marker, e.g. `ai-evals:sentry-get-started:products`.
 # Each label runs against skills built at both the PR's merge-base and head, using the
-# same eval harness commit, and on each target (an agent harness with a model) the eval
-# repo's plan-evals action lists, one job per target. A report job per label and side
-# uploads all the targets' results as one run. A new push reruns every eval label still
-# on the PR.
+# same sentry-for-ai-evals commit, and on each target (a harness, Claude Code or Codex
+# later, with a model) that repo's plan-evals action lists, one job per target. A report
+# job per label and side uploads all the targets' results as one run. A new push reruns
+# every eval label still on the PR.
 #
 # sentry-for-ai-evals is internal, so the jobs check it out with the readonly bot's
 # token and use its actions from that path. Fork PRs get no secrets, so they're skipped.
@@ -60,8 +60,8 @@ jobs:
       - id: plan
         uses: ./sentry-for-ai-evals/.github/actions/plan-evals
 
-      # An older harness has no target list or report action, so the matrix below would
-      # have no targets and nothing would be uploaded.
+      # An older sentry-for-ai-evals has no target list or report action, so the matrix
+      # below would have no targets and nothing would be uploaded.
       - name: Check target support
         if: steps.plan.outputs.count != '0'
         shell: bash
@@ -139,7 +139,7 @@ jobs:
         with:
           suite: ${{ matrix.run.suite }}
           marker: ${{ matrix.run.marker }}
-          agent: ${{ matrix.target.agent }}
+          harness: ${{ matrix.target.harness }}
           model: ${{ matrix.target.model }}
           revision: ${{ matrix.revision }}
           base-sha: ${{ needs.plan.outputs.base-sha }}
