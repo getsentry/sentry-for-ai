@@ -3,7 +3,9 @@
 # Label a PR `ai-evals:<suite>` to run a suite, or `ai-evals:<suite>:<marker>` to run
 # only its tests with that pytest marker, e.g. `ai-evals:sentry-get-started:products`.
 # Each label runs against skills built at both the PR's merge-base and head, using the
-# same eval harness commit. A new push reruns every eval label still on the PR.
+# same eval harness commit, and on each agent model the harness's plan-evals action lists,
+# one job per model. A report job per label and side uploads all the models' results as
+# one run. A new push reruns every eval label still on the PR.
 #
 # sentry-for-ai-evals is internal, so the jobs check it out with the readonly bot's
 # token and use its actions from that path. Fork PRs get no secrets, so they're skipped.
@@ -33,6 +35,8 @@ jobs:
     outputs:
       runs: ${{ steps.plan.outputs.runs }}
       count: ${{ steps.plan.outputs.count }}
+      models: ${{ steps.plan.outputs.models }}
+      model-count: ${{ steps.plan.outputs.model-count }}
       evals-sha: ${{ steps.evals.outputs.sha }}
       base-sha: ${{ steps.base.outputs.sha }}
     steps:
@@ -55,14 +59,16 @@ jobs:
       - id: plan
         uses: ./sentry-for-ai-evals/.github/actions/plan-evals
 
-      # An older action ignores the revision and base-sha inputs, so it attributes both runs
-      # to head or pairs them by a commit the base side didn't run.
-      - name: Check baseline support
+      # An older harness has no model list or report action, so the matrix below would have
+      # no models and nothing would be uploaded.
+      - name: Check model support
         if: steps.plan.outputs.count != '0'
         shell: bash
+        env:
+          MODEL_COUNT: ${{ steps.plan.outputs.model-count }}
         run: |
-          if ! grep -q '^  base-sha:' sentry-for-ai-evals/.github/actions/run-evals/action.yml; then
-            echo "::error::Merge the base/head support in sentry-for-ai-evals before running this workflow"
+          if [[ -z "$MODEL_COUNT" || ! -f sentry-for-ai-evals/.github/actions/report-evals/action.yml ]]; then
+            echo "::error::Merge the several-models support in sentry-for-ai-evals before running this workflow"
             exit 1
           fi
 
@@ -87,10 +93,10 @@ jobs:
   eval:
     needs: plan
     if: needs.plan.outputs.count != '0'
-    name: ${{ matrix.run.label }} (${{ matrix.revision }})
-    # Per PR, label and revision, so base and head don't cancel each other.
+    name: ${{ matrix.run.label }} (${{ matrix.revision }}, ${{ matrix.model.name }})
+    # Per PR, label, revision and model, so the jobs don't cancel each other.
     concurrency:
-      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.run.label }}-${{ matrix.revision }}
+      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.run.label }}-${{ matrix.revision }}-${{ matrix.model.name }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -101,6 +107,7 @@ jobs:
       matrix:
         run: ${{ fromJSON(needs.plan.outputs.runs) }}
         revision: [base, head]
+        model: ${{ fromJSON(needs.plan.outputs.models) }}
     steps:
       - name: Get sentry-for-ai-evals token
         id: token
@@ -126,12 +133,63 @@ jobs:
           path: sentry-for-ai
           persist-credentials: false
 
+      # No evals key here: the report job uploads every model's results as one run.
       - uses: ./sentry-for-ai-evals/.github/actions/run-evals
         with:
           suite: ${{ matrix.run.suite }}
           marker: ${{ matrix.run.marker }}
+          model: ${{ matrix.model.id }}
           revision: ${{ matrix.revision }}
           base-sha: ${{ needs.plan.outputs.base-sha }}
           sentry-for-ai-path: sentry-for-ai
+          artifact-name: ai-evals-${{ matrix.run.suite }}-${{ matrix.run.marker || 'all' }}-${{ matrix.revision }}-${{ matrix.model.name }}
           openrouter-api-key: ${{ secrets.AI_EVALS_OPENROUTER_API_KEY }}
+
+  report:
+    needs: [plan, eval]
+    # After every model's job, whether it passed, so a model's crash still fails here
+    # with its name rather than quietly leaving it out of the run.
+    if: ${{ always() && !cancelled() && needs.plan.outputs.count != '0' }}
+    name: ${{ matrix.run.label }} (${{ matrix.revision }}) report
+    concurrency:
+      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.run.label }}-${{ matrix.revision }}-report
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        run: ${{ fromJSON(needs.plan.outputs.runs) }}
+        revision: [base, head]
+    steps:
+      - name: Get sentry-for-ai-evals token
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.SENTRY_READONLY_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.SENTRY_READONLYBOT_PRIVATE_KEY }}
+          repositories: sentry-for-ai-evals
+          permission-contents: read
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: getsentry/sentry-for-ai-evals
+          ref: ${{ needs.plan.outputs.evals-sha }}
+          token: ${{ steps.token.outputs.token }}
+          path: sentry-for-ai-evals
+          persist-credentials: false
+
+      # The skills sha is the tested side's own commit, as the eval jobs recorded it.
+      - uses: ./sentry-for-ai-evals/.github/actions/report-evals
+        with:
+          artifact-pattern: ai-evals-${{ matrix.run.suite }}-${{ matrix.run.marker || 'all' }}-${{ matrix.revision }}-*
+          expected-count: ${{ needs.plan.outputs.model-count }}
+          suite: ${{ matrix.run.suite }}
+          marker: ${{ matrix.run.marker }}
+          skills-sha: ${{ matrix.revision == 'base' && needs.plan.outputs.base-sha || github.event.pull_request.head.sha }}
+          revision: ${{ matrix.revision }}
+          base-sha: ${{ needs.plan.outputs.base-sha }}
+          artifact-name: ai-evals-upload-${{ matrix.run.suite }}-${{ matrix.run.marker || 'all' }}-${{ matrix.revision }}
           evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
