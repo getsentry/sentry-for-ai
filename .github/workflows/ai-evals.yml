@@ -3,13 +3,18 @@
 # Label a PR `ai-evals:<suite>` to run a suite, or `ai-evals:<suite>:<marker>` to run
 # only its tests with that pytest marker, e.g. `ai-evals:sentry-get-started:products`.
 # Each label runs against skills built at both the PR's merge-base and head, using the
-# same eval harness commit. A new push reruns every eval label still on the PR.
+# same sentry-for-ai-evals commit, and on each target (a harness, Claude Code or Codex
+# later, with a model) that repo's plan-evals action lists, one job per target. The plan
+# job creates one run per label and side on evals.sentry.dev, and each target's job
+# sends its results into it, so one run holds every target. A new push reruns every
+# eval label still on the PR.
 #
 # sentry-for-ai-evals is internal, so the jobs check it out with the readonly bot's
 # token and use its actions from that path. Fork PRs get no secrets, so they're skipped.
 # This repo is public, so the eval outputs (transcripts, reports, the agent's changes) are
-# not kept as artifacts. The products tests' results go to evals.sentry.dev, which is
-# where to look at a run; the logs show only pytest's progress and failures.
+# not kept as artifacts, and nothing passes between the jobs but the run's id. The
+# products tests' results go to evals.sentry.dev, which is where to look at a run; the
+# logs show only pytest's progress and failures.
 
 name: AI Evals
 
@@ -33,8 +38,10 @@ jobs:
     outputs:
       runs: ${{ steps.plan.outputs.runs }}
       count: ${{ steps.plan.outputs.count }}
+      targets: ${{ steps.plan.outputs.targets }}
       evals-sha: ${{ steps.evals.outputs.sha }}
       base-sha: ${{ steps.base.outputs.sha }}
+      eval-runs: ${{ steps.create.outputs.runs }}
     steps:
       - name: Get sentry-for-ai-evals token
         id: token
@@ -55,14 +62,16 @@ jobs:
       - id: plan
         uses: ./sentry-for-ai-evals/.github/actions/plan-evals
 
-      # An older action ignores the revision and base-sha inputs, so it attributes both runs
-      # to head or pairs them by a commit the base side didn't run.
-      - name: Check baseline support
+      # An older sentry-for-ai-evals has no target list or create-runs action, so the
+      # matrix below would have no targets and nothing would be uploaded.
+      - name: Check target support
         if: steps.plan.outputs.count != '0'
         shell: bash
+        env:
+          TARGETS: ${{ steps.plan.outputs.targets }}
         run: |
-          if ! grep -q '^  base-sha:' sentry-for-ai-evals/.github/actions/run-evals/action.yml; then
-            echo "::error::Merge the base/head support in sentry-for-ai-evals before running this workflow"
+          if [[ -z "$TARGETS" || ! -f sentry-for-ai-evals/.github/actions/create-runs/action.yml ]]; then
+            echo "::error::Merge the several-targets support in sentry-for-ai-evals before running this workflow"
             exit 1
           fi
 
@@ -84,13 +93,25 @@ jobs:
           sha="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE_SHA...$HEAD_SHA" --jq .merge_base_commit.sha)"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
+      # Each side's run records its own skills commit, the merge-base or the head.
+      - id: create
+        if: steps.plan.outputs.count != '0'
+        uses: ./sentry-for-ai-evals/.github/actions/create-runs
+        with:
+          runs: ${{ steps.plan.outputs.runs }}
+          targets: ${{ steps.plan.outputs.targets }}
+          skills-sha: ${{ github.event.pull_request.head.sha }}
+          base-skills-sha: ${{ steps.base.outputs.sha }}
+          base-sha: ${{ steps.base.outputs.sha }}
+          evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
+
   eval:
     needs: plan
     if: needs.plan.outputs.count != '0'
-    name: ${{ matrix.run.label }} (${{ matrix.revision }})
-    # Per PR, label and revision, so base and head don't cancel each other.
+    name: ${{ matrix.run.label }} (${{ matrix.revision }}, ${{ matrix.target.name }})
+    # Per PR, label, revision and target, so the jobs don't cancel each other.
     concurrency:
-      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.run.label }}-${{ matrix.revision }}
+      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.run.label }}-${{ matrix.revision }}-${{ matrix.target.name }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -101,6 +122,7 @@ jobs:
       matrix:
         run: ${{ fromJSON(needs.plan.outputs.runs) }}
         revision: [base, head]
+        target: ${{ fromJSON(needs.plan.outputs.targets) }}
     steps:
       - name: Get sentry-for-ai-evals token
         id: token
@@ -126,12 +148,17 @@ jobs:
           path: sentry-for-ai
           persist-credentials: false
 
+      # Sends this target's results into the run the plan job created for the label and
+      # side. No artifact-name: this repo is public.
       - uses: ./sentry-for-ai-evals/.github/actions/run-evals
         with:
           suite: ${{ matrix.run.suite }}
           marker: ${{ matrix.run.marker }}
+          harness: ${{ matrix.target.harness }}
+          model: ${{ matrix.target.model }}
           revision: ${{ matrix.revision }}
           base-sha: ${{ needs.plan.outputs.base-sha }}
           sentry-for-ai-path: sentry-for-ai
+          run-id: ${{ fromJSON(needs.plan.outputs.eval-runs)[format('{0}-{1}', matrix.run.label, matrix.revision)].id }}
           openrouter-api-key: ${{ secrets.AI_EVALS_OPENROUTER_API_KEY }}
           evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
