@@ -62,19 +62,6 @@ Follow the matching integration docs after the platform is known:
 | Hugging Face Hub | [Hugging Face Hub Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/huggingface_hub/) |
 | Laravel AI | [Laravel AI integration](https://docs.sentry.io/platforms/php/guides/laravel/integrations/laravel-ai/) |
 
-## Eve
-
-The [Eve guide](https://docs.sentry.io/platforms/javascript/guides/eve/) sets up the
-Sentry Node SDK through Eve’s instrumentation provider, so Eve behaves like the other
-JavaScript AI setups.
-This path requires `@sentry/node` v11 or newer.
-
-Do not install Eve’s OTLP exporter for the same runtime unless the user explicitly asks
-for the trace-only Eve exporter path.
-If an Eve OTLP exporter already exists, ask whether to keep that trace-only setup or
-switch to the Node SDK setup; switching means removing the exporter first, since both
-produce AI spans and running them together duplicates spans and token totals.
-
 ## Decisions before editing
 
 Before making an AI-monitoring change, answer these from the docs and the project state:
