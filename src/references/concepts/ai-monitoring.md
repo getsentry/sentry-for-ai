@@ -36,23 +36,36 @@ Open the platform docs before changing code:
 | React Native | [React Native Agent Tracing](https://docs.sentry.io/platforms/react-native/agent-tracing/) |
 | Custom spans | [Sentry GenAI conventions](https://github.com/getsentry/sentry-conventions/) |
 
+## Agent framework guides
+
+These agent frameworks have their own guide, which covers install, `init`, and AI
+instrumentation together.
+When the project uses one, follow its guide instead of the platform page and the
+integration docs below:
+
+| Agent framework | Follow |
+| --- | --- |
+| Mastra | [Mastra](https://docs.sentry.io/platforms/javascript/guides/mastra/) |
+| Eve | [Eve](https://docs.sentry.io/platforms/javascript/guides/eve/) |
+| Flue on Node.js | [Flue](https://docs.sentry.io/platforms/javascript/guides/flue/) |
+| Flue on Cloudflare | [Flue Cloudflare Quick Start](https://docs.sentry.io/platforms/javascript/guides/flue/cloudflare/) |
+| Pi Durable on Node.js | [Pi Durable](https://docs.sentry.io/platforms/javascript/guides/pi-durable/) |
+| Pi Durable on Cloudflare | [Pi Durable Cloudflare Quick Start](https://docs.sentry.io/platforms/javascript/guides/pi-durable/cloudflare/) |
+
 ## Integration docs
 
 Follow the matching integration docs after the platform is known:
 
 | AI stack | Follow |
 | --- | --- |
-| Vercel AI SDK | [Vercel AI SDK Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/vercelai/) |
-| OpenAI (JavaScript) | [OpenAI Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/openai/) |
-| Anthropic (JavaScript) | [Anthropic Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/anthropic/) |
-| Google Gen AI SDK (JavaScript) | [Google Gen AI Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/google-genai/) |
-| LangChain (JavaScript) | [LangChain Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/langchain/) |
-| LangGraph (JavaScript) | [LangGraph Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/langgraph/) |
-| Mastra | [Mastra Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/mastra/) |
-| Flue on Node.js | [Flue Node Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/flue/) |
-| Flue on Cloudflare | [Flue Cloudflare Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/cloudflare/agent-tracing/flue/) |
-| Workers AI | [Workers AI](https://docs.sentry.io/platforms/javascript/guides/cloudflare/features/workers-ai/) |
-| Cloudflare Agents SDK | [Cloudflare Agents SDK](https://docs.sentry.io/platforms/javascript/guides/cloudflare/features/agents-sdk/) |
+| Vercel AI SDK | [Vercel AI SDK Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/vercelai/) |
+| OpenAI (JavaScript) | [OpenAI Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/openai/) |
+| Anthropic (JavaScript) | [Anthropic Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/anthropic/) |
+| Google Gen AI SDK (JavaScript) | [Google Gen AI Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/google-genai/) |
+| LangChain (JavaScript) | [LangChain Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/langchain/) |
+| LangGraph (JavaScript) | [LangGraph Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/langgraph/) |
+| Workers AI | [Workers AI](https://docs.sentry.io/platforms/javascript/guides/cloudflare/agent-tracing/workers-ai/) |
+| Cloudflare Agents SDK | [Cloudflare Agents SDK](https://docs.sentry.io/platforms/javascript/guides/cloudflare/agent-tracing/agents-sdk/) |
 | OpenAI (Python) | [Python OpenAI Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/openai/) |
 | OpenAI Agents SDK (Python) | [OpenAI Agents SDK Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/openai-agents/) |
 | Anthropic (Python) | [Python Anthropic Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/anthropic/) |
@@ -66,17 +79,16 @@ Follow the matching integration docs after the platform is known:
 
 ## Eve
 
-For Eve, support the Sentry Node SDK path so it behaves like the other JavaScript AI
-setups. Follow
-[Node Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/)
-and the
-[Vercel AI SDK guide](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/vercelai/).
+The [Eve guide](https://docs.sentry.io/platforms/javascript/guides/eve/) sets up the
+Sentry Node SDK through Eve’s instrumentation provider, so Eve behaves like the other
+JavaScript AI setups.
 This path requires `@sentry/node` v11 or newer.
 
 Do not install Eve’s OTLP exporter for the same runtime unless the user explicitly asks
 for the trace-only Eve exporter path.
 If an Eve OTLP exporter already exists, ask whether to keep that trace-only setup or
-switch to the Node SDK setup; do not run both.
+switch to the Node SDK setup; switching means removing the exporter first, since both
+produce AI spans and running them together duplicates spans and token totals.
 
 ## Decisions before editing
 
