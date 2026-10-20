@@ -37,22 +37,6 @@ Open the platform docs before changing code:
 | Laravel / PHP | [Laravel Agent Tracing](https://docs.sentry.io/platforms/php/guides/laravel/agent-tracing/) |
 | Custom spans | [Sentry GenAI conventions](https://github.com/getsentry/sentry-conventions/) |
 
-## Agent framework guides
-
-These agent frameworks have their own guide, which covers install, `init`, and AI
-instrumentation together.
-When the project uses one, follow its guide instead of the platform page and the
-integration docs below:
-
-| Agent framework | Follow |
-| --- | --- |
-| Mastra | [Mastra](https://docs.sentry.io/platforms/javascript/guides/mastra/) |
-| Eve | [Eve](https://docs.sentry.io/platforms/javascript/guides/eve/) |
-| Flue on Node.js | [Flue](https://docs.sentry.io/platforms/javascript/guides/flue/) |
-| Flue on Cloudflare | [Flue Cloudflare Quick Start](https://docs.sentry.io/platforms/javascript/guides/flue/cloudflare/) |
-| Pi Durable on Node.js | [Pi Durable](https://docs.sentry.io/platforms/javascript/guides/pi-durable/) |
-| Pi Durable on Cloudflare | [Pi Durable Cloudflare Quick Start](https://docs.sentry.io/platforms/javascript/guides/pi-durable/cloudflare/) |
-
 ## Integration docs
 
 Follow the matching integration docs after the platform is known:
