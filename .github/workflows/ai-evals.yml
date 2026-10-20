@@ -7,10 +7,9 @@
 #
 # sentry-for-ai-evals is internal, so the jobs check it out with the readonly bot's
 # token and use its actions from that path. Fork PRs get no secrets, so they're skipped.
-# The logs and each run's outputs artifact show the eval in full, and since this repo is
-# public anyone can read them. Neither holds a credential: only a proxy in the eval
-# container has the OpenRouter key, and the run fails rather than keep outputs that
-# hold a key. The products tests' results also go to evals.sentry.dev.
+# This repo is public, so the eval outputs (transcripts, reports, the agent's changes) are
+# not kept as artifacts. The products tests' results go to evals.sentry.dev, which is
+# where to look at a run; the logs show only pytest's progress and failures.
 
 name: AI Evals
 
@@ -134,6 +133,5 @@ jobs:
           revision: ${{ matrix.revision }}
           base-sha: ${{ needs.plan.outputs.base-sha }}
           sentry-for-ai-path: sentry-for-ai
-          artifact-name: ai-evals-${{ matrix.run.suite }}-${{ matrix.run.marker || 'all' }}-${{ matrix.revision }}
           openrouter-api-key: ${{ secrets.AI_EVALS_OPENROUTER_API_KEY }}
           evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
