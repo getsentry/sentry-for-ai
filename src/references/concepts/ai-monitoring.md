@@ -37,6 +37,20 @@ Open the platform docs before changing code:
 | Laravel / PHP | [Laravel Agent Tracing](https://docs.sentry.io/platforms/php/guides/laravel/agent-tracing/) |
 | Custom spans | [Sentry GenAI conventions](https://github.com/getsentry/sentry-conventions/) |
 
+## Agent framework guides
+
+These frameworks have their own guide, which owns install, `init`, and AI
+instrumentation. When the project uses one, follow its guide instead of the platform row
+and the integration rows below, even when it is built on one of those SDKs (Eve on the
+Vercel AI SDK, for example).
+
+| Agent framework | Follow |
+| --- | --- |
+| Eve | [Eve](https://docs.sentry.io/platforms/javascript/guides/eve/) |
+| Flue | [Flue](https://docs.sentry.io/platforms/javascript/guides/flue/) |
+| Mastra | [Mastra](https://docs.sentry.io/platforms/javascript/guides/mastra/) |
+| Pi Durable | [Pi Durable](https://docs.sentry.io/platforms/javascript/guides/pi-durable/) |
+
 ## Integration docs
 
 Follow the matching integration docs after the platform is known:
