@@ -27,7 +27,9 @@ Open the platform docs before changing code:
 
 | Platform or runtime | Follow |
 | --- | --- |
-| Node.js, Bun, or Deno | [Node Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/) |
+| Node.js | [Node Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/) |
+| Bun | [Bun Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/bun/agent-tracing/) |
+| Deno | [Deno Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/deno/agent-tracing/) |
 | Next.js | [Next.js Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/nextjs/agent-tracing/) |
 | NestJS | [NestJS Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/nestjs/agent-tracing/) |
 | Cloudflare Workers / Pages | [Cloudflare Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/cloudflare/agent-tracing/) |
