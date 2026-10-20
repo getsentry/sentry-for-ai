@@ -27,14 +27,29 @@ Open the platform docs before changing code:
 
 | Platform or runtime | Follow |
 | --- | --- |
-| Node.js, Bun, or Deno | [Node Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/) |
+| Node.js | [Node Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/) |
+| Bun | [Bun Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/bun/agent-tracing/) |
+| Deno | [Deno Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/deno/agent-tracing/) |
 | Next.js | [Next.js Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/nextjs/agent-tracing/) |
 | NestJS | [NestJS Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/nestjs/agent-tracing/) |
 | Cloudflare Workers / Pages | [Cloudflare Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/cloudflare/agent-tracing/) |
 | Python | [Python Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/) |
 | Laravel / PHP | [Laravel Agent Tracing](https://docs.sentry.io/platforms/php/guides/laravel/agent-tracing/) |
-| React Native | [React Native Agent Tracing](https://docs.sentry.io/platforms/react-native/agent-tracing/) |
 | Custom spans | [Sentry GenAI conventions](https://github.com/getsentry/sentry-conventions/) |
+
+## Agent framework guides
+
+These frameworks have their own guide, which owns install, `init`, and AI
+instrumentation. When the project uses one, follow its guide instead of the platform row
+and the integration rows below, even when it is built on one of those SDKs (Eve on the
+Vercel AI SDK, for example).
+
+| Agent framework | Follow |
+| --- | --- |
+| Eve | [Eve](https://docs.sentry.io/platforms/javascript/guides/eve/) |
+| Flue | [Flue](https://docs.sentry.io/platforms/javascript/guides/flue/) |
+| Mastra | [Mastra](https://docs.sentry.io/platforms/javascript/guides/mastra/) |
+| Pi Durable | [Pi Durable](https://docs.sentry.io/platforms/javascript/guides/pi-durable/) |
 
 ## Integration docs
 
@@ -42,17 +57,14 @@ Follow the matching integration docs after the platform is known:
 
 | AI stack | Follow |
 | --- | --- |
-| Vercel AI SDK | [Vercel AI SDK Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/vercelai/) |
-| OpenAI (JavaScript) | [OpenAI Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/openai/) |
-| Anthropic (JavaScript) | [Anthropic Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/anthropic/) |
-| Google Gen AI SDK (JavaScript) | [Google Gen AI Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/google-genai/) |
-| LangChain (JavaScript) | [LangChain Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/langchain/) |
-| LangGraph (JavaScript) | [LangGraph Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/langgraph/) |
-| Mastra | [Mastra Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/mastra/) |
-| Flue on Node.js | [Flue Node Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/flue/) |
-| Flue on Cloudflare | [Flue Cloudflare Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/cloudflare/agent-tracing/flue/) |
-| Workers AI | [Workers AI](https://docs.sentry.io/platforms/javascript/guides/cloudflare/features/workers-ai/) |
-| Cloudflare Agents SDK | [Cloudflare Agents SDK](https://docs.sentry.io/platforms/javascript/guides/cloudflare/features/agents-sdk/) |
+| Vercel AI SDK | [Vercel AI SDK Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/vercelai/) |
+| OpenAI (JavaScript) | [OpenAI Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/openai/) |
+| Anthropic (JavaScript) | [Anthropic Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/anthropic/) |
+| Google Gen AI SDK (JavaScript) | [Google Gen AI Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/google-genai/) |
+| LangChain (JavaScript) | [LangChain Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/langchain/) |
+| LangGraph (JavaScript) | [LangGraph Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/langgraph/) |
+| Workers AI | [Workers AI](https://docs.sentry.io/platforms/javascript/guides/cloudflare/agent-tracing/workers-ai/) |
+| Cloudflare Agents SDK | [Cloudflare Agents SDK](https://docs.sentry.io/platforms/javascript/guides/cloudflare/agent-tracing/agents-sdk/) |
 | OpenAI (Python) | [Python OpenAI Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/openai/) |
 | OpenAI Agents SDK (Python) | [OpenAI Agents SDK Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/openai-agents/) |
 | Anthropic (Python) | [Python Anthropic Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/anthropic/) |
@@ -63,20 +75,6 @@ Follow the matching integration docs after the platform is known:
 | Pydantic AI | [Pydantic AI Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/pydantic-ai/) |
 | Hugging Face Hub | [Hugging Face Hub Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/huggingface_hub/) |
 | Laravel AI | [Laravel AI integration](https://docs.sentry.io/platforms/php/guides/laravel/integrations/laravel-ai/) |
-
-## Eve
-
-For Eve, support the Sentry Node SDK path so it behaves like the other JavaScript AI
-setups. Follow
-[Node Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/)
-and the
-[Vercel AI SDK guide](https://docs.sentry.io/platforms/javascript/guides/node/agent-tracing/vercelai/).
-This path requires `@sentry/node` v11 or newer.
-
-Do not install Eve’s OTLP exporter for the same runtime unless the user explicitly asks
-for the trace-only Eve exporter path.
-If an Eve OTLP exporter already exists, ask whether to keep that trace-only setup or
-switch to the Node SDK setup; do not run both.
 
 ## Decisions before editing
 

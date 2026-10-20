@@ -16,7 +16,8 @@ don’t assume from files alone — then fetch that platform’s page from the t
 platform list.
 
 When more than one row matches, prefer the most specific framework (Next.js over React
-or Node.js, NestJS over Node.js, Cloudflare over Node.js, React Native over React).
+or Node.js, NestJS over Node.js, Cloudflare over Node.js, React Native over React, an
+agent framework such as Eve, Flue, Mastra, or Pi Durable over Node.js or Cloudflare).
 If nothing matches, or a framework guide fits better than the row you found (an ASP.NET
 Core app on .NET, say), pick it from the
 [platform list](https://docs.sentry.io/platforms.md).
@@ -32,13 +33,17 @@ Core app on .NET, say), pick it from the
 | Deno | `deno.json`, `deno.jsonc` | [Deno](https://docs.sentry.io/platforms/javascript/guides/deno.md) |
 | .NET | `*.csproj`, `*.sln`, `*.slnx` | [.NET](https://docs.sentry.io/platforms/dotnet.md) |
 | Elixir | `mix.exs` | [Elixir](https://docs.sentry.io/platforms/elixir.md) |
+| Eve | `eve` | [Eve](https://docs.sentry.io/platforms/javascript/guides/eve.md) |
+| Flue | `@flue/runtime` | [Flue](https://docs.sentry.io/platforms/javascript/guides/flue.md) |
 | Flutter | `pubspec.yaml` with a `flutter` dependency | [Flutter](https://docs.sentry.io/platforms/dart/guides/flutter.md) |
 | Go | `go.mod` | [Go](https://docs.sentry.io/platforms/go.md) |
 | Laravel | `laravel/framework` in `composer.json` | [Laravel](https://docs.sentry.io/platforms/php/guides/laravel.md) |
+| Mastra | `@mastra/core` | [Mastra](https://docs.sentry.io/platforms/javascript/guides/mastra.md) |
 | NestJS | `@nestjs/core` | [NestJS](https://docs.sentry.io/platforms/javascript/guides/nestjs.md) |
 | Next.js | `next` | [Next.js](https://docs.sentry.io/platforms/javascript/guides/nextjs.md) |
 | Node.js | `package.json` without a more specific framework | [Node.js](https://docs.sentry.io/platforms/javascript/guides/node.md) |
 | PHP | `composer.json` | [PHP](https://docs.sentry.io/platforms/php.md) |
+| Pi Durable | `@earendil-works/pi-durable` | [Pi Durable](https://docs.sentry.io/platforms/javascript/guides/pi-durable.md) |
 | Python | `requirements.txt`, `pyproject.toml`, `Pipfile`, `uv.lock` | [Python](https://docs.sentry.io/platforms/python.md) |
 | Rails | `rails` in `Gemfile` | [Rails](https://docs.sentry.io/platforms/ruby/guides/rails.md) |
 | React | `react` without a more specific framework | [React](https://docs.sentry.io/platforms/javascript/guides/react.md) |
