@@ -33,7 +33,6 @@ Open the platform docs before changing code:
 | Cloudflare Workers / Pages | [Cloudflare Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/cloudflare/agent-tracing/) |
 | Python | [Python Agent Tracing](https://docs.sentry.io/platforms/python/agent-tracing/) |
 | Laravel / PHP | [Laravel Agent Tracing](https://docs.sentry.io/platforms/php/guides/laravel/agent-tracing/) |
-| React Native | [React Native Agent Tracing](https://docs.sentry.io/platforms/react-native/agent-tracing/) |
 | Custom spans | [Sentry GenAI conventions](https://github.com/getsentry/sentry-conventions/) |
 
 ## Agent framework guides
