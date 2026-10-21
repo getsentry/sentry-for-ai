@@ -168,12 +168,9 @@ flag it. You’ll also want to immediately read
 [`references/concepts/errors.md`](references/concepts/errors.md) so you have the catalog
 and the baseline-signal context in hand before you start.
 
-When it’s done, suggest specific signals based on what you saw in the project (e.g.
-Session Replay for a browser or mobile UI, Logs if a logging library is in use, AI
-Monitoring if it calls an LLM), using the **`sentry-instrument`** skill, rather than
-asking an open “what next?”
-Also suggest an uptime monitor once the app has a production URL, and releases so issues
-tie to the deploy that introduced them.
+When it’s done, surface other options — chiefly the **`sentry-instrument`** skill to add
+more telemetry (logging, profiling, session replay, crons, uptime, …), and releases so
+issues tie to the deploy that introduced them.
 As in the existing-user path, only name a skill you’ve confirmed is available in your
 harness’s skill list; otherwise offer the docs fallback.
 Don’t auto-run them.
