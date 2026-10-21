@@ -4,6 +4,11 @@ Per-platform install, `init`, signal code, and build-tool configuration come fro
 Sentry docs, not from this library.
 Every docs page is also served as Markdown: append `.md` to its path.
 
+Read that Markdown **verbatim**: prefer `curl -sL https://docs.sentry.io/<path>.md` over
+a fetch tool or subagent that summarizes, because the setup depends on the exact code.
+Without shell or network access, ask the fetch tool for the raw, unsummarized page.
+If code blocks look missing or rewritten, assume it was summarized and fetch again.
+
 The complete catalog is the [platform list](https://docs.sentry.io/platforms.md): every
 SDK, and under each one its framework guides (ASP.NET Core, Spring Boot, Sidekiq, …).
 The table below is a shortcut for the common platforms, with the files that identify
@@ -57,8 +62,10 @@ Core app on .NET, say), pick it from the
 
 ## Go deeper from the platform page
 
-The platform page covers install and a recommended default `init`. Keep its signals for
-a new project rather than paring them back.
+The platform page covers install and a default `init`, often with more than a new
+project needs. A first setup is errors + tracing; leave out other signals in the docs’
+code (session replay, profiling, logs, …) unless the user asked for them.
+They’re proposed as next steps after setup, never added silently.
 Set values that depend on the environment with a check that works where the code runs:
 the framework’s environment or the build’s debug flag.
 For the trace sample rate, see [`concepts/tracing.md`](concepts/tracing.md).
