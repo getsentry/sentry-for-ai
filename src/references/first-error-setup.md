@@ -154,22 +154,6 @@ Also **scrutinize the verified issue**: pull it with `get_sentry_resource` and c
 frames show actual source (file, line, function), not minified or unsymbolicated noise.
 Degraded frames even locally are a strong signal production will be worse.
 
-## Recommend signals
-
-Once the setup is verified, propose specific signals from what you saw in the project,
-each with a one-line reason, rather than asking an open question.
-Only propose signals the platform’s docs page links to.
-
-- A browser or mobile UI → Session Replay
-- A logging library already in use → Logs
-- Scheduled jobs (a cron config or a scheduler library) → Crons
-- An LLM SDK or agent framework in the dependencies → AI Monitoring
-- A metrics client or custom counters → Metrics
-- CPU-heavy work, or the user mentions slowness → Profiling
-
-Recommend only — don’t wire them as part of this setup; the skill that led you here
-hands them off.
-
 ## What “done” looks like
 
 The SDK is installed with sane defaults (errors + tracing), a **real error produced by
