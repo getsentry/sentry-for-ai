@@ -4,10 +4,17 @@ Per-platform install, `init`, signal code, and build-tool configuration come fro
 Sentry docs, not from this library.
 Every docs page is also served as Markdown: append `.md` to its path.
 
-Read that Markdown **verbatim**: prefer `curl -sL https://docs.sentry.io/<path>.md` over
-a fetch tool or subagent that summarizes, because the setup depends on the exact code.
-Without shell or network access, ask the fetch tool for the raw, unsummarized page.
-If code blocks look missing or rewritten, assume it was summarized and fetch again.
+Read that Markdown **verbatim**, not through a tool or subagent that summarizes it,
+because the setup depends on the exact code.
+Use the first of these that works:
+
+- **The Sentry MCP’s `get_doc` catalog tool**, once the MCP is authenticated — it
+  returns the raw page.
+  Platform detection can run before that, so don’t wait for it.
+- **A shell HTTP client** — `curl -sL https://docs.sentry.io/<path>.md`, or `wget` /
+  `Invoke-WebRequest` where curl is missing.
+- **A web-fetch tool**, as a last resort — it summarizes and won’t quote long code, so
+  ask it which code belongs to which signal rather than for the whole page.
 
 The complete catalog is the [platform list](https://docs.sentry.io/platforms.md): every
 SDK, and under each one its framework guides (ASP.NET Core, Spring Boot, Sidekiq, …).
