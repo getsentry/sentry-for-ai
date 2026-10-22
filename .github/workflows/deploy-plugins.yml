@@ -6,6 +6,7 @@
 # repository whose ROOT is exactly that agent's plugin:
 #
 #   agent-plugin -> getsentry/agent-plugin
+#   antigravity  -> getsentry/plugin-antigravity
 #   claude       -> getsentry/plugin-claude
 #   copilot      -> getsentry/plugin-copilot
 #   cursor       -> getsentry/plugin-cursor
@@ -96,6 +97,8 @@ jobs:
         include:
           - distribution: agent-plugin
             repository: agent-plugin
+          - distribution: antigravity
+            repository: plugin-antigravity
           - distribution: claude
             repository: plugin-claude
           - distribution: copilot
