@@ -4,7 +4,9 @@
 > **This is a skill *source* repository — not something you install directly.** The
 > skills here are built from this source into a portable
 > [Agent Plugin](https://github.com/getsentry/agent-plugin) and installable
-> client-specific plugins for [Claude Code](https://github.com/getsentry/plugin-claude),
+> client-specific plugins for
+> [Google Antigravity](https://github.com/getsentry/plugin-antigravity),
+> [Claude Code](https://github.com/getsentry/plugin-claude),
 > [GitHub Copilot](https://github.com/getsentry/plugin-copilot),
 > [Cursor](https://github.com/getsentry/plugin-cursor),
 > [Codex](https://github.com/getsentry/plugin-codex), and
@@ -23,6 +25,7 @@ configuring alerts, just ask.
 The plugin gives your assistant the context it needs to do it right.
 
 Supports the [**Agent Plugins standard**](https://agent-plugins.org/),
+[**Google Antigravity**](https://github.com/getsentry/plugin-antigravity),
 [**Claude Code**](https://github.com/getsentry/plugin-claude),
 [**GitHub Copilot**](https://github.com/getsentry/plugin-copilot),
 [**Cursor**](https://github.com/getsentry/plugin-cursor),
@@ -78,6 +81,7 @@ its own **distribution repository**, whose root is exactly that agent’s plugin
 | Agent | Distribution repository |
 | --- | --- |
 | Agent Plugins 1.0.0 | [`getsentry/agent-plugin`](https://github.com/getsentry/agent-plugin) |
+| Google Antigravity | [`getsentry/plugin-antigravity`](https://github.com/getsentry/plugin-antigravity) |
 | Claude Code | [`getsentry/plugin-claude`](https://github.com/getsentry/plugin-claude) |
 | GitHub Copilot CLI / VS Code | [`getsentry/plugin-copilot`](https://github.com/getsentry/plugin-copilot) |
 | Cursor | [`getsentry/plugin-cursor`](https://github.com/getsentry/plugin-cursor) |
@@ -104,7 +108,7 @@ src/plugins/agent-plugin/build.sh /tmp/sentry-agent-plugin
 ```
 
 To build any target locally, run `src/plugins/<agent>/build.sh <output-dir>`
-(`agent-plugin`, `claude`, `copilot`, `cursor`, `codex`, or `grok`).
+(`agent-plugin`, `antigravity`, `claude`, `copilot`, `cursor`, `codex`, or `grok`).
 
 ## Skills
 

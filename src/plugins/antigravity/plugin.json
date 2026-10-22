@@ -1,0 +1,20 @@
+{
+  "name": "sentry",
+  "displayName": "Sentry",
+  "version": "0.0.0",
+  "description": "Set up Sentry monitoring, investigate production errors, and configure alerts and releases with expert skills and live context from your Sentry projects.",
+  "logo": "assets/logo.svg",
+  "suggestedPrompts": [
+    "Set up Sentry in this project",
+    "Investigate my most frequent production errors",
+    "Configure alerts for my Sentry project"
+  ],
+  "keywords": ["sentry", "debugging", "monitoring", "error-tracking"],
+  "author": {
+    "name": "Sentry",
+    "url": "https://sentry.io"
+  },
+  "homepage": "https://sentry.io",
+  "repository": "https://github.com/getsentry/plugin-antigravity",
+  "license": "MIT"
+}

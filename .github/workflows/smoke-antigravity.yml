@@ -1,0 +1,68 @@
+name: Smoke Antigravity plugin
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/plugins/antigravity/**"
+      - "src/plugins/version.json"
+      - "src/skills/**"
+      - "src/references/**"
+      - "mcp.json"
+      - "scripts/build-common.sh"
+      - "scripts/hydrate-references.py"
+      - ".github/workflows/smoke-antigravity.yml"
+  pull_request:
+    paths:
+      - "src/plugins/antigravity/**"
+      - "src/plugins/version.json"
+      - "src/skills/**"
+      - "src/references/**"
+      - "mcp.json"
+      - "scripts/build-common.sh"
+      - "scripts/hydrate-references.py"
+      - ".github/workflows/smoke-antigravity.yml"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      AGY_CLI_DISABLE_AUTO_UPDATE: "true"
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+
+      - name: Install Antigravity CLI 1.4.5
+        env:
+          AGY_URL: https://storage.googleapis.com/antigravity-public/antigravity-cli/1.4.5-4952523841339392/linux-x64/cli_linux_x64.tar.gz
+          AGY_SHA512: fd30e8d256e28c4a6d0f5fddaa0f74b47c8c5a8e9fa2285cb03f85093e90eca0406f1c2fa57a0386bb820e21ed427e27c2315a01453dfda401c2223b2639ab30
+        run: |
+          curl -fsSL "$AGY_URL" -o "$RUNNER_TEMP/agy.tar.gz"
+          echo "$AGY_SHA512  $RUNNER_TEMP/agy.tar.gz" | sha512sum --check -
+          tar -xzf "$RUNNER_TEMP/agy.tar.gz" -C "$RUNNER_TEMP" antigravity
+          mv "$RUNNER_TEMP/antigravity" "$RUNNER_TEMP/agy"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/agy" --version
+
+      - name: Build and validate
+        run: |
+          src/plugins/antigravity/build.sh "$RUNNER_TEMP/sentry"
+          src/plugins/antigravity/validate.sh "$RUNNER_TEMP/sentry"
+          scripts/validate-skill-links.py --skills "$RUNNER_TEMP/sentry/skills" --references src/references --label antigravity
+
+      - name: Smoke test installation
+        run: src/plugins/antigravity/smoke.sh "$RUNNER_TEMP/sentry"
+
+      - name: Validate develop version stamping
+        env:
+          PLUGIN_VERSION: 1.2.1-dev.14.gdeadbee
+        run: |
+          src/plugins/antigravity/build.sh "$RUNNER_TEMP/develop/sentry"
+          src/plugins/antigravity/validate.sh "$RUNNER_TEMP/develop/sentry"
+          src/plugins/antigravity/smoke.sh "$RUNNER_TEMP/develop/sentry"
