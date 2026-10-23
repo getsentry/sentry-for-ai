@@ -4,12 +4,13 @@
 # `ai-evals:products`, on each target (a harness, Claude Code or Codex later, with a
 # model) that repo's plan-evals action lists, or `ai-evals:<mark>:<models>` to run them
 # on the targets whose `<harness>:<model>` contains `<models>`, e.g.
-# `ai-evals:products:opus-5.5`. Each label runs against skills built at both the PR's
-# merge-base and head, using the same sentry-for-ai-evals commit, one job per test and
-# target, so each test gets a clean container and they all run at once. The plan job
-# creates one run per label and side on evals.sentry.dev, and each job sends its test's
-# result into it, so one run holds every test and target. A new push reruns every eval
-# label still on the PR.
+# `ai-evals:products:opus-5.5`. End either with `:x<count>` to run each test that many
+# times, up to x10, e.g. `ai-evals:products:opus-5.5:x3`. Each label runs against
+# skills built at both the PR's merge-base and head, using the same sentry-for-ai-evals
+# commit, one job per test, repeat and target, so each test gets a clean container and
+# they all run at once. The plan job creates one run per label and side on
+# evals.sentry.dev, and each job sends its test's result into it, so one run holds every
+# test and target. A new push reruns every eval label still on the PR.
 #
 # sentry-for-ai-evals is internal, so the jobs check it out with the readonly bot's
 # token and use its actions from that path. Fork PRs get no secrets, so they're skipped.
