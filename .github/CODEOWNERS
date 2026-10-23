@@ -9,10 +9,10 @@
 # ---------------------------------------------------------------------------
 
 # Legacy SDK Skills — Mobile
-/skills-legacy/sentry-android-sdk/       @getsentry/team-mobile-core
-/skills-legacy/sentry-cocoa-sdk/         @getsentry/team-mobile-core
-/skills-legacy/sentry-flutter-sdk/       @getsentry/team-mobile-cross-platform
-/skills-legacy/sentry-react-native-sdk/  @getsentry/team-mobile-cross-platform
+/skills-legacy/sentry-android-sdk/       @getsentry/team-mobile-android-sdk
+/skills-legacy/sentry-cocoa-sdk/         @getsentry/team-mobile-apple-sdk
+/skills-legacy/sentry-flutter-sdk/       @getsentry/team-mobile-cross-platform-sdks
+/skills-legacy/sentry-react-native-sdk/  @getsentry/team-mobile-cross-platform-sdks
 
 # Legacy SDK Skills — JavaScript (Browser)
 /skills-legacy/sentry-browser-sdk/       @getsentry/team-javascript-sdks-browser
