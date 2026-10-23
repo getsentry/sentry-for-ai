@@ -10,10 +10,10 @@ skills and the hosted [Sentry MCP server](https://mcp.sentry.dev).
 
 ## Install
 
-In Antigravity, open **Customizations → Plugins → Install from URL** and enter:
+Ask the Antigravity agent:
 
 ```text
-https://github.com/getsentry/plugin-antigravity
+Install the plugin from https://github.com/getsentry/plugin-antigravity
 ```
 
 Or install with the Antigravity CLI:
@@ -22,8 +22,16 @@ Or install with the Antigravity CLI:
 agy plugin install https://github.com/getsentry/plugin-antigravity
 ```
 
-Authenticate the Sentry MCP connection when prompted.
-Then ask:
+## After installing
+
+1. Restart Antigravity so it loads the plugin’s skills and slash commands.
+2. Start a new conversation and run `/sentry-get-started`. If Sentry isn’t connected
+   yet, it links you to the plugin’s page in Customizations, where you sign in to
+   connect the Sentry MCP server, before it sets anything up.
+
+## Use it
+
+Ask:
 
 ```text
 Set up Sentry in this project
