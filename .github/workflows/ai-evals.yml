@@ -39,9 +39,8 @@ jobs:
     permissions:
       contents: read
     outputs:
-      runs: ${{ steps.plan.outputs.runs }}
       count: ${{ steps.plan.outputs.count }}
-      evals-sha: ${{ steps.evals.outputs.sha }}
+      evals-sha: ${{ steps.evals.outputs.commit }}
       base-sha: ${{ steps.base.outputs.sha }}
       eval-runs: ${{ steps.create.outputs.runs }}
       eval-jobs: ${{ steps.create.outputs.jobs }}
@@ -55,7 +54,8 @@ jobs:
           repositories: sentry-for-ai-evals
           permission-contents: read
 
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - id: evals
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: getsentry/sentry-for-ai-evals
           token: ${{ steps.token.outputs.token }}
@@ -64,11 +64,6 @@ jobs:
 
       - id: plan
         uses: ./sentry-for-ai-evals/.github/actions/plan-evals
-
-      - id: evals
-        if: steps.plan.outputs.count != '0'
-        shell: bash
-        run: echo "sha=$(git -C sentry-for-ai-evals rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       # The base side runs where the PR branched. The event's base SHA is the base branch's
       # tip, which can hold commits the head doesn't, and they'd count against the head.
