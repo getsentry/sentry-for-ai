@@ -3,7 +3,7 @@
     "sdk": "android",
     "repo": "getsentry/sentry-android",
     "path_filter": "",
-    "team": "getsentry/team-mobile"
+    "team": "getsentry/team-mobile-android-sdk"
   },
   {
     "sdk": "browser",
@@ -21,7 +21,7 @@
     "sdk": "cocoa",
     "repo": "getsentry/sentry-cocoa",
     "path_filter": "",
-    "team": "getsentry/team-mobile"
+    "team": "getsentry/team-mobile-apple-sdk"
   },
   {
     "sdk": "dotnet",
@@ -39,7 +39,7 @@
     "sdk": "flutter",
     "repo": "getsentry/sentry-dart",
     "path_filter": "",
-    "team": "getsentry/team-mobile-cross-platform"
+    "team": "getsentry/team-mobile-cross-platform-sdks"
   },
   {
     "sdk": "go",
@@ -81,7 +81,7 @@
     "sdk": "react-native",
     "repo": "getsentry/sentry-react-native",
     "path_filter": "",
-    "team": "getsentry/team-mobile-cross-platform"
+    "team": "getsentry/team-mobile-cross-platform-sdks"
   },
   {
     "sdk": "react-router-framework",
