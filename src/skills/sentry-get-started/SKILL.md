@@ -145,9 +145,18 @@ Ask with your interactive prompt:
   come back and connect the MCP. (No agent flow for signup itself yet.)
 - **Make sure the Sentry MCP is actually installed** — if it isn’t in your harness,
   point them to https://mcp.sentry.dev to add it, then connect.
-- **“I have an account — connect Sentry”** → use your knowledge of the harness you’re
-  running in to suggest the appropriate way to authenticate the Sentry MCP, then
-  continue.
+- **“I have an account — connect Sentry”** → give the steps for your harness below, wait
+  for the user to say it’s done, then rerun the probe.
+  - **Google Antigravity desktop app:** the Sentry plugin bundles the MCP server, which
+    only needs connecting on the plugin’s page in Customizations.
+    Link the user to it as a clickable Markdown link, not in a code span:
+    `[Connect Sentry in Customizations](customization://<dir>)`. `<dir>` is the plugin’s
+    install directory name, which isn’t always `sentry`: find the directory under
+    `~/.gemini/config/plugins/` whose `plugin.json` has `"name": "sentry"`, and use
+    `sentry` if you can’t look.
+  - **Any other harness, including the Antigravity CLI:** use your knowledge of the
+    harness you’re running in to suggest the appropriate way to authenticate the Sentry
+    MCP.
 
 ## Step 1 — Route based on the probe
 
