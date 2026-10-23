@@ -68,9 +68,25 @@ npx @sentry/agent-plugin remove --no-interactive # remove from every agent that 
 plugin, and removes the Sentry plugin itself — each tool’s plugin marketplace is left
 registered. Restart your AI tools afterward to drop the plugin.
 
+## Standalone binary
+
+Each release also ships a self-contained binary per platform that needs no Node.js,
+attached to the
+[GitHub release](https://github.com/getsentry/sentry-for-ai/releases/latest) as
+`sentry-agent-plugin-<os>-<arch>` (`darwin`, `linux`, `windows`; `arm64`, `x64`) with a
+gzipped `.gz` copy alongside:
+
+```bash
+curl -fsSL https://github.com/getsentry/sentry-for-ai/releases/latest/download/sentry-agent-plugin-darwin-arm64.gz \
+  | gunzip > sentry-agent-plugin && chmod +x sentry-agent-plugin
+./sentry-agent-plugin install
+```
+
+`pnpm build:binary` builds them locally (`--single` for the host platform only).
+
 ## Requirements
 
-- Node.js 22.13 or newer
+- Node.js 22.13 or newer (not needed for the standalone binary)
 - The assistant CLI you want to set up must already be installed and on your `PATH`
 - `git` is required for the Cursor install
 

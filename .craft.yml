@@ -1,4 +1,5 @@
-# Releases packages/installer to npm as @sentry/agent-plugin via craft.
+# Releases packages/installer via craft: to npm as @sentry/agent-plugin, and as
+# standalone binaries attached to a GitHub release.
 minVersion: "2.21.0"
 # Single segment only -- craft splits the branch name on the first "/".
 releaseBranchPrefix: release-installer
@@ -9,12 +10,22 @@ changelog:
   filePath: packages/installer/CHANGELOG.md
   policy: simple
 
-# No github target, so no git tags or GitHub releases.
 targets:
   - name: npm
     id: "@sentry/agent-plugin"
     access: public
     includeNames: /^sentry-agent-plugin-\d.*\.tgz$/
+  # Tags are prefixed to stay clear of the plugin releases' plugin/v* tags;
+  # craft also scopes its previous-version lookup to this prefix.
+  - name: github
+    tagPrefix: installer/v
+    includeNames: /^sentry-agent-plugin-(darwin|linux|windows)-.*$/
 
 requireNames:
   - /^sentry-agent-plugin-\d.*\.tgz$/
+  - /^sentry-agent-plugin-darwin-arm64(\.gz)?$/
+  - /^sentry-agent-plugin-darwin-x64(\.gz)?$/
+  - /^sentry-agent-plugin-linux-arm64(\.gz)?$/
+  - /^sentry-agent-plugin-linux-x64(\.gz)?$/
+  - /^sentry-agent-plugin-windows-arm64\.exe(\.gz)?$/
+  - /^sentry-agent-plugin-windows-x64\.exe(\.gz)?$/
