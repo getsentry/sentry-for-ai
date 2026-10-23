@@ -4,11 +4,13 @@
 # `ai-evals:products`, on each target (a harness, Claude Code or Codex later, with a
 # model) that repo's plan-evals action lists, or `ai-evals:<mark>:<models>` to run them
 # on the targets whose `<harness>:<model>` contains `<models>`, e.g.
-# `ai-evals:products:opus-5.5`. Each label runs against skills built at both the PR's
-# merge-base and head, using the same sentry-for-ai-evals commit, one job per target.
-# The plan job creates one run per label and side on evals.sentry.dev, and each
-# target's job sends its results into it, so one run holds every target. A new push
-# reruns every eval label still on the PR.
+# `ai-evals:products:opus-5.5`. End either with `:x<count>` to run each test that many
+# times, up to x10, e.g. `ai-evals:products:opus-5.5:x3`. Each label runs against
+# skills built at both the PR's merge-base and head, using the same sentry-for-ai-evals
+# commit, one job per test, repeat and target, so each test gets a clean container and
+# they all run at once. The plan job creates one run per label and side on
+# evals.sentry.dev, and each job sends its test's result into it, so one run holds every
+# test and target. A new push reruns every eval label still on the PR.
 #
 # sentry-for-ai-evals is internal, so the jobs check it out with the readonly bot's
 # token and use its actions from that path. Fork PRs get no secrets, so they're skipped.
@@ -37,12 +39,11 @@ jobs:
     permissions:
       contents: read
     outputs:
-      runs: ${{ steps.plan.outputs.runs }}
       count: ${{ steps.plan.outputs.count }}
-      jobs: ${{ steps.plan.outputs.jobs }}
-      evals-sha: ${{ steps.evals.outputs.sha }}
+      evals-sha: ${{ steps.evals.outputs.commit }}
       base-sha: ${{ steps.base.outputs.sha }}
       eval-runs: ${{ steps.create.outputs.runs }}
+      eval-jobs: ${{ steps.create.outputs.jobs }}
     steps:
       - name: Get sentry-for-ai-evals token
         id: token
@@ -53,7 +54,8 @@ jobs:
           repositories: sentry-for-ai-evals
           permission-contents: read
 
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - id: evals
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: getsentry/sentry-for-ai-evals
           token: ${{ steps.token.outputs.token }}
@@ -62,23 +64,6 @@ jobs:
 
       - id: plan
         uses: ./sentry-for-ai-evals/.github/actions/plan-evals
-
-      # An older sentry-for-ai-evals has no jobs list, so the matrix below would be empty.
-      - name: Check jobs support
-        if: steps.plan.outputs.count != '0'
-        shell: bash
-        env:
-          JOBS: ${{ steps.plan.outputs.jobs }}
-        run: |
-          if [[ -z "$JOBS" ]]; then
-            echo "::error::Merge the models-in-labels support in sentry-for-ai-evals before running this workflow"
-            exit 1
-          fi
-
-      - id: evals
-        if: steps.plan.outputs.count != '0'
-        shell: bash
-        run: echo "sha=$(git -C sentry-for-ai-evals rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       # The base side runs where the PR branched. The event's base SHA is the base branch's
       # tip, which can hold commits the head doesn't, and they'd count against the head.
@@ -104,13 +89,26 @@ jobs:
           base-sha: ${{ steps.base.outputs.sha }}
           evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
 
+      # An older sentry-for-ai-evals lists no jobs per test, so the matrix below would be empty.
+      - name: Check jobs support
+        if: steps.plan.outputs.count != '0'
+        shell: bash
+        env:
+          JOBS: ${{ steps.create.outputs.jobs }}
+        run: |
+          if [[ -z "$JOBS" ]]; then
+            echo "::error::Merge the per-test jobs in sentry-for-ai-evals before running this workflow"
+            exit 1
+          fi
+
   eval:
     needs: plan
-    if: needs.plan.outputs.count != '0'
-    name: ${{ matrix.run.label }} (${{ matrix.revision }}, ${{ matrix.run.target.name }})
-    # Per PR, label, revision and target, so the jobs don't cancel each other.
+    # A label with no tests at either side has no jobs.
+    if: needs.plan.outputs.count != '0' && needs.plan.outputs.eval-jobs != '[]'
+    name: ${{ matrix.job.label }} (${{ matrix.job.revision }}, ${{ matrix.job.target.name }}, ${{ matrix.job.test-name }})
+    # Per PR, label, revision, target and test, so the jobs don't cancel each other.
     concurrency:
-      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.run.label }}-${{ matrix.revision }}-${{ matrix.run.target.name }}
+      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.job.label }}-${{ matrix.job.revision }}-${{ matrix.job.target.name }}-${{ matrix.job.test }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -119,9 +117,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Each label's run on each target it picked.
-        run: ${{ fromJSON(needs.plan.outputs.jobs) }}
-        revision: [base, head]
+        # Each test a label selects at each side, on each target the label picked.
+        job: ${{ fromJSON(needs.plan.outputs.eval-jobs) }}
     steps:
       - name: Get sentry-for-ai-evals token
         id: token
@@ -143,20 +140,21 @@ jobs:
 
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ matrix.revision == 'base' && needs.plan.outputs.base-sha || github.event.pull_request.head.sha }}
+          ref: ${{ matrix.job.revision == 'base' && needs.plan.outputs.base-sha || github.event.pull_request.head.sha }}
           path: sentry-for-ai
           persist-credentials: false
 
-      # Sends this target's results into the run the plan job created for the label and
+      # Sends this test's result into the run the plan job created for the label and
       # side. No artifact-name: this repo is public.
       - uses: ./sentry-for-ai-evals/.github/actions/run-evals
         with:
-          marker: ${{ matrix.run.marker }}
-          harness: ${{ matrix.run.target.harness }}
-          model: ${{ matrix.run.target.model }}
-          revision: ${{ matrix.revision }}
+          marker: ${{ matrix.job.marker }}
+          test: ${{ matrix.job.test }}
+          harness: ${{ matrix.job.target.harness }}
+          model: ${{ matrix.job.target.model }}
+          revision: ${{ matrix.job.revision }}
           base-sha: ${{ needs.plan.outputs.base-sha }}
           sentry-for-ai-path: sentry-for-ai
-          run-id: ${{ fromJSON(needs.plan.outputs.eval-runs)[format('{0}-{1}', matrix.run.label, matrix.revision)].id }}
+          run-id: ${{ fromJSON(needs.plan.outputs.eval-runs)[format('{0}-{1}', matrix.job.label, matrix.job.revision)].id }}
           openrouter-api-key: ${{ secrets.AI_EVALS_OPENROUTER_API_KEY }}
           evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
