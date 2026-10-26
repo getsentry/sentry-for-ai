@@ -114,6 +114,10 @@ arguments, and tool results.
 If the user raises a privacy, security, compliance, or volume concern, follow the docs
 to disable or scope capture instead.
 Preserve any capture restrictions they have already chosen.
+Wiring AI/LLM monitoring includes conversation tracking: set a stable conversation ID
+and the user on each request that makes AI calls, as the platform’s Agent Tracing page
+shows under Tracking Conversations — unless the app already sets them or the integration
+infers a conversation ID.
 
 ### Semantic conventions
 
@@ -195,6 +199,14 @@ dashboard.”
 After the first error or a new signal is confirmed, offer concrete follow-ups without
 auto-running them:
 
+- When AI/LLM monitoring wasn’t a requested signal, but the app’s dependencies include
+  an AI library (an LLM SDK or agent framework) and the platform’s Agent Tracing page
+  lists it as traced for this SDK version and runtime, offer conversation tracking — a
+  stable conversation ID and the user on each request that makes AI calls, so turns
+  group into one conversation and show who sent them.
+  Link that page’s Tracking Conversations section (e.g.
+  `https://docs.sentry.io/platforms/javascript/guides/nextjs/agent-tracing/#tracking-conversations`).
+  Skip it when the app already sets them or the integration infers a conversation ID.
 - After setting up AI/LLM monitoring with a JavaScript/TypeScript Sentry SDK, ask
   whether the user wants to control which AI inputs and outputs the SDK sends, unless
   they have already stated their preference.
