@@ -89,26 +89,16 @@ jobs:
           base-sha: ${{ steps.base.outputs.sha }}
           evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
 
-      # An older sentry-for-ai-evals lists no jobs per test, so the matrix below would be empty.
-      - name: Check jobs support
-        if: steps.plan.outputs.count != '0'
-        shell: bash
-        env:
-          JOBS: ${{ steps.create.outputs.jobs }}
-        run: |
-          if [[ -z "$JOBS" ]]; then
-            echo "::error::Merge the per-test jobs in sentry-for-ai-evals before running this workflow"
-            exit 1
-          fi
-
   eval:
     needs: plan
     # A label with no tests at either side has no jobs.
     if: needs.plan.outputs.count != '0' && needs.plan.outputs.eval-jobs != '[]'
-    name: ${{ matrix.job.label }} (${{ matrix.job.revision }}, ${{ matrix.job.target.name }}, ${{ matrix.job.test-name }})
+    # By the test's number, not its name: sentry-for-ai-evals is internal, so this public
+    # repo's checks and logs don't name its tests. evals.sentry.dev has each test's result.
+    name: ${{ matrix.job.label }} (${{ matrix.job.revision }}, ${{ matrix.job.target.name }}, test ${{ matrix.job.test-index }})
     # Per PR, label, revision, target and test, so the jobs don't cancel each other.
     concurrency:
-      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.job.label }}-${{ matrix.job.revision }}-${{ matrix.job.target.name }}-${{ matrix.job.test }}
+      group: ai-evals-${{ github.event.pull_request.number }}-${{ matrix.job.label }}-${{ matrix.job.revision }}-${{ matrix.job.target.name }}-${{ matrix.job.test-index }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -149,7 +139,8 @@ jobs:
       - uses: ./sentry-for-ai-evals/.github/actions/run-evals
         with:
           marker: ${{ matrix.job.marker }}
-          test: ${{ matrix.job.test }}
+          test-index: ${{ matrix.job.test-index }}
+          count: ${{ matrix.job.count }}
           harness: ${{ matrix.job.target.harness }}
           model: ${{ matrix.job.target.model }}
           revision: ${{ matrix.job.revision }}
