@@ -17,7 +17,9 @@
 # This repo is public, so the eval outputs (transcripts, reports, the agent's changes) are
 # not kept as artifacts, and nothing passes between the jobs but the run's id. The
 # products tests' results go to evals.sentry.dev, which is where to look at a run; the
-# logs show only pytest's progress and failures.
+# logs show only pytest's progress and failures. Once the eval jobs finish, the report
+# job posts each label's products matrix, base and head, to Slack as the sentry-evals
+# bot, and its log shows only whether each label was posted.
 
 name: AI Evals
 
@@ -149,4 +151,35 @@ jobs:
           sentry-for-ai-path: sentry-for-ai
           run-id: ${{ fromJSON(needs.plan.outputs.eval-runs)[format('{0}-{1}', matrix.job.label, matrix.job.revision)].id }}
           openrouter-api-key: ${{ secrets.AI_EVALS_OPENROUTER_API_KEY }}
+          evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
+
+  # Skipped when a new push cancelled the eval jobs, since that push's run posts instead.
+  report:
+    needs: [plan, eval]
+    if: >-
+      !cancelled() && (needs.eval.result == 'success' || needs.eval.result == 'failure')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Get sentry-for-ai-evals token
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.SENTRY_READONLY_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.SENTRY_READONLYBOT_PRIVATE_KEY }}
+          repositories: sentry-for-ai-evals
+          permission-contents: read
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: getsentry/sentry-for-ai-evals
+          ref: ${{ needs.plan.outputs.evals-sha }}
+          token: ${{ steps.token.outputs.token }}
+          path: sentry-for-ai-evals
+          persist-credentials: false
+
+      - uses: ./sentry-for-ai-evals/.github/actions/post-matrix
+        with:
+          runs: ${{ needs.plan.outputs.eval-runs }}
+          slack-bot-token: ${{ secrets.EVALS_SLACK_BOT_TOKEN }}
           evals-api-key: ${{ secrets.SENTRY_EVALS_API_KEY }}
