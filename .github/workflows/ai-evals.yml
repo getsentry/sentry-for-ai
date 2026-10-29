@@ -1,10 +1,10 @@
 # Runs the getsentry/sentry-for-ai-evals suites against this PR's skills.
 #
 # Label a PR `ai-evals:<mark>` to run the tests with that pytest mark, e.g.
-# `ai-evals:products`, on each target (a harness, Claude Code or Codex later, with a
-# model) that repo's plan-evals action lists, or `ai-evals:<mark>:<models>` to run them
-# on the targets whose `<harness>:<model>` contains `<models>`, e.g.
-# `ai-evals:products:opus-5.5`. End either with `:x<count>` to run each test that many
+# `ai-evals:products`, on every target (a harness, Claude Code or Codex, with a model)
+# that repo's plan-evals action lists, or `ai-evals:<mark>:<models>` to run them on the
+# targets whose `<harness>:<model>` contains `<models>`, e.g. `ai-evals:products:opus-5.5`
+# or `ai-evals:products:gpt-6.1-sol`. End either with `:x<count>` to run each test that many
 # times, up to x10, e.g. `ai-evals:products:opus-5.5:x3`. Each label runs against
 # skills built at both the PR's merge-base and head, using the same sentry-for-ai-evals
 # commit, one job per test, repeat and target, so each test gets a clean container and
