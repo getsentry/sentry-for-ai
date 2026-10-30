@@ -52,6 +52,10 @@ emit it as `.mcp.json` (Codex’s validator requires the dotted name; Grok auto-
 it).
 Claude declares the server inline in its `plugin.json` (`mcpServers`), so the Claude
 build ships no MCP file.
+The Agent Plugins and Copilot builds use `src/plugins/agent-plugin/mcp.json` instead.
+
+The `X-Sentry-Plugin` / `X-Sentry-Plugin-Version` header values are placeholders that
+the build stamps. Keep the URL fixed: it is the OAuth resource.
 
 ## Releasing the Plugins
 
