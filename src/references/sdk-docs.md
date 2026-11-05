@@ -4,6 +4,18 @@ Per-platform install, `init`, signal code, and build-tool configuration come fro
 Sentry docs, not from this library.
 Every docs page is also served as Markdown: append `.md` to its path.
 
+Read that Markdown **verbatim**, not through a tool or subagent that summarizes it,
+because the setup depends on the exact code.
+Use the first of these that works:
+
+- **The Sentry MCP’s `get_doc` catalog tool**, once the MCP is authenticated — it
+  returns the raw page.
+  Platform detection can run before that, so don’t wait for it.
+- **A shell HTTP client** — `curl -sL https://docs.sentry.io/<path>.md`, or `wget` /
+  `Invoke-WebRequest` where curl is missing.
+- **A web-fetch tool**, as a last resort — it summarizes and won’t quote long code, so
+  ask it which code belongs to which signal rather than for the whole page.
+
 The complete catalog is the [platform list](https://docs.sentry.io/platforms.md): every
 SDK, and under each one its framework guides (ASP.NET Core, Spring Boot, Sidekiq, …).
 The table below is a shortcut for the common platforms, with the files that identify
@@ -57,8 +69,10 @@ Core app on .NET, say), pick it from the
 
 ## Go deeper from the platform page
 
-The platform page covers install and a recommended default `init`. Keep its signals for
-a new project rather than paring them back.
+The platform page covers install and a default `init`, often with more than a new
+project needs. A first setup is errors + tracing; leave out other signals in the docs’
+code (session replay, profiling, logs, …) unless the user asked for them.
+They’re proposed as next steps after setup, never added silently.
 Set values that depend on the environment with a check that works where the code runs:
 the framework’s environment or the build’s debug flag.
 For the trace sample rate, see [`concepts/tracing.md`](concepts/tracing.md).
