@@ -26,6 +26,12 @@ Or from your terminal:
 claude plugin install sentry@claude-plugins-official
 ```
 
+In Neotask, install it from [Neotask Construct](https://construct.neotask.ai/p/sentry):
+
+```bash
+neotask construct install sentry
+```
+
 ## What’s included
 
 - The full Sentry skill library (SDK setup wizards, debugging and code-review workflows,
