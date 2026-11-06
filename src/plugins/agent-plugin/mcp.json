@@ -3,7 +3,11 @@
   "mcpServers": {
     "sentry": {
       "type": "streamable-http",
-      "url": "https://mcp.sentry.dev/mcp?utm_source=plugin"
+      "url": "https://mcp.sentry.dev/mcp?utm_source=plugin",
+      "headers": {
+        "X-Sentry-Plugin": "source",
+        "X-Sentry-Plugin-Version": "0.0.0"
+      }
     }
   }
 }
