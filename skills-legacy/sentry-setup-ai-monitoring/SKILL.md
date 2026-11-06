@@ -268,7 +268,7 @@ For detailed Laravel setup, verification, Conversations behavior, and feature fl
 
 ## Manual Instrumentation
 
-Use when no supported SDK is detected. Follow the canonical [Sentry Conventions for `gen_ai.*` attributes](https://getsentry.github.io/sentry-conventions/attributes/gen_ai/) — the [JS docs](https://docs.sentry.io/platforms/javascript/guides/connect/ai-agent-monitoring/#manual-instrumentation) may lag behind; do not set attributes marked deprecated in the conventions.
+Use when no supported SDK is detected. Follow the canonical [Sentry Conventions for `gen_ai.*` attributes](https://conventions.sentry.dev/attributes/gen_ai/) — the [JS docs](https://docs.sentry.io/platforms/javascript/guides/connect/ai-agent-monitoring/#manual-instrumentation) may lag behind; do not set attributes marked deprecated in the conventions.
 
 ### Span Types
 
