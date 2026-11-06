@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate semantic-convention attribute lookup files for skill references.
 
-Source: https://getsentry.github.io/sentry-conventions/api/attributes.json
+Source: https://conventions.sentry.dev/api/attributes.json
 Writes stable-only domain files under src/references/semantics/.
 Re-run when conventions change. Generated markdown is checked in on purpose.
 """
@@ -13,7 +13,7 @@ import urllib.request
 from collections import defaultdict
 from pathlib import Path
 
-SOURCE_URL = "https://getsentry.github.io/sentry-conventions/api/attributes.json"
+SOURCE_URL = "https://conventions.sentry.dev/api/attributes.json"
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "src" / "references" / "semantics"
 
