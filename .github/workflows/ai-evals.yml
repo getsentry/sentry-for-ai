@@ -15,8 +15,8 @@
 # sentry-for-ai-evals is internal, so the jobs check it out with the readonly bot's
 # token and use its actions from that path. Fork PRs get no secrets, so they're skipped.
 # This repo is public, so the eval outputs (transcripts, reports, the agent's changes) are
-# not kept as artifacts, and nothing passes between the jobs but the run's id. The
-# products tests' results go to evals.sentry.dev, which is where to look at a run; the
+# not kept as artifacts, and nothing passes between the jobs but the run's id. Each
+# test's result goes to evals.sentry.dev, which is where to look at a run; the
 # logs show only pytest's progress and failures. Once the eval jobs finish, the report
 # job posts each label's products matrix, base and head, to Slack as the sentry-evals
 # bot, and its log shows only whether each label was posted.
