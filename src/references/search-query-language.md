@@ -172,6 +172,20 @@ Trace linking: `trace`, `trace.span`, `trace.parent_span`. Time bucketing:
 `browser.name`, `os.name`, `device.class`, `platform`, `sdk.name`, `sdk.version`,
 `user.id` / `.email` / `.username`.
 
+Agent (AI) spans carry `gen_ai.*` attributes.
+To answer tool usage questions, filter on `gen_ai.operation.type:tool` and group by
+`gen_ai.tool.name`:
+
+- Most or least used tools: `count()`, sorted descending or ascending.
+- Most failing tools: sort by failed calls, `failure_rate() * count()`. `failure_rate()`
+  alone ranks tools called once or twice first.
+- One tool over time: add `gen_ai.tool.name:<name>` to the filter and chart `count()`.
+
+```bash
+sentry explore <org>/<project> --dataset spans -F gen_ai.tool.name -F "count()" \
+  -F "failure_rate()" -q "gen_ai.operation.type:tool" --sort "-count()" --period 7d
+```
+
 ### Logs
 
 Logs search on the log `message`, `severity` (`level` is the errors/issues key),
