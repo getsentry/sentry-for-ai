@@ -172,6 +172,33 @@ Trace linking: `trace`, `trace.span`, `trace.parent_span`. Time bucketing:
 `browser.name`, `os.name`, `device.class`, `platform`, `sdk.name`, `sdk.version`,
 `user.id` / `.email` / `.username`.
 
+#### Agent (AI) spans
+
+Agent spans carry `gen_ai.*` attributes, and `gen_ai.operation.type` says what each span
+is: `ai_client` for model calls, `tool` for tool calls, and `agent` for agent runs.
+Most agent questions are one aggregate query: filter on a type, group by the dimension
+the question is about, and pick the aggregate that measures it.
+
+- **Group by** `gen_ai.tool.name` (tools), `gen_ai.request.model` (models),
+  `gen_ai.agent.name` (agents), or `gen_ai.conversation.id` (conversations).
+- **Measure** usage with `count()`, failures with `failure_rate()`, latency with
+  `p95(span.duration)`, tokens with `sum(gen_ai.usage.total_tokens)`, cost in USD with
+  `sum(gen_ai.cost.total_tokens)`, and conversations with
+  `count_unique(gen_ai.conversation.id)`.
+- **Most failing** means the most failed calls: sort by `failure_rate() * count()`.
+  `failure_rate()` alone ranks items used once or twice first.
+- **Over time**: grouped time series aren’t supported everywhere, so chart one item at a
+  time by adding it to the filter (`gen_ai.tool.name:<name>`).
+- **Drill down**: once an aggregate points at a tool, model, or agent, list the
+  conversations with the same filter and read their transcripts before you conclude
+  anything about why.
+
+```bash
+sentry explore <org>/<project> --dataset spans -F gen_ai.tool.name -F "count()" \
+  -F "failure_rate()" -q "gen_ai.operation.type:tool" --sort "-count()" --period 7d
+sentry agent-conversation list <org>/<project> -q "gen_ai.tool.name:<name>" --period 7d
+```
+
 ### Logs
 
 Logs search on the log `message`, `severity` (`level` is the errors/issues key),
