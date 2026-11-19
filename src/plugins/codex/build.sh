@@ -39,12 +39,12 @@ PLUGIN="$TARGET_DIR/plugins/$PLUGIN_NAME"
 
 mkdir -p "$PLUGIN/.codex-plugin" "$TARGET_DIR/.agents/plugins"
 
-install_plugin_manifest "$SRC_DIR/plugin.json" "$PLUGIN/.codex-plugin/plugin.json"
+install_plugin_manifest "$SRC_DIR/plugin.json" "$PLUGIN/.codex-plugin/plugin.json" codex
 cp "$SRC_DIR/marketplace.json" "$TARGET_DIR/.agents/plugins/marketplace.json"
 cp "$SRC_DIR/README.md" "$TARGET_DIR/README.md"
 cp LICENSE "$TARGET_DIR/LICENSE"
 
-cp mcp.json "$PLUGIN/.mcp.json"
+install_mcp_config mcp.json "$PLUGIN/.mcp.json" codex
 copy_skill_tree "$CONTENT_ROOT" "$PLUGIN/SKILL_TREE.md"
 rsync -a assets/ "$PLUGIN/assets/"
 # copy_skills hydrates each skill's shared references before the Codex transform,

@@ -14,10 +14,8 @@ The installer package (`npx @sentry/agent-plugin`) reports to a separate Sentry 
 (`sentry/sentry-for-ai-installer`). That surface is diagnostic only — it captures
 crashes and uncaught errors, not install counts or per-agent outcomes.
 
-**Attribution gap:** Claude’s plugin (`plugin-claude`) declares the MCP server inline in
-its `plugin.json` without the `utm_source` query parameter, so Claude-originated MCP
-traffic does not appear under `app.utm_source:plugin`. Cursor, Codex, and Grok all
-include `?utm_source=plugin` in their distributed MCP configs and are fully attributed.
+Every distribution uses `?utm_source=plugin` and sends `X-Sentry-Plugin` /
+`X-Sentry-Plugin-Version`, recorded as `app.plugin.name` / `app.plugin.version`.
 
 ## Where To Query
 
@@ -26,7 +24,7 @@ include `?utm_source=plugin` in their distributed MCP configs and are fully attr
 | Plugin usage or adoption question | `sentry/mcp-server`, spans | `app.utm_source:plugin` | Volume, tool usage, client families for plugin-attributed traffic | Break down by `app.client.family`, `gen_ai.tool.name`, `mcp.tool.name` |
 | Tool failure or slow Sentry operation | `sentry/mcp-server`, spans and issues | `app.utm_source:plugin`, `gen_ai.tool.name`, `trace_id` | Which plugin-attributed tool call failed or was slow | Open trace; inspect child spans |
 | HTTP status or error rate | `sentry/mcp-server`, spans | `app.utm_source:plugin`, `http.response.status_code` | 4xx/5xx mix for plugin traffic vs overall | Compare with baseline MCP metrics |
-| Client or harness identification | `sentry/mcp-server`, spans | `app.client.family`, `user_agent.original` | Approximate Cursor/Codex/Grok bucket split | Note: Claude is not attributed |
+| Client or harness identification | `sentry/mcp-server`, spans | `app.client.family`, `user_agent.original` | Approximate harness bucket split | Prefer `app.plugin.name` for plugin traffic |
 | Installer crash or error | `sentry/sentry-for-ai-installer`, issues | `event_id`, `trace_id`, exception | CLI crashes and uncaught installer errors | Inspect issue event and trace |
 
 ## Investigation Pivots
@@ -36,6 +34,8 @@ include `?utm_source=plugin` in their distributed MCP configs and are fully attr
 | Pivot | Meaning | Found In | First Query |
 | --- | --- | --- | --- |
 | `app.utm_source` | sanitized `utm_source` query param; `plugin` for plugin-attributed traffic | spans | filter `app.utm_source:plugin` |
+| `app.plugin.name` | plugin distribution from `X-Sentry-Plugin` (`claude`, `cursor`, `codex`, `copilot`, `grok`, `agent-plugin`) | spans | distribution breakdown |
+| `app.plugin.version` | plugin version from `X-Sentry-Plugin-Version`; develop builds report `dev-version.sh` output | spans | version-specific behavior |
 | `app.client.family` | bucketed MCP client family | spans, metrics | client-family breakdown |
 | `user_agent.original` | raw HTTP user agent | request data, spans | client identification |
 | `trace_id` | one request or tool call trace | errors, logs, spans | open trace |
@@ -173,19 +173,20 @@ sort=timestamp
 
 ### MCP Plugin Attribution
 
-Plugin users are driving MCP traffic through Cursor, Codex, or Grok’s distributed MCP
-config, which sets `utm_source=plugin` on every request.
-The MCP server captures this as `app.utm_source:plugin` on spans.
+Plugin users are driving MCP traffic through a distributed plugin MCP config, which sets
+`utm_source=plugin` on every request.
+The MCP server captures this as `app.utm_source:plugin` on spans, and the plugin headers
+as `app.plugin.name` / `app.plugin.version`.
 
 Use for: adoption volume, tool popularity, client family distribution, error rates, and
 latency for plugin-originated traffic vs the broader MCP baseline.
 
-Attributes: `app.utm_source`, `app.client.family`, `user_agent.original`, `http.route`,
-`http.response.status_code`, `trace_id`, `span_id`
+Attributes: `app.utm_source`, `app.plugin.name`, `app.plugin.version`,
+`app.client.family`, `user_agent.original`, `http.route`, `http.response.status_code`,
+`trace_id`, `span_id`
 
-**Attribution note:** Only Cursor, Codex, and Grok plugin installs carry
-`?utm_source=plugin`. Claude plugin installs do not; that traffic is not separable from
-other MCP clients in this pivot.
+**Attribution note:** Configs built before the plugin headers shipped carry
+`?utm_source=plugin` but no `app.plugin.name`.
 
 ### MCP Tool Execution
 
@@ -272,7 +273,9 @@ Sentry.init({
 ## References
 
 - `packages/installer/src/instrument.ts`
-- `mcp.json` (Cursor MCP config with `utm_source=plugin`)
-- `src/plugins/claude/plugin.json` (Claude inline config — no `utm_source`)
+- `mcp.json` (Cursor/Codex/Grok MCP config with `utm_source=plugin`)
+- `src/plugins/agent-plugin/mcp.json` (Agent Plugins/Copilot MCP config)
+- `src/plugins/claude/plugin.json` (Claude inline config)
+- `scripts/build-common.sh` (stamps the plugin headers)
 - `getsentry/sentry-mcp` `TELEMETRY.md` — full MCP server telemetry reference
 - [MCP server spans reference](https://github.com/getsentry/sentry-mcp/blob/main/TELEMETRY.md)
