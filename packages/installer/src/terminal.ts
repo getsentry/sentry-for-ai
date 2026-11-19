@@ -1,5 +1,6 @@
 import type { ReadStream, WriteStream } from "node:tty";
 import type { IPty } from "node-pty";
+import { loadNodePty } from "./sea";
 import type { OutputSink, ShellResult } from "./system";
 
 interface TerminalIO {
@@ -25,7 +26,7 @@ export async function runInTerminal(
 
   try {
     // Load the native binding only when an interactive command runs.
-    const { spawn } = await import("node-pty");
+    const { spawn } = await loadNodePty();
     const windows = io.platform === "win32";
     // cmd.exe parses a command string, not C-style escaped argv. /s removes
     // this outer quote pair while preserving quotes around paths and arguments.

@@ -74,8 +74,10 @@ Each `getsentry/plugin-<agent>` repository carries two rolling branches:
 To cut a release, run the **Release plugins** workflow with a `MAJOR.MINOR.PATCH`
 version. It bumps `version.json` on `main`, tags this repo `plugin/v<version>`, then
 calls `deploy-plugins.yml` to publish that tagged tree onto each plugin repo’s `main`
-and tag it there. The `plugin/v*` prefix keeps these clear of the installer’s npm
-releases, which craft owns separately through `.craft.yml`.
+and tag it there. The `plugin/v*` prefix keeps these clear of the installer’s releases,
+which craft owns separately through `.craft.yml`: the npm package plus standalone
+binaries (built by `packages/installer/script/build-binary.mjs`) attached to a GitHub
+release tagged `installer/v<version>`.
 
 The develop stamp bumps the patch before appending the prerelease, which is what orders
 it correctly: semver ranks a prerelease below its release, so `1.2.0-dev.14` would

@@ -25,6 +25,7 @@
   },
   "scripts": {
     "build": "rolldown --config rolldown.config.mjs",
+    "build:binary": "node script/build-binary.mjs",
     "dev": "ts-node src/index.ts",
     "test": "vitest run",
     "format": "oxfmt --write src",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
+    "fossilize": "^0.11.0",
     "oxfmt": "^0.54.0",
     "rolldown": "^1.1.1",
     "ts-node": "^10.9.2",

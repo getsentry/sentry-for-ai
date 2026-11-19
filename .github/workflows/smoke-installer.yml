@@ -1,4 +1,5 @@
-# End-to-end smoke test of the installer across Linux, macOS, and Windows.
+# End-to-end smoke test of the installer across Linux, macOS, and Windows, run
+# both from the npm build (under node) and as the standalone binary.
 #
 # Installs the real agent CLIs, then runs the installer in non-interactive mode
 # (--no-interactive) so it installs the Sentry plugin for every detected agent
@@ -34,12 +35,13 @@ defaults:
 
 jobs:
   smoke:
-    name: ${{ matrix.os }}
+    name: ${{ matrix.os }} (${{ matrix.entry }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        entry: [node, binary]
     env:
       SENTRY_DSN: "" # don't report CI smoke runs to Sentry
     steps:
@@ -58,7 +60,12 @@ jobs:
         run: pnpm --filter @sentry/agent-plugin test
 
       - name: Build
+        if: matrix.entry == 'node'
         run: pnpm --filter @sentry/agent-plugin build
+
+      - name: Build binary
+        if: matrix.entry == 'binary'
+        run: pnpm --filter @sentry/agent-plugin build:binary --single
 
       - name: Install Claude Code, Codex, and Grok CLIs
         run: npm install -g @anthropic-ai/claude-code @openai/codex @xai-official/grok
@@ -78,7 +85,15 @@ jobs:
       - name: Run installer (non-interactive)
         # No working-directory: on Windows the bash shell mangles the
         # backslashes in a `cd` to the workspace path, so run from the root.
-        run: node packages/installer/dist/index.js install --no-interactive
+        run: |
+          if [ "${{ matrix.entry }}" = "binary" ]; then
+            # --single builds exactly one binary, named for the host platform.
+            installer=(packages/installer/dist-bin/sentry-agent-plugin-*)
+            "${installer[0]}" --version
+          else
+            installer=(node packages/installer/dist/index.js)
+          fi
+          "${installer[@]}" install --no-interactive
 
       - name: Verify the Sentry plugin installed for each agent
         run: |
