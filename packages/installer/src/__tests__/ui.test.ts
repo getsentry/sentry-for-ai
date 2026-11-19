@@ -1,6 +1,44 @@
 import { describe, expect, it, vi } from "vitest";
-import { runInstaller, runRemover } from "../ui";
+import { getStartedPrompt, runInstaller, runRemover } from "../ui";
 import { fakeHarness } from "./fake-harness";
+
+describe("getStartedPrompt", () => {
+  it("uses the default prompt when no instruction is provided", () => {
+    expect(getStartedPrompt()).toBe("Use the `sentry-get-started` skill for this project.");
+  });
+
+  it("builds a prompt from the install instruction", () => {
+    expect(getStartedPrompt("Setup logging")).toBe(
+      "The Sentry plugin has just been installed. Setup logging",
+    );
+  });
+
+  it.each(["abcde12345", "Lg1iSt2qeQ"])("builds the onboarding prompt for code %s", (code) => {
+    expect(getStartedPrompt(`  acme-widgets#${code}  `)).toBe(
+      `Please help me get started with sentry.\n\norg slug: acme-widgets\nrun code: ${code}`,
+    );
+  });
+
+  it.each([
+    "acme-widgets#abcde1234",
+    "acme-widgets#abcde123456",
+    "acme-widgets#abcde1234!",
+    "#abcde12345",
+    "acme-widgets#abcde12345#extra",
+    "Setup logging #abcde12345",
+  ])("preserves custom instructions that do not match onboarding: %s", (instruction) => {
+    expect(getStartedPrompt(instruction)).toBe(
+      `The Sentry plugin has just been installed. ${instruction}`,
+    );
+  });
+
+  it("trims the instruction and ignores whitespace-only input", () => {
+    expect(getStartedPrompt("  Setup tracing.  ")).toBe(
+      "The Sentry plugin has just been installed. Setup tracing.",
+    );
+    expect(getStartedPrompt("   ")).toBe("Use the `sentry-get-started` skill for this project.");
+  });
+});
 
 // These cover the non-interactive path, which skips the prompt and installs
 // every detected agent. The interactive selector is exercised manually.
@@ -109,6 +147,15 @@ describe("runInstaller (non-interactive)", () => {
 
     expect(ok).toBe(true);
     expect(peak).toBeGreaterThan(1);
+  });
+
+  it("does not authenticate during a non-interactive install", async () => {
+    const claude = fakeHarness({ id: "claude", detected: true, authenticates: true });
+
+    const ok = await runInstaller([claude], { interactive: false });
+
+    expect(ok).toBe(true);
+    expect(claude.authenticate).not.toHaveBeenCalled();
   });
 });
 

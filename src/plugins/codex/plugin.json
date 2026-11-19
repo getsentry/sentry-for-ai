@@ -1,0 +1,35 @@
+{
+  "name": "sentry",
+  "version": "0.0.0",
+  "description": "Sentry Plugin for Codex to help with debugging including MCP and skill capabilities.",
+  "author": {
+    "name": "Sentry",
+    "url": "https://sentry.io"
+  },
+  "homepage": "https://sentry.io",
+  "repository": "https://github.com/getsentry/plugin-codex",
+  "license": "MIT",
+  "keywords": ["sentry", "debugging", "monitoring", "error-tracking"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Sentry",
+    "shortDescription": "Set up Sentry and debug errors",
+    "longDescription": "Set up Sentry SDKs, debug production errors with Sentry issue and event data, and configure monitoring, alerts, releases, and readable stack traces in your development projects.",
+    "developerName": "Sentry",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://sentry.io",
+    "supportURL": "https://sentry.help",
+    "privacyPolicyURL": "https://sentry.io/privacy/",
+    "termsOfServiceURL": "https://sentry.io/terms/",
+    "defaultPrompt": [
+      "Add Sentry to my project",
+      "What are the top Sentry errors in the last 24 hours?",
+      "Fix the recent Sentry issues"
+    ],
+    "brandColor": "#533371",
+    "composerIcon": "./assets/logo-small.svg",
+    "logo": "./assets/logo.svg"
+  }
+}

@@ -27,7 +27,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm --filter @sentry/ai build
+        run: pnpm --filter @sentry/agent-plugin build
 
       - name: Pack tarball
         working-directory: packages/installer

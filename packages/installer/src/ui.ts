@@ -1,9 +1,7 @@
-import { checkbox } from "@inquirer/prompts";
+import { checkbox, confirm } from "@inquirer/prompts";
 import { ListrInquirerPromptAdapter } from "@listr2/prompt-adapter-inquirer";
 import {
   color,
-  createWritable,
-  DefaultRenderer,
   Listr,
   ListrDefaultRendererLogLevels,
   Spinner,
@@ -21,6 +19,8 @@ import {
   type InstallResult,
 } from "./run";
 import type { OutputSink } from "./system";
+import { copyToClipboard } from "./clipboard";
+import { captureFullWidthOutput, FullWidthOutputRenderer, grayOutput } from "./task-output";
 
 const BANNER_LINES = [
   "█▀ █▀▀ █▄░█ ▀█▀ █▀█ █▄█   █▀▀ █▀█ █▀█   ▄▀█ █",
@@ -84,16 +84,21 @@ export interface RunOptions {
   // When false, skip the selector and install every detected agent (CI smoke
   // tests, unattended runs). The selection task is disabled in this mode.
   interactive?: boolean;
+  // When provided, use this instruction to build the prompt offered after a
+  // successful install.
+  instruction?: string;
+}
+
+interface ActionRecord {
+  detection: Detection;
+  result: InstallResult;
 }
 
 interface Ctx {
   detections: Detection[];
   selected: Detection[];
-  results: InstallResult[];
-  // Names of agents the flow actually acted on (installed or removed), for the
-  // closing restart hint. Blocked/failed agents are excluded — nothing to
-  // restart for those.
-  affected: string[];
+  actions: ActionRecord[];
+  authenticationFailed: boolean;
   cancelled: boolean;
 }
 
@@ -142,6 +147,18 @@ interface FlowMode {
    * affected agents to restart.
    */
   closing(names: string[]): string;
+  /**
+   * When set (install only), offer to copy a get-started prompt to the clipboard
+   * after at least one agent was acted on. Remove has nothing to get started.
+   */
+  getStarted?: {
+    /** Confirm-prompt question. */
+    message: string;
+    /** The text copied to the clipboard when the user accepts. */
+    prompt: string;
+  };
+  /** Offer MCP authentication after successful plugin installs. */
+  authenticate?: boolean;
 }
 
 // "Claude Code", "Claude Code and Codex", "Claude Code, Codex, and Grok".
@@ -173,21 +190,28 @@ function isCancel(err: unknown): boolean {
   return err instanceof Error && err.name === "ExitPromptError";
 }
 
-// Only eligible agents are offered: acting on an agent the flow cannot touch
-// just runs shell commands that fail with confusing errors. Everything is
-// pre-checked since the whole list is actionable; the user deselects to skip.
+// Actionable agents are pre-checked; informational choices remain disabled.
 async function promptForAgents(
   eligible: Detection[],
-  mode: FlowMode,
+  message: string,
+  label: (detection: Detection) => string,
   task: TaskWrapper,
+  disabled: (detection: Detection) => boolean | string = () => false,
 ): Promise<Detection[]> {
   const selectedIds = await task.prompt(ListrInquirerPromptAdapter).run(checkbox, {
-    message: mode.selectMessage,
-    choices: eligible.map((detection) => ({
-      name: mode.label(detection),
-      value: detection.harness.id,
-      checked: true,
-    })),
+    message,
+    choices: eligible
+      .map((detection) => {
+        const reason = disabled(detection);
+
+        return {
+          name: label(detection),
+          value: detection.harness.id,
+          checked: !reason,
+          disabled: reason,
+        };
+      })
+      .sort((a, b) => Number(!!a.disabled) - Number(!!b.disabled)),
     // The cursor must stay one column wide: inquirer pads inactive rows with a
     // single hardcoded space, so a wider cursor would shift the active row's
     // checkbox out of alignment. Put the gap after the arrow on the checkbox
@@ -199,11 +223,59 @@ async function promptForAgents(
         cursor: "→",
         checked: ` ${color.green("◉")}`,
         unchecked: " ◯",
+        disabledUnchecked: " ◯",
       },
     },
   });
 
-  return eligible.filter((detection) => selectedIds.includes(detection.harness.id));
+  return eligible.filter(
+    (detection) => !disabled(detection) && selectedIds.includes(detection.harness.id),
+  );
+}
+
+function authenticationCandidates(ctx: Ctx): Detection[] {
+  return ctx.actions
+    .filter(({ result }) => result.kind === "done")
+    .map(({ detection }) => detection);
+}
+
+function affectedNames(ctx: Ctx): string[] {
+  return ctx.actions
+    .filter(({ result }) => installSucceeded(result))
+    .map(({ detection }) => detection.harness.name);
+}
+
+// Offer to copy the get-started prompt to the clipboard, defaulting to yes.
+// Declining (or cancelling the prompt) skips quietly; when the copy is
+// unavailable (no clipboard tool), the prompt text is printed so it can be
+// copied by hand. Only runs in install mode with at least one agent acted on.
+async function promptGetStarted(
+  getStarted: NonNullable<FlowMode["getStarted"]>,
+  task: TaskWrapper,
+): Promise<void> {
+  let wantsCopy: boolean;
+  try {
+    wantsCopy = await task.prompt(ListrInquirerPromptAdapter).run(confirm, {
+      message: getStarted.message,
+      default: true,
+      theme: { prefix: color.blue("◇") },
+    });
+  } catch (err) {
+    if (!isCancel(err)) throw err;
+    task.skip("Skipped");
+    return;
+  }
+
+  if (!wantsCopy) {
+    task.skip("Maybe next time");
+    return;
+  }
+
+  const copied = await copyToClipboard(getStarted.prompt);
+  task.title = copied
+    ? "Copied a get-started prompt to your clipboard"
+    : "Copy this prompt to get started";
+  task.stdout().write(`\n${color.gray(getStarted.prompt)}\n`);
 }
 
 // Translate one harness action (install/update or remove) into Listr task
@@ -217,24 +289,10 @@ function actionTask(ctx: Ctx, detection: Detection, mode: FlowMode): ListrTask<C
     // keeps it (and the trailing notes below) on screen after the task settles.
     rendererOptions: { persistentOutput: true, outputBar: Infinity },
     task: async (_ctx, task: TaskWrapper) => {
-      // Stream the command output live under this task's row, grayed (the
-      // renderer's color map only tints the icon, so gray the body through a
-      // createWritable transform). Trailing notes go to the raw sink so their
-      // text stays full color and reads as ours, not command noise.
       const raw = task.stdout();
-      // Gray per line, leaving blank lines genuinely empty — otherwise the gray
-      // escapes make them non-empty and defeat the renderer's removeEmptyLines.
-      const out = createWritable((chunk) =>
-        raw.write(
-          chunk
-            .toString()
-            .split("\n")
-            .map((line: string) => (line ? color.gray(line) : line))
-            .join("\n"),
-        ),
-      );
-      const result = await mode.act(detection, out);
-      ctx.results.push(result);
+      const wrapped = grayOutput(raw);
+      const result = await mode.act(detection, wrapped);
+      ctx.actions.push({ detection, result });
 
       // Trailing notes (what cleanup removed, manual steps, restart hints) are not
       // command output, so append them to the raw stream rather than overwriting it.
@@ -247,12 +305,10 @@ function actionTask(ctx: Ctx, detection: Detection, mode: FlowMode): ListrTask<C
         case "done":
           task.title = `${harness.name} — ${result.command}`;
           writeTail(result.cleaned, result.note);
-          ctx.affected.push(harness.name);
           return;
         case "manual":
           task.title = `${harness.name} — manual steps required`;
           writeTail(result.cleaned, result.instructions);
-          ctx.affected.push(harness.name);
           return;
         case "blocked":
           task.skip(`${harness.name} — ${result.reason}`);
@@ -262,6 +318,68 @@ function actionTask(ctx: Ctx, detection: Detection, mode: FlowMode): ListrTask<C
       }
     },
   };
+}
+
+function authenticationTask(ctx: Ctx, detection: Detection): ListrTask<Ctx> {
+  const { harness } = detection;
+
+  return {
+    title: harness.name,
+    rendererOptions: { persistentOutput: true, outputBar: Infinity },
+    task: (_ctx, task: TaskWrapper) => {
+      const wrapped = grayOutput(task.stdout());
+
+      return task.newListr([
+        {
+          // Keep live OAuth URLs full-width for selection and copying without
+          // indentation or continuation-line padding. After authentication,
+          // replay the transcript in the parent's indented output bar.
+          rendererOptions: { bottomBar: 1, outputBar: false },
+          task: async (_childCtx, childTask: TaskWrapper) => {
+            const live = captureFullWidthOutput(childTask.stdout());
+
+            try {
+              const result = await harness.authenticate!(live.output);
+              task.title = `${harness.name} — ${result.command}`;
+            } catch (err) {
+              ctx.authenticationFailed = true;
+              const message = err instanceof Error ? err.message : String(err);
+
+              // Command errors already in the transcript need only a concise row.
+              if (message && live.captured().includes(message)) {
+                throw new Error("Authentication failed");
+              }
+
+              throw err;
+            } finally {
+              wrapped.write(live.captured());
+            }
+          },
+        },
+      ]);
+    },
+  };
+}
+
+const DEFAULT_GET_STARTED_PROMPT = "Use the `sentry-get-started` skill for this project.";
+const INSTALLED_PROMPT_PREFIX = "The Sentry plugin has just been installed.";
+
+export function getStartedPrompt(instruction?: string): string {
+  const trimmed = instruction?.trim();
+  const onboarding = trimmed?.match(/^([a-z0-9_-]+)#([A-Za-z0-9]{10})$/);
+
+  if (onboarding) {
+    const [, orgSlug, onboardingCode] = onboarding;
+
+    return [
+      "Please help me get started with sentry.",
+      "",
+      `org slug: ${orgSlug}`,
+      `run code: ${onboardingCode}`,
+    ].join("\n");
+  }
+
+  return trimmed ? `${INSTALLED_PROMPT_PREFIX} ${trimmed}` : DEFAULT_GET_STARTED_PROMPT;
 }
 
 // Install (and update) targets every detected agent, with a shimmering tagline.
@@ -279,6 +397,11 @@ const installMode: FlowMode = {
     const speak = names.length === 1 ? "agent now speaks" : "agents now speak";
     return `\nDone. Restart ${listFormatter.format(names)}. ${color.dim(`Your ${speak} Sentry.`)}`;
   },
+  getStarted: {
+    message: "Would you like to copy a prompt to get started with Sentry?",
+    prompt: DEFAULT_GET_STARTED_PROMPT,
+  },
+  authenticate: true,
 };
 
 // Remove targets only agents that actually have our plugin, with a static
@@ -297,7 +420,15 @@ const removeMode: FlowMode = {
 };
 
 export function runInstaller(harnesses: Harness[], options: RunOptions = {}): Promise<boolean> {
-  return runFlow(harnesses, installMode, options);
+  const mode = {
+    ...installMode,
+    getStarted: {
+      ...installMode.getStarted!,
+      prompt: getStartedPrompt(options.instruction),
+    },
+  };
+
+  return runFlow(harnesses, mode, options);
 }
 
 export function runRemover(harnesses: Harness[], options: RunOptions = {}): Promise<boolean> {
@@ -347,7 +478,7 @@ async function runFlow(
       task: async (ctx, task) => {
         const eligible = ctx.detections.filter(mode.eligible);
         try {
-          ctx.selected = await promptForAgents(eligible, mode, task);
+          ctx.selected = await promptForAgents(eligible, mode.selectMessage, mode.label, task);
         } catch (err) {
           if (!isCancel(err)) throw err;
           ctx.cancelled = true;
@@ -383,16 +514,61 @@ async function runFlow(
         );
       },
     },
+    {
+      title: "Authenticate the Sentry MCP",
+      enabled: (ctx) =>
+        interactive &&
+        !ctx.cancelled &&
+        !!mode.authenticate &&
+        authenticationCandidates(ctx).some(({ harness }) => !!harness.authenticate),
+      task: async (ctx, task) => {
+        const eligible = authenticationCandidates(ctx);
+        try {
+          const selected = await promptForAgents(
+            eligible,
+            "Select agents to authenticate the Sentry MCP for",
+            (detection) => detection.harness.name,
+            task,
+            ({ harness }) => (harness.authenticate ? false : "(Configure in app)"),
+          );
+
+          if (selected.length === 0) {
+            task.skip("Skipped");
+            return;
+          }
+
+          return task.newListr(
+            selected.map((detection) => authenticationTask(ctx, detection)),
+            {
+              concurrent: false,
+              exitOnError: false,
+              rendererOptions: { collapseSubtasks: false },
+            },
+          );
+        } catch (err) {
+          if (!isCancel(err)) throw err;
+          task.skip("Skipped");
+          return;
+        }
+      },
+    },
+    {
+      title: "Get started with Sentry",
+      enabled: (ctx) =>
+        interactive && !ctx.cancelled && !!mode.getStarted && affectedNames(ctx).length > 0,
+      rendererOptions: { persistentOutput: true },
+      task: (_ctx, task) => promptGetStarted(mode.getStarted!, task),
+    },
   ];
 
   // Paint the tagline as a header above the task list every frame. The header is
   // not a task, so it carries no spinner icon, and the steps render as a normal
   // flat list beneath a blank line.
-  class ShimmerRenderer extends DefaultRenderer {
+  class ShimmerRenderer extends FullWidthOutputRenderer {
     // Wall-clock origin for a frame-rate-independent shimmer phase.
     private readonly startedAt = Date.now();
 
-    create(options?: Parameters<DefaultRenderer["create"]>[0]): string {
+    create(options?: Parameters<FullWidthOutputRenderer["create"]>[0]): string {
       const body = super.create(options);
 
       // Animate only while work is in flight; once every task has settled the
@@ -437,8 +613,8 @@ async function runFlow(
   const ctx: Ctx = {
     detections: [],
     selected: [],
-    results: [],
-    affected: [],
+    actions: [],
+    authenticationFailed: false,
     cancelled: false,
   };
 
@@ -457,9 +633,11 @@ async function runFlow(
     return false;
   }
 
-  if (ctx.affected.length > 0) {
-    console.log(mode.closing(ctx.affected));
+  const affected = affectedNames(ctx);
+
+  if (affected.length > 0) {
+    console.log(mode.closing(affected));
   }
 
-  return ctx.results.every(installSucceeded);
+  return !ctx.authenticationFailed && ctx.actions.every(({ result }) => installSucceeded(result));
 }

@@ -6,6 +6,7 @@ reportOn = "medium"
 
 [[skills]]
 name = "skill-scanner"
+incremental = true
 remote = "getsentry/skills"
 paths = ["**/skills/**"]
 

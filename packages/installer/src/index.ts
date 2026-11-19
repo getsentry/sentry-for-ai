@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { defineCommand, runMain } from "citty";
-import { harnesses } from "./harnesses";
+import { buildHarnesses } from "./harnesses";
 import { captureAndFlush, initTelemetry } from "./instrument";
 import { runInstaller, runRemover } from "./ui";
 
@@ -50,11 +50,22 @@ const install = defineCommand({
     name: "install",
     description: "Install the Sentry plugin into your detected AI coding assistants",
   },
-  args: agentSelectionArgs,
+  args: {
+    instruction: {
+      type: "positional",
+      description:
+        "Instruction or org-slug#onboarding-code for the prompt copied after installation",
+      required: false,
+    },
+    ...agentSelectionArgs,
+  },
   async run({ args }) {
     const interactive = args.interactive && !args.yes;
     try {
-      const ok = await runInstaller(harnesses, { interactive });
+      const ok = await runInstaller(buildHarnesses(), {
+        interactive,
+        instruction: args.instruction,
+      });
       process.exit(ok ? 0 : 1);
     } catch (err) {
       // Unexpected error outside the Listr runner: capture and flush before exit
@@ -74,7 +85,7 @@ const remove = defineCommand({
   async run({ args }) {
     const interactive = args.interactive && !args.yes;
     try {
-      const ok = await runRemover(harnesses, { interactive });
+      const ok = await runRemover(buildHarnesses(), { interactive });
       process.exit(ok ? 0 : 1);
     } catch (err) {
       await captureAndFlush(err);
@@ -85,7 +96,7 @@ const remove = defineCommand({
 
 const main = defineCommand({
   meta: {
-    name: "sentry-ai",
+    name: "sentry-agent-plugin",
     version,
     description,
   },
@@ -101,7 +112,7 @@ const main = defineCommand({
 const SUBCOMMANDS = new Set(["install", "remove", "uninstall"]);
 const PASSTHROUGH = new Set(["--help", "-h", "--version"]);
 
-// citty has no concept of a default subcommand, so `npx @sentry/ai` with no
+// citty has no concept of a default subcommand, so `npx @sentry/agent-plugin` with no
 // arguments would just print the help menu. Default to `install` instead unless
 // the user gave an explicit subcommand or asked for help/version.
 function withDefaultCommand(argv: string[]): string[] {

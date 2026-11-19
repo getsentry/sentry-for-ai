@@ -1,0 +1,8 @@
+needs:
+  - search-query-language.md
+  # Whole concepts dir. The ones that matter while debugging are the error and its
+  # attached context (logs/replay/profile/feedback), the trace, and the monitor
+  # types that also create issues -- but the concept docs cross-link each other, and
+  # hydration only places files on disk, so taking the dir keeps every link
+  # resolvable at no reading cost. SKILL.md decides what is actually read.
+  - concepts/*.md

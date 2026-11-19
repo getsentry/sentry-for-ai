@@ -96,6 +96,20 @@ describe("claude harness", () => {
     expect(system.run).toHaveBeenCalledWith("claude plugin update sentry@claude-plugins-official");
   });
 
+  it("authenticates the plugin-provided MCP with terminal input", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const sink = {} as NodeJS.WritableStream;
+    const outcome = await createClaude(system).authenticate!(sink);
+
+    expect(outcome).toEqual({
+      command: "claude mcp login plugin:sentry:sentry",
+    });
+    expect(system.runInteractive).toHaveBeenCalledWith(
+      "claude mcp login plugin:sentry:sentry",
+      sink,
+    );
+  });
+
   it("adds the official marketplace when it is not registered", async () => {
     const system = fakeSystem({
       run: (cmd) => (cmd.includes("marketplace list") ? claudeMarketplaces([]) : ok),
@@ -139,6 +153,27 @@ describe("claude harness", () => {
       "claude plugin uninstall sentry@claude-plugins-official",
     );
     expect(system.run).not.toHaveBeenCalledWith(expect.stringContaining("marketplace remove"));
+  });
+
+  it("removes the copy installed from our own marketplace", async () => {
+    const system = fakeSystem({
+      run: (cmd) => (isList(cmd) ? claudeList(["sentry@sentry-plugin-marketplace"]) : ok),
+    });
+    const removed = await createClaude(system).cleanup!();
+
+    expect(system.run).toHaveBeenCalledWith(
+      "claude plugin uninstall sentry@sentry-plugin-marketplace",
+    );
+    expect(removed).toContain("sentry@sentry-plugin-marketplace");
+  });
+
+  it("leaves cleanup a no-op when only the official plugin is installed", async () => {
+    const system = fakeSystem({
+      run: (cmd) => (isList(cmd) ? claudeList(["sentry@claude-plugins-official"]) : ok),
+    });
+
+    expect(await createClaude(system).cleanup!()).toBeNull();
+    expect(system.run).not.toHaveBeenCalledWith(expect.stringContaining("uninstall"));
   });
 
   it("surfaces stderr when install fails", async () => {
@@ -216,6 +251,15 @@ describe("codex harness", () => {
       kind: "done",
       command: "codex plugin add sentry@sentry-plugin-marketplace",
     });
+  });
+
+  it("authenticates the plugin-provided MCP with terminal input", async () => {
+    const system = fakeSystem({ run: () => ok });
+    const sink = {} as NodeJS.WritableStream;
+    const outcome = await createCodex(system).authenticate!(sink);
+
+    expect(outcome).toEqual({ command: "codex mcp login sentry" });
+    expect(system.runInteractive).toHaveBeenCalledWith("codex mcp login sentry", sink);
   });
 
   it("adds the marketplace when it is not registered", async () => {
@@ -411,7 +455,7 @@ describe("cursor harness", () => {
   });
 
   it("reports installed when the plugin directory exists", async () => {
-    const target = "/home/user/.cursor/plugins/local/sentry";
+    const target = join("/home/user", ".cursor", "plugins", "local", "sentry");
     const harness = createCursor(fakeSystem({ homedir: "/home/user", existing: [target] }));
     expect(await harness.isInstalled()).toBe(true);
   });
@@ -442,12 +486,12 @@ describe("cursor harness", () => {
 
     expect(outcome.kind).toBe("done");
     expect(system.run).toHaveBeenCalledWith(
-      'git clone https://github.com/getsentry/plugin-cursor.git "/home/user/.cursor/plugins/local/sentry"',
+      `git clone https://github.com/getsentry/plugin-cursor.git "${join("/home/user", ".cursor", "plugins", "local", "sentry")}"`,
     );
   });
 
   it("pulls the existing checkout on update", async () => {
-    const target = "/home/user/.cursor/plugins/local/sentry";
+    const target = join("/home/user", ".cursor", "plugins", "local", "sentry");
     const system = fakeSystem({ homedir: "/home/user", existing: [target] });
     const outcome = await createCursor(system).update();
 
@@ -456,7 +500,7 @@ describe("cursor harness", () => {
   });
 
   it("deletes the plugin directory on remove", async () => {
-    const target = "/home/user/.cursor/plugins/local/sentry";
+    const target = join("/home/user", ".cursor", "plugins", "local", "sentry");
     const system = fakeSystem({ homedir: "/home/user", existing: [target] });
     const outcome = await createCursor(system).remove();
 

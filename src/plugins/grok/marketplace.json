@@ -1,0 +1,18 @@
+{
+  "name": "sentry-plugin-marketplace",
+  "description": "Sentry plugin for Grok.",
+  "owner": {
+    "name": "Sentry"
+  },
+  "plugins": [
+    {
+      "name": "sentry",
+      "description": "Tools for debugging application issues using Sentry. Includes MCP functionality and skills.",
+      "category": "monitoring",
+      "source": "./",
+      "homepage": "https://sentry.io",
+      "keywords": ["sentry", "debugging", "monitoring", "error-tracking"],
+      "domains": ["sentry.io"]
+    }
+  ]
+}

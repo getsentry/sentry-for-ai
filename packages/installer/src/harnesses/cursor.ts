@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { realSystem, type OutputSink, type SystemDeps } from "../system";
+import type { OutputSink, SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
 import { detectOnPath, runCommand } from "./shell";
 
@@ -67,5 +67,3 @@ export function createCursor(system: SystemDeps): Harness {
     },
   };
 }
-
-export const cursor = createCursor(realSystem);

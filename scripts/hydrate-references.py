@@ -20,7 +20,7 @@
 # Manifest format (<skills-source>/<skill>/references.yml):
 #
 #     needs:
-#       - sdks/*/{index,error-monitoring,tracing}.md
+#       - debug-artifacts/{index,javascript}.md
 #       - concepts/{errors,tracing}.md
 #       - setup-verification.md
 #

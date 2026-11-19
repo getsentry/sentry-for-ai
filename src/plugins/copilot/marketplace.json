@@ -1,0 +1,13 @@
+{
+  "name": "sentry-copilot-marketplace",
+  "owner": {
+    "name": "Sentry"
+  },
+  "plugins": [
+    {
+      "name": "sentry",
+      "source": "./",
+      "description": "Set up Sentry, debug production issues, and configure application monitoring."
+    }
+  ]
+}

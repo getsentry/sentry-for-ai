@@ -23,6 +23,21 @@ export async function runCommand(
   throw new Error(result.stderr || result.message || `Command failed: ${command}`);
 }
 
+// OAuth commands get a real terminal while the installer captures their output.
+export async function runLoginCommand(
+  system: SystemDeps,
+  command: string,
+  output?: OutputSink,
+): Promise<void> {
+  const result = await system.runInteractive(command, output);
+
+  if (result.ok) {
+    return;
+  }
+
+  throw new Error(result.stderr || result.message || `Command failed: ${command}`);
+}
+
 // Run a command expected to emit JSON and return the parsed value. Returns null
 // when the command fails or its output is not valid JSON, so a missing or broken
 // listing reads as "nothing installed" rather than crashing the installer.

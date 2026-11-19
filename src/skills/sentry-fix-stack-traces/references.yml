@@ -1,0 +1,11 @@
+needs:
+  # The artifact procedures themselves (shared with sentry-instrument / sentry-get-started).
+  - debug-artifacts/*.md
+  - auth-token.md
+  # Platform detection + the docs holding the build-tool config (chosen at runtime).
+  - sdk-docs.md
+  # Whole concepts dir + the query grammar: sdk-docs.md links concepts/tracing.md, and
+  # the concepts cross-link each other and the query grammar.
+  - concepts/*.md
+  - search-query-language.md
+  - setup-verification.md

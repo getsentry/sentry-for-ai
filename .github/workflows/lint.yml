@@ -1,0 +1,89 @@
+# Lint, with a fix instead of a complaint.
+#
+# The hooks in .pre-commit-config.yaml mostly rewrite files rather than report
+# on them, so on a pull request from this repository the job pushes whatever
+# they wrote back to the branch and reports the state after the fix. A fork pull
+# request gets a read-only token and no branch to push to, so it fails with the
+# command to run locally.
+#
+# A push made with GITHUB_TOKEN deliberately does not start new workflow runs,
+# which keeps this job from re-triggering itself. That is why the last step runs
+# the hooks a second time: the fix commit carries no checks of its own, so the
+# re-run is what proves the tree is clean after the fixes land.
+
+name: Lint
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  prek:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      CAN_PUSH: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+    steps:
+      - name: Checkout pull request branch
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+
+      - name: Cache hook environments
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: ~/.cache/prek
+          key: prek-1|${{ runner.os }}|${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Prepare hook environments
+        run: ./scripts/lint.sh prepare-hooks
+
+      - name: Run hooks
+        id: hooks
+        run: |
+          set -euo pipefail
+
+          status=0
+          ./scripts/lint.sh || status=$?
+          echo "status=${status}" >> "$GITHUB_OUTPUT"
+
+          if git diff --quiet; then
+            exit "$status"
+          fi
+
+          echo "::notice::Hooks rewrote files"
+          git --no-pager diff --stat
+
+          if [[ "$CAN_PUSH" != "true" ]]; then
+            echo "::error::Hooks rewrote files. Run scripts/lint.sh and commit the result."
+            exit 1
+          fi
+
+      - name: Push the fixes
+        if: steps.hooks.outputs.status != '0' && env.CAN_PUSH == 'true'
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "style: apply prek fixes"
+          git push origin "HEAD:${HEAD_REF}"
+          echo "::notice::Pushed a commit with the hook fixes"
+
+      - name: Re-run hooks over the fixed tree
+        if: steps.hooks.outputs.status != '0' && env.CAN_PUSH == 'true'
+        run: ./scripts/lint.sh
