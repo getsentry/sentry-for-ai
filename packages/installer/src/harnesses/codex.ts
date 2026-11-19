@@ -1,6 +1,6 @@
 import type { OutputSink, SystemDeps } from "../system";
 import type { Harness, InstallOutcome } from "./types";
-import { detectOnPath, runCommand, runLoginCommand, runJson } from "./shell";
+import { detectOnPath, powerShellCommand, runCommand, runLoginCommand, runJson } from "./shell";
 
 // TODO: Codex is the only agent we install from our OWN marketplace
 // (getsentry/plugin-codex) rather than the agent vendor's official marketplace
@@ -73,36 +73,65 @@ async function addPlugin(system: SystemDeps, output?: OutputSink): Promise<Insta
 }
 
 export function createCodex(system: SystemDeps): Harness {
+  let commandSystem = system;
+
   return {
     id: "codex",
     name: "Codex",
 
-    detect: async () => detectOnPath(system, "codex"),
+    detect: async () => {
+      commandSystem = system;
 
-    isInstalled: async () => hasPlugin(system, PLUGIN_ID),
+      if (await detectOnPath(system, "codex")) {
+        return true;
+      }
+
+      if (system.platform !== "win32") {
+        return false;
+      }
+
+      for (const executable of ["powershell.exe", "pwsh.exe"]) {
+        const powerShellSystem: SystemDeps = {
+          ...system,
+          run: (command, output) => system.run(powerShellCommand(command, executable), output),
+          runInteractive: (command, output) =>
+            system.runInteractive(powerShellCommand(command, executable), output),
+        };
+        const result = await powerShellSystem.run("Get-Command codex -ErrorAction Stop");
+
+        if (result.ok) {
+          commandSystem = powerShellSystem;
+          return true;
+        }
+      }
+
+      return false;
+    },
+
+    isInstalled: async () => hasPlugin(commandSystem, PLUGIN_ID),
 
     canInstall: async () => ({ ok: true }),
 
     cleanup: async (output) => {
-      if (!(await hasPlugin(system, LEGACY_PLUGIN_ID))) {
+      if (!(await hasPlugin(commandSystem, LEGACY_PLUGIN_ID))) {
         return null;
       }
 
-      await runCommand(system, `codex plugin remove ${LEGACY_PLUGIN_ID}`, output);
+      await runCommand(commandSystem, `codex plugin remove ${LEGACY_PLUGIN_ID}`, output);
       return `Removed conflicting plugin ${LEGACY_PLUGIN_ID}`;
     },
 
-    install: async (output) => addPlugin(system, output),
+    install: async (output) => addPlugin(commandSystem, output),
 
-    update: async (output) => addPlugin(system, output),
+    update: async (output) => addPlugin(commandSystem, output),
 
     authenticate: async (output) => {
-      await runLoginCommand(system, AUTHENTICATE_COMMAND, output);
+      await runLoginCommand(commandSystem, AUTHENTICATE_COMMAND, output);
       return { command: AUTHENTICATE_COMMAND };
     },
 
     remove: async (output): Promise<InstallOutcome> => {
-      await runCommand(system, UNINSTALL_COMMAND, output);
+      await runCommand(commandSystem, UNINSTALL_COMMAND, output);
       return { kind: "done", command: UNINSTALL_COMMAND };
     },
   };
