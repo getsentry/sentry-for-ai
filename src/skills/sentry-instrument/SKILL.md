@@ -212,8 +212,15 @@ auto-running them:
   Sentry notices when the app stops answering — don’t wait for a later deploy step.
   [`references/concepts/uptime.md`](references/concepts/uptime.md) covers finding the
   real URL (production events in Sentry first) and checking it before creating.
-- Add a signal — logging, session replay, or profiling are common next steps (tracing is
-  already in the base `init`).
+- Add a signal — propose specific ones from what you saw in the project, each with a
+  one-line reason, rather than asking an open question (tracing is already in the base
+  `init`). Only propose signals the platform’s docs page links to:
+  - A browser or mobile UI → Session Replay
+  - A logging library already in use → Logs
+  - Scheduled jobs (a cron config or a scheduler library) → Crons
+  - An LLM SDK or agent framework in the dependencies → AI Monitoring
+  - A metrics client or custom counters → Metrics
+  - CPU-heavy work, or the user mentions slowness → Profiling
 - Harden the setup — readable stack traces (source maps for JS, debug symbols for
   native/mobile) and releases are the natural pair, and you can do both here:
   [`references/debug-artifacts/index.md`](references/debug-artifacts/index.md) routes to
